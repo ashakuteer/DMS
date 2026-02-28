@@ -1,6 +1,6 @@
 "use client";
 
-import AssignDonorOwner from "./components/AssignDonorOwner";
+import AssignDonorOwner from "./[id]/components/AssignDonorOwner";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -1147,9 +1147,9 @@ export default function DonorsPage() {
                               </Badge>
                             )}
                           </div>
-                          {donor.assignedTo && (
+                          {donor.assignedToUser && (
                             <div className="text-xs text-muted-foreground">
-                              Assigned: {donor.assignedTo.name}
+                              Assigned: {donor.assignedToUser.name}
                             </div>
                           )}
                         </TableCell>

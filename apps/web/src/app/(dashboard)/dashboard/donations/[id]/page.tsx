@@ -71,6 +71,8 @@ interface DonationDetails {
   createdBy?: { id: string; name: string };
   home?: { id: string; fullName: string };
   campaign?: { id: string; name: string };
+  kindCategory?: string;
+  kindDescription?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -103,6 +103,7 @@ interface Beneficiary {
   sponsorships: Sponsorship[];
   updates: BeneficiaryUpdate[];
   timelineEvents: TimelineEvent[];
+  documents?: BeneficiaryDocument[];
   createdBy: { id: string; name: string };
 }
 

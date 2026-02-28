@@ -1,18 +1,31 @@
-import { spawn, ChildProcess } from "child_process";
+import { spawn, ChildProcess, execSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(__dirname, "..");
 
-console.log("🚀 Starting NGO Donor Management System...");
+console.log("Starting NGO Donor Management System...");
 
 let apiProcess: ChildProcess | null = null;
 let webProcess: ChildProcess | null = null;
 
-// Start NestJS API on port 3001
+function killPort(port: number) {
+  try {
+    execSync(`lsof -ti:${port} | xargs kill -9 2>/dev/null || true`, { stdio: "ignore" });
+  } catch {}
+}
+
+function sleep(ms: number) {
+  execSync(`sleep ${ms / 1000}`);
+}
+
+killPort(3001);
+killPort(5000);
+sleep(2000);
+
 function startAPI() {
-  console.log("📡 Starting NestJS API on port 3001...");
+  console.log("Starting NestJS API on port 3001...");
   
   apiProcess = spawn("npx", ["nest", "start", "--watch"], {
     cwd: path.join(rootDir, "apps", "api"),
@@ -22,7 +35,7 @@ function startAPI() {
   });
 
   apiProcess.on("error", (err) => {
-    console.error("❌ API error:", err);
+    console.error("API error:", err);
   });
 
   apiProcess.on("close", (code) => {
@@ -30,9 +43,10 @@ function startAPI() {
   });
 }
 
-// Start Next.js on port 5000
 function startWeb() {
-  console.log("🌐 Starting Next.js frontend on port 5000...");
+  killPort(5000);
+  sleep(500);
+  console.log("Starting Next.js frontend on port 5000...");
   
   webProcess = spawn("npx", ["next", "dev", "-p", "5000", "-H", "0.0.0.0"], {
     cwd: path.join(rootDir, "apps", "web"),
@@ -42,7 +56,7 @@ function startWeb() {
   });
 
   webProcess.on("error", (err) => {
-    console.error("❌ Web error:", err);
+    console.error("Web error:", err);
   });
 
   webProcess.on("close", (code) => {
@@ -50,21 +64,23 @@ function startWeb() {
   });
 }
 
-// Cleanup function
 function cleanup() {
-  console.log("\n👋 Shutting down...");
-  if (apiProcess) {
-    apiProcess.kill();
+  console.log("\nShutting down...");
+  if (apiProcess && !apiProcess.killed) {
+    try { process.kill(-apiProcess.pid!, "SIGKILL"); } catch {}
+    apiProcess.kill("SIGKILL");
   }
-  if (webProcess) {
-    webProcess.kill();
+  if (webProcess && !webProcess.killed) {
+    try { process.kill(-webProcess.pid!, "SIGKILL"); } catch {}
+    webProcess.kill("SIGKILL");
   }
+  killPort(3001);
+  killPort(5000);
   process.exit(0);
 }
 
 process.on("SIGINT", cleanup);
 process.on("SIGTERM", cleanup);
 
-// Start API first, then web after a short delay
 startAPI();
-setTimeout(startWeb, 3000);
+setTimeout(startWeb, 5000);

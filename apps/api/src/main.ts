@@ -25,9 +25,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
-  // ✅ Railway-friendly port handling
-  const port = process.env.PORT || process.env.API_PORT || 3001;
+  // Railway / production port handling
+  const port = Number(process.env.PORT) || Number(process.env.API_PORT) || 3001;
   await app.listen(port, "0.0.0.0");
   console.log(`API server running on http://0.0.0.0:${port}`);
 }

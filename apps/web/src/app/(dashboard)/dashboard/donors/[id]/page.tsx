@@ -135,6 +135,7 @@ interface Donor {
     id: string;
     name: string;
   };
+  supportPreferences?: string[];
   donations?: Donation[];
   pledges?: Pledge[];
   specialOccasions?: SpecialOccasion[];
@@ -150,6 +151,12 @@ interface Donation {
   donationMode: string;
   receiptNumber?: string;
   remarks?: string;
+  communicationResults?: {
+    emailStatus?: string;
+    whatsappStatus?: string;
+    emailError?: string;
+    whatsappError?: string;
+  };
 }
 
 interface DonationFormData {
@@ -157,7 +164,7 @@ interface DonationFormData {
   donationDate: string;
   donationMode: string;
   donationType: string;
-  designatedHome: string; // ✅ added
+  designatedHome?: string;
   remarks: string;
 }
 interface Pledge {
@@ -1876,7 +1883,7 @@ export default function DonorProfilePage() {
   };
 
   const logPostDonationAction = async (
-    action: "send_email" | "send_whatsapp" | "remind_later" | "skip",
+    action: "send_email" | "send_whatsapp" | "send_whatsapp_auto" | "remind_later" | "skip",
   ) => {
     try {
       await fetchWithAuth("/api/communication-logs/post-donation-action", {
@@ -4796,20 +4803,20 @@ export default function DonorProfilePage() {
                   <span>WhatsApp:</span>
                   <Badge
                     variant={
-                      newlyCreatedDonation.communicationResults.whatsAppStatus === "queued"
+                      newlyCreatedDonation.communicationResults.whatsappStatus === "queued"
                         ? "default"
                         : "secondary"
                     }
                     className="text-xs"
                     data-testid="badge-post-donation-whatsapp-status"
                   >
-                    {newlyCreatedDonation.communicationResults.whatsAppStatus === "queued"
+                    {newlyCreatedDonation.communicationResults.whatsappStatus === "queued"
                       ? "Queued"
-                      : newlyCreatedDonation.communicationResults.whatsAppStatus === "skipped_no_phone"
+                      : newlyCreatedDonation.communicationResults.whatsappStatus === "skipped_no_phone"
                       ? "Skipped (no phone)"
-                      : newlyCreatedDonation.communicationResults.whatsAppStatus === "skipped_not_configured"
+                      : newlyCreatedDonation.communicationResults.whatsappStatus === "skipped_not_configured"
                       ? "Not configured"
-                      : newlyCreatedDonation.communicationResults.whatsAppStatus || "N/A"}
+                      : newlyCreatedDonation.communicationResults.whatsappStatus || "N/A"}
                   </Badge>
                 </div>
               </>

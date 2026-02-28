@@ -62,7 +62,7 @@ export default function EmailJobsPage() {
   async function fetchJobs() {
     setLoading(true);
     try {
-      const token = authStorage.getToken();
+      const token = authStorage.getAccessToken();
       const params = new URLSearchParams({ page: String(page), limit: "20" });
       if (statusFilter !== "all") params.append("status", statusFilter);
       if (typeFilter !== "all") params.append("type", typeFilter);
@@ -84,7 +84,7 @@ export default function EmailJobsPage() {
 
   async function fetchStats() {
     try {
-      const token = authStorage.getToken();
+      const token = authStorage.getAccessToken();
       const res = await fetch("/api/email-jobs/stats", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -100,7 +100,7 @@ export default function EmailJobsPage() {
   async function handleRetry(id: string) {
     setActionLoading(id);
     try {
-      const token = authStorage.getToken();
+      const token = authStorage.getAccessToken();
       const res = await fetch(`/api/email-jobs/${id}/retry`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -122,7 +122,7 @@ export default function EmailJobsPage() {
   async function handleDelete(id: string) {
     setActionLoading(id);
     try {
-      const token = authStorage.getToken();
+      const token = authStorage.getAccessToken();
       const res = await fetch(`/api/email-jobs/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
