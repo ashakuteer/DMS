@@ -2,10 +2,16 @@
 nixPkgs = ["nodejs-22_x"]
 
 [phases.install]
-cmds = ["npm install --legacy-peer-deps"]
+cmds = [
+  "npm install --legacy-peer-deps --omit=dev",
+  "npm install --legacy-peer-deps --save-dev @nestjs/cli prisma typescript"
+]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = [
+  "npx prisma generate --schema=prisma/schema.prisma",
+  "npm run build"
+]
 
 [start]
-cmd = "npm run start:prod"
+cmd = "node dist/src/main.js"
