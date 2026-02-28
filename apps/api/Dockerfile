@@ -1,59 +1,26 @@
-# -----------------------
-# Base Image
-# -----------------------
-FROM node:22-alpine AS base
-RUN npm install -g pnpm
+# Use official Node image
+FROM node:20-alpine
 
-# -----------------------
-# Install Dependencies
-# -----------------------
-FROM base AS dependencies
+# Install OpenSSL (required for Prisma)
+RUN apk add --no-cache openssl
+
+# Set working directory
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml* ./
-COPY apps/api/package.json ./apps/api/
-COPY packages/shared/package.json ./packages/shared/
+# Copy package files first
+COPY package*.json ./
 
-RUN pnpm install --no-frozen-lockfile
+# Install dependencies
+RUN npm install --legacy-peer-deps
 
-# -----------------------
-# Build Stage
-# -----------------------
-FROM base AS build
-WORKDIR /app
-
-# Copy full source code
+# Copy rest of the project
 COPY . .
 
-# Copy node_modules from dependencies stage
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/apps/api/node_modules ./apps/api/node_modules
+# Generate Prisma client
+RUN npx prisma generate
 
-# Move into api folder
-WORKDIR /app/apps/api
+# Expose port (change if needed)
+EXPOSE 3000
 
-# ✅ Ensure prisma folder exists
-RUN ls prisma
-
-# ✅ Generate Prisma Client
-RUN pnpm prisma generate
-
-# ✅ Build API
-RUN pnpm build
-
-# -----------------------
-# Production Stage
-# -----------------------
-FROM base AS deploy
-WORKDIR /app
-
-# Copy built files
-COPY --from=build /app/apps/api/dist ./dist
-COPY --from=build /app/apps/api/node_modules ./node_modules
-COPY --from=build /app/apps/api/prisma ./prisma
-COPY --from=build /app/apps/api/package.json ./package.json
-
-# Railway provides PORT automatically
-EXPOSE 3001
-
-CMD ["node", "dist/main.js"]
+# Start app
+CMD ["npm", "start"]
