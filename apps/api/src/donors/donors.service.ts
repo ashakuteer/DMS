@@ -1,0 +1,1786 @@
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
+import { Role, DonorCategory } from "@prisma/client";
+import { maskDonorData } from "../common/utils/masking.util";
+import {
+  UserContext,
+  DonorQueryOptions,
+  HealthStatus,
+  EngagementResult,
+} from "./donors.types";
+import * as XLSX from "xlsx";
+import * as ExcelJS from "exceljs";
+
+@Injectable()
+export class DonorsService {
+  constructor(
+    private prisma: PrismaService,
+    private auditService: AuditService,
+  ) {}
+
+  private getAccessFilter(user: UserContext): any {
+    if (user.role === Role.TELECALLER) {
+      return { assignedToUserId: user.id };
+    }
+    return {};
+  }
+
+  private shouldMaskData(user: UserContext): boolean {
+    return user.role === Role.TELECALLER || user.role === Role.VIEWER;
+  }
+
+  async findAll(user: UserContext, options: DonorQueryOptions = {}) {
+    const {
+      page = 1,
+      limit = 20,
+      search,
+      sortBy = "createdAt",
+      sortOrder = "desc",
+      category,
+      city,
+      country,
+      religion,
+      assignedToUserId,
+      donationFrequency,
+      healthStatus,
+      supportPreferences,
+    } = options;
+
+    const accessFilter = this.getAccessFilter(user);
+
+    const where: any = {
+      isDeleted: false,
+      ...accessFilter,
+    };
+
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+        { donorCode: { contains: search, mode: "insensitive" } },
+        { primaryPhone: { contains: search, mode: "insensitive" } },
+        { personalEmail: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (category) where.category = category;
+    if (city) where.city = { contains: city, mode: "insensitive" };
+    if (country) where.country = { contains: country, mode: "insensitive" };
+    if (religion) where.religion = { contains: religion, mode: "insensitive" };
+    if (assignedToUserId) where.assignedToUserId = assignedToUserId;
+    if (donationFrequency) where.donationFrequency = donationFrequency;
+
+    if (supportPreferences) {
+      const prefs = supportPreferences.split(",").map((p) => p.trim()).filter(Boolean);
+      if (prefs.length > 0) {
+        where.supportPreferences = { hasSome: prefs };
+      }
+    }
+
+    if (healthStatus && !["GREEN", "YELLOW", "RED"].includes(healthStatus)) {
+      // invalid filter, ignore
+    } else if (healthStatus) {
+      where.healthStatus = healthStatus;
+    }
+
+    const [donors, total] = await Promise.all([
+      this.prisma.donor.findMany({
+        where,
+        include: {
+          assignedToUser: {
+            select: { id: true, name: true, email: true },
+          },
+          createdBy: {
+            select: { id: true, name: true },
+          },
+          _count: { select: { donations: true, pledges: true } },
+        },
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      this.prisma.donor.count({ where }),
+    ]);
+
+    const donorIds = donors.map((d) => d.id);
+    const engagementMap = await this.computeEngagementScores(donorIds);
+
+    const donorsWithHealth = donors.map((donor) => ({
+      ...donor,
+      healthScore: engagementMap[donor.id]?.score ?? 100,
+      healthStatus: engagementMap[donor.id]?.status ?? donor.healthStatus,
+      healthReasons: engagementMap[donor.id]?.reasons ?? [],
+    }));
+
+    const maskedDonors = this.shouldMaskData(user)
+      ? donorsWithHealth.map((donor) => maskDonorData(donor))
+      : donorsWithHealth;
+
+    return {
+      items: maskedDonors,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  async findOne(user: UserContext, id: string) {
+    const accessFilter = this.getAccessFilter(user);
+
+    const donor = await this.prisma.donor.findFirst({
+      where: {
+        id,
+        isDeleted: false,
+        ...accessFilter,
+      },
+      include: {
+        assignedToUser: { select: { id: true, name: true, email: true } },
+        createdBy: { select: { id: true, name: true } },
+        specialOccasions: true,
+        familyMembers: true,
+        donations: {
+          where: { isDeleted: false },
+          orderBy: { donationDate: "desc" },
+          take: 5,
+        },
+        pledges: {
+          where: { isDeleted: false },
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        },
+        sponsorships: true,
+      },
+    });
+
+    if (!donor) {
+      if (user.role === Role.TELECALLER) {
+        throw new ForbiddenException("You do not have access to this donor");
+      }
+      throw new NotFoundException("Donor not found");
+    }
+
+    return this.shouldMaskData(user) ? maskDonorData(donor) : donor;
+  }
+
+  async lookupByPhone(phone: string): Promise<{ found: boolean; donor?: any }> {
+    const cleaned = phone.replace(/[\s\-\(\)\+\.]/g, "");
+    const normalizedPhone = cleaned.length >= 10 ? cleaned.slice(-10) : cleaned;
+
+    if (normalizedPhone.length < 10) {
+      return { found: false };
+    }
+
+    const donor = await this.prisma.donor.findFirst({
+      where: {
+        isDeleted: false,
+        OR: [
+          { primaryPhone: { endsWith: normalizedPhone } },
+          { whatsappPhone: { endsWith: normalizedPhone } },
+        ],
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        donorCode: true,
+        primaryPhone: true,
+        personalEmail: true,
+      },
+    });
+
+    if (!donor) {
+      return { found: false };
+    }
+
+    return {
+      found: true,
+      donor: {
+        id: donor.id,
+        firstName: donor.firstName,
+        lastName: donor.lastName,
+        donorCode: donor.donorCode,
+        primaryPhone: donor.primaryPhone,
+        personalEmail: donor.personalEmail,
+      },
+    };
+  }
+
+  async create(
+    user: UserContext,
+    data: any,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    const donor = await this.createDonorWithRetry(data, user.id);
+
+    await this.auditService.logDonorCreate(
+      user.id,
+      donor.id,
+      {
+        donorCode: donor.donorCode,
+        firstName: data.firstName,
+        lastName: data.lastName,
+      },
+      ipAddress,
+      userAgent,
+    );
+
+    return donor;
+  }
+
+  async update(
+    user: UserContext,
+    id: string,
+    data: any,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    const existing = await this.prisma.donor.findFirst({
+      where: { id, isDeleted: false },
+    });
+
+    if (!existing) {
+      throw new NotFoundException("Donor not found");
+    }
+
+    if (
+      user.role === Role.TELECALLER &&
+      existing.assignedToUserId !== user.id
+    ) {
+      throw new ForbiddenException(
+        "You do not have permission to update this donor",
+      );
+    }
+
+    const oldAssignee = existing.assignedToUserId;
+    const newAssignee = data.assignedToUserId;
+
+    const updated = await this.prisma.donor.update({
+      where: { id },
+      data,
+    });
+
+    await this.auditService.logDonorUpdate(
+      user.id,
+      id,
+      { firstName: existing.firstName, lastName: existing.lastName },
+      { firstName: updated.firstName, lastName: updated.lastName, ...data },
+      ipAddress,
+      userAgent,
+    );
+
+    if (oldAssignee !== newAssignee && newAssignee !== undefined) {
+      await this.auditService.logDonorAssignmentChange(
+        user.id,
+        id,
+        oldAssignee,
+        newAssignee,
+        ipAddress,
+        userAgent,
+      );
+    }
+
+    return updated;
+  }
+
+  async softDelete(
+    user: UserContext,
+    id: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    if (user.role !== Role.ADMIN) {
+      throw new ForbiddenException("Only administrators can delete donors");
+    }
+
+    const existing = await this.prisma.donor.findFirst({
+      where: { id, isDeleted: false },
+    });
+
+    if (!existing) {
+      throw new NotFoundException("Donor not found");
+    }
+
+    const deleted = await this.prisma.donor.update({
+      where: { id },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+    });
+
+    await this.auditService.logDonorDelete(
+      user.id,
+      id,
+      { donorCode: existing.donorCode, firstName: existing.firstName },
+      ipAddress,
+      userAgent,
+    );
+
+    return deleted;
+  }
+
+  async uploadPhoto(user: UserContext, id: string, file: Express.Multer.File) {
+    const donor = await this.prisma.donor.findFirst({
+      where: { id, isDeleted: false },
+    });
+    if (!donor) {
+      throw new NotFoundException("Donor not found");
+    }
+
+    const fs = await import("fs");
+    const path = await import("path");
+    const uploadDir = path.join(process.cwd(), "uploads", "donors");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const ext = file.originalname.split(".").pop() || "jpg";
+    const filename = `${id}-${Date.now()}.${ext}`;
+    const filepath = path.join(uploadDir, filename);
+    fs.writeFileSync(filepath, file.buffer);
+
+    const photoUrl = `/uploads/donors/${filename}`;
+    const updated = await this.prisma.donor.update({
+      where: { id },
+      data: { profilePicUrl: photoUrl },
+    });
+
+    return { profilePicUrl: updated.profilePicUrl };
+  }
+
+  async computeEngagementScores(
+    donorIds: string[],
+  ): Promise<Record<string, EngagementResult>> {
+    if (donorIds.length === 0) return {};
+
+    const now = new Date();
+    const results: Record<string, EngagementResult> = {};
+
+    const [donations, pledges, sponsorships] = await Promise.all([
+      this.prisma.donation.findMany({
+        where: { donorId: { in: donorIds }, isDeleted: false },
+        select: { donorId: true, donationDate: true, donationAmount: true },
+        orderBy: { donationDate: "desc" },
+      }),
+      this.prisma.pledge.findMany({
+        where: { donorId: { in: donorIds }, isDeleted: false },
+        select: { donorId: true, status: true, expectedFulfillmentDate: true },
+      }),
+      this.prisma.sponsorship.findMany({
+        where: { donorId: { in: donorIds } },
+        select: { donorId: true, status: true },
+      }),
+    ]);
+
+    const donationsByDonor: Record<string, typeof donations> = {};
+    for (const d of donations) {
+      if (!donationsByDonor[d.donorId]) donationsByDonor[d.donorId] = [];
+      donationsByDonor[d.donorId].push(d);
+    }
+
+    const pledgesByDonor: Record<string, typeof pledges> = {};
+    for (const p of pledges) {
+      if (!pledgesByDonor[p.donorId]) pledgesByDonor[p.donorId] = [];
+      pledgesByDonor[p.donorId].push(p);
+    }
+
+    const sponsorsByDonor: Record<string, typeof sponsorships> = {};
+    for (const s of sponsorships) {
+      if (!sponsorsByDonor[s.donorId]) sponsorsByDonor[s.donorId] = [];
+      sponsorsByDonor[s.donorId].push(s);
+    }
+
+    for (const donorId of donorIds) {
+      const donorDonations = donationsByDonor[donorId] || [];
+      const donorPledges = pledgesByDonor[donorId] || [];
+      const donorSponsorships = sponsorsByDonor[donorId] || [];
+
+      let score = 100;
+      const reasons: string[] = [];
+
+      const lastDonation = donorDonations[0];
+      let daysSinceLastDonation = Infinity;
+      if (lastDonation) {
+        daysSinceLastDonation = Math.floor(
+          (now.getTime() - new Date(lastDonation.donationDate).getTime()) /
+            (1000 * 60 * 60 * 24),
+        );
+      }
+
+      if (donorDonations.length === 0) {
+        score -= 30;
+        reasons.push("No donations recorded");
+      } else if (daysSinceLastDonation > 365) {
+        score -= 35;
+        reasons.push(`No donation in ${daysSinceLastDonation} days`);
+      } else if (daysSinceLastDonation > 180) {
+        score -= 25;
+        reasons.push(`No donation in ${daysSinceLastDonation} days`);
+      } else if (daysSinceLastDonation > 120) {
+        score -= 20;
+        reasons.push(`No donation in ${daysSinceLastDonation} days`);
+      } else if (daysSinceLastDonation > 60) {
+        score -= 10;
+      }
+
+      const oneYearAgo = new Date(now);
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+      const donationsLast12Mo = donorDonations.filter(
+        (d) => new Date(d.donationDate) >= oneYearAgo,
+      ).length;
+
+      if (donationsLast12Mo === 0 && donorDonations.length > 0) {
+        score -= 15;
+      } else if (donationsLast12Mo >= 4) {
+        score += 10;
+      } else if (donationsLast12Mo >= 2) {
+        score += 5;
+      }
+
+      const totalLifetimeValue = donorDonations.reduce(
+        (sum: number, d: any) => sum + (d.donationAmount ? Number(d.donationAmount) : 0),
+        0,
+      );
+      if (totalLifetimeValue > 100000) {
+        score += 10;
+      } else if (totalLifetimeValue > 50000) {
+        score += 5;
+      }
+
+      const hasActiveSponsor = donorSponsorships.some(
+        (s: any) => s.status === "ACTIVE",
+      );
+      if (hasActiveSponsor) {
+        score += 10;
+      }
+
+      const overduePledges = donorPledges.filter(
+        (p: any) =>
+          (p.status === "PENDING" || p.status === "POSTPONED") &&
+          p.expectedFulfillmentDate &&
+          new Date(p.expectedFulfillmentDate) < now,
+      );
+      const cancelledPledges = donorPledges.filter(
+        (p: any) => p.status === "CANCELLED",
+      );
+      const fulfilledPledges = donorPledges.filter(
+        (p: any) => p.status === "FULFILLED",
+      );
+
+      if (overduePledges.length >= 3) {
+        score -= 25;
+        reasons.push(`${overduePledges.length} pledges overdue`);
+      } else if (overduePledges.length >= 1) {
+        score -= 10 * overduePledges.length;
+        if (overduePledges.length >= 2) {
+          reasons.push(`${overduePledges.length} pledges overdue`);
+        }
+      }
+
+      if (
+        cancelledPledges.length > fulfilledPledges.length &&
+        donorPledges.length > 2
+      ) {
+        score -= 10;
+        reasons.push("More cancelled than fulfilled pledges");
+      }
+
+      score = Math.max(0, Math.min(100, score));
+
+      let status: HealthStatus;
+      if (score >= 60) {
+        status = HealthStatus.GREEN;
+      } else if (score >= 35) {
+        status = HealthStatus.YELLOW;
+      } else {
+        status = HealthStatus.RED;
+      }
+
+      results[donorId] = { score, status, reasons };
+    }
+
+    const updatePromises = Object.entries(results).map(
+      ([donorId, { score, status }]) =>
+        this.prisma.donor
+          .update({
+            where: { id: donorId },
+            data: { healthScore: score, healthStatus: status },
+          })
+          .catch((err: any) => {
+            console.warn(
+              `Failed to persist health score for donor ${donorId}:`,
+              err.message,
+            );
+          }),
+    );
+    await Promise.all(updatePromises);
+
+    return results;
+  }
+
+  async requestFullAccess(
+    user: UserContext,
+    donorId: string,
+    reason?: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    const donor = await this.prisma.donor.findFirst({
+      where: { id: donorId, isDeleted: false },
+    });
+
+    if (!donor) {
+      throw new NotFoundException("Donor not found");
+    }
+
+    await this.auditService.logFullAccessRequest(
+      user.id,
+      donorId,
+      reason,
+      ipAddress,
+      userAgent,
+    );
+
+    return {
+      success: true,
+      message: "Full access request has been logged for admin review",
+    };
+  }
+
+  async exportDonors(
+    user: UserContext,
+    filters: any = {},
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    if (user.role !== Role.ADMIN) {
+      throw new ForbiddenException("Only administrators can export donor data");
+    }
+
+    const where: any = { isDeleted: false };
+
+    if (filters.search) {
+      where.OR = [
+        { firstName: { contains: filters.search, mode: "insensitive" } },
+        { lastName: { contains: filters.search, mode: "insensitive" } },
+        { donorCode: { contains: filters.search, mode: "insensitive" } },
+      ];
+    }
+
+    const donors = await this.prisma.donor.findMany({
+      where,
+      include: {
+        assignedToUser: { select: { id: true, name: true } },
+        _count: { select: { donations: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    await this.auditService.logDataExport(
+      user.id,
+      "Donors",
+      filters,
+      donors.length,
+      ipAddress,
+      userAgent,
+    );
+
+    return donors;
+  }
+
+  async checkDuplicate(phone?: string, email?: string) {
+    if (!phone && !email) {
+      return { duplicates: [] };
+    }
+
+    const conditions: any[] = [];
+
+    if (phone) {
+      conditions.push({ primaryPhone: phone });
+      conditions.push({ alternatePhone: phone });
+      conditions.push({ whatsappPhone: phone });
+    }
+
+    if (email) {
+      conditions.push({
+        personalEmail: { equals: email, mode: "insensitive" },
+      });
+      conditions.push({
+        officialEmail: { equals: email, mode: "insensitive" },
+      });
+    }
+
+    const duplicates = await this.prisma.donor.findMany({
+      where: {
+        isDeleted: false,
+        OR: conditions,
+      },
+      select: {
+        id: true,
+        donorCode: true,
+        firstName: true,
+        lastName: true,
+        primaryPhone: true,
+        personalEmail: true,
+      },
+      take: 5,
+    });
+
+    return { duplicates };
+  }
+
+  async parseImportFile(file: Express.Multer.File) {
+    try {
+      const workbook = XLSX.read(file.buffer, { type: "buffer" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const data = XLSX.utils.sheet_to_json(sheet, { header: 1 }) as any[][];
+
+      if (data.length < 2) {
+        throw new BadRequestException(
+          "File must have at least a header row and one data row",
+        );
+      }
+
+      const headers = data[0].map((h: any) => String(h || "").trim());
+      const rows = data
+        .slice(1)
+        .filter((row) =>
+          row.some(
+            (cell) => cell !== undefined && cell !== null && cell !== "",
+          ),
+        );
+
+      const suggestedMapping = this.suggestColumnMapping(headers);
+
+      return {
+        headers,
+        rows: rows.slice(0, 100),
+        totalRows: rows.length,
+        suggestedMapping,
+        availableFields: this.getImportableFields(),
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(
+        "Failed to parse file. Please ensure it is a valid Excel or CSV file.",
+      );
+    }
+  }
+
+  private getImportableFields() {
+    return [
+      { key: "firstName", label: "First Name", required: false },
+      { key: "middleName", label: "Middle Name", required: false },
+      { key: "lastName", label: "Last Name", required: false },
+      { key: "primaryPhone", label: "Primary Phone", required: false },
+      { key: "whatsappPhone", label: "WhatsApp Phone", required: false },
+      { key: "personalEmail", label: "Personal Email", required: false },
+      { key: "officialEmail", label: "Official Email", required: false },
+      { key: "address", label: "Address", required: false },
+      { key: "city", label: "City", required: false },
+      { key: "state", label: "State", required: false },
+      { key: "country", label: "Country", required: false },
+      { key: "pincode", label: "Pincode", required: false },
+      { key: "profession", label: "Profession", required: false },
+      { key: "approximateAge", label: "Age", required: false },
+      { key: "gender", label: "Gender", required: false },
+      { key: "religion", label: "Religion", required: false },
+      { key: "category", label: "Category", required: false },
+      { key: "pan", label: "PAN", required: false },
+      { key: "notes", label: "Notes", required: false },
+    ];
+  }
+
+  private suggestColumnMapping(headers: string[]): Record<string, string> {
+    const mapping: Record<string, string> = {};
+    const fieldMap: Record<string, string[]> = {
+      firstName: [
+        "first name",
+        "firstname",
+        "first_name",
+        "name",
+        "donor name",
+      ],
+      middleName: ["middle name", "middlename", "middle_name"],
+      lastName: [
+        "last name",
+        "lastname",
+        "last_name",
+        "surname",
+        "family name",
+      ],
+      primaryPhone: [
+        "phone",
+        "mobile",
+        "primary phone",
+        "phone number",
+        "contact",
+        "cell",
+        "telephone",
+      ],
+      whatsappPhone: ["whatsapp", "whatsapp phone", "whatsapp number"],
+      personalEmail: ["email", "personal email", "email address", "mail"],
+      officialEmail: ["official email", "work email", "office email"],
+      address: ["address", "street", "street address"],
+      city: ["city", "town"],
+      state: ["state", "province", "region"],
+      country: ["country", "nation"],
+      pincode: ["pincode", "zip", "zip code", "postal code", "pin"],
+      profession: ["profession", "occupation", "job", "work"],
+      approximateAge: ["age", "approximate age"],
+      gender: ["gender", "sex"],
+      religion: ["religion", "faith"],
+      category: ["category", "type", "donor category", "donor type"],
+      pan: ["pan", "pan number", "pan card"],
+      notes: ["notes", "remarks", "comments"],
+    };
+
+    headers.forEach((header, index) => {
+      const normalizedHeader = header.toLowerCase().trim();
+      for (const [field, aliases] of Object.entries(fieldMap)) {
+        if (aliases.includes(normalizedHeader)) {
+          mapping[index.toString()] = field;
+          break;
+        }
+      }
+    });
+
+    return mapping;
+  }
+
+  private normalizePhone(phone: string | undefined): string | null {
+    if (!phone) return null;
+    const cleaned = String(phone).replace(/[\s\-\(\)\+\.]/g, "");
+    if (cleaned.length >= 10) {
+      return cleaned.slice(-10);
+    }
+    return cleaned || null;
+  }
+
+  private normalizeEmail(email: string | undefined): string | null {
+    if (!email) return null;
+    const trimmed = String(email).trim().toLowerCase();
+    if (trimmed.includes("@") && trimmed.includes(".")) {
+      return trimmed;
+    }
+    return null;
+  }
+
+  async detectDuplicatesInBatch(
+    rows: any[],
+    columnMapping: Record<string, string>,
+  ) {
+    const results: Array<{
+      rowIndex: number;
+      duplicate: boolean;
+      existingDonor?: {
+        id: string;
+        donorCode: string;
+        firstName: string;
+        lastName?: string | null;
+        primaryPhone?: string | null;
+        personalEmail?: string | null;
+      };
+      matchedOn?: string[];
+    }> = [];
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const mappedData = this.mapRowToFields(row, columnMapping);
+      const phone = this.normalizePhone(mappedData.primaryPhone);
+      const email =
+        this.normalizeEmail(mappedData.personalEmail) ||
+        this.normalizeEmail(mappedData.officialEmail);
+
+      if (!phone && !email) {
+        results.push({ rowIndex: i, duplicate: false });
+        continue;
+      }
+
+      const conditions: any[] = [];
+      const matchedOn: string[] = [];
+
+      if (phone) {
+        conditions.push({ primaryPhone: phone });
+        conditions.push({ whatsappPhone: phone });
+      }
+      if (email) {
+        conditions.push({
+          personalEmail: { equals: email, mode: "insensitive" },
+        });
+        conditions.push({
+          officialEmail: { equals: email, mode: "insensitive" },
+        });
+      }
+
+      const existing = await this.prisma.donor.findFirst({
+        where: {
+          isDeleted: false,
+          OR: conditions,
+        },
+        select: {
+          id: true,
+          donorCode: true,
+          firstName: true,
+          lastName: true,
+          primaryPhone: true,
+          personalEmail: true,
+        },
+      });
+
+      if (existing) {
+        if (phone && existing.primaryPhone === phone) matchedOn.push("phone");
+        if (email && existing.personalEmail?.toLowerCase() === email)
+          matchedOn.push("email");
+        results.push({
+          rowIndex: i,
+          duplicate: true,
+          existingDonor: existing,
+          matchedOn,
+        });
+      } else {
+        results.push({ rowIndex: i, duplicate: false });
+      }
+    }
+
+    return { results };
+  }
+
+  private mapRowToFields(
+    row: any[],
+    columnMapping: Record<string, string>,
+  ): Record<string, any> {
+    const data: Record<string, any> = {};
+    for (const [colIndex, field] of Object.entries(columnMapping)) {
+      const value = row[parseInt(colIndex)];
+      if (value !== undefined && value !== null && value !== "") {
+        data[field] = value;
+      }
+    }
+    return data;
+  }
+
+  private async generateDonorCode(): Promise<string> {
+    const result = await this.prisma.$queryRaw<{ max_num: number | null }[]>`
+      SELECT MAX(
+        CASE 
+          WHEN "donorCode" ~ '^AKF-DNR-[0-9]+$' THEN 
+            CAST(SUBSTRING("donorCode" FROM 9) AS INTEGER)
+          WHEN "donorCode" ~ '^DNR[0-9]+$' THEN 
+            CAST(SUBSTRING("donorCode" FROM 4) AS INTEGER)
+          ELSE 0
+        END
+      ) as max_num 
+      FROM "donors"
+    `;
+
+    const maxNumber = result[0]?.max_num || 0;
+    return `AKF-DNR-${String(maxNumber + 1).padStart(6, "0")}`;
+  }
+
+  private async createDonorWithRetry(
+    data: any,
+    userId: string,
+    maxRetries: number = 3,
+  ): Promise<any> {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      const donorCode = await this.generateDonorCode();
+      try {
+        return await this.prisma.donor.create({
+          data: {
+            ...data,
+            donorCode,
+            createdById: userId,
+          },
+          include: {
+            assignedToUser: { select: { id: true, name: true, email: true } },
+            createdBy: { select: { id: true, name: true } },
+          },
+        });
+      } catch (error: any) {
+        if (
+          error.code === "P2002" &&
+          error.meta?.target?.includes("donorCode")
+        ) {
+          if (attempt === maxRetries - 1) {
+            throw new Error(
+              "Failed to generate unique donor code after multiple attempts",
+            );
+          }
+          continue;
+        }
+        throw error;
+      }
+    }
+  }
+
+  async executeBulkImport(
+    user: UserContext,
+    rows: any[],
+    columnMapping: Record<string, string>,
+    actions: Record<number, "skip" | "update" | "create">,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    const results = {
+      total: rows.length,
+      imported: 0,
+      updated: 0,
+      skipped: 0,
+      failed: 0,
+      errors: [] as Array<{ rowIndex: number; error: string; rowData: any }>,
+    };
+
+    const duplicateInfo = await this.detectDuplicatesInBatch(
+      rows,
+      columnMapping,
+    );
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const action = actions[i] || "skip";
+      const duplicateResult = duplicateInfo.results.find(
+        (r) => r.rowIndex === i,
+      );
+
+      if (action === "skip") {
+        results.skipped++;
+        continue;
+      }
+
+      try {
+        const mappedData = this.mapRowToFields(row, columnMapping);
+
+        if (mappedData.primaryPhone) {
+          mappedData.primaryPhone = this.normalizePhone(
+            mappedData.primaryPhone,
+          );
+        }
+        if (mappedData.whatsappPhone) {
+          mappedData.whatsappPhone = this.normalizePhone(
+            mappedData.whatsappPhone,
+          );
+        }
+        if (mappedData.personalEmail) {
+          mappedData.personalEmail = this.normalizeEmail(
+            mappedData.personalEmail,
+          );
+        }
+        if (mappedData.officialEmail) {
+          mappedData.officialEmail = this.normalizeEmail(
+            mappedData.officialEmail,
+          );
+        }
+        if (mappedData.approximateAge) {
+          mappedData.approximateAge =
+            parseInt(String(mappedData.approximateAge)) || null;
+        }
+        if (mappedData.gender) {
+          const genderMap: Record<string, string> = {
+            m: "MALE",
+            male: "MALE",
+            f: "FEMALE",
+            female: "FEMALE",
+            o: "OTHER",
+            other: "OTHER",
+          };
+          mappedData.gender =
+            genderMap[String(mappedData.gender).toLowerCase()] || null;
+        }
+        if (mappedData.category) {
+          const categoryUpper = String(mappedData.category)
+            .toUpperCase()
+            .replace(/\s+/g, "_");
+          if (
+            Object.values(DonorCategory).includes(
+              categoryUpper as DonorCategory,
+            )
+          ) {
+            mappedData.category = categoryUpper;
+          } else {
+            delete mappedData.category;
+          }
+        }
+
+        const hasMinimumData =
+          mappedData.firstName ||
+          mappedData.primaryPhone ||
+          mappedData.personalEmail ||
+          mappedData.officialEmail;
+        if (!hasMinimumData) {
+          results.errors.push({
+            rowIndex: i,
+            error: "Row must have at least a name, phone, or email",
+            rowData: row,
+          });
+          results.failed++;
+          continue;
+        }
+
+        if (action === "update" && duplicateResult?.existingDonor) {
+          await this.prisma.donor.update({
+            where: { id: duplicateResult.existingDonor.id },
+            data: mappedData,
+          });
+          results.updated++;
+        } else if (action === "create") {
+          await this.createDonorWithRetry(
+            {
+              ...mappedData,
+              firstName: mappedData.firstName || "Unknown",
+            },
+            user.id,
+          );
+          results.imported++;
+        }
+      } catch (error: any) {
+        results.errors.push({
+          rowIndex: i,
+          error: error.message || "Unknown error",
+          rowData: row,
+        });
+        results.failed++;
+      }
+    }
+
+    await this.auditService.logDataExport(
+      user.id,
+      "Bulk Import",
+      {
+        totalRows: results.total,
+        imported: results.imported,
+        updated: results.updated,
+        skipped: results.skipped,
+        failed: results.failed,
+      },
+      results.imported + results.updated,
+      ipAddress,
+      userAgent,
+    );
+
+    return results;
+  }
+
+  async exportMasterDonorExcel(
+    user: UserContext,
+    filters: {
+      home?: string;
+      donorType?: string;
+      activity?: string;
+    } = {},
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<Buffer> {
+    if (user.role !== Role.ADMIN) {
+      throw new ForbiddenException("Only administrators can export donor data");
+    }
+
+    const where: any = { isDeleted: false };
+
+    if (filters.donorType && filters.donorType !== "all") {
+      where.category = filters.donorType;
+    }
+
+    const donors = await this.prisma.donor.findMany({
+      where,
+      include: {
+        assignedToUser: { select: { name: true } },
+        createdBy: { select: { name: true } },
+        specialOccasions: {
+          select: {
+            type: true,
+            day: true,
+            month: true,
+            relatedPersonName: true,
+          },
+        },
+        familyMembers: {
+          select: { name: true, relationType: true, phone: true },
+        },
+        sponsorships: {
+          where: { isActive: true },
+          select: {
+            status: true,
+            amount: true,
+            frequency: true,
+            sponsorshipType: true,
+            beneficiary: {
+              select: { fullName: true, homeType: true, code: true },
+            },
+          },
+        },
+        donations: {
+          where: { isDeleted: false },
+          select: {
+            donationAmount: true,
+            donationDate: true,
+            donationType: true,
+            donationHomeType: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    let filtered: typeof donors = donors;
+
+    if (filters.home && filters.home !== "all") {
+      filtered = filtered.filter(
+        (d) =>
+          d.donations.some((don: any) => don.donationHomeType === filters.home) ||
+          d.sponsorships.some((s: any) => s.beneficiary?.homeType === filters.home),
+      );
+    }
+
+    const now = new Date();
+    const oneYearAgo = new Date(now);
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+    if (filters.activity === "active") {
+      filtered = filtered.filter(
+        (d) =>
+          d.donations.some((don: any) => new Date(don.donationDate) >= oneYearAgo) ||
+          d.sponsorships.some((s: any) => s.status === "ACTIVE"),
+      );
+    } else if (filters.activity === "inactive") {
+      filtered = filtered.filter(
+        (d) =>
+          !d.donations.some(
+            (don: any) => new Date(don.donationDate) >= oneYearAgo,
+          ) && !d.sponsorships.some((s: any) => s.status === "ACTIVE"),
+      );
+    }
+
+    const categoryLabels: Record<string, string> = {
+      INDIVIDUAL: "Individual",
+      NGO: "NGO",
+      CSR_REP: "CSR Rep",
+      WHATSAPP_GROUP: "WhatsApp Group",
+      SOCIAL_MEDIA_PERSON: "Social Media",
+      CROWD_PULLER: "Crowd Puller",
+      VISITOR_ENQUIRY: "Visitor/Enquiry",
+    };
+
+    const occasionLabels: Record<string, string> = {
+      DOB_SELF: "Birthday",
+      DOB_SPOUSE: "Spouse Birthday",
+      DOB_CHILD: "Child Birthday",
+      ANNIVERSARY: "Anniversary",
+      DEATH_ANNIVERSARY: "Death Anniversary",
+      OTHER: "Other",
+    };
+
+    const homeLabels: Record<string, string> = {
+      ORPHAN_GIRLS: "Girls Home",
+      BLIND_BOYS: "Blind Boys Home",
+      OLD_AGE: "Old Age Home",
+      GIRLS_HOME: "Girls Home",
+      BLIND_BOYS_HOME: "Blind Boys Home",
+      OLD_AGE_HOME: "Old Age Home",
+      GENERAL: "General",
+    };
+
+    const frequencyLabels: Record<string, string> = {
+      MONTHLY: "Monthly",
+      QUARTERLY: "Quarterly",
+      YEARLY: "Yearly",
+      OCCASIONAL: "Occasional",
+      ONE_TIME: "One Time",
+    };
+
+    const sourceLabels: Record<string, string> = {
+      SOCIAL_MEDIA: "Social Media",
+      JUSTDIAL: "JustDial",
+      FRIEND: "Friend",
+      SPONSOR: "Sponsor",
+      WEBSITE: "Website",
+      WALK_IN: "Walk-In",
+      REFERRAL: "Referral",
+      OTHER: "Other",
+    };
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Master Donor List");
+
+    sheet.columns = [
+      { header: "Donor Code", key: "donorCode", width: 14 },
+      { header: "First Name", key: "firstName", width: 16 },
+      { header: "Middle Name", key: "middleName", width: 14 },
+      { header: "Last Name", key: "lastName", width: 16 },
+      { header: "Category", key: "category", width: 16 },
+      { header: "Gender", key: "gender", width: 10 },
+      { header: "Age", key: "age", width: 8 },
+      { header: "Profession", key: "profession", width: 18 },
+      { header: "Religion", key: "religion", width: 14 },
+      { header: "Primary Phone", key: "primaryPhone", width: 16 },
+      { header: "WhatsApp Phone", key: "whatsappPhone", width: 16 },
+      { header: "Alternate Phone", key: "alternatePhone", width: 16 },
+      { header: "Personal Email", key: "personalEmail", width: 26 },
+      { header: "Official Email", key: "officialEmail", width: 26 },
+      { header: "Address", key: "address", width: 30 },
+      { header: "City", key: "city", width: 16 },
+      { header: "State", key: "state", width: 14 },
+      { header: "Country", key: "country", width: 12 },
+      { header: "Pincode", key: "pincode", width: 10 },
+      { header: "PAN", key: "pan", width: 14 },
+      { header: "Pref: Email", key: "prefEmail", width: 10 },
+      { header: "Pref: WhatsApp", key: "prefWhatsapp", width: 12 },
+      { header: "Pref: SMS", key: "prefSms", width: 10 },
+      { header: "Pref: Reminders", key: "prefReminders", width: 12 },
+      { header: "Donation Frequency", key: "donationFrequency", width: 16 },
+      { header: "Source", key: "source", width: 16 },
+      { header: "Income Spectrum", key: "incomeSpectrum", width: 14 },
+      { header: "Special Days", key: "specialDays", width: 40 },
+      { header: "Family Members", key: "familyMembers", width: 36 },
+      { header: "Active Sponsorships", key: "sponsorships", width: 40 },
+      {
+        header: "Sponsorship Total (/mo)",
+        key: "sponsorshipMonthlyTotal",
+        width: 18,
+      },
+      { header: "Lifetime Donations", key: "lifetimeDonationCount", width: 16 },
+      {
+        header: "Lifetime Total (INR)",
+        key: "lifetimeDonationTotal",
+        width: 18,
+      },
+      { header: "Last Donation Date", key: "lastDonationDate", width: 16 },
+      { header: "Homes Donated To", key: "homesDonatedTo", width: 24 },
+      { header: "Health Score", key: "healthScore", width: 12 },
+      { header: "Health Status", key: "healthStatus", width: 12 },
+      { header: "Assigned To", key: "assignedTo", width: 18 },
+      { header: "Notes", key: "notes", width: 30 },
+      { header: "Created Date", key: "createdAt", width: 14 },
+    ];
+
+    for (const d of filtered) {
+      const specialDaysStr = d.specialOccasions
+        .map((o: any) => {
+          const label = occasionLabels[o.type] || o.type;
+          const dateStr = `${o.day}/${o.month}`;
+          const person = o.relatedPersonName ? ` (${o.relatedPersonName})` : "";
+          return `${label}: ${dateStr}${person}`;
+        })
+        .join("; ");
+
+      const familyStr = d.familyMembers
+        .map(
+          (f: any) =>
+            `${f.name} (${f.relationType})${f.phone ? " - " + f.phone : ""}`,
+        )
+        .join("; ");
+
+      const sponsorshipsStr = d.sponsorships
+        .map((s: any) => {
+          const benefName = s.beneficiary?.fullName || "Unknown";
+          const home = s.beneficiary?.homeType
+            ? homeLabels[s.beneficiary.homeType] || s.beneficiary.homeType
+            : "";
+          const amt = s.amount ? Number(s.amount) : 0;
+          return `${benefName} (${home}) - ₹${amt}/${s.frequency || "Monthly"} [${s.status}]`;
+        })
+        .join("; ");
+
+      const sponsorshipMonthly = d.sponsorships
+        .filter((s: any) => s.status === "ACTIVE")
+        .reduce((sum: number, s: any) => sum + (s.amount ? Number(s.amount) : 0), 0);
+
+      const lifetimeTotal = d.donations.reduce(
+        (sum: number, don: any) =>
+          sum + (don.donationAmount ? Number(don.donationAmount) : 0),
+        0,
+      );
+
+      const sortedDonations = [...d.donations].sort(
+        (a, b) =>
+          new Date(b.donationDate).getTime() -
+          new Date(a.donationDate).getTime(),
+      );
+      const lastDonDate = sortedDonations[0]?.donationDate;
+
+      const homes = [
+        ...new Set(
+          d.donations
+            .filter((don: any) => don.donationHomeType)
+            .map(
+              (don: any) =>
+                homeLabels[don.donationHomeType!] || don.donationHomeType,
+            ),
+        ),
+      ].join(", ");
+
+      sheet.addRow({
+        donorCode: d.donorCode,
+        firstName: d.firstName,
+        middleName: d.middleName || "",
+        lastName: d.lastName || "",
+        category: categoryLabels[d.category] || d.category,
+        gender: d.gender || "",
+        age: d.approximateAge || "",
+        profession: d.profession || "",
+        religion: d.religion || "",
+        primaryPhone: d.primaryPhone || "",
+        whatsappPhone: d.whatsappPhone || "",
+        alternatePhone: d.alternatePhone || "",
+        personalEmail: d.personalEmail || "",
+        officialEmail: d.officialEmail || "",
+        address: d.address || "",
+        city: d.city || "",
+        state: d.state || "",
+        country: d.country || "",
+        pincode: d.pincode || "",
+        pan: d.pan || "",
+        prefEmail: d.prefEmail ? "Yes" : "No",
+        prefWhatsapp: d.prefWhatsapp ? "Yes" : "No",
+        prefSms: d.prefSms ? "Yes" : "No",
+        prefReminders: d.prefReminders ? "Yes" : "No",
+        donationFrequency: d.donationFrequency
+          ? frequencyLabels[d.donationFrequency] || d.donationFrequency
+          : "",
+        source: d.sourceOfDonor
+          ? sourceLabels[d.sourceOfDonor] || d.sourceOfDonor
+          : "",
+        incomeSpectrum: d.incomeSpectrum || "",
+        specialDays: specialDaysStr,
+        familyMembers: familyStr,
+        sponsorships: sponsorshipsStr,
+        sponsorshipMonthlyTotal: sponsorshipMonthly,
+        lifetimeDonationCount: d.donations.length,
+        lifetimeDonationTotal: lifetimeTotal,
+        lastDonationDate: lastDonDate
+          ? new Date(lastDonDate).toLocaleDateString("en-IN")
+          : "",
+        homesDonatedTo: homes,
+        healthScore: d.healthScore,
+        healthStatus: d.healthStatus,
+        assignedTo: (d as any).assignedToUser?.name || "",
+        notes: d.notes || "",
+        createdAt: d.createdAt.toLocaleDateString("en-IN"),
+      });
+    }
+
+    const headerRow = sheet.getRow(1);
+    headerRow.font = { bold: true, size: 10 };
+    headerRow.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF1E4D3A" },
+    };
+    headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 10 };
+    headerRow.alignment = { vertical: "middle", wrapText: true };
+    headerRow.height = 28;
+
+    sheet.getColumn("lifetimeDonationTotal").numFmt = "#,##0.00";
+    sheet.getColumn("sponsorshipMonthlyTotal").numFmt = "#,##0.00";
+
+    sheet.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: 1, column: sheet.columns.length },
+    };
+
+    await this.auditService.logDataExport(
+      user.id,
+      "Master Donor Excel",
+      filters,
+      filtered.length,
+      ipAddress,
+      userAgent,
+    );
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
+  async getTimeline(
+    user: UserContext,
+    donorId: string,
+    options: {
+      page?: number;
+      limit?: number;
+      startDate?: string;
+      endDate?: string;
+      types?: string[];
+    } = {},
+  ) {
+    const donor = await this.prisma.donor.findFirst({
+      where: { id: donorId, isDeleted: false, ...this.getAccessFilter(user) },
+      select: { id: true },
+    });
+
+    if (!donor) {
+      throw new NotFoundException("Donor not found");
+    }
+
+    const { page = 1, limit = 50, startDate, endDate, types } = options;
+    const dateFilter: any = {};
+    if (startDate) dateFilter.gte = new Date(startDate);
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      dateFilter.lte = end;
+    }
+    const hasDateFilter = Object.keys(dateFilter).length > 0;
+
+    const allTypes = [
+      "DONATION",
+      "VISIT",
+      "COMMUNICATION",
+      "BIRTHDAY_WISH",
+      "PLEDGE",
+      "FOLLOW_UP",
+      "SPONSORSHIP",
+    ];
+    const activeTypes = types && types.length > 0 ? types : allTypes;
+
+    const items: Array<{
+      id: string;
+      type: string;
+      date: string;
+      title: string;
+      description: string;
+      amount?: number;
+      currency?: string;
+      status?: string;
+      metadata?: Record<string, any>;
+    }> = [];
+
+    const queries: Promise<void>[] = [];
+
+    if (activeTypes.includes("DONATION") || activeTypes.includes("VISIT")) {
+      queries.push(
+        this.prisma.donation
+          .findMany({
+            where: {
+              donorId,
+              isDeleted: false,
+              ...(hasDateFilter ? { donationDate: dateFilter } : {}),
+            },
+            orderBy: { donationDate: "desc" },
+            include: {
+              createdBy: { select: { name: true } },
+              campaign: { select: { name: true } },
+              home: { select: { fullName: true } },
+            },
+          })
+          .then((donations) => {
+            for (const d of donations) {
+              if (activeTypes.includes("DONATION")) {
+                items.push({
+                  id: `donation-${d.id}`,
+                  type: "DONATION",
+                  date: d.donationDate.toISOString(),
+                  title: `Donation - ${d.donationType}`,
+                  description: `${d.currency} ${Number(d.donationAmount).toLocaleString()} via ${d.donationMode || "N/A"}${d.remarks ? ` - ${d.remarks}` : ""}`,
+                  amount: Number(d.donationAmount),
+                  currency: d.currency,
+                  status: d.receiptNumber ? "RECEIPTED" : "RECORDED",
+                  metadata: {
+                    donationType: d.donationType,
+                    donationMode: d.donationMode,
+                    receiptNumber: d.receiptNumber,
+                    campaignName: d.campaign?.name,
+                    homeName: d.home?.fullName,
+                    createdBy: d.createdBy?.name,
+                    visitedHome: d.visitedHome,
+                    servedFood: d.servedFood,
+                  },
+                });
+              }
+              if (activeTypes.includes("VISIT") && d.visitedHome) {
+                items.push({
+                  id: `visit-${d.id}`,
+                  type: "VISIT",
+                  date: d.donationDate.toISOString(),
+                  title: "Home Visit",
+                  description: `Visited${d.home?.fullName ? ` ${d.home.fullName}` : ""}${d.servedFood ? " and served food" : ""}`,
+                  metadata: {
+                    homeName: d.home?.fullName,
+                    servedFood: d.servedFood,
+                    donationAmount: Number(d.donationAmount),
+                  },
+                });
+              }
+            }
+          }),
+      );
+    }
+
+    if (
+      activeTypes.includes("COMMUNICATION") ||
+      activeTypes.includes("BIRTHDAY_WISH")
+    ) {
+      queries.push(
+        this.prisma.communicationLog
+          .findMany({
+            where: {
+              donorId,
+              ...(hasDateFilter ? { createdAt: dateFilter } : {}),
+            },
+            orderBy: { createdAt: "desc" },
+            include: {
+              sentBy: { select: { name: true } },
+            },
+          })
+          .then((logs) => {
+            for (const log of logs) {
+              const isBirthdayWish =
+                log.type === "GREETING" &&
+                (log.subject?.toLowerCase().includes("birthday") ||
+                  log.subject?.toLowerCase().includes("anniversary") ||
+                  log.messagePreview?.toLowerCase().includes("birthday"));
+
+              if (isBirthdayWish && activeTypes.includes("BIRTHDAY_WISH")) {
+                items.push({
+                  id: `birthday-${log.id}`,
+                  type: "BIRTHDAY_WISH",
+                  date: log.createdAt.toISOString(),
+                  title: "Birthday/Anniversary Wish",
+                  description: `${log.channel} ${log.type.toLowerCase()} sent${log.subject ? `: ${log.subject}` : ""}`,
+                  status: log.status,
+                  metadata: {
+                    channel: log.channel,
+                    sentBy: log.sentBy?.name || "System",
+                    subject: log.subject,
+                    messagePreview: log.messagePreview,
+                  },
+                });
+              } else if (
+                !isBirthdayWish &&
+                activeTypes.includes("COMMUNICATION")
+              ) {
+                items.push({
+                  id: `comm-${log.id}`,
+                  type: "COMMUNICATION",
+                  date: log.createdAt.toISOString(),
+                  title: `${log.channel} - ${log.type.replace(/_/g, " ")}`,
+                  description:
+                    log.subject ||
+                    log.messagePreview ||
+                    `${log.channel} message sent`,
+                  status: log.status,
+                  metadata: {
+                    channel: log.channel,
+                    communicationType: log.type,
+                    sentBy: log.sentBy?.name || "System",
+                    recipient: log.recipient,
+                    subject: log.subject,
+                    messagePreview: log.messagePreview,
+                  },
+                });
+              }
+            }
+          }),
+      );
+    }
+
+    if (activeTypes.includes("PLEDGE")) {
+      queries.push(
+        this.prisma.pledge
+          .findMany({
+            where: {
+              donorId,
+              isDeleted: false,
+              ...(hasDateFilter ? { expectedFulfillmentDate: dateFilter } : {}),
+            },
+            orderBy: { createdAt: "desc" },
+            include: {
+              createdBy: { select: { name: true } },
+            },
+          })
+          .then((pledges) => {
+            for (const p of pledges) {
+              items.push({
+                id: `pledge-${p.id}`,
+                type: "PLEDGE",
+                date: p.createdAt.toISOString(),
+                title: `Pledge - ${p.pledgeType}`,
+                description: `${p.currency} ${Number(p.amount).toLocaleString()}${p.notes ? ` - ${p.notes}` : ""}`,
+                amount: Number(p.amount),
+                currency: p.currency,
+                status: p.status,
+                metadata: {
+                  pledgeType: p.pledgeType,
+                  expectedDate: p.expectedFulfillmentDate?.toISOString(),
+                  createdBy: p.createdBy?.name,
+                },
+              });
+            }
+          }),
+      );
+    }
+
+    if (activeTypes.includes("FOLLOW_UP")) {
+      queries.push(
+        this.prisma.followUpReminder
+          .findMany({
+            where: {
+              donorId,
+              isDeleted: false,
+              ...(hasDateFilter ? { dueDate: dateFilter } : {}),
+            },
+            orderBy: { createdAt: "desc" },
+            include: {
+              assignedTo: { select: { name: true } },
+              createdBy: { select: { name: true } },
+            },
+          })
+          .then((followUps) => {
+            for (const f of followUps) {
+              items.push({
+                id: `followup-${f.id}`,
+                type: "FOLLOW_UP",
+                date: f.createdAt.toISOString(),
+                title: `Follow-up${f.status === "COMPLETED" ? " (Completed)" : ""}`,
+                description: f.note,
+                status: f.status,
+                metadata: {
+                  priority: f.priority,
+                  dueDate: f.dueDate.toISOString(),
+                  assignedTo: f.assignedTo?.name,
+                  createdBy: f.createdBy?.name,
+                  completedAt: f.completedAt?.toISOString(),
+                  completedNote: f.completedNote,
+                },
+              });
+            }
+          }),
+      );
+    }
+
+    if (activeTypes.includes("SPONSORSHIP")) {
+      queries.push(
+        this.prisma.sponsorship
+          .findMany({
+            where: {
+              donorId,
+              ...(hasDateFilter ? { startDate: dateFilter } : {}),
+            },
+            orderBy: { startDate: "desc" },
+            include: {
+              beneficiary: { select: { fullName: true } },
+            },
+          })
+          .then((sponsorships) => {
+            for (const s of sponsorships) {
+              items.push({
+                id: `sponsorship-${s.id}`,
+                type: "SPONSORSHIP",
+                date: (s.startDate || s.createdAt).toISOString(),
+                title: `Sponsorship - ${s.sponsorshipType}`,
+                description: `${s.currency} ${Number(s.amount || 0).toLocaleString()} ${s.frequency}${s.beneficiary?.fullName ? ` for ${s.beneficiary.fullName}` : ""}`,
+                amount: Number(s.amount || 0),
+                currency: s.currency,
+                status: s.isActive ? "ACTIVE" : "INACTIVE",
+                metadata: {
+                  sponsorshipType: s.sponsorshipType,
+                  frequency: s.frequency,
+                  beneficiaryName: s.beneficiary?.fullName,
+                  isActive: s.isActive,
+                },
+              });
+            }
+          }),
+      );
+    }
+
+    await Promise.all(queries);
+
+    items.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+
+    const total = items.length;
+    const startIdx = (page - 1) * limit;
+    const paginated = items.slice(startIdx, startIdx + limit);
+
+    const typeCounts: Record<string, number> = {};
+    for (const item of items) {
+      typeCounts[item.type] = (typeCounts[item.type] || 0) + 1;
+    }
+
+    return {
+      items: paginated,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      typeCounts,
+    };
+  }
+
+  async assignTelecaller(
+    user: UserContext,
+    donorId: string,
+    assignedToUserId: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    const donor = await this.prisma.donor.findFirst({
+      where: { id: donorId, isDeleted: false },
+    });
+
+    if (!donor) {
+      throw new NotFoundException("Donor not found");
+    }
+
+    const oldAssignee = donor.assignedToUserId;
+
+    const updated = await this.prisma.donor.update({
+      where: { id: donorId },
+      data: { assignedToUserId },
+    });
+
+    if (oldAssignee !== assignedToUserId) {
+      await this.auditService.logDonorAssignmentChange(
+        user.id,
+        donorId,
+        oldAssignee,
+        assignedToUserId,
+        ipAddress,
+        userAgent,
+      );
+    }
+
+    return updated;
+  }
+
+  async assignDonor(id: string, assignedToUserId: string | null) {
+    const donor = await this.prisma.donor.findFirst({
+      where: { id, isDeleted: false },
+    });
+
+    if (!donor) {
+      throw new NotFoundException("Donor not found");
+    }
+
+    return this.prisma.donor.update({
+      where: { id },
+      data: { assignedToUserId },
+    });
+  }
+
+  async bulkReassignDonors(fromUserId: string, toUserId: string) {
+    const result = await this.prisma.donor.updateMany({
+      where: { assignedToUserId: fromUserId, isDeleted: false },
+      data: { assignedToUserId: toUserId },
+    });
+
+    return { count: result.count };
+  }
+
+  async countDonorsByAssignee(userId: string) {
+    return this.prisma.donor.count({
+      where: { assignedToUserId: userId, isDeleted: false },
+    });
+  }
+}

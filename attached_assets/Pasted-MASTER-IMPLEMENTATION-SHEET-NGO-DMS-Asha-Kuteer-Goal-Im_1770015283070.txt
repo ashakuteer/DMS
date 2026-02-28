@@ -1,0 +1,199 @@
+MASTER IMPLEMENTATION SHEET – NGO DMS (Asha Kuteer)
+
+Goal:
+Implement and/or verify all pending features in one run. After completion, do NOT start new features unless listed here. Keep everything stable and testable.
+
+Rules:
+- Keep existing donors/donations/receipts/email system stable.
+- Do NOT break the locked OLD receipt & OLD email formats.
+- Use Organization Profile as single source of truth for org phones/email/website/homes/PAN/80G text wherever applicable.
+- Admin + Staff model; Telecaller read-only in most places.
+- No schema changes unless required; if required, migrate safely.
+
+=====================================================
+A) PLEDGES / PROMISES (NEW – MUST IMPLEMENT)
+=====================================================
+
+Use case:
+A donor promises future support (money/kind/rice/groceries/visit). We must remember it, track status, remind, and mark fulfilled/modified.
+
+1) Data Model (Prisma)
+Create Pledge model linked to donor:
+- id
+- donorId (required)
+- pledgeType enum: MONEY, RICE, GROCERIES, MEDICINES, MEAL_SPONSOR, VISIT, OTHER
+- quantity (optional string, e.g. "25kg", "1 bag", "1 month rice")
+- amount (optional number for MONEY)
+- promisedDate (optional date) OR promisedMonthDay (optional month/day)  // if only month known allow storing month + day = 1
+- expectedFulfillmentDate (date, required)  // the “next month” date
+- notes (text)
+- status enum: PENDING, FULFILLED, POSTPONED, CANCELLED
+- statusColor mapping:
+  PENDING=yellow, FULFILLED=green, POSTPONED=orange, CANCELLED=red
+- fulfilledDonationId (optional) // link if fulfilled by a donation entry
+- createdByUserId
+- createdAt, updatedAt
+
+2) Backend APIs
+- GET /api/pledges?donorId=
+- POST /api/pledges
+- PATCH /api/pledges/:id (update fields/status)
+- POST /api/pledges/:id/mark-fulfilled (optionally link donationId)
+- POST /api/pledges/:id/postpone (new expected date + note)
+- DELETE /api/pledges/:id (Admin only)
+
+RBAC:
+- Admin: full
+- Staff: create/update/mark fulfilled/postpone
+- Telecaller: view only
+
+Audit log all pledge create/update/status changes.
+
+3) Frontend UI
+- Donor Profile has a “Pledges” tab (activate fully).
+- Show pledge list with badges (status color).
+- Add button “Add Pledge”
+- Form fields:
+  pledgeType, amount/quantity, expectedFulfillmentDate, notes
+- Actions per pledge:
+  Mark Fulfilled, Postpone, Cancel
+- If donation is recorded for same donor near expected date, show suggestion:
+  “Does this fulfill a pledge?” allow linking.
+
+4) Pledge Reminders
+- Create reminders for pledges:
+  - 7 days before expected date
+  - 2 days before
+  - On due date
+- These appear in Reminders + Daily Actions.
+- Auto email: ONLY 2 days before and on due date (optional) OR keep as reminder-only (safe default: reminder-only unless admin enables).
+
+=====================================================
+B) SPECIAL DAYS REMINDERS (CONFIRM OFFSETS)
+=====================================================
+Ensure special days reminders generate at:
+- 30 days before
+- 15 days before
+- 7 days before
+- 2 days before
+- Same day
+
+Auto email triggers ONLY:
+- 7 days before
+- 2 days before
+- Same day
+
+30 & 15 days create reminders only (no auto sending).
+
+Ensure no duplicates (idempotent key).
+
+=====================================================
+C) DAILY ACTION INBOX (FIX “FAILED TO LOAD”)
+=====================================================
+
+1) Backend endpoint required:
+- GET /api/daily-actions
+Return:
+- Today’s special days (today)
+- Upcoming special days next 7 & next 15
+- Follow-ups due (reminders due/overdue)
+- Pledges due/overdue (from Pledge reminders)
+- At-risk donors (from relationship health score)
+
+2) Frontend page:
+- /dashboard/daily-actions must load using /api/daily-actions.
+- Show sections:
+  Today, Next 7, Next 15, Overdue, Pledges, At-risk donors
+- Each row shows:
+  Donor name, reason, due date, quick actions:
+    Open donor, Send Email (manual), Send WhatsApp (manual), Mark Done/Snooze reminder
+
+RBAC:
+- Admin + Staff: full view/actions
+- Telecaller: view + WhatsApp only (no email)
+
+=====================================================
+D) RELATIONSHIP HEALTH SCORE (AI-STYLE SIMPLE)
+=====================================================
+
+Compute donor health score 0–100 rule-based:
+- Start 100
+- No donation in 30d: -10
+- No donation in 90d: -20
+- No donation in 180d: -30
+- Overdue reminders: -5 each (cap -20)
+- Overdue pledges: -10 each (cap -30)
+Clamp 0–100
+
+Status:
+- 80–100 Green
+- 50–79 Yellow
+- <50 Red
+
+Store score + status on donor or compute daily and cache.
+Show on:
+- Donor list as a dot/badge
+- Donor profile header
+
+=====================================================
+E) REMINDERS ENGINE (CONFIRM)
+=====================================================
+
+- Ensure Reminders page works (today / 7 days / 30 days / overdue).
+- Add “Generate Reminders” button to force re-run generator safely.
+- Ensure Reminders include:
+  - Special day reminders
+  - Follow-up reminders
+  - Pledge reminders
+
+Actions:
+- Mark done
+- Snooze 7/30
+- Open donor
+- Manual WhatsApp / manual email send (logged)
+
+=====================================================
+F) COMMUNICATION LOG (CONFIRM)
+=====================================================
+
+- All email sends logged (auto + manual).
+- WhatsApp clicks logged as TRIGGERED.
+- Resend receipt logs as RECEIPT type.
+- Only Admin can delete logs.
+- Staff can view logs.
+
+=====================================================
+G) BULK IMPORT DONORS (CONFIRM)
+=====================================================
+
+- Import donors (xlsx/csv)
+- Column mapping
+- Duplicate detection phone/email
+- Update/skip/create new options
+- Summary + error report download
+Admin-only.
+
+=====================================================
+H) ORGANIZATION PROFILE (CONFIRM & USE)
+=====================================================
+
+- Settings → Organization Profile exists and editable by Admin.
+- All receipts & email footers use org profile for:
+  phones, email, website, PAN, 80G text, homes list.
+- No hardcoded phone numbers remaining.
+
+=====================================================
+I) TESTING CHECKLIST (PRINT THIS AT END)
+=====================================================
+
+After implementation, print a short checklist:
+1) Add pledge -> appears in donor profile -> mark fulfilled/postpone works
+2) Pledge reminders show in Reminders + Daily Actions
+3) Special day reminders generated for 30/15/7/2/0
+4) Daily Actions page loads successfully (no “Failed to load”)
+5) Donor health score visible in donor list
+6) Communication log records email + WhatsApp actions
+7) Bulk import works with 2-row sample
+8) Old receipt/email formats remain unchanged
+
+Do not proceed to any other new features beyond this master sheet.

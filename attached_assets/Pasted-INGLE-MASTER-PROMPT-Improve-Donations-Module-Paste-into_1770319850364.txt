@@ -1,0 +1,155 @@
+INGLE MASTER PROMPT – Improve Donations Module (Paste into Replit AI)
+
+Prompt:
+
+Improve the Donations module with the following upgrades and fixes:
+
+1️⃣ Donation Entry UX Improvements
+
+In the “Record Donation” modal:
+
+If Donation Type is NOT CASH, then:
+
+Disable “Payment Mode” options like UPI, GPay, PhonePe, Bank Transfer, Cheque
+
+Only allow IN_KIND or N/A for non-cash donations (Rice Bags, Groceries, Medicines, Stationery, Sports Kits, Annadanam, etc.)
+
+Make Quantity and Unit optional fields (since some donations are general or bulk)
+
+Keep Estimated Value optional and allow approximate values for in-kind donations
+
+2️⃣ Smart Donor Search in Record Donation
+
+In “Select Donor” field:
+
+Allow searching by:
+
+Name
+
+Donor Code
+
+Phone number
+
+When phone number is typed, auto-match donor and populate the donor chip if found
+
+3️⃣ Donation History – Action Button Behavior
+
+Change the Action (👁️) button in Donation History:
+
+Instead of opening Donor Profile directly, show a Donation Detail Drawer/Modal with:
+
+Donation info (type, date, amount/value, home, notes)
+
+Quick actions:
+
+“View Donor Profile”
+
+“Edit Donation”
+
+“Download Receipt (PDF)”
+
+4️⃣ Receipt & Export Support
+
+Add:
+
+“Download Receipt” button per donation
+
+Export Donations to Excel with columns:
+
+Date
+
+Receipt No
+
+Donor Name
+
+Donor Code
+
+Phone
+
+Donation Type
+
+Quantity
+
+Unit
+
+Estimated Value
+
+Payment Mode
+
+Designated Home
+
+Notes
+
+5️⃣ Designated Home Reporting
+
+Allow filtering Donation History by:
+
+Girls Home
+
+Blind Boys Home
+
+Old Age Home
+
+Add summary cards:
+
+Total Donations per Home (₹ and in-kind count)
+
+6️⃣ Donor Smart Summary Update
+
+Update Donor Profile “Smart Summary”:
+
+Show:
+
+Preferred Donation Type (Cash / In-kind)
+
+Most Sponsored Home (Girls / Blind Boys / Old Age)
+
+Total Sponsored Beneficiaries count
+
+7️⃣ Automation Hooks (Future Ready)
+
+Prepare backend hooks for:
+
+Auto “Thank You Email” when donation is recorded (manual trigger for now)
+
+Tag donations as:
+
+FESTIVAL_DONATION
+
+SPONSORSHIP
+
+GENERAL_SUPPORT
+
+8️⃣ UI Polish
+
+Add colored badges for donation types:
+
+CASH → Green
+
+GROCERIES → Orange
+
+RICE → Yellow
+
+MEDICINES → Blue
+
+STATIONERY → Purple
+
+Add small home icon badge for Girls / Blind / Old Age on each donation row
+
+9️⃣ Data Validation
+
+Prevent:
+
+Cash donations without amount
+
+In-kind donations without donation type
+
+Show user-friendly toast errors instead of silent failures
+
+After implementing, ensure:
+
+No breaking changes to existing data
+
+Backward compatibility with old donations
+
+Mobile responsiveness for Record Donation modal

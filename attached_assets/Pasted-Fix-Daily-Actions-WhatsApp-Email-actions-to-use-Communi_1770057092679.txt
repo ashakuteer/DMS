@@ -1,0 +1,57 @@
+Fix Daily Actions WhatsApp/Email actions to use Communication Templates and actually send.
+
+Problem:
+- WhatsApp message is only "Dear <donor_name>" (template not applied / truncated).
+- Email button does not send email (likely still navigating or handler not calling API).
+
+Required changes:
+
+1) Template binding (must)
+- Use existing Templates module as the single source of text.
+- Add fixed template keys:
+  - THANK_YOU_WHATSAPP
+  - BIRTHDAY_WHATSAPP
+  - ANNIVERSARY_WHATSAPP
+  - MEMORIAL_WHATSAPP
+  - FOLLOWUP_WHATSAPP
+  - PLEDGE_DUE_WHATSAPP
+  - THANK_YOU_EMAIL
+  - BIRTHDAY_EMAIL
+  - ANNIVERSARY_EMAIL
+  - MEMORIAL_EMAIL
+  - FOLLOWUP_EMAIL
+  - PLEDGE_DUE_EMAIL
+- If any key is missing, auto-create default templates in DB (seed) with full message content (not just greeting).
+
+2) WhatsApp action (Daily Actions)
+- When clicking WhatsApp icon, pick template based on reminder type + offset:
+  - Birthday -> BIRTHDAY_WHATSAPP
+  - Anniversary -> ANNIVERSARY_WHATSAPP
+  - Memorial -> MEMORIAL_WHATSAPP
+  - Follow-up -> FOLLOWUP_WHATSAPP
+  - Pledge due -> PLEDGE_DUE_WHATSAPP
+- Render placeholders BEFORE opening wa.me:
+  {{donor_name}}, {{phone1}}, {{phone2}}, {{email}}, {{website}}, {{homes}}, {{due_date}}, {{pledge_item}}, {{pledge_qty}}
+- URL encode the full final message.
+- Log CommunicationLog: channel=WHATSAPP, status=TRIGGERED, reminderId.
+
+3) Email action (Daily Actions) MUST send
+- Clicking Email icon must call backend endpoint (no navigation):
+  POST /api/reminders/:id/send-email
+- Backend must:
+  - Choose correct template key based on reminder type (BIRTHDAY_EMAIL etc)
+  - Render subject + body with placeholders
+  - Send via existing SMTP module
+  - Attach receipt ONLY if reminder relates to donation receipt; otherwise no attachment
+  - On success: mark reminder DONE and log CommunicationLog EMAIL SENT
+  - On failure: keep reminder OPEN and log FAILED with error message
+
+4) Stop navigation bug
+- Ensure the reminder row is NOT wrapped in a Link.
+- Only “Open Profile” icon navigates.
+- All action buttons must be <button type="button"> with stopPropagation + preventDefault.
+
+5) Verification
+- Daily Actions -> click WhatsApp: message must be full (more than one line).
+- Daily Actions -> click Email: email must arrive and reminder becomes DONE.
+- No navigation away from Daily Actions when clicking WhatsApp/Email buttons.

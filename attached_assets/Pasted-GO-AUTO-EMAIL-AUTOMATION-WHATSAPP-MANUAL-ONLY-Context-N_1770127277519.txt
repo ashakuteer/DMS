@@ -1,0 +1,77 @@
+GO AUTO EMAIL AUTOMATION (WHATSAPP MANUAL ONLY)
+
+Context: NGO DMS (Next.js app + Nest API + Prisma). Pledges are done. Now implement automated EMAIL sending for reminders and pledge due items. WhatsApp must remain manual-only (open wa.me link, never auto-send).
+
+A) Email Settings (Admin)
+1) Add Settings page section: Email (SMTP)
+   - enableAutoEmail (boolean)
+   - fromName
+   - fromEmail
+   - smtpHost
+   - smtpPort
+   - smtpUser
+   - smtpPass (store encrypted or at least not exposed to client)
+   - secureTLS (boolean)
+2) Add “Test Email” button:
+   - input testEmail
+   - send test email via backend
+   - toast success/fail
+
+B) Email Templates
+1) Ensure Templates include:
+   - Special Day Email Subject + Body
+   - Pledge Reminder Email Subject + Body
+2) Tokens:
+   {{donorName}}, {{occasion}}, {{date}}, {{orgName}}, {{pledgeItem}}, {{pledgeQty}}, {{pledgeUnit}}, {{expectedDate}}
+3) If template missing, use defaults.
+
+C) Email Queue (DB)
+1) Create Prisma model EmailJob:
+   - id
+   - donorId (nullable)
+   - toEmail
+   - subject
+   - body
+   - type (SPECIAL_DAY | PLEDGE_REMINDER | FOLLOWUP)
+   - relatedId (reminderId/pledgeId optional)
+   - status (QUEUED | SENT | FAILED)
+   - attempts (int)
+   - lastError (string nullable)
+   - scheduledAt (datetime)
+   - sentAt (datetime nullable)
+   - createdAt
+2) Unique de-dupe to avoid same email being queued twice for same donor+type+relatedId+scheduledAt.
+
+D) Queue Creation Rules
+1) When reminders are generated (30/15/7/2/0 and today):
+   - If donor has email AND auto-email enabled:
+     -> create EmailJob scheduledAt = reminder due date at 9:00 AM local time
+2) Pledge due:
+   - If pledge is PENDING and due/overdue, queue reminder email:
+     -> scheduledAt = today 9:00 AM
+3) If donor email missing: do nothing (still show manual actions).
+
+E) Background Sender (Cron)
+1) Implement Nest cron job:
+   - runs every 5 minutes
+   - loads EmailJob where status=QUEUED and scheduledAt <= now
+   - sends via nodemailer using SMTP settings
+   - on success: status=SENT, sentAt set
+   - on failure: attempts++, status stays QUEUED until attempts=3 then status=FAILED, store lastError
+2) Must not crash app if SMTP not configured: skip and log safely.
+
+F) UI Visibility + Logs
+1) Reminders page / Daily Actions:
+   - show small email status badge: Queued/Sent/Failed
+   - Email icon should open mailto draft (manual) EVEN if auto email is enabled (manual option remains)
+2) Add Email Jobs page under Reports or Settings:
+   - filters: status, type, date range
+   - show lastError for failed
+
+Acceptance:
+- Auto email can be enabled/disabled
+- Test Email works
+- Reminder due creates queued email jobs
+- Cron sends emails automatically and marks SENT
+- WhatsApp remains manual only everywhere
+- No build/runtime errors

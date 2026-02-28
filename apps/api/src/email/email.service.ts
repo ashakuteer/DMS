@@ -1,0 +1,527 @@
+import { Injectable, Logger } from '@nestjs/common';
+import * as nodemailer from 'nodemailer';
+import * as fs from 'fs';
+import { OrganizationProfileService, OrganizationProfileData } from '../organization-profile/organization-profile.service';
+import { resolveLogoPath } from '../common/pdf-branding';
+
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType: string;
+}
+
+export type EmailFeatureType = 'TEST' | 'AUTO' | 'PLEDGE' | 'SPECIALDAY' | 'RECEIPT' | 'QUEUE' | 'MANUAL';
+
+export interface EmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+  text?: string;
+  attachments?: EmailAttachment[];
+  featureType?: EmailFeatureType;
+}
+
+export interface EmailConfigStatus {
+  configured: boolean;
+  smtpUser?: string;
+  smtpHost?: string;
+  fromEmail?: string;
+  error?: string;
+}
+
+@Injectable()
+export class EmailService {
+  private readonly logger = new Logger(EmailService.name);
+  private transporter: nodemailer.Transporter | null = null;
+  private configStatus: EmailConfigStatus = { configured: false };
+
+  constructor(private orgProfileService: OrganizationProfileService) {
+    this.initializeTransporter();
+  }
+
+  /**
+   * Initialize email transporter using ONLY environment variables:
+   * SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM
+   */
+  private initializeTransporter() {
+    const smtpHost = process.env.SMTP_HOST;
+    const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+    const smtpFrom = process.env.SMTP_FROM || smtpUser;
+
+    if (smtpHost && smtpUser && smtpPass) {
+      this.transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+      });
+
+      this.configStatus = {
+        configured: true,
+        smtpUser,
+        smtpHost,
+        fromEmail: smtpFrom,
+      };
+
+      this.logger.log(`=== EMAIL TRANSPORT INITIALIZED ===`);
+      this.logger.log(`SMTP Host: ${smtpHost}`);
+      this.logger.log(`SMTP Port: ${smtpPort}`);
+      this.logger.log(`SMTP User: ${smtpUser}`);
+      this.logger.log(`From Email: ${smtpFrom}`);
+      this.logger.log(`===================================`);
+    } else {
+      const missing: string[] = [];
+      if (!smtpHost) missing.push('SMTP_HOST');
+      if (!smtpUser) missing.push('SMTP_USER');
+      if (!smtpPass) missing.push('SMTP_PASS');
+
+      this.configStatus = {
+        configured: false,
+        error: `Missing required environment variables: ${missing.join(', ')}`,
+      };
+
+      this.logger.warn(`=== EMAIL NOT CONFIGURED ===`);
+      this.logger.warn(`Missing: ${missing.join(', ')}`);
+      this.logger.warn(`Emails will be logged but not sent.`);
+      this.logger.warn(`============================`);
+    }
+  }
+
+  /**
+   * Reinitialize transporter (useful if env vars change at runtime)
+   */
+  reinitialize() {
+    this.transporter = null;
+    this.initializeTransporter();
+  }
+
+  getConfigStatus(): EmailConfigStatus {
+    return this.configStatus;
+  }
+
+  isConfigured(): boolean {
+    return this.configStatus.configured;
+  }
+
+  getSmtpUser(): string | undefined {
+    return this.configStatus.smtpUser;
+  }
+
+  getMaskedSmtpUser(): string {
+    const user = this.configStatus.smtpUser;
+    if (!user) return 'NOT_CONFIGURED';
+    if (user.length <= 4) return '****';
+    return user.substring(0, 3) + '***' + user.substring(user.length - 4);
+  }
+
+  async sendEmail(options: EmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const org = await this.orgProfileService.getProfile();
+    const featureType = options.featureType || 'UNKNOWN';
+    const maskedUser = this.getMaskedSmtpUser();
+    
+    // Use SMTP_FROM env var, fallback to SMTP_USER, then org email
+    const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || org.email;
+    const fromName = org.name || 'NGO DMS';
+
+    if (!this.transporter) {
+      this.logger.log(`[${featureType}] [Email Mock] To: ${options.to}, SMTP_USER: ${maskedUser}`);
+      this.logger.log(`[${featureType}] Subject: ${options.subject}`);
+      this.logger.log(`[${featureType}] From: "${fromName}" <${fromEmail}>`);
+      this.logger.log(`[${featureType}] Attachments: ${options.attachments?.map(a => a.filename).join(', ') || 'none'}`);
+      return { success: true, messageId: `mock-${Date.now()}` };
+    }
+
+    try {
+      this.logger.log(`[${featureType}] Sending email to ${options.to} via SMTP_USER: ${maskedUser}`);
+      
+      const mailOptions: nodemailer.SendMailOptions = {
+        from: `"${fromName}" <${fromEmail}>`,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+        attachments: options.attachments?.map(att => ({
+          filename: att.filename,
+          content: att.content,
+          contentType: att.contentType,
+        })),
+      };
+
+      const info = await this.transporter.sendMail(mailOptions);
+      this.logger.log(`[${featureType}] Email sent successfully to ${options.to}, messageId: ${info.messageId}, SMTP_USER: ${maskedUser}`);
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`[${featureType}] Failed to send email to ${options.to}: ${errorMessage}, SMTP_USER: ${maskedUser}`);
+      return { success: false, error: errorMessage };
+    }
+  }
+
+  async wrapWithBranding(bodyHtml: string): Promise<string> {
+    const org = await this.orgProfileService.getProfile();
+    const phoneDisplay = org.phone2 ? `${org.phone1} / ${org.phone2}` : org.phone1;
+    
+    return `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        ${bodyHtml}
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #cccccc; font-size: 13px; color: #666666;">
+          <p style="margin: 0;">With heartfelt gratitude,</p>
+          <p style="margin: 5px 0 15px 0;"><strong>${org.name}</strong></p>
+          <p style="margin: 0;">Phone: ${phoneDisplay}</p>
+          <p style="margin: 0;">Email: ${org.email}</p>
+          <p style="margin: 0;">Website: ${org.website}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  async sendReminderEmail(
+    toEmail: string,
+    donorName: string,
+    reminderType: 'BIRTHDAY' | 'ANNIVERSARY' | 'MEMORIAL' | 'FOLLOW_UP' | 'FAMILY_BIRTHDAY' | 'PLEDGE',
+    relatedPersonName?: string,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const org = await this.orgProfileService.getProfile();
+    const phoneDisplay = org.phone2 ? `${org.phone1} / ${org.phone2}` : org.phone1;
+
+    let subject: string;
+    let bodyText: string;
+
+    switch (reminderType) {
+      case 'BIRTHDAY':
+      case 'FAMILY_BIRTHDAY':
+        subject = `Warm wishes from ${org.name}`;
+        bodyText = `Dear ${donorName},
+
+Wishing ${relatedPersonName ? relatedPersonName : 'you'} a very happy birthday!
+
+May this special day bring you joy, happiness, and all the blessings you deserve. Your support for ${org.name} has touched many lives, and we are grateful to have you as part of our family.
+
+On this occasion, we send our warmest wishes and prayers for health, prosperity, and happiness in the year ahead.`;
+        break;
+      case 'ANNIVERSARY':
+        subject = `Warm wishes from ${org.name}`;
+        bodyText = `Dear ${donorName},
+
+Wishing you a very happy anniversary!
+
+May this special milestone in your journey together be filled with love, joy, and beautiful memories. Your continued support for ${org.name} has been a blessing, and we cherish your association with us.
+
+We pray for your togetherness to grow stronger with each passing year.`;
+        break;
+      case 'MEMORIAL':
+        const personName = relatedPersonName || 'your loved one';
+        subject = `Remembering with gratitude – ${org.name}`;
+        bodyText = `Dear ${donorName},
+
+As we remember ${personName} on this day, we want you to know that our thoughts and prayers are with you and your family.
+
+The memories of our loved ones live on in our hearts forever. May you find peace and comfort knowing that their legacy continues to inspire and guide us.
+
+We are honored to have your trust and support at ${org.name}.`;
+        break;
+      case 'PLEDGE':
+        subject = `Gentle reminder of your pledge – ${org.name}`;
+        bodyText = `Dear ${donorName},
+
+We hope this message finds you well. This is a gentle reminder about the pledge you made to support ${org.name}.
+
+Your commitment means the world to us and to the lives we serve together. When you're ready to fulfill your pledge, please feel free to reach out to us.
+
+If you have any questions or would like to discuss this further, we are here to help.`;
+        break;
+      case 'FOLLOW_UP':
+      default:
+        subject = `Greetings from ${org.name}`;
+        bodyText = `Dear ${donorName},
+
+We hope this message finds you well. At ${org.name}, we are deeply grateful for your continued support and generosity.
+
+Your contributions have been instrumental in bringing hope and positive change to countless lives. We wanted to reach out and share our heartfelt appreciation for being part of our mission.
+
+If you would like to learn more about our recent activities or explore ways to continue making a difference, please feel free to contact us.`;
+        break;
+    }
+
+    const text = `${bodyText}
+
+With heartfelt gratitude,
+${org.name}
+
+Phone: ${phoneDisplay}
+Email: ${org.email}
+Website: ${org.website}
+
+(This is an automated email. Please do not reply.)`;
+
+    const featureType = reminderType === 'PLEDGE' ? 'PLEDGE' : 'SPECIALDAY';
+    return this.sendEmail({
+      to: toEmail,
+      subject,
+      html: text,
+      text,
+      featureType,
+    });
+  }
+
+  async sendDonationReceipt(
+    toEmail: string,
+    donorName: string,
+    receiptNumber: string,
+    pdfBuffer: Buffer,
+  ): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const org = await this.orgProfileService.getProfile();
+    const phoneDisplay = org.phone2 ? `${org.phone1} / ${org.phone2}` : org.phone1;
+
+    const primaryColor = org.brandingPrimaryColor || '#2E7D32';
+    const tagline1 = org.tagline1 || 'Healing Hearts – Shaping Lives';
+    const tagline2 = org.tagline2 || 'In the service of Mankind since 2013';
+
+    const logoFilePath = resolveLogoPath(org.logoUrl || null);
+    const hasLogo = !!logoFilePath;
+    
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Donation Receipt</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #f0f4f0; font-family: 'Segoe UI', Arial, Helvetica, sans-serif;">
+        <div style="width: 100%; background-color: #f0f4f0; padding: 30px 0;">
+          <div style="max-width: 620px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); overflow: hidden;">
+            
+            <!-- BRAND BANNER -->
+            <div style="background: linear-gradient(135deg, ${primaryColor} 0%, #1b5e20 100%); padding: 0; text-align: center;">
+              <div style="padding: 36px 32px 20px 32px;">
+                ${hasLogo ? `<img src="cid:orglogo" alt="${org.name}" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.6); display: block; margin: 0 auto 18px auto;" />` : ''}
+                <h1 style="margin: 0 0 10px 0; font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; line-height: 1.2;">
+                  ${org.name}
+                </h1>
+                <p style="margin: 0 0 6px 0; font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.95); letter-spacing: 0.3px;">
+                  ${tagline1}
+                </p>
+                <p style="margin: 0; font-size: 14px; font-weight: 400; color: rgba(255,255,255,0.82); font-style: italic;">
+                  ${tagline2}
+                </p>
+              </div>
+              <div style="background-color: rgba(0,0,0,0.15); padding: 12px 32px;">
+                <p style="margin: 0; font-size: 16px; font-weight: 600; color: #ffffff; letter-spacing: 0.8px;">
+                  &#10084; Thank You for Your Generous Donation &#10084;
+                </p>
+              </div>
+            </div>
+            
+            <!-- BODY -->
+            <div style="padding: 36px 36px 28px 36px;">
+              
+              <p style="margin: 0 0 22px 0; font-size: 17px; color: #222222; line-height: 1.5;">
+                Dear <strong>${donorName}</strong>,
+              </p>
+              
+              <p style="margin: 0 0 18px 0; font-size: 15px; color: #444444; line-height: 1.75;">
+                We are deeply grateful for your generous donation to <strong>${org.name}</strong>. Your compassionate support enables us to continue our mission of <em>${tagline1}</em> and making a meaningful difference in the lives of those we serve.
+              </p>
+              
+              <p style="margin: 0 0 28px 0; font-size: 15px; color: #444444; line-height: 1.75;">
+                With your help, we can reach more people, provide essential services, and create lasting positive change in our community.
+              </p>
+              
+              <!-- RECEIPT BOX -->
+              <div style="margin: 0 0 28px 0; border: 2px solid #a5d6a7; border-radius: 8px; padding: 22px 24px; background-color: #f1f8e9;">
+                <p style="margin: 0 0 14px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; color: ${primaryColor}; letter-spacing: 1px;">
+                  Receipt Details
+                </p>
+                <p style="margin: 0 0 10px 0; font-size: 15px; color: #222222;">
+                  <strong>Receipt Number:</strong> ${receiptNumber}
+                </p>
+                <p style="margin: 0; font-size: 14px; color: #555555;">
+                  Please find your donation receipt attached as a PDF for your records.
+                </p>
+              </div>
+              
+              <!-- TAX EXEMPTION -->
+              <div style="margin: 0 0 28px 0; background-color: #e8f5e9; border-left: 5px solid ${primaryColor}; padding: 18px 22px; border-radius: 0 6px 6px 0;">
+                <p style="margin: 0; font-size: 14px; color: #1b5e20; line-height: 1.65;">
+                  <strong>Tax Exemption:</strong> This donation is eligible for tax exemption under Section 80G of the Income Tax Act, 1961. Please retain your receipt for tax purposes.
+                </p>
+              </div>
+              
+              <p style="margin: 0 0 28px 0; font-size: 15px; color: #444444; line-height: 1.75;">
+                If you have any questions or would like to learn more about our work, please don't hesitate to reach out to us.
+              </p>
+              
+              <p style="margin: 0 0 6px 0; font-size: 15px; color: #333333;">
+                With heartfelt gratitude,
+              </p>
+              <p style="margin: 0; font-size: 16px; font-weight: 700; color: ${primaryColor};">
+                ${org.name}
+              </p>
+              
+            </div>
+            
+            <!-- CONTACT FOOTER -->
+            <div style="background-color: #e8f5e9; padding: 22px 36px; border-top: 2px solid ${primaryColor};">
+              <p style="margin: 0 0 10px 0; font-size: 14px; color: ${primaryColor}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+                Contact Us
+              </p>
+              <p style="margin: 0 0 5px 0; font-size: 13px; color: #444444;">
+                Phone: ${phoneDisplay}
+              </p>
+              <p style="margin: 0 0 5px 0; font-size: 13px; color: #444444;">
+                Email: <a href="mailto:${org.email}" style="color: ${primaryColor}; text-decoration: none; font-weight: 600;">${org.email}</a>
+              </p>
+              <p style="margin: 0; font-size: 13px; color: #444444;">
+                Website: <a href="https://${org.website}" style="color: ${primaryColor}; text-decoration: none; font-weight: 600;">${org.website}</a>
+              </p>
+            </div>
+            
+            <!-- DISCLAIMER -->
+            <div style="padding: 14px 36px; background-color: #fafafa; text-align: center; border-top: 1px solid #e0e0e0;">
+              <p style="margin: 0; font-size: 11px; color: #aaaaaa; font-style: italic;">
+                This is an automated email. Please do not reply.
+              </p>
+            </div>
+            
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const text = `${org.name}
+${tagline1}
+${tagline2}
+
+Thank You for Your Generous Donation
+
+Dear ${donorName},
+
+We are deeply grateful for your generous donation to ${org.name}. Your compassionate support enables us to continue our mission of ${tagline1} and making a meaningful difference in the lives of those we serve.
+
+With your help, we can reach more people, provide essential services, and create lasting positive change in our community.
+
+RECEIPT DETAILS
+Receipt Number: ${receiptNumber}
+Please find your donation receipt attached as a PDF for your records.
+
+TAX EXEMPTION
+This donation is eligible for tax exemption under Section 80G of the Income Tax Act, 1961. Please retain your receipt for tax purposes.
+
+If you have any questions or would like to learn more about our work, please don't hesitate to reach out to us.
+
+With heartfelt gratitude,
+${org.name}
+
+CONTACT US
+Phone: ${phoneDisplay}
+Email: ${org.email}
+Website: ${org.website}
+
+This is an automated email. Please do not reply.`;
+
+    const attachments: EmailAttachment[] = [
+      {
+        filename: `Receipt-${receiptNumber}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+      },
+    ];
+
+    const inlineAttachments: Array<{ filename: string; content: Buffer; cid: string; contentType: string }> = [];
+    if (logoFilePath) {
+      try {
+        const logoBuffer = fs.readFileSync(logoFilePath);
+        inlineAttachments.push({
+          filename: 'logo.jpg',
+          content: logoBuffer,
+          cid: 'orglogo',
+          contentType: 'image/jpeg',
+        });
+      } catch (e) {
+        this.logger.warn(`Could not read logo file: ${e}`);
+      }
+    }
+
+    return this.sendEmailWithInline({
+      to: toEmail,
+      subject: `Thank you for your donation – ${org.name}`,
+      html,
+      text,
+      attachments,
+      inlineAttachments,
+      featureType: 'RECEIPT',
+    });
+  }
+
+  private async sendEmailWithInline(options: EmailOptions & {
+    inlineAttachments?: Array<{ filename: string; content: Buffer; cid: string; contentType: string }>;
+  }): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const org = await this.orgProfileService.getProfile();
+    const featureType = options.featureType || 'UNKNOWN';
+    const maskedUser = this.getMaskedSmtpUser();
+    
+    const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || org.email;
+    const fromName = org.name || 'NGO DMS';
+
+    if (!this.transporter) {
+      this.logger.log(`[${featureType}] [Email Mock] To: ${options.to}, SMTP_USER: ${maskedUser}`);
+      this.logger.log(`[${featureType}] Subject: ${options.subject}`);
+      this.logger.log(`[${featureType}] From: "${fromName}" <${fromEmail}>`);
+      this.logger.log(`[${featureType}] Attachments: ${options.attachments?.map(a => a.filename).join(', ') || 'none'}`);
+      this.logger.log(`[${featureType}] Inline attachments: ${options.inlineAttachments?.map(a => a.cid).join(', ') || 'none'}`);
+      return { success: true, messageId: `mock-${Date.now()}` };
+    }
+
+    try {
+      this.logger.log(`[${featureType}] Sending email to ${options.to} via SMTP_USER: ${maskedUser}`);
+      
+      const nodeAttachments: nodemailer.SendMailOptions['attachments'] = [];
+
+      if (options.attachments) {
+        for (const att of options.attachments) {
+          nodeAttachments.push({
+            filename: att.filename,
+            content: att.content,
+            contentType: att.contentType,
+          });
+        }
+      }
+
+      if (options.inlineAttachments) {
+        for (const inl of options.inlineAttachments) {
+          nodeAttachments.push({
+            filename: inl.filename,
+            content: inl.content,
+            contentType: inl.contentType,
+            cid: inl.cid,
+            contentDisposition: 'inline',
+          });
+        }
+      }
+
+      const mailOptions: nodemailer.SendMailOptions = {
+        from: `"${fromName}" <${fromEmail}>`,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+        attachments: nodeAttachments,
+      };
+
+      const info = await this.transporter.sendMail(mailOptions);
+      this.logger.log(`[${featureType}] Email sent successfully to ${options.to}, messageId: ${info.messageId}, SMTP_USER: ${maskedUser}`);
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      this.logger.error(`[${featureType}] Failed to send email to ${options.to}: ${errorMessage}, SMTP_USER: ${maskedUser}`);
+      return { success: false, error: errorMessage };
+    }
+  }
+}

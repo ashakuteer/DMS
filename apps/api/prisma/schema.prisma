@@ -1,0 +1,1859 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String                  @id @default(uuid())
+  email             String                  @unique
+  password          String
+  name              String
+  role              Role                    @default(STAFF)
+  phone             String?                 @unique
+  isActive          Boolean                 @default(true)
+  refreshToken      String?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+
+  auditLogs         AuditLog[]
+  beneficiaries     Beneficiary[]
+  campaigns         Campaign[]
+  communicationLogs CommunicationLog[]      @relation("CommunicationSentBy")
+  createdTemplates  CommunicationTemplate[] @relation("TemplateCreatedBy")
+  updatedTemplates  CommunicationTemplate[] @relation("TemplateUpdatedBy")
+  donations         Donation[]
+
+  // ✅ Donors assigned/owned by this user
+  assignedDonors    Donor[]                 @relation("DonorAssignedToUser")
+
+  createdDonors              Donor[]                  @relation("CreatedByDonors")
+  sentEmails                 EmailLog[]               @relation("EmailSentBy")
+  pledges                    Pledge[]
+  reminders                  Reminder[]               @relation("ReminderCreatedBy")
+  reminderTasks              ReminderTask[]           @relation("ReminderTaskCreatedBy")
+  beneficiaryUpdates         BeneficiaryUpdate[]      @relation("BeneficiaryUpdateCreatedBy")
+  createdMetrics             BeneficiaryMetric[]      @relation("MetricCreatedBy")
+  createdProgressCards       ProgressCard[]           @relation("ProgressCardCreatedBy")
+  createdHealthEvents        BeneficiaryHealthEvent[] @relation("HealthEventCreatedBy")
+  createdDocuments           Document[]               @relation("DocumentCreatedBy")
+  documentAccessLogs         DocumentAccessLog[]      @relation("DocumentAccessBy")
+  createdReportCampaigns     ReportCampaign[]         @relation("ReportCampaignCreatedBy")
+  outboundMessages           OutboundMessageLog[]     @relation("OutboundMessageCreatedBy")
+  updatedTemplates2          MessageTemplate[]        @relation("MessageTemplateUpdatedBy")
+  createdMilestones          Milestone[]              @relation("MilestoneCreatedBy")
+  createdBackups             DataBackup[]             @relation("BackupCreatedBy")
+  sponsorshipStatusChanges   SponsorshipStatusHistory[]
+  createdDonorUpdates        DonorUpdate[]            @relation("DonorUpdateCreatedBy")
+  generatedDonorReports      DonorReport[]            @relation("DonorReportGeneratedBy")
+  createdReportTemplates     DonorReportTemplate[]    @relation("ReportTemplateCreatedBy")
+  generatedProgressReports   BeneficiaryProgressReport[] @relation("ProgressReportGeneratedBy")
+  createdCampaignUpdates     CampaignUpdate[]         @relation("CampaignUpdateCreatedBy")
+  assignedFollowUps          FollowUpReminder[]       @relation("FollowUpAssignedTo")
+  createdFollowUps           FollowUpReminder[]       @relation("FollowUpCreatedBy")
+  uploadedNgoDocs            NgoDocument[]            @relation("NgoDocUploadedBy")
+  uploadedNgoDocVersions     NgoDocumentVersion[]     @relation("NgoDocVersionUploadedBy")
+  ngoDocAccessLogs           NgoDocumentAccessLog[]   @relation("NgoDocAccessBy")
+  assignedTasks              StaffTask[]              @relation("TaskAssignedTo")
+  createdTasks               StaffTask[]              @relation("TaskCreatedBy")
+  performanceSnapshots       StaffPerformance[]       @relation("StaffPerformanceUser")
+  communicationMessages      CommunicationMessage[]   @relation("CommunicationMessageCreatedBy")
+
+  @@map("users")
+}
+model Donor {
+  id                 String                 @id @default(uuid())
+  donorCode          String                 @unique
+  firstName          String
+  middleName         String?
+  lastName           String?
+  primaryPhone       String?
+  primaryPhoneCode   String?                @default("+91")
+  alternatePhone     String?
+  alternatePhoneCode String?                @default("+91")
+  whatsappPhone      String?
+  whatsappPhoneCode  String?                @default("+91")
+  personalEmail      String?
+  officialEmail      String?
+  address            String?
+  city               String?
+  state              String?
+  country            String?                @default("India")
+  pincode            String?
+  profession         String?
+  approximateAge     Int?
+  gender             Gender?
+  incomeSpectrum     IncomeSpectrum?
+  religion           String?
+  donationMethods    DonationMethod[]
+  donationFrequency  DonationFrequency?
+  notes              String?
+  prefEmail          Boolean                @default(true)
+  prefWhatsapp       Boolean                @default(true)
+  prefSms            Boolean                @default(false)
+  prefReminders      Boolean                @default(true)
+  timezone           String                 @default("Asia/Kolkata")
+  category           DonorCategory          @default(INDIVIDUAL)
+  isUnder18Helper    Boolean                @default(false)
+  isSeniorCitizen    Boolean                @default(false)
+  isSingleParent     Boolean                @default(false)
+  isDisabled         Boolean                @default(false)
+  sourceOfDonor      SourceOfDonor?
+  sourceDetails      String?
+  pan                String?
+  profilePicUrl      String?
+  supportPreferences SupportPreference[]
+
+  engagementLevel    DonorEngagement        @default(WARM)
+  referredByDonorId  String?
+  createdById        String
+  isDeleted          Boolean                @default(false)
+  deletedAt          DateTime?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  dobDay             Int?
+  dobMonth           Int?
+  healthScore        Int                    @default(100)
+  healthStatus       HealthStatus           @default(GREEN)
+  lastHealthCheck    DateTime?
+
+  // ✅ One owner (staff user) for follow-ups
+  assignedToUserId   String?
+  assignedToUser     User?                  @relation("DonorAssignedToUser", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+
+  // relations
+  communicationLogs  CommunicationLog[]
+  donations          Donation[]
+  familyMembers      DonorFamilyMember[]
+  specialOccasions   DonorSpecialOccasion[]
+
+  createdBy          User                   @relation("CreatedByDonors", fields: [createdById], references: [id])
+  referredBy         Donor?                 @relation("DonorReferrals", fields: [referredByDonorId], references: [id])
+  referrals          Donor[]                @relation("DonorReferrals")
+
+  emailLogs          EmailLog[]
+  emailJobs          EmailJob[]
+  pledges            Pledge[]
+  reminders          Reminder[]
+  reminderTasks      ReminderTask[]         @relation("ReminderTaskDonor")
+  sponsorships       Sponsorship[]
+  sponsorUpdateDispatches SponsorUpdateDispatch[]
+  sponsorshipReminders   SponsorshipReminder[] @relation("SponsorshipReminderDonor")
+  outboundMessages       OutboundMessageLog[]  @relation("OutboundMessageDonor")
+  donorUpdateDispatches  DonorUpdateDispatch[]
+  donorReports           DonorReport[]         @relation("DonorReportForDonor")
+  campaignUpdateDispatches CampaignUpdateDispatch[]
+  followUpReminders      FollowUpReminder[]
+  linkedTasks            StaffTask[]           @relation("TaskLinkedDonor")
+  communicationMessages  CommunicationMessage[] @relation("CommunicationMessageDonor")
+
+  @@index([primaryPhone])
+  @@index([dobMonth, dobDay])
+  @@index([personalEmail])
+  @@index([officialEmail])
+  @@index([donorCode])
+  @@index([assignedToUserId])
+  @@index([isDeleted])
+  @@map("donors")
+}
+model DonorSpecialOccasion {
+  id                String         @id @default(uuid())
+  donorId           String
+  type              OccasionType
+  relatedPersonName String?
+  notes             String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  month             Int
+  day               Int
+  donor             Donor          @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  reminderTasks     ReminderTask[] @relation("ReminderTaskSourceOccasion")
+
+  @@index([donorId])
+  @@map("donor_special_occasions")
+}
+
+model DonorFamilyMember {
+  id            String             @id @default(uuid())
+  donorId       String
+  relationType  FamilyRelationType
+  name          String
+  notes         String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  email         String?
+  phone         String?
+  birthMonth    Int?
+  birthDay      Int?
+  donor         Donor              @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  reminderTasks ReminderTask[]     @relation("ReminderTaskSourceFamily")
+
+  @@index([donorId])
+  @@map("donor_family_members")
+}
+
+model Donation {
+  id                String             @id @default(uuid())
+  donorId           String
+  donationDate      DateTime
+  donationAmount    Decimal            @db.Decimal(15, 2)
+  currency          String             @default("INR")
+  donationType      DonationType       @default(CASH)
+  donationMode      DonationMode?
+  donationPurpose   DonationPurpose?
+  transactionId     String?
+  remarks           String?
+  quantity          Decimal?           @db.Decimal(10, 2)
+  unit              String?
+  itemDescription   String?
+  kindCategory      KindCategory?
+  kindDescription   String?
+  donationHomeType  DonationHomeType?
+  homeId            String?
+  visitedHome       Boolean            @default(false)
+  servedFood        Boolean            @default(false)
+  receiptNumber     String?
+  financialYear     String?
+  receiptPdfUrl     String?
+  attachmentUrl     String?
+  createdById       String
+  isDeleted         Boolean            @default(false)
+  deletedAt         DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  campaignId        String?
+  communicationLogs CommunicationLog[]
+  campaign          Campaign?          @relation(fields: [campaignId], references: [id])
+  createdBy             User               @relation(fields: [createdById], references: [id])
+  donor                 Donor              @relation(fields: [donorId], references: [id])
+  home                  Beneficiary?       @relation(fields: [homeId], references: [id])
+  emailLogs             EmailLog[]
+  reminders             Reminder[]
+  fulfilledPledge       Pledge?            @relation("PledgeFulfilledByDonation")
+  sponsorshipPayments   SponsorshipPayment[]
+
+  @@index([donorId])
+  @@index([donationDate])
+  @@index([receiptNumber])
+  @@index([financialYear])
+  @@index([isDeleted])
+  @@index([donationHomeType])
+  @@map("donations")
+}
+
+model Pledge {
+  id                        String       @id @default(uuid())
+  donorId                   String
+  pledgeType                PledgeType   @default(MONEY)
+  amount                    Decimal?     @db.Decimal(15, 2)
+  quantity                  String?
+  currency                  String       @default("INR")
+  promisedDate              DateTime?
+  promisedMonth             Int?
+  promisedDay               Int?
+  expectedFulfillmentDate   DateTime
+  status                    PledgeStatus @default(PENDING)
+  notes                     String?
+  fulfilledDonationId       String?      @unique
+  createdById               String
+  isDeleted                 Boolean      @default(false)
+  deletedAt                 DateTime?
+  createdAt                 DateTime     @default(now())
+  updatedAt                 DateTime     @updatedAt
+  createdBy                 User         @relation(fields: [createdById], references: [id])
+  donor                     Donor        @relation(fields: [donorId], references: [id])
+  fulfilledDonation         Donation?    @relation("PledgeFulfilledByDonation", fields: [fulfilledDonationId], references: [id])
+  reminderTasks             ReminderTask[] @relation("ReminderTaskSourcePledge")
+
+  @@index([donorId])
+  @@index([status])
+  @@index([expectedFulfillmentDate])
+  @@index([isDeleted])
+  @@map("pledges")
+}
+
+model Campaign {
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  goalAmount  Decimal?       @db.Decimal(15, 2)
+  currency    String         @default("INR")
+  status      CampaignStatus @default(DRAFT)
+  homeTypes   HomeType[]     @default([])
+  createdById String
+  isDeleted   Boolean        @default(false)
+  deletedAt   DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  createdBy   User           @relation(fields: [createdById], references: [id])
+  donations   Donation[]
+  beneficiaries CampaignBeneficiary[]
+  updates     CampaignUpdate[]
+
+  @@index([status])
+  @@index([isDeleted])
+  @@map("campaigns")
+}
+
+model CampaignBeneficiary {
+  id            String      @id @default(uuid())
+  campaignId    String
+  beneficiaryId String
+  notes         String?
+  createdAt     DateTime    @default(now())
+  campaign      Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  beneficiary   Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, beneficiaryId])
+  @@index([campaignId])
+  @@index([beneficiaryId])
+  @@map("campaign_beneficiaries")
+}
+
+model CampaignUpdate {
+  id          String   @id @default(uuid())
+  campaignId  String
+  title       String
+  content     String
+  photoUrls   String[] @default([])
+  createdById String
+  createdAt   DateTime @default(now())
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  createdBy   User     @relation("CampaignUpdateCreatedBy", fields: [createdById], references: [id])
+  dispatches  CampaignUpdateDispatch[]
+
+  @@index([campaignId])
+  @@index([createdAt])
+  @@map("campaign_updates")
+}
+
+model CampaignUpdateDispatch {
+  id              String                @id @default(uuid())
+  campaignUpdateId String
+  donorId         String
+  channel         SponsorDispatchChannel
+  status          SponsorDispatchStatus  @default(QUEUED)
+  sentAt          DateTime?
+  error           String?
+  createdAt       DateTime              @default(now())
+  campaignUpdate  CampaignUpdate        @relation(fields: [campaignUpdateId], references: [id], onDelete: Cascade)
+  donor           Donor                 @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@index([campaignUpdateId])
+  @@index([donorId])
+  @@index([status])
+  @@map("campaign_update_dispatches")
+}
+
+model Beneficiary {
+  id                       String                     @id @default(uuid())
+  code                     String                     @unique
+  fullName                 String
+  homeType                 HomeType
+  category                 BeneficiaryCategory?
+  gender                   Gender?
+  dobDay                   Int?
+  dobMonth                 Int?
+  dobYear                  Int?
+  approxAge                Int?
+  joinDate                 DateTime?
+  heightCmAtJoin           Int?
+  weightKgAtJoin           Decimal?                   @db.Decimal(5, 2)
+  educationClassOrRole     String?
+  schoolOrCollege          String?
+  healthNotes              String?
+  currentHealthStatus      String?
+  background               String?
+  hobbies                  String?
+  dreamCareer              String?
+  favouriteSubject         String?
+  favouriteGame            String?
+  favouriteActivityAtHome  String?
+  bestFriend               String?
+  sourceOfPrideOrHappiness String?
+  funFact                  String?
+  additionalNotes          String?
+  protectPrivacy           Boolean                    @default(false)
+  photoUrl                 String?
+  photoPath                String?
+  status                   BeneficiaryStatus          @default(ACTIVE)
+  createdById              String
+  isDeleted                Boolean                    @default(false)
+  deletedAt                DateTime?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  createdBy                User                       @relation(fields: [createdById], references: [id])
+  donations                Donation[]
+  sponsorships             Sponsorship[]
+  updates                  BeneficiaryUpdate[]
+  timelineEvents           BeneficiaryTimelineEvent[]
+  sponsorshipReminders     SponsorshipReminder[]      @relation("BeneficiaryReminders")
+  metrics                  BeneficiaryMetric[]
+  progressCards            ProgressCard[]
+  healthEvents             BeneficiaryHealthEvent[]
+  documents                Document[]
+  progressReports          BeneficiaryProgressReport[]
+  campaignBeneficiaries    CampaignBeneficiary[]
+
+  @@index([code])
+  @@index([homeType])
+  @@index([status])
+  @@index([isDeleted])
+  @@map("beneficiaries")
+}
+
+model Sponsorship {
+  id                   String               @id @default(uuid())
+  donorId              String
+  beneficiaryId        String
+  sponsorshipType      SponsorshipType
+  amount               Decimal?             @db.Decimal(15, 2)
+  currency             String               @default("INR")
+  inKindItem           String?
+  frequency            SponsorshipFrequency @default(ADHOC)
+  startDate            DateTime?
+  endDate              DateTime?
+  dueDayOfMonth        Int?
+  nextDueDate          DateTime?            @db.Date
+  notes                String?
+  isActive             Boolean              @default(true)
+  status               SponsorshipStatus    @default(ACTIVE)
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  donor                Donor                @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  beneficiary          Beneficiary          @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  sponsorshipReminders SponsorshipReminder[]
+  payments             SponsorshipPayment[]
+  statusHistory        SponsorshipStatusHistory[]
+
+  @@unique([donorId, beneficiaryId, sponsorshipType], name: "unique_active_sponsorship")
+  @@index([donorId])
+  @@index([beneficiaryId])
+  @@index([isActive])
+  @@index([status])
+  @@index([nextDueDate])
+  @@map("sponsorships")
+}
+
+model SponsorshipStatusHistory {
+  id              String            @id @default(uuid())
+  sponsorshipId   String
+  oldStatus       SponsorshipStatus
+  newStatus       SponsorshipStatus
+  oldAmount       Decimal?          @db.Decimal(15, 2)
+  newAmount       Decimal?          @db.Decimal(15, 2)
+  note            String?
+  changedAt       DateTime          @default(now())
+  changedById     String
+  changedBy       User              @relation(fields: [changedById], references: [id], onDelete: Cascade)
+  sponsorship     Sponsorship       @relation(fields: [sponsorshipId], references: [id], onDelete: Cascade)
+
+  @@index([sponsorshipId])
+  @@index([changedAt])
+  @@map("sponsorship_status_history")
+}
+
+model SponsorshipPayment {
+  id             String                    @id @default(uuid())
+  sponsorshipId  String
+  month          Int
+  year           Int
+  paidOn         DateTime?                 @db.Date
+  amount         Decimal?                  @db.Decimal(15, 2)
+  paymentMode    String?
+  status         SponsorshipPaymentStatus  @default(DUE)
+  donationId     String?
+  notes          String?
+  createdAt      DateTime                  @default(now())
+  sponsorship    Sponsorship               @relation(fields: [sponsorshipId], references: [id], onDelete: Cascade)
+  donation       Donation?                 @relation(fields: [donationId], references: [id])
+
+  @@unique([sponsorshipId, month, year], name: "unique_sponsorship_month_year")
+  @@index([sponsorshipId])
+  @@index([donationId])
+  @@index([year, month])
+  @@index([status])
+  @@map("sponsorship_payments")
+}
+
+model BeneficiaryUpdate {
+  id            String                   @id @default(uuid())
+  beneficiaryId String
+  updateType    BeneficiaryUpdateType    @default(GENERAL)
+  title         String
+  content       String
+  mediaUrls     String[]
+  isPrivate     Boolean                  @default(false)
+  shareWithDonor Boolean                 @default(false)
+  createdById   String
+  createdAt     DateTime                 @default(now())
+  beneficiary   Beneficiary              @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  createdBy     User                     @relation("BeneficiaryUpdateCreatedBy", fields: [createdById], references: [id])
+  dispatches    SponsorUpdateDispatch[]
+  attachments   UpdateAttachment[]
+
+  @@index([beneficiaryId])
+  @@index([createdAt])
+  @@map("beneficiary_updates")
+}
+
+model SponsorUpdateDispatch {
+  id        String                      @id @default(uuid())
+  updateId  String
+  donorId   String
+  channel   SponsorDispatchChannel
+  status    SponsorDispatchStatus       @default(QUEUED)
+  sentAt    DateTime?
+  error     String?
+  createdAt DateTime                    @default(now())
+  update    BeneficiaryUpdate           @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  donor     Donor                       @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@index([updateId])
+  @@index([donorId])
+  @@index([status])
+  @@map("sponsor_update_dispatches")
+}
+
+model SponsorshipReminder {
+  id              String                      @id @default(uuid())
+  sponsorshipId   String?
+  beneficiaryId   String?
+  donorId         String
+  reminderType    SponsorshipReminderType
+  dueDate         DateTime                    @db.Date
+  status          SponsorshipReminderStatus   @default(PENDING)
+  lastTriggeredAt DateTime?
+  createdAt       DateTime                    @default(now())
+  updatedAt       DateTime                    @updatedAt
+  sponsorship     Sponsorship?                @relation(fields: [sponsorshipId], references: [id], onDelete: Cascade)
+  beneficiary     Beneficiary?                @relation("BeneficiaryReminders", fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  donor           Donor                       @relation("SponsorshipReminderDonor", fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@unique([sponsorshipId, reminderType, dueDate], name: "unique_sponsorship_reminder")
+  @@unique([beneficiaryId, donorId, reminderType, dueDate], name: "unique_beneficiary_reminder")
+  @@index([donorId])
+  @@index([dueDate])
+  @@index([status])
+  @@map("sponsorship_reminders")
+}
+
+model BeneficiaryTimelineEvent {
+  id            String                 @id @default(uuid())
+  beneficiaryId String
+  eventType     BeneficiaryEventType
+  eventDate     DateTime
+  description   String
+  createdAt     DateTime               @default(now())
+  beneficiary   Beneficiary            @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+
+  @@index([beneficiaryId])
+  @@index([eventDate])
+  @@map("beneficiary_timeline_events")
+}
+
+model BeneficiaryMetric {
+  id              String                   @id @default(uuid())
+  beneficiaryId   String
+  recordedOn      DateTime                 @default(now()) @db.Date
+  heightCm        Int?
+  weightKg        Decimal?                 @db.Decimal(5, 2)
+  healthStatus    BeneficiaryHealthStatus  @default(NORMAL)
+  notes           String?
+  createdById     String
+  createdAt       DateTime                 @default(now())
+  beneficiary     Beneficiary              @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  createdBy       User                     @relation("MetricCreatedBy", fields: [createdById], references: [id])
+
+  @@index([beneficiaryId])
+  @@index([recordedOn])
+  @@map("beneficiary_metrics")
+}
+
+model ProgressCard {
+  id               String      @id @default(uuid())
+  beneficiaryId    String
+  academicYear     String
+  term             ProgressTerm
+  classGrade       String
+  school           String?
+  overallPercentage Decimal?   @db.Decimal(5, 2)
+  remarks          String?
+  fileDocumentId   String?
+  createdById      String
+  createdAt        DateTime    @default(now())
+  beneficiary      Beneficiary @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  createdBy        User        @relation("ProgressCardCreatedBy", fields: [createdById], references: [id])
+  fileDocument     Document?   @relation(fields: [fileDocumentId], references: [id])
+
+  @@index([beneficiaryId])
+  @@index([academicYear])
+  @@map("progress_cards")
+}
+
+model BeneficiaryHealthEvent {
+  id                 String             @id @default(uuid())
+  beneficiaryId      String
+  eventDate          DateTime           @db.Date
+  title              String
+  description        String
+  severity           HealthEventSeverity @default(LOW)
+  requiresDonorUpdate Boolean           @default(false)
+  shareWithDonor     Boolean            @default(false)
+  documentId         String?
+  createdById        String
+  createdAt          DateTime           @default(now())
+  beneficiary        Beneficiary        @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  createdBy          User               @relation("HealthEventCreatedBy", fields: [createdById], references: [id])
+  document           Document?          @relation(fields: [documentId], references: [id])
+
+  @@index([beneficiaryId])
+  @@index([eventDate])
+  @@map("beneficiary_health_events")
+}
+
+model Document {
+  id             String          @id @default(uuid())
+  ownerType      DocumentOwnerType
+  ownerId        String?
+  docType        DocumentType
+  title          String
+  description    String?
+  storageBucket  String
+  storagePath    String
+  mimeType       String
+  sizeBytes      Int
+  isSensitive    Boolean         @default(false)
+  shareWithDonor Boolean         @default(false)
+  createdById    String
+  createdAt      DateTime        @default(now())
+  beneficiary    Beneficiary?    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdBy      User            @relation("DocumentCreatedBy", fields: [createdById], references: [id])
+  accessLogs     DocumentAccessLog[]
+  progressCards  ProgressCard[]
+  updateAttachments UpdateAttachment[]
+  reportCampaigns ReportCampaign[]
+  healthEvents   BeneficiaryHealthEvent[]
+
+  @@index([ownerType, ownerId])
+  @@index([docType])
+  @@index([isSensitive])
+  @@map("documents")
+}
+
+model DocumentAccessLog {
+  id         String   @id @default(uuid())
+  documentId String
+  userId     String
+  action     String
+  accessedAt DateTime @default(now())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user       User     @relation("DocumentAccessBy", fields: [userId], references: [id])
+
+  @@index([documentId])
+  @@index([userId])
+  @@index([accessedAt])
+  @@map("document_access_logs")
+}
+
+model UpdateAttachment {
+  id         String            @id @default(uuid())
+  updateId   String
+  documentId String
+  update     BeneficiaryUpdate @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  document   Document          @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([updateId, documentId])
+  @@map("update_attachments")
+}
+
+model ReportCampaign {
+  id             String              @id @default(uuid())
+  name           String
+  type           ReportCampaignType
+  periodStart    DateTime            @db.Date
+  periodEnd      DateTime            @db.Date
+  documentId     String?
+  target         ReportTarget        @default(ALL_DONORS)
+  customDonorIds String[]            @default([])
+  notes          String?
+  status         ReportCampaignStatus @default(DRAFT)
+  emailsSent     Int                 @default(0)
+  sentAt         DateTime?
+  createdById    String
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  document       Document?           @relation(fields: [documentId], references: [id])
+  createdBy      User                @relation("ReportCampaignCreatedBy", fields: [createdById], references: [id])
+
+  @@index([status])
+  @@index([type])
+  @@map("report_campaigns")
+}
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  userId     String
+  action     AuditAction
+  entityType String?
+  entityId   String?
+  oldValue   Json?
+  newValue   Json?
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime    @default(now())
+  user       User        @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model CommunicationTemplate {
+  id                String             @id @default(uuid())
+  type              TemplateType       @unique
+  name              String
+  description       String?
+  whatsappMessage   String
+  emailSubject      String
+  emailBody         String
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  createdById       String
+  updatedById       String?
+  communicationLogs CommunicationLog[]
+  createdBy         User               @relation("TemplateCreatedBy", fields: [createdById], references: [id])
+  updatedBy         User?              @relation("TemplateUpdatedBy", fields: [updatedById], references: [id])
+  emailLogs         EmailLog[]
+
+  @@index([type])
+  @@index([isActive])
+  @@map("communication_templates")
+}
+
+model EmailLog {
+  id           String                 @id @default(uuid())
+  donorId      String
+  donationId   String?
+  templateId   String?
+  toEmail      String
+  subject      String
+  status       EmailStatus
+  messageId    String?
+  errorMessage String?
+  sentAt       DateTime               @default(now())
+  sentById     String?
+  type         EmailLogType?
+  subType      String?
+  relatedId    String?
+  offsetDays   Int?
+  donation     Donation?              @relation(fields: [donationId], references: [id])
+  donor        Donor                  @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  sentBy       User?                  @relation("EmailSentBy", fields: [sentById], references: [id])
+  template     CommunicationTemplate? @relation(fields: [templateId], references: [id])
+
+  @@unique([donorId, type, relatedId, offsetDays], name: "unique_email_log")
+  @@index([donorId])
+  @@index([donationId])
+  @@index([status])
+  @@index([sentAt])
+  @@index([type])
+  @@map("email_logs")
+}
+
+enum EmailLogType {
+  SPECIAL_DAY
+  PLEDGE
+  FOLLOW_UP
+  MANUAL
+  RECEIPT
+}
+
+model CommunicationLog {
+  id             String                 @id @default(uuid())
+  donorId        String
+  donationId     String?
+  templateId     String?
+  channel        CommunicationChannel
+  type           CommunicationType
+  status         CommunicationStatus
+  recipient      String?
+  subject        String?
+  messagePreview String?
+  errorMessage   String?
+  metadata       Json?
+  createdAt      DateTime               @default(now())
+  sentById       String?
+  donation       Donation?              @relation(fields: [donationId], references: [id])
+  donor          Donor                  @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  sentBy         User?                  @relation("CommunicationSentBy", fields: [sentById], references: [id])
+  template       CommunicationTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([donorId])
+  @@index([donationId])
+  @@index([channel])
+  @@index([status])
+  @@index([createdAt])
+  @@map("communication_logs")
+}
+
+model Reminder {
+  id          String         @id @default(uuid())
+  donorId     String
+  donationId  String?
+  type        String         @default("FOLLOW_UP")
+  title       String
+  description String?
+  dueDate     DateTime
+  status      ReminderStatus @default(PENDING)
+  createdById String
+  completedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  createdBy   User           @relation("ReminderCreatedBy", fields: [createdById], references: [id])
+  donation    Donation?      @relation(fields: [donationId], references: [id])
+  donor       Donor          @relation(fields: [donorId], references: [id])
+
+  @@index([donorId])
+  @@index([dueDate])
+  @@index([status])
+  @@map("reminders")
+}
+
+model ReminderTask {
+  id                 String                @id @default(uuid())
+  donorId            String
+  type               ReminderTaskType
+  title              String
+  dueDate            DateTime              @db.Date
+  status             ReminderTaskStatus    @default(OPEN)
+  snoozedUntil       DateTime?             @db.Date
+  sourceOccasionId   String?
+  sourceFamilyId     String?
+  sourcePledgeId     String?
+  offsetDays         Int                   @default(0)
+  createdByUserId    String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  completedAt        DateTime?
+  autoEmailSent      Boolean               @default(false)
+  autoEmailSentAt    DateTime?
+  donor              Donor                 @relation("ReminderTaskDonor", fields: [donorId], references: [id], onDelete: Cascade)
+  createdByUser      User?                 @relation("ReminderTaskCreatedBy", fields: [createdByUserId], references: [id])
+  sourceOccasion     DonorSpecialOccasion? @relation("ReminderTaskSourceOccasion", fields: [sourceOccasionId], references: [id])
+  sourceFamilyMember DonorFamilyMember?    @relation("ReminderTaskSourceFamily", fields: [sourceFamilyId], references: [id])
+  sourcePledge       Pledge?               @relation("ReminderTaskSourcePledge", fields: [sourcePledgeId], references: [id])
+
+  @@unique([donorId, sourceOccasionId, offsetDays], name: "unique_occasion_reminder")
+  @@unique([donorId, sourceFamilyId, offsetDays], name: "unique_family_reminder")
+  @@unique([donorId, sourcePledgeId, offsetDays], name: "unique_pledge_reminder")
+  @@index([donorId])
+  @@index([dueDate])
+  @@index([status])
+  @@index([type])
+  @@map("reminder_tasks")
+}
+
+model OrganizationProfile {
+  id              String   @id @default(uuid())
+  name            String   @default("ASHA KUTEER FOUNDATION")
+  tagline1        String   @default("Healing Hearts – Shaping Lives")
+  tagline2        String   @default("In the service of Mankind since 2013")
+  logoUrl              String?
+  logoPath             String?
+  brandingPrimaryColor String   @default("#2E7D32")
+  reportHeaderText     String?
+  reportFooterText     String?
+  signatureImageUrl    String?
+  phone1          String   @default("9700700700")
+  phone2          String   @default("8600600600")
+  email           String   @default("info@ashakuteer.org")
+  website         String   @default("www.ashakuteer.org")
+  pan             String   @default("AADAA4681R")
+  section80GText  String   @default("Eligible for deduction under Section 80G of the Income Tax Act, 1961")
+  homes           String[] @default(["Asha Kuteer Girls Home – Uppal, Hyderabad", "Asha Kuteer Blind Boys Home – Begumpet, Hyderabad", "Asha Kuteer Old Age Home – Boduppal, Hyderabad"])
+  enableAutoEmail           Boolean  @default(false)
+  enableDonationEmail       Boolean  @default(true)
+  enableDonationWhatsApp    Boolean  @default(false)
+  enablePledgeWhatsApp      Boolean  @default(false)
+  enableSpecialDayWhatsApp  Boolean  @default(false)
+  enableFollowUpWhatsApp    Boolean  @default(false)
+  smtpHost        String?
+  smtpPort        Int?     @default(587)
+  smtpUser        String?
+  smtpPass        String?
+  smtpSecureTls   Boolean  @default(true)
+  emailFromName   String?
+  emailFromEmail  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("organization_profiles")
+}
+
+model EmailJob {
+  id           String         @id @default(uuid())
+  donorId      String?
+  toEmail      String
+  subject      String
+  body         String
+  type         EmailJobType
+  relatedId    String?
+  status       EmailJobStatus @default(QUEUED)
+  attempts     Int            @default(0)
+  lastError    String?
+  scheduledAt  DateTime
+  sentAt       DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  donor        Donor?         @relation(fields: [donorId], references: [id], onDelete: SetNull)
+
+  @@unique([donorId, type, relatedId, scheduledAt], name: "unique_email_job")
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([type])
+  @@map("email_jobs")
+}
+
+enum EmailJobType {
+  SPECIAL_DAY
+  PLEDGE_REMINDER
+  FOLLOW_UP
+  DONOR_BIRTHDAY
+  BENEFICIARY_BIRTHDAY
+  SPONSORSHIP_REMINDER
+  REPORT_CAMPAIGN
+  DONOR_UPDATE
+  BENEFICIARY_PROGRESS_REPORT
+}
+
+enum EmailJobStatus {
+  QUEUED
+  SENT
+  FAILED
+}
+
+enum Role {
+  ADMIN
+  STAFF
+  TELECALLER
+  ACCOUNTANT
+  MANAGER
+  CARETAKER
+  VIEWER
+}
+
+enum DonorCategory {
+  INDIVIDUAL
+  NGO
+  CSR_REP
+  WHATSAPP_GROUP
+  SOCIAL_MEDIA_PERSON
+  CROWD_PULLER
+  VISITOR_ENQUIRY
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum IncomeSpectrum {
+  LOW
+  LOWER_MIDDLE
+  MIDDLE
+  UPPER_MIDDLE
+  HIGH
+  ULTRA_HIGH
+}
+
+enum DonationMethod {
+  CASH
+  UPI
+  GPAY
+  PHONEPE
+  CHEQUE
+  ONLINE
+  BANK_TRANSFER
+  KIND
+}
+
+enum DonationFrequency {
+  ONE_TIME
+  WEEKLY
+  MONTHLY
+  QUARTERLY
+  HALF_YEARLY
+  YEARLY
+  OCCASIONAL
+}
+
+enum DonationType {
+  CASH
+  ANNADANAM
+  GROCERIES
+  GROCERY
+  MEDICINES
+  RICE_BAGS
+  STATIONERY
+  SPORTS_KITS
+  USED_ITEMS
+  PREPARED_FOOD
+  KIND
+  OTHER
+}
+
+enum DonationHomeType {
+  GIRLS_HOME
+  BLIND_BOYS_HOME
+  OLD_AGE_HOME
+  GENERAL
+}
+
+enum DonationMode {
+  CASH
+  UPI
+  GPAY
+  PHONEPE
+  CHEQUE
+  ONLINE
+  BANK_TRANSFER
+  IN_KIND
+}
+
+enum DonationPurpose {
+  FESTIVAL_DONATION
+  SPONSORSHIP
+  GENERAL_SUPPORT
+  EMERGENCY
+  MEMORIAL
+  CELEBRATION
+}
+
+enum SourceOfDonor {
+  SOCIAL_MEDIA
+  JUSTDIAL
+  FRIEND
+  SPONSOR
+  WEBSITE
+  WALK_IN
+  REFERRAL
+  OTHER
+}
+
+enum OccasionType {
+  DOB_SELF
+  DOB_SPOUSE
+  DOB_CHILD
+  ANNIVERSARY
+  DEATH_ANNIVERSARY
+  OTHER
+}
+
+enum FamilyRelationType {
+  SPOUSE
+  CHILD
+  FATHER
+  MOTHER
+  SIBLING
+  GRANDPARENT
+  OTHER
+  IN_LAW
+}
+
+enum PledgeType {
+  MONEY
+  RICE
+  GROCERIES
+  MEDICINES
+  MEAL_SPONSOR
+  VISIT
+  OTHER
+}
+
+enum PledgeStatus {
+  PENDING
+  FULFILLED
+  POSTPONED
+  CANCELLED
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum AuditAction {
+  DONOR_CREATE
+  DONOR_UPDATE
+  DONOR_DELETE
+  DONOR_ASSIGNMENT_CHANGE
+  DONOR_MERGE
+  DONATION_CREATE
+  DONATION_UPDATE
+  DONATION_DELETE
+  BENEFICIARY_CREATE
+  BENEFICIARY_UPDATE
+  BENEFICIARY_DELETE
+  PLEDGE_CREATE
+  PLEDGE_UPDATE
+  PLEDGE_DELETE
+  PLEDGE_FULFILLED
+  PLEDGE_POSTPONED
+  PLEDGE_CANCELLED
+  EMAIL_SEND
+  WHATSAPP_SEND
+  RECEIPT_REGENERATE
+  DATA_EXPORT
+  ROLE_CHANGE
+  FULL_ACCESS_REQUEST
+  LOGIN
+  LOGOUT
+  HEALTH_STATUS_CHANGE
+  PERMISSION_CHANGE
+  SENSITIVE_DATA_ACCESS
+  BROADCAST_SENT
+}
+
+enum TemplateType {
+  THANK_YOU
+  GENTLE_FOLLOWUP
+  MONTHLY_REMINDER
+  FESTIVAL_GREETING
+  RECEIPT_RESEND
+  BIRTHDAY_ANNIVERSARY
+  BIRTHDAY
+  ANNIVERSARY
+  MEMORIAL
+  FOLLOWUP
+  PLEDGE_DUE
+}
+
+enum EmailStatus {
+  SENT
+  FAILED
+}
+
+enum CommunicationChannel {
+  EMAIL
+  WHATSAPP
+}
+
+enum CommunicationType {
+  THANK_YOU
+  RECEIPT
+  FOLLOW_UP
+  GREETING
+  GENERAL
+}
+
+enum CommunicationStatus {
+  SENT
+  FAILED
+  OPENED
+  TRIGGERED
+}
+
+enum ReminderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum ReminderTaskType {
+  BIRTHDAY
+  ANNIVERSARY
+  MEMORIAL
+  FOLLOW_UP
+  FAMILY_BIRTHDAY
+  PLEDGE
+}
+
+enum ReminderTaskStatus {
+  OPEN
+  DONE
+  SNOOZED
+}
+
+enum HealthStatus {
+  GREEN
+  YELLOW
+  RED
+}
+
+enum HomeType {
+  ORPHAN_GIRLS
+  BLIND_BOYS
+  OLD_AGE
+}
+
+enum BeneficiaryCategory {
+  ORPHAN_GIRL
+  BLIND_BOY
+  SENIOR_CITIZEN
+}
+
+enum BeneficiaryStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SponsorshipType {
+  FULL
+  PARTIAL
+  EDUCATION
+  MEDICAL
+  FOOD
+  GROCERIES
+  MONTHLY_SUPPORT
+  ONE_TIME
+  FESTIVAL
+  OTHER
+}
+
+enum SponsorshipFrequency {
+  ONE_TIME
+  MONTHLY
+  QUARTERLY
+  YEARLY
+  ADHOC
+}
+
+enum SponsorshipStatus {
+  ACTIVE
+  PAUSED
+  STOPPED
+  COMPLETED
+}
+
+enum SponsorshipPaymentStatus {
+  DUE
+  PAID
+  SKIPPED
+}
+
+enum BeneficiaryEventType {
+  JOINED
+  GRADUATION
+  ACHIEVEMENT
+  HEALTH_UPDATE
+  EDUCATION
+  MILESTONE
+  PROFILE_CREATED
+  UPDATE_ADDED
+  SPONSORSHIP_ADDED
+  DONATION_LINKED
+  NOTE
+  PHOTO_UPDATED
+  PROFILE_UPDATED
+}
+
+enum BeneficiaryUpdateType {
+  GENERAL
+  MILESTONE
+  ACADEMIC
+  HEALTH
+  EDUCATION
+  ACHIEVEMENT
+  PHOTO
+  EVENT
+  THANK_YOU
+}
+
+enum SponsorDispatchChannel {
+  EMAIL
+  WHATSAPP
+}
+
+enum SponsorDispatchStatus {
+  QUEUED
+  SENT
+  FAILED
+  COPIED
+}
+
+enum SponsorshipReminderType {
+  MONTHLY_DUE
+  UPCOMING_BENEFICIARY_BDAY
+  UPCOMING_DONOR_BDAY
+}
+
+enum SponsorshipReminderStatus {
+  PENDING
+  DONE
+  SKIPPED
+}
+
+enum ProgressTerm {
+  TERM_1
+  TERM_2
+  TERM_3
+  ANNUAL
+}
+
+enum HealthEventSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum BeneficiaryHealthStatus {
+  NORMAL
+  SICK
+  HOSPITALIZED
+  UNDER_TREATMENT
+}
+
+enum DocumentOwnerType {
+  BENEFICIARY
+  ORGANIZATION
+}
+
+enum DocumentType {
+  PHOTO
+  BENEFICIARY_PHOTO
+  HOME_PHOTO
+  REPORT_CARD
+  MEDICAL_REPORT
+  AADHAAR
+  GOVT_ID
+  PRESCRIPTION
+  CERTIFICATE
+  OTHER
+}
+
+enum ReportCampaignType {
+  QUARTERLY
+  ANNUAL
+  AUDIT
+  EVENT
+}
+
+enum ReportTarget {
+  ALL_DONORS
+  SPONSORS_ONLY
+  CUSTOM
+}
+
+enum ReportCampaignStatus {
+  DRAFT
+  QUEUED
+  SENT
+}
+
+model MessageTemplate {
+  id          String                @id @default(uuid())
+  key         String
+  channel     MessageChannel
+  subject     String?
+  body        String
+  updatedAt   DateTime              @updatedAt
+  updatedById String?
+  updatedBy   User?                 @relation("MessageTemplateUpdatedBy", fields: [updatedById], references: [id])
+
+  @@unique([key, channel])
+  @@index([key])
+  @@map("message_templates")
+}
+
+model OutboundMessageLog {
+  id             String               @id @default(uuid())
+  type           OutboundMessageType
+  channel        MessageChannel
+  donorId        String
+  beneficiaryIds String[]
+  status         OutboundMessageStatus @default(QUEUED)
+  createdAt      DateTime              @default(now())
+  createdById    String
+  donor          Donor                 @relation("OutboundMessageDonor", fields: [donorId], references: [id], onDelete: Cascade)
+  createdBy      User                  @relation("OutboundMessageCreatedBy", fields: [createdById], references: [id])
+
+  @@index([donorId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("outbound_message_logs")
+}
+
+enum MessageChannel {
+  EMAIL
+  WHATSAPP
+}
+
+enum OutboundMessageType {
+  DONOR_BIRTHDAY
+  BENEFICIARY_BIRTHDAY
+  REPORT_CAMPAIGN
+  DONOR_UPDATE
+}
+
+enum OutboundMessageStatus {
+  QUEUED
+  SENT
+  COPIED
+}
+
+model Milestone {
+  id          String    @id @default(uuid())
+  date        DateTime
+  title       String
+  description String?
+  homeType    HomeType?
+  photos      String[]
+  isPublic    Boolean   @default(false)
+  sortOrder   Int       @default(0)
+  createdById String
+  createdBy   User      @relation("MilestoneCreatedBy", fields: [createdById], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([date])
+  @@index([homeType])
+  @@map("milestones")
+}
+
+model DataBackup {
+  id             String   @id @default(uuid())
+  filename       String
+  sizeBytes      Int
+  tablesIncluded String[]
+  recordCounts   Json
+  createdById    String
+  createdBy      User     @relation("BackupCreatedBy", fields: [createdById], references: [id])
+  createdAt      DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("data_backups")
+}
+
+model DonorUpdate {
+  id                   String                @id @default(uuid())
+  title                String
+  content              String
+  photos               String[]
+  relatedBeneficiaryIds String[]
+  relatedHomeTypes     HomeType[]
+  isDraft              Boolean               @default(true)
+  createdById          String
+  createdBy            User                  @relation("DonorUpdateCreatedBy", fields: [createdById], references: [id])
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  dispatches           DonorUpdateDispatch[]
+
+  @@index([createdAt])
+  @@index([isDraft])
+  @@map("donor_updates")
+}
+
+model DonorUpdateDispatch {
+  id        String                      @id @default(uuid())
+  updateId  String
+  donorId   String
+  channel   SponsorDispatchChannel
+  status    SponsorDispatchStatus       @default(QUEUED)
+  sentAt    DateTime?
+  error     String?
+  createdAt DateTime                    @default(now())
+  update    DonorUpdate                 @relation(fields: [updateId], references: [id], onDelete: Cascade)
+  donor     Donor                       @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@index([updateId])
+  @@index([donorId])
+  @@index([status])
+  @@map("donor_update_dispatches")
+}
+
+enum DonorReportType {
+  QUARTERLY
+  ANNUAL
+  CUSTOM
+}
+
+enum DonorReportStatus {
+  GENERATING
+  READY
+  FAILED
+  SHARED
+}
+
+model DonorReportTemplate {
+  id                String    @id @default(uuid())
+  name              String
+  isDefault         Boolean   @default(false)
+  headerText        String?
+  footerText        String?
+  showDonationSummary    Boolean @default(true)
+  showDonationBreakdown  Boolean @default(true)
+  showBeneficiaries      Boolean @default(true)
+  showCampaigns          Boolean @default(true)
+  showUsageSummary       Boolean @default(true)
+  customSections    Json?
+  createdById       String
+  createdBy         User      @relation("ReportTemplateCreatedBy", fields: [createdById], references: [id])
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  reports           DonorReport[]
+
+  @@map("donor_report_templates")
+}
+
+model DonorReport {
+  id              String            @id @default(uuid())
+  title           String
+  type            DonorReportType
+  periodStart     DateTime          @db.Date
+  periodEnd       DateTime          @db.Date
+  donorId         String?
+  campaignId      String?
+  templateId      String?
+  status          DonorReportStatus @default(GENERATING)
+  reportData      Json?
+  pdfUrl          String?
+  excelUrl        String?
+  sharedAt        DateTime?
+  sharedTo        String[]          @default([])
+  generatedById   String
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  donor           Donor?            @relation("DonorReportForDonor", fields: [donorId], references: [id])
+  generatedBy     User              @relation("DonorReportGeneratedBy", fields: [generatedById], references: [id])
+  template        DonorReportTemplate? @relation(fields: [templateId], references: [id])
+
+  @@index([type])
+  @@index([status])
+  @@index([donorId])
+  @@index([createdAt])
+  @@map("donor_reports")
+}
+
+enum ProgressReportStatus {
+  GENERATING
+  READY
+  SHARED
+  FAILED
+}
+
+model BeneficiaryProgressReport {
+  id              String                @id @default(uuid())
+  beneficiaryId   String
+  title           String
+  periodStart     DateTime              @db.Date
+  periodEnd       DateTime              @db.Date
+  includePhotos   Boolean               @default(true)
+  includeHealth   Boolean               @default(true)
+  includeEducation Boolean              @default(true)
+  includeUpdates  Boolean               @default(true)
+  status          ProgressReportStatus  @default(GENERATING)
+  reportData      Json?
+  sharedAt        DateTime?
+  sharedTo        String[]              @default([])
+  generatedById   String
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  beneficiary     Beneficiary           @relation(fields: [beneficiaryId], references: [id], onDelete: Cascade)
+  generatedBy     User                  @relation("ProgressReportGeneratedBy", fields: [generatedById], references: [id])
+
+  @@index([beneficiaryId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("beneficiary_progress_reports")
+}
+
+model FollowUpReminder {
+  id            String               @id @default(uuid())
+  donorId       String
+  assignedToId  String
+  createdById   String
+  note          String
+  dueDate       DateTime             @db.Date
+  priority      FollowUpPriority     @default(NORMAL)
+  status        FollowUpStatus       @default(PENDING)
+  completedAt   DateTime?
+  completedNote String?
+  isDeleted     Boolean              @default(false)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  donor         Donor                @relation(fields: [donorId], references: [id])
+  assignedTo    User                 @relation("FollowUpAssignedTo", fields: [assignedToId], references: [id])
+  createdBy     User                 @relation("FollowUpCreatedBy", fields: [createdById], references: [id])
+
+  @@index([donorId])
+  @@index([assignedToId])
+  @@index([dueDate])
+  @@index([status])
+  @@index([isDeleted])
+  @@map("follow_up_reminders")
+}
+
+enum FollowUpPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum FollowUpStatus {
+  PENDING
+  COMPLETED
+}
+
+enum NgoDocCategory {
+  CERTIFICATE
+  COMPLIANCE
+  MOU
+  LEGAL
+  FINANCIAL
+  POLICY
+  REPORT
+  OTHER
+}
+
+model NgoDocument {
+  id            String              @id @default(uuid())
+  title         String
+  description   String?
+  category      NgoDocCategory
+  fileName      String
+  filePath      String
+  mimeType      String
+  sizeBytes     Int
+  expiryDate    DateTime?           @db.Date
+  isActive      Boolean             @default(true)
+  currentVersion Int                @default(1)
+  uploadedById  String
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  uploadedBy    User                @relation("NgoDocUploadedBy", fields: [uploadedById], references: [id])
+  versions      NgoDocumentVersion[]
+  accessLogs    NgoDocumentAccessLog[]
+
+  @@index([category])
+  @@index([expiryDate])
+  @@index([isActive])
+  @@map("ngo_documents")
+}
+
+model NgoDocumentVersion {
+  id            String       @id @default(uuid())
+  documentId    String
+  versionNumber Int
+  fileName      String
+  filePath      String
+  mimeType      String
+  sizeBytes     Int
+  changeNote    String?
+  uploadedById  String
+  createdAt     DateTime     @default(now())
+
+  document      NgoDocument  @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  uploadedBy    User         @relation("NgoDocVersionUploadedBy", fields: [uploadedById], references: [id])
+
+  @@index([documentId])
+  @@map("ngo_document_versions")
+}
+
+model NgoDocumentAccessLog {
+  id          String      @id @default(uuid())
+  documentId  String
+  userId      String
+  action      String
+  accessedAt  DateTime    @default(now())
+
+  document    NgoDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user        User        @relation("NgoDocAccessBy", fields: [userId], references: [id])
+
+  @@index([documentId])
+  @@index([userId])
+  @@map("ngo_document_access_logs")
+}
+
+model RolePermission {
+  id        String   @id @default(uuid())
+  role      Role
+  module    String
+  action    String
+  allowed   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([role, module, action])
+  @@index([role])
+  @@index([module])
+  @@map("role_permissions")
+}
+
+model SensitiveFieldConfig {
+  id        String   @id @default(uuid())
+  module    String
+  fieldName String
+  roles     Role[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([module, fieldName])
+  @@map("sensitive_field_configs")
+}
+
+enum DonorEngagement {
+  HOT
+  WARM
+  COLD
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum SupportPreference {
+  GROCERIES
+  EDUCATION
+  MEDICINES
+  TOILETRIES
+  SPONSORSHIP
+  GENERAL
+}
+
+enum KindCategory {
+  GROCERIES
+  MEDICINES
+  TOILETRIES
+  STATIONERY
+  CLOTHES
+  OTHER
+}
+
+enum TaskCategory {
+  GENERAL
+  DONOR_FOLLOWUP
+  BENEFICIARY_UPDATE
+  DATA_ENTRY
+  REPORTING
+  COMMUNICATION
+  EVENT
+  OTHER
+}
+
+model StaffTask {
+  id            String       @id @default(uuid())
+  title         String
+  description   String?
+  status        TaskStatus   @default(PENDING)
+  priority      TaskPriority @default(MEDIUM)
+  category      TaskCategory @default(GENERAL)
+  assignedToId  String
+  createdById   String
+  linkedDonorId String?
+  dueDate       DateTime?
+  startedAt     DateTime?
+  completedAt   DateTime?
+  notes         String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  deletedAt     DateTime?
+
+  assignedTo    User         @relation("TaskAssignedTo", fields: [assignedToId], references: [id])
+  createdBy     User         @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  linkedDonor   Donor?       @relation("TaskLinkedDonor", fields: [linkedDonorId], references: [id])
+
+  @@index([assignedToId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([createdById])
+  @@map("staff_tasks")
+}
+
+model StaffPerformance {
+  id                  String   @id @default(uuid())
+  userId              String
+  month               Int
+  year                Int
+  tasksAssigned       Int      @default(0)
+  tasksCompleted      Int      @default(0)
+  tasksOnTime         Int      @default(0)
+  tasksOverdue        Int      @default(0)
+  followUpsDone       Int      @default(0)
+  donorResponses      Int      @default(0)
+  score               Float    @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user                User     @relation("StaffPerformanceUser", fields: [userId], references: [id])
+
+  @@unique([userId, month, year])
+  @@index([userId])
+  @@index([year, month])
+  @@map("staff_performance")
+}
+
+enum CommChannel {
+  WHATSAPP
+  EMAIL
+}
+
+enum CommProvider {
+  TWILIO
+  SMTP
+}
+
+enum CommStatus {
+  QUEUED
+  SENT
+  DELIVERED
+  READ
+  FAILED
+  UNDELIVERED
+}
+
+model CommunicationMessage {
+  id                  String       @id @default(uuid())
+  donorId             String?
+  channel             CommChannel
+  provider            CommProvider
+  to                  String
+  providerMessageId   String?
+  status              CommStatus   @default(QUEUED)
+  templateName        String?
+  templateKey         String?
+  templateVariables   Json?
+  errorCode           String?
+  errorMessage        String?
+  createdByUserId     String?
+  createdAt           DateTime     @default(now())
+  sentAt              DateTime?
+  deliveredAt         DateTime?
+  readAt              DateTime?
+
+  donor               Donor?       @relation("CommunicationMessageDonor", fields: [donorId], references: [id])
+  createdBy           User?        @relation("CommunicationMessageCreatedBy", fields: [createdByUserId], references: [id])
+
+  @@index([donorId])
+  @@index([providerMessageId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("communication_messages")
+}

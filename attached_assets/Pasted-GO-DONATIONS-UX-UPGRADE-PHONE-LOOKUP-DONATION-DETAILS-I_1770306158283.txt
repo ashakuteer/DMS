@@ -1,0 +1,69 @@
+GO DONATIONS UX UPGRADE (PHONE LOOKUP + DONATION DETAILS + IN-KIND TYPES)
+
+Context:
+Donations are visible on dashboard and donor profile, but donations UX needs improvement.
+
+A) Record Donation modal: phone lookup
+1) In the “Select Donor” input:
+- If user types a phone number (10+ digits, or includes +91) and presses Enter OR clicks a search icon:
+  -> call GET /api/donors/lookup?phone=<normalized>
+  -> if found, auto-select donor and show a donor chip/card (Name + Code + Phone)
+  -> if not found, show toast “No donor found with this phone number”
+- Keep name/code search dropdown also.
+
+2) Backend:
+- Implement GET /api/donors/lookup?phone=
+- Normalize phone:
+  - strip spaces, hyphens, parentheses
+  - remove leading +91 or 91 if present
+- Match against donor.primaryPhone and donor.alternatePhone (if those exist), otherwise whichever phone fields exist.
+Return minimal donor: id, donorCode, fullName, primaryPhone, email.
+
+B) Donation History Action must open Donation Details (NOT donor profile)
+1) Create Donation Details page:
+- Route: /dashboard/donations/[donationId]
+- Show:
+  - Donation date, type, mode, amount/quantity/unit, notes, receipt number (if any)
+  - Donor summary (name/code) with a smaller “Open Donor Profile” link
+- Add Edit Donation button (admin only) to update amount/type/mode/notes.
+
+2) Backend:
+- Implement GET /api/donations/:id returning donation + donor fields.
+- Implement PATCH /api/donations/:id for edits (admin only).
+
+3) Replace existing “action” button in donation history/table:
+- It must navigate to /dashboard/donations/[donationId]
+- Add separate icon/link for donor profile if needed.
+
+C) In-kind donation support
+1) Donation form must support these donation types:
+- CASH
+- ANNADANAM (prepared meals)
+- GROCERIES
+- MEDICINES
+- RICE_BAGS
+- STATIONERY
+- SPORTS_KITS
+- USED_ITEMS
+- OTHER
+
+2) Form behavior:
+- If CASH -> show Amount (required)
+- If in-kind -> show Quantity + Unit + Description (required)
+- Mode field optional for in-kind (can still be UPI if donor reimbursed, etc.)
+- Add “Home” field (optional for now): GIRLS_HOME / BLIND_BOYS_HOME / OLD_AGE_HOME / GENERAL
+
+3) Donations list page:
+- Show Amount for CASH, and Qty+Unit for in-kind
+- Add filters: type, home, date range, donor search
+- Ensure exports remain compatible (donations excel/pdf later).
+
+D) Quality checks
+- No button click should navigate unexpectedly (no row click propagation bugs).
+- Add proper toast errors with server message on failure.
+- Run build and ensure no missing modules.
+
+Acceptance test:
+1) In Record Donation, type a phone number and it auto-fills donor.
+2) Clicking donation action opens donation detail page (not donor profile).
+3) Create an in-kind donation (Rice bags 25 kg) and it displays properly.

@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = ["nodejs_22"]
+
+[phases.install]
+cwd = "apps/api"
+cmds = ["npm install --legacy-peer-deps"]
+
+[phases.build]
+cwd = "apps/api"
+cmds = ["npm run build"]
+
+[start]
+cwd = "apps/api"
+cmd = "npm run start:prod"

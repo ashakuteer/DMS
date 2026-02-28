@@ -1,0 +1,291 @@
+INGLE MASTER PROMPT — Sponsor Automation System (Paste into Replit AI)
+
+Prompt:
+
+Build a complete “Sponsor Automation” system that links Donors ↔ Beneficiaries and supports monthly sponsorship tracking, reminders, and updates. WhatsApp remains manual (copy button only). Email can be automated using existing SMTP settings.
+
+A) Data Model (DB)
+
+Create tables (or extend existing schema) with backward compatibility:
+
+beneficiary_sponsorships
+
+id (uuid)
+
+beneficiary_id (FK)
+
+donor_id (FK)
+
+home_type enum (ORPHAN_GIRLS, BLIND_BOYS, OLD_AGE) derived from beneficiary
+
+sponsorship_type enum (MONTHLY, ONE_TIME, EVENT_BASED)
+
+amount_monthly (number, nullable)
+
+start_date (date)
+
+end_date (date, nullable)
+
+status enum (ACTIVE, PAUSED, ENDED)
+
+notes (text, nullable)
+
+created_at, updated_at
+
+beneficiary_updates
+
+id (uuid)
+
+beneficiary_id (FK)
+
+created_by (user id)
+
+update_type enum (GENERAL, EDUCATION, HEALTH, ACHIEVEMENT, NEEDS, THANK_YOU)
+
+title (text)
+
+message (text)
+
+media_urls (text[] nullable) // support image uploads already built
+
+is_private (boolean default false) // if Protect Privacy checked
+
+created_at
+
+sponsor_update_dispatch
+
+id (uuid)
+
+update_id (FK to beneficiary_updates)
+
+donor_id (FK)
+
+channel enum (EMAIL, WHATSAPP_MANUAL)
+
+status enum (QUEUED, SENT, FAILED, COPIED)
+
+sent_at (timestamp nullable)
+
+error (text nullable)
+
+created_at
+
+sponsorship_reminders
+
+id (uuid)
+
+sponsorship_id (FK)
+
+reminder_type enum (MONTHLY_DUE, UPCOMING_BENEFICIARY_BDAY, UPCOMING_DONOR_BDAY)
+
+due_date (date)
+
+status enum (PENDING, DONE, SKIPPED)
+
+last_triggered_at (timestamp nullable)
+
+B) Beneficiary Profile Enhancements
+
+Add tabs on beneficiary profile:
+
+Overview (already)
+
+Sponsors
+
+Updates
+
+Timeline
+
+Sponsors Tab
+
+Show list of sponsors (donor name, donor code, phone/email icons, status ACTIVE/PAUSED/ENDED, start date, monthly amount)
+
+Add “Link Sponsor” button:
+
+searchable donor select (name/code/phone)
+
+pick sponsorship_type (MONTHLY default)
+
+monthly amount optional
+
+start date default today
+
+status ACTIVE default
+
+Add actions per sponsor: Pause / Resume / End sponsorship (with confirmation)
+
+Updates Tab
+
+Add “Post Update” form:
+
+update_type dropdown
+
+title
+
+message
+
+upload images (reuse existing uploader)
+
+privacy toggle (if checked: hide media + redact sensitive info in exports & public views; only admins see full)
+
+After posting update:
+
+Show “Send to Sponsors” panel:
+
+checkbox list of linked donors (default checked)
+
+channel options:
+
+Email (send now)
+
+WhatsApp (manual): generate message + “Copy” button
+
+When Email selected: queue email jobs using existing EmailJobsService
+
+When WhatsApp selected: mark dispatch row as COPIED when user clicks Copy
+
+C) Donor Profile Enhancements
+
+Add/complete “Sponsorships” tab:
+
+List sponsored beneficiaries with:
+
+beneficiary name/code
+
+home badge
+
+sponsorship type & amount
+
+status
+
+quick buttons:
+
+View Beneficiary
+
+Copy WhatsApp message (pre-filled thank you / update request)
+
+Email sponsor update request (manual trigger)
+
+D) Daily Actions Enhancements (Most Important)
+
+Add 2 new cards on Daily Actions:
+
+“Beneficiary Birthdays (Next 7 days)”
+
+“Sponsorships Due (Monthly)”
+
+Beneficiary Birthdays card
+
+For each beneficiary birthday within 7 days:
+
+show beneficiary name + home + DOB
+
+show sponsor count
+
+actions:
+
+WhatsApp Copy: “Dear <DonorName>, today is <BeneficiaryName>’s birthday… thank you for supporting…”
+
+Email: queue email to donor(s) using templates (below)
+
+Sponsorships Due card
+
+For each ACTIVE monthly sponsorship due this month:
+
+show donor + beneficiary + amount (if available) + home
+
+actions:
+
+WhatsApp Copy “gentle reminder”
+
+Email “gentle reminder” (queue)
+
+Mark Done (sets reminder DONE)
+
+E) Templates (Email + WhatsApp Manual)
+
+Create templating system (simple handlebars-style replacements) stored in DB or code:
+Variables:
+
+{{donor_name}}, {{beneficiary_name}}, {{home_name}}, {{amount}}, {{month}}, {{ngo_name}}, {{phone}}
+
+Default templates:
+
+1. Sponsorship Reminder (EMAIL)
+
+Subject: “Gentle Reminder – Monthly Sponsorship for {{beneficiary_name}}”
+Body: A polite reminder with amount (if provided), and gratitude.
+
+2. Beneficiary Birthday Wish to Donor (EMAIL)
+
+Subject: “A Birthday Update – {{beneficiary_name}} from {{home_name}}”
+Body: thank donor + short birthday note + optional image attachments (if not private)
+
+3. Donor Birthday Wish (EMAIL)
+
+Subject: “Happy Birthday {{donor_name}} – Thank you from {{ngo_name}}”
+Body: include a short message and optionally mention sponsored beneficiary names (if any)
+
+WhatsApp templates should be shorter and always end with “– ASHA KUTEER FOUNDATION”
+
+F) Scheduling / Cron Jobs
+
+Using existing scheduler pattern:
+
+Nightly job creates reminder rows:
+
+Monthly reminders for ACTIVE monthly sponsorships (due_date = 1st of month or based on start_date day)
+
+Beneficiary birthdays upcoming 7 days
+
+Donor birthdays upcoming 7 days (if donor DOB exists)
+
+Cron should NOT auto-send WhatsApp.
+
+Email sending:
+
+obey Auto Email enable toggle from settings
+
+if disabled, only queue emails when manually clicked
+
+G) Access Control
+
+Admin can add/update sponsorships and send emails
+
+Staff can view, copy WhatsApp messages, post updates, but cannot change SMTP settings
+
+H) UI / Polish
+
+Add badges for Home types
+
+Add sponsor count icons (heart)
+
+Add toast messages:
+
+“Sponsor linked successfully”
+
+“Update posted”
+
+“Emails queued to X sponsors”
+
+“WhatsApp message copied”
+
+I) Testing
+
+Add tests:
+
+link sponsor creates beneficiary_sponsorships row
+
+posting update creates dispatch rows for selected donors
+
+daily actions endpoints return beneficiary birthdays and monthly due sponsorships
+
+email queue created when Email clicked
+
+Finally:
+
+Run the app and verify flows end-to-end.
+
+Ensure no build errors (missing UI components).
+
+If shadcn components missing, install or implement minimal equivalents locally.
