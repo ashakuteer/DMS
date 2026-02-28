@@ -28,7 +28,5 @@ RUN npm prune --production
 # Expose port (Railway will override this)
 EXPOSE 3001
 
-# Set Node memory limit and start command
-ENV NODE_OPTIONS="--max-old-space-size=512"
-CMD ["sh", "-c", "npx prisma db push --schema=prisma/schema.prisma --accept-data-loss && node dist/src/main.js"]
-
+# Start the application
+CMD ["node", "dist/src/main.js"]

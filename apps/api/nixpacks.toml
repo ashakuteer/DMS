@@ -14,4 +14,4 @@ cmds = [
 ]
 
 [start]
-cmd = "node dist/src/main.js"
+cmd = "node --max-old-space-size=512 dist/src/main.js"
