@@ -2,7 +2,7 @@
   "buildCommand": "cd apps/web && npm run build",
   "outputDirectory": "apps/web/.next",
   "devCommand": "cd apps/web && npm run dev",
-  "installCommand": "npm install",
+  "installCommand": "pnpm install --frozen-lockfile",
   "framework": "nextjs",
   "rewrites": [
     {
