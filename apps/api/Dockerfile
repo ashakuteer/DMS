@@ -1,26 +1,34 @@
-# Use official Node image
+# Use Node.js LTS version
 FROM node:20-alpine
 
-# Install OpenSSL (required for Prisma)
+# Install OpenSSL for Prisma
 RUN apk add --no-cache openssl
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files first
-COPY package*.json ./
+# Copy production package.json (without workspace dependencies)
+COPY package.production.json ./package.json
 
-# Install dependencies
+# Copy prisma schema BEFORE npm install (needed for postinstall script)
+COPY prisma ./prisma
+
+# Install dependencies (postinstall will run prisma generate)
 RUN npm install --legacy-peer-deps
 
-# Copy rest of the project
+# Copy source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
+# Build the application
+RUN npm run build
 
-# Expose port (change if needed)
-EXPOSE 3000
+# Remove dev dependencies to reduce image size
+RUN npm prune --production
 
-# Start app
-CMD ["npm", "start"]
+# Expose port (Railway will override this)
+EXPOSE 3001
+
+# Set Node memory limit and start command
+ENV NODE_OPTIONS="--max-old-space-size=512"
+CMD ["sh", "-c", "npx prisma db push --schema=prisma/schema.prisma --accept-data-loss && node dist/src/main.js"]
+
