@@ -677,7 +677,7 @@ export class DonorReportsService {
       }
     }
 
-    return (await workbook.xlsx.writeBuffer()) as Buffer;
+    return Buffer.from(await workbook.xlsx.writeBuffer());
   }
 
   async shareReport(id: string, donorIds: string[], user: UserContext) {
