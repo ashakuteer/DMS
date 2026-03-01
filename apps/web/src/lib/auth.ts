@@ -1,5 +1,4 @@
-import { API_URL } from './api-config';
-export { API_URL };
+const API_URL = process.env.NEXT_PUBLIC_API_URL || '';
 export interface User {
   id: string;
   email: string;
