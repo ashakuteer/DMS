@@ -870,21 +870,23 @@ export class DonorsService {
     return data;
   }
 
-  private async generateDonorCode(): Promise<string> {
-    const result = await this.prisma.$queryRaw<{ max_num: number | null }[]>`
-      SELECT MAX(
-        CASE 
-          WHEN "donorCode" ~ '^AKF-DNR-[0-9]+$' THEN 
-            CAST(SUBSTRING("donorCode" FROM 9) AS INTEGER)
-          WHEN "donorCode" ~ '^DNR[0-9]+$' THEN 
-            CAST(SUBSTRING("donorCode" FROM 4) AS INTEGER)
-          ELSE 0
-        END
-      ) as max_num 
-      FROM "donors"
-    `;
+    private async generateDonorCode(): Promise<string> {
+    const lastDonor = await this.prisma.donor.findFirst({
+      where: {
+        donorCode: { startsWith: 'AKF-DNR-' },
+      },
+      orderBy: { donorCode: 'desc' },
+      select: { donorCode: true },
+    });
 
-    const maxNumber = result[0]?.max_num || 0;
+    let maxNumber = 0;
+    if (lastDonor?.donorCode) {
+      const match = lastDonor.donorCode.match(/AKF-DNR-(\d+)/);
+      if (match) {
+        maxNumber = parseInt(match[1], 10);
+      }
+    }
+
     return `AKF-DNR-${String(maxNumber + 1).padStart(6, "0")}`;
   }
 
