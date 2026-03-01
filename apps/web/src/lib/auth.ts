@@ -1,6 +1,5 @@
-// Use relative URL to leverage Next.js rewrites for proxying to NestJS
-const API_URL = '';
-
+import { API_URL } from './api-config';
+export { API_URL };
 export interface User {
   id: string;
   email: string;
