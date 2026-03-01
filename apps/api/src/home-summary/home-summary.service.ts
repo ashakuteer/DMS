@@ -397,6 +397,6 @@ export class HomeSummaryService {
     const mTotal = movementSheet.addRow({ home: 'TOTAL', joinings: data.totals.totalNewJoinings, exits: data.totals.totalExits });
     mTotal.eachCell((cell) => Object.assign(cell, { style: totalStyle }));
 
-    return (await workbook.xlsx.writeBuffer()) as Buffer;
+   return Buffer.from(await workbook.xlsx.writeBuffer());
   }
 }
