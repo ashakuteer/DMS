@@ -1992,10 +1992,19 @@ export default function DonorProfilePage() {
   const getDonorE164Phone = (): string | null => {
     const phone = donor?.whatsappPhone || donor?.primaryPhone;
     if (!phone) return null;
-    const digits = phone.replace(/[^\d]/g, "");
-    const code = donor?.primaryPhoneCode || "+91";
-    if (phone.startsWith("+")) return phone.replace(/[^\d+]/g, "");
-    return `${code}${digits}`;
+    let digits = phone.replace(/[^\d]/g, "");
+    if (!digits || digits.length < 10) return null;
+    const code = (donor?.primaryPhoneCode || "+91").replace(/[^\d]/g, "");
+    if (phone.startsWith("+")) {
+      return "+" + digits;
+    }
+    if (digits.startsWith(code) && digits.length > 10) {
+      return "+" + digits;
+    }
+    if (digits.length === 10) {
+      return "+" + code + digits;
+    }
+    return "+" + code + digits;
   };
 
   const handlePostDonationWhatsAppAuto = async () => {

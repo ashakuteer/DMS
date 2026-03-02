@@ -11,6 +11,7 @@ import {
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { CommunicationsService } from "./communications.service";
 import { WhatsAppTemplateKey } from "./twilio-whatsapp.service";
+import { normalizeToE164 } from "../common/phone-utils";
 
 @Controller("communications")
 @UseGuards(JwtAuthGuard)
@@ -35,7 +36,8 @@ export class CommunicationsController {
       );
     }
 
-    if (!/^\+\d{10,15}$/.test(body.toE164)) {
+    const normalized = normalizeToE164(body.toE164) || body.toE164;
+    if (!/^\+\d{10,15}$/.test(normalized)) {
       throw new HttpException(
         "toE164 must be a valid E.164 phone number (e.g. +919876543210)",
         HttpStatus.BAD_REQUEST,
@@ -45,7 +47,7 @@ export class CommunicationsController {
     const result = await this.service.sendWhatsAppTemplate(
       {
         donorId: body.donorId,
-        toE164: body.toE164,
+        toE164: normalized,
         contentSid: body.contentSid,
         variables: body.variables,
       },
@@ -86,7 +88,8 @@ export class CommunicationsController {
       );
     }
 
-    if (!/^\+\d{10,15}$/.test(body.toE164)) {
+    const normalizedPhone = normalizeToE164(body.toE164) || body.toE164;
+    if (!/^\+\d{10,15}$/.test(normalizedPhone)) {
       throw new HttpException(
         "toE164 must be a valid E.164 phone number (e.g. +919876543210)",
         HttpStatus.BAD_REQUEST,
@@ -96,7 +99,7 @@ export class CommunicationsController {
     const result = await this.service.sendByTemplateKey(
       body.templateKey,
       body.donorId,
-      body.toE164,
+      normalizedPhone,
       body.variables,
       req.user?.id,
     );
