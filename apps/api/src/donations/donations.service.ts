@@ -279,15 +279,19 @@ export class DonationsService {
       const donorEmail = donor?.personalEmail || donor?.officialEmail;
       if (donorEmail) {
         communicationResults.emailStatus = "queued";
+        this.logger.log(`Queuing donation receipt email to ${donorEmail} for ${receiptNumber}`);
         this.sendDonationReceiptEmail(
           donation.id,
           data.donorId,
           receiptNumber,
           user.id,
-        ).catch((err) => {
+        ).then(() => {
+          this.logger.log(`Donation receipt email completed for ${receiptNumber}`);
+        }).catch((err) => {
           this.logger.error(
             `Failed to send donation receipt email for ${receiptNumber}: ${err?.message || err}`,
           );
+          this.logger.error(`Email error stack: ${err?.stack || 'no stack'}`);
         });
       } else {
         communicationResults.emailStatus = "skipped_no_email";
