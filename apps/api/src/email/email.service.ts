@@ -59,7 +59,10 @@ export class EmailService {
           user: smtpUser,
           pass: smtpPass,
         },
-      });
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+      } as any);
 
       this.configStatus = {
         configured: true,
