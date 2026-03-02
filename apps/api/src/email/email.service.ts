@@ -51,18 +51,33 @@ export class EmailService {
     const smtpFrom = process.env.SMTP_FROM || smtpUser;
 
     if (smtpHost && smtpUser && smtpPass) {
-      this.transporter = nodemailer.createTransport({
-        host: smtpHost,
-        port: smtpPort,
-        secure: smtpPort === 465,
-        auth: {
-          user: smtpUser,
-          pass: smtpPass,
-        },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
-      } as any);
+      const useGmailService = smtpHost === 'smtp.gmail.com';
+      const transportConfig: any = useGmailService
+        ? {
+            service: 'gmail',
+            auth: {
+              user: smtpUser,
+              pass: smtpPass,
+            },
+            connectionTimeout: 15000,
+            greetingTimeout: 15000,
+            socketTimeout: 20000,
+            tls: { rejectUnauthorized: false },
+          }
+        : {
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpPort === 465,
+            auth: {
+              user: smtpUser,
+              pass: smtpPass,
+            },
+            connectionTimeout: 15000,
+            greetingTimeout: 15000,
+            socketTimeout: 20000,
+            tls: { rejectUnauthorized: false },
+          };
+      this.transporter = nodemailer.createTransport(transportConfig);
 
       this.configStatus = {
         configured: true,
