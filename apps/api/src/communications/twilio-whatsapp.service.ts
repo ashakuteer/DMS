@@ -171,12 +171,11 @@ export class TwilioWhatsAppService {
         to: `whatsapp:${toE164}`,
       };
 
-      // Use messagingServiceSid if available (priority), otherwise use fromNumber
-      if (this.messagingServiceSid) {
-        params.messagingServiceSid = this.messagingServiceSid;
-      } else if (this.fromNumber) {
-        params.from = this.fromNumber;
-      }
+     if (this.fromNumber) {
+  params.from = this.fromNumber;
+} else if (this.messagingServiceSid) {
+  params.messagingServiceSid = this.messagingServiceSid;
+}
 
       if (contentVariables && Object.keys(contentVariables).length > 0) {
         params.contentVariables = JSON.stringify(contentVariables);
