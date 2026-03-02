@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Get,
   Body,
   UseGuards,
   Request,
@@ -36,6 +37,35 @@ export class EmailController {
     private readonly communicationLogService: CommunicationLogService,
     private readonly auditService: AuditService,
   ) {}
+
+  @Get('config-status')
+  @Roles('ADMIN')
+  getConfigStatus() {
+    const status = this.emailService.getConfigStatus();
+    return {
+      configured: status.configured,
+      smtpHost: status.smtpHost || 'NOT_SET',
+      smtpUser: this.emailService.getMaskedSmtpUser(),
+      fromEmail: status.fromEmail || 'NOT_SET',
+      error: status.error || null,
+    };
+  }
+
+  @Post('test-send')
+  @Roles('ADMIN')
+  async testSend(@Body() body: { toEmail: string }, @Request() req: any) {
+    if (!body.toEmail) {
+      throw new BadRequestException('toEmail is required');
+    }
+    const result = await this.emailService.sendEmail({
+      to: body.toEmail,
+      subject: 'DMS Email Test',
+      html: '<h2>Email is working!</h2><p>This is a test email from your Donor Management System.</p>',
+      text: 'Email is working! This is a test email from your Donor Management System.',
+      featureType: 'TEST',
+    });
+    return result;
+  }
 
   @Post('send')
   @Roles('ADMIN', 'STAFF')
