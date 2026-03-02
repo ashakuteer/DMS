@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, User, Phone, MapPin, Settings, Users } from "lucide-react";
+import { ArrowLeft, Save, User, Phone, MapPin, Settings, Users, Camera, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -89,6 +89,9 @@ export default function EditDonorPage() {
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [userRole, setUserRole] = useState<string>("");
   const [donorCode, setDonorCode] = useState("");
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -140,6 +143,10 @@ export default function EditDonorPage() {
       if (res.ok) {
         const donor = await res.json();
         setDonorCode(donor.donorCode);
+        if (donor.profilePicUrl) {
+          const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
+          setExistingPhotoUrl(`${apiBase}${donor.profilePicUrl}`);
+        }
         setFormData({
           firstName: donor.firstName || "",
           middleName: donor.middleName || "",
@@ -244,6 +251,26 @@ export default function EditDonorPage() {
     return true;
   };
 
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      toast({ title: "Error", description: "Photo must be under 3MB", variant: "destructive" });
+      return;
+    }
+    setPhotoFile(file);
+    setExistingPhotoUrl(null);
+    const reader = new FileReader();
+    reader.onload = () => setPhotoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const removePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    setExistingPhotoUrl(null);
+  };
+
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -297,6 +324,18 @@ export default function EditDonorPage() {
       });
 
       if (res.ok) {
+        if (photoFile) {
+          try {
+            const formDataUpload = new FormData();
+            formDataUpload.append("photo", photoFile);
+            await fetchWithAuth(`/api/donors/${donorId}/upload-photo`, {
+              method: "POST",
+              body: formDataUpload,
+            });
+          } catch {
+            toast({ title: "Warning", description: "Donor updated but photo upload failed" });
+          }
+        }
         toast({
           title: "Donor Updated",
           description: "Donor profile has been updated successfully",
@@ -354,6 +393,42 @@ export default function EditDonorPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 md:grid-cols-3">
+            <div className="md:col-span-3">
+              <Label className="mb-2 block">Donor Photo</Label>
+              <div className="flex items-center gap-4">
+                {photoPreview || existingPhotoUrl ? (
+                  <div className="relative">
+                    <img
+                      src={photoPreview || existingPhotoUrl || ""}
+                      alt="Preview"
+                      className="h-20 w-20 rounded-full object-cover border-2 border-border"
+                    />
+                    <button
+                      type="button"
+                      onClick={removePhoto}
+                      className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                      data-testid="button-remove-photo"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="h-20 w-20 rounded-full bg-muted flex items-center justify-center border-2 border-dashed border-border">
+                    <Camera className="h-6 w-6 text-muted-foreground" />
+                  </div>
+                )}
+                <div>
+                  <Input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handlePhotoChange}
+                    className="w-auto"
+                    data-testid="input-donor-photo"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">JPG, PNG, or WebP. Max 3MB.</p>
+                </div>
+              </div>
+            </div>
             <div>
               <Label htmlFor="firstName">First Name</Label>
               <Input

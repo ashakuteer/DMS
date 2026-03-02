@@ -71,6 +71,12 @@ interface StaffUser {
   performanceScore?: number;
 }
 
+interface ChecklistItem {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
 interface Task {
   id: string;
   title: string;
@@ -83,6 +89,10 @@ interface Task {
   linkedDonorId: string | null;
   dueDate: string | null;
   notes: string | null;
+  isRecurring?: boolean;
+  recurrenceType?: string;
+  checklist?: ChecklistItem[] | null;
+  parentTaskId?: string | null;
   createdAt: string;
   updatedAt: string;
   assignedTo?: { id: string; name: string; email: string };
@@ -188,7 +198,11 @@ export default function StaffTasksPage() {
     dueDate: "",
     linkedDonorId: "",
     notes: "",
+    isRecurring: false,
+    recurrenceType: "NONE",
+    checklist: [] as ChecklistItem[],
   });
+  const [newChecklistItem, setNewChecklistItem] = useState("");
 
   const [performanceUserId, setPerformanceUserId] = useState("");
   const [performanceYear, setPerformanceYear] = useState(new Date().getFullYear());
@@ -318,7 +332,11 @@ export default function StaffTasksPage() {
       dueDate: "",
       linkedDonorId: "",
       notes: "",
+      isRecurring: false,
+      recurrenceType: "NONE",
+      checklist: [],
     });
+    setNewChecklistItem("");
     setSelectedDonor(null);
     setDonorSearch("");
     setDonorResults([]);
@@ -335,7 +353,7 @@ export default function StaffTasksPage() {
     }
     setSubmitting(true);
     try {
-      const body: Record<string, string | undefined> = {
+      const body: Record<string, any> = {
         title: formData.title,
         description: formData.description || undefined,
         assignedToId: formData.assignedToId,
@@ -343,6 +361,9 @@ export default function StaffTasksPage() {
         category: formData.category,
         dueDate: formData.dueDate || undefined,
         notes: formData.notes || undefined,
+        isRecurring: formData.isRecurring,
+        recurrenceType: formData.isRecurring ? formData.recurrenceType : "NONE",
+        checklist: formData.checklist.length > 0 ? formData.checklist : undefined,
       };
       if (selectedDonor) body.linkedDonorId = selectedDonor.id;
 
@@ -375,7 +396,7 @@ export default function StaffTasksPage() {
     }
     setSubmitting(true);
     try {
-      const body: Record<string, string | undefined> = {
+      const body: Record<string, any> = {
         title: formData.title,
         description: formData.description || undefined,
         assignedToId: formData.assignedToId || undefined,
@@ -383,6 +404,9 @@ export default function StaffTasksPage() {
         category: formData.category,
         dueDate: formData.dueDate || undefined,
         notes: formData.notes || undefined,
+        isRecurring: formData.isRecurring,
+        recurrenceType: formData.isRecurring ? formData.recurrenceType : "NONE",
+        checklist: formData.checklist.length > 0 ? formData.checklist : null,
       };
       if (selectedDonor) body.linkedDonorId = selectedDonor.id;
 
@@ -453,6 +477,9 @@ export default function StaffTasksPage() {
       dueDate: task.dueDate ? format(new Date(task.dueDate), "yyyy-MM-dd") : "",
       linkedDonorId: task.linkedDonorId || "",
       notes: task.notes || "",
+      isRecurring: task.isRecurring || false,
+      recurrenceType: task.recurrenceType || "NONE",
+      checklist: (task.checklist as ChecklistItem[]) || [],
     });
     if (task.linkedDonor) {
       setSelectedDonor({
@@ -643,6 +670,102 @@ export default function StaffTasksPage() {
           onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
           data-testid="input-task-notes"
         />
+      </div>
+      <div className="border rounded-lg p-4 space-y-3 bg-muted/30">
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="is-recurring"
+            checked={formData.isRecurring}
+            onChange={(e) => setFormData({ ...formData, isRecurring: e.target.checked, recurrenceType: e.target.checked ? "DAILY" : "NONE" })}
+            className="h-4 w-4 rounded border-gray-300"
+            data-testid="checkbox-recurring"
+          />
+          <Label htmlFor="is-recurring" className="font-medium cursor-pointer">Recurring Task</Label>
+        </div>
+        {formData.isRecurring && (
+          <div>
+            <Label>Frequency</Label>
+            <Select value={formData.recurrenceType} onValueChange={(v) => setFormData({ ...formData, recurrenceType: v })}>
+              <SelectTrigger data-testid="select-recurrence">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="DAILY">Daily</SelectItem>
+                <SelectItem value="WEEKLY">Weekly</SelectItem>
+                <SelectItem value="MONTHLY">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground mt-1">When completed, a new task will be created automatically for the next period</p>
+          </div>
+        )}
+      </div>
+      <div className="border rounded-lg p-4 space-y-3">
+        <Label className="font-medium flex items-center gap-2">
+          <ListChecks className="h-4 w-4" /> Checklist
+        </Label>
+        {formData.checklist.map((item, idx) => (
+          <div key={item.id} className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={item.completed}
+              onChange={() => {
+                const updated = [...formData.checklist];
+                updated[idx] = { ...updated[idx], completed: !updated[idx].completed };
+                setFormData({ ...formData, checklist: updated });
+              }}
+              className="h-4 w-4 rounded border-gray-300"
+              data-testid={`checklist-check-${idx}`}
+            />
+            <span className={`flex-1 text-sm ${item.completed ? "line-through text-muted-foreground" : ""}`}>{item.text}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 w-6 p-0"
+              onClick={() => {
+                setFormData({ ...formData, checklist: formData.checklist.filter((_, i) => i !== idx) });
+              }}
+              data-testid={`checklist-remove-${idx}`}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+        ))}
+        <div className="flex items-center gap-2">
+          <Input
+            placeholder="Add checklist item..."
+            value={newChecklistItem}
+            onChange={(e) => setNewChecklistItem(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && newChecklistItem.trim()) {
+                e.preventDefault();
+                setFormData({
+                  ...formData,
+                  checklist: [...formData.checklist, { id: crypto.randomUUID(), text: newChecklistItem.trim(), completed: false }],
+                });
+                setNewChecklistItem("");
+              }
+            }}
+            className="flex-1"
+            data-testid="input-checklist-new"
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              if (newChecklistItem.trim()) {
+                setFormData({
+                  ...formData,
+                  checklist: [...formData.checklist, { id: crypto.randomUUID(), text: newChecklistItem.trim(), completed: false }],
+                });
+                setNewChecklistItem("");
+              }
+            }}
+            data-testid="button-add-checklist"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -860,8 +983,18 @@ export default function StaffTasksPage() {
                         onClick={() => openDetailDialog(task)}
                         data-testid={`row-task-${task.id}`}
                       >
-                        <TableCell className="font-medium max-w-[200px] truncate" data-testid={`text-task-title-${task.id}`}>
-                          {task.title}
+                        <TableCell className="font-medium max-w-[250px]" data-testid={`text-task-title-${task.id}`}>
+                          <div className="flex items-center gap-1.5">
+                            <span className="truncate">{task.title}</span>
+                            {task.isRecurring && (
+                              <RefreshCw className="h-3 w-3 text-purple-500 shrink-0" title={`Recurring: ${task.recurrenceType}`} />
+                            )}
+                            {task.checklist && (task.checklist as ChecklistItem[]).length > 0 && (
+                              <span className="text-xs text-muted-foreground shrink-0" title="Checklist progress">
+                                {(task.checklist as ChecklistItem[]).filter(i => i.completed).length}/{(task.checklist as ChecklistItem[]).length}
+                              </span>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell data-testid={`text-task-assigned-${task.id}`}>
                           {task.assignedTo?.name || "—"}
@@ -1266,6 +1399,47 @@ export default function StaffTasksPage() {
                   <p className="text-sm text-muted-foreground" data-testid="text-detail-donor">
                     {selectedTask.linkedDonor.firstName} {selectedTask.linkedDonor.lastName || ""} ({selectedTask.linkedDonor.donorCode})
                   </p>
+                </div>
+              )}
+              {selectedTask.isRecurring && (
+                <div>
+                  <p className="text-sm font-medium mb-1">Recurrence</p>
+                  <Badge variant="outline" className="bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300" data-testid="badge-recurrence">
+                    {selectedTask.recurrenceType === "DAILY" ? "Daily" : selectedTask.recurrenceType === "WEEKLY" ? "Weekly" : "Monthly"}
+                  </Badge>
+                </div>
+              )}
+              {selectedTask.checklist && (selectedTask.checklist as ChecklistItem[]).length > 0 && (
+                <div>
+                  <p className="text-sm font-medium mb-2">Checklist ({(selectedTask.checklist as ChecklistItem[]).filter(i => i.completed).length}/{(selectedTask.checklist as ChecklistItem[]).length})</p>
+                  <div className="space-y-1.5">
+                    {(selectedTask.checklist as ChecklistItem[]).map((item, idx) => (
+                      <div key={item.id} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={item.completed}
+                          onChange={async () => {
+                            const updated = [...(selectedTask.checklist as ChecklistItem[])];
+                            updated[idx] = { ...updated[idx], completed: !updated[idx].completed };
+                            try {
+                              const res = await fetchWithAuth(`/api/staff-tasks/${selectedTask.id}/checklist`, {
+                                method: "PATCH",
+                                body: JSON.stringify({ checklist: updated }),
+                              });
+                              if (res.ok) {
+                                const updatedTask = await res.json();
+                                setSelectedTask(updatedTask);
+                                fetchTasks();
+                              }
+                            } catch {}
+                          }}
+                          className="h-4 w-4 rounded border-gray-300"
+                          data-testid={`detail-checklist-${idx}`}
+                        />
+                        <span className={`text-sm ${item.completed ? "line-through text-muted-foreground" : ""}`}>{item.text}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
               {selectedTask.notes && (

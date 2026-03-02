@@ -3561,14 +3561,39 @@ export default function DonorProfilePage() {
                                     variant="outline"
                                     size="icon"
                                     className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950"
-                                    onClick={() =>
-                                      openWhatsApp(
-                                        donationMessage,
-                                        thankYouTemplate?.id,
-                                        donation.id,
-                                        "THANK_YOU",
-                                      )
-                                    }
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      const e164Phone = getDonorE164Phone();
+                                      if (!e164Phone || !donor?.id) {
+                                        toast({ title: "No Phone", description: "This donor has no valid phone number", variant: "destructive" });
+                                        return;
+                                      }
+                                      try {
+                                        const donorName = getDonorName();
+                                        const res = await fetchWithAuth("/api/communications/whatsapp/send-by-key", {
+                                          method: "POST",
+                                          body: JSON.stringify({
+                                            templateKey: "DONATION_THANK_YOU",
+                                            donorId: donor.id,
+                                            toE164: e164Phone,
+                                            variables: {
+                                              "1": donorName,
+                                              "2": donation.donationType || "General",
+                                              "3": `${donation.currency || "INR"} ${donation.donationAmount}`,
+                                            },
+                                          }),
+                                        });
+                                        if (res.ok) {
+                                          toast({ title: "WhatsApp Sent", description: "Thank-you message sent via WhatsApp" });
+                                          fetchCommunicationLogs();
+                                        } else {
+                                          const err = await res.json();
+                                          toast({ title: "WhatsApp Failed", description: err.message || "Failed to send", variant: "destructive" });
+                                        }
+                                      } catch {
+                                        toast({ title: "Error", description: "Failed to send WhatsApp", variant: "destructive" });
+                                      }
+                                    }}
                                     disabled={!hasWhatsAppNumber}
                                     data-testid={`button-whatsapp-donation-${donation.id}`}
                                   >
@@ -3578,7 +3603,7 @@ export default function DonorProfilePage() {
                               </TooltipTrigger>
                               <TooltipContent>
                                 {hasWhatsAppNumber
-                                  ? "Send Thank You via WhatsApp"
+                                  ? "Send Thank You via WhatsApp (Twilio)"
                                   : "No phone number available"}
                               </TooltipContent>
                             </Tooltip>

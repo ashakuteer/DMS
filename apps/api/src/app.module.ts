@@ -36,7 +36,6 @@ import { FollowUpsModule } from "./follow-ups/follow-ups.module";
 import { NgoDocumentsModule } from "./ngo-documents/ngo-documents.module";
 import { RolePermissionsModule } from "./role-permissions/role-permissions.module";
 import { StaffTasksModule } from "./staff-tasks/staff-tasks.module";
-import { WhatsappModule } from "./whatsapp/whatsapp.module";
 import { CommunicationsModule } from "./communications/communications.module";
 import { BroadcastingModule } from "./broadcasting/broadcasting.module";
 
@@ -80,7 +79,6 @@ import { BroadcastingModule } from "./broadcasting/broadcasting.module";
     RolePermissionsModule,
     StaffTasksModule,
 
-    WhatsappModule,
     CommunicationsModule,
     BroadcastingModule,
   ],
