@@ -870,7 +870,7 @@ export class DonorsService {
     return data;
   }
 
-    private async generateDonorCode(): Promise<string> {
+     private async generateDonorCode(): Promise<string> {
     const lastDonor = await this.prisma.donor.findFirst({
       where: {
         donorCode: { startsWith: 'AKF-DNR-' },
