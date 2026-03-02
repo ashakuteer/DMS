@@ -135,16 +135,7 @@ export default function LoginPage() {
                 )}
               </Button>
             </form>
-
-            <div className="mt-6 p-4 bg-muted rounded-lg">
-              <p className="text-sm font-medium text-muted-foreground mb-2">Demo Credentials:</p>
-              <div className="text-xs space-y-1 text-muted-foreground">
-                <p><span className="font-medium">Admin:</span> admin@ngo.org / admin123</p>
-                <p><span className="font-medium">Staff:</span> staff@ngo.org / staff123</p>
-                <p><span className="font-medium">Telecaller:</span> telecaller@ngo.org / telecaller123</p>
-                <p><span className="font-medium">Accountant:</span> accountant@ngo.org / accountant123</p>
-              </div>
-            </div>
+         
           </CardContent>
         </Card>
       </div>
