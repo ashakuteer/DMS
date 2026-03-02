@@ -325,7 +325,7 @@ export class DonationsService {
               e164,
               "1": donorName,
           "2": donation.donationType || "General",
-          "3": `${donation.currency} ${donation.donationAmount},
+          "3": `${donation.currency} ${donation.donationAmount}`,
               user.id,
             );
             communicationResults.whatsAppStatus = result.status;
