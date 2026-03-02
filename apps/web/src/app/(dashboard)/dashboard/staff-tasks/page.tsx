@@ -987,7 +987,7 @@ export default function StaffTasksPage() {
                           <div className="flex items-center gap-1.5">
                             <span className="truncate">{task.title}</span>
                             {task.isRecurring && (
-                              <RefreshCw className="h-3 w-3 text-purple-500 shrink-0" title={`Recurring: ${task.recurrenceType}`} />
+                              <span title={`Recurring: ${task.recurrenceType}`}><RefreshCw className="h-3 w-3 text-purple-500 shrink-0" /></span>
                             )}
                             {task.checklist && (task.checklist as ChecklistItem[]).length > 0 && (
                               <span className="text-xs text-muted-foreground shrink-0" title="Checklist progress">

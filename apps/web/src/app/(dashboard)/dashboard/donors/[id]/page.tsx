@@ -153,9 +153,10 @@ interface Donation {
   remarks?: string;
   communicationResults?: {
     emailStatus?: string;
-    whatsappStatus?: string;
+    whatsAppStatus?: string;
     emailError?: string;
-    whatsappError?: string;
+    whatsAppError?: string;
+    whatsAppMessageId?: string;
   };
 }
 
@@ -4828,20 +4829,20 @@ export default function DonorProfilePage() {
                   <span>WhatsApp:</span>
                   <Badge
                     variant={
-                      newlyCreatedDonation.communicationResults.whatsappStatus === "queued"
+                      newlyCreatedDonation.communicationResults.whatsAppStatus === "queued"
                         ? "default"
                         : "secondary"
                     }
                     className="text-xs"
                     data-testid="badge-post-donation-whatsapp-status"
                   >
-                    {newlyCreatedDonation.communicationResults.whatsappStatus === "queued"
+                    {newlyCreatedDonation.communicationResults.whatsAppStatus === "queued"
                       ? "Queued"
-                      : newlyCreatedDonation.communicationResults.whatsappStatus === "skipped_no_phone"
+                      : newlyCreatedDonation.communicationResults.whatsAppStatus === "skipped_no_phone"
                       ? "Skipped (no phone)"
-                      : newlyCreatedDonation.communicationResults.whatsappStatus === "skipped_not_configured"
+                      : newlyCreatedDonation.communicationResults.whatsAppStatus === "skipped_not_configured"
                       ? "Not configured"
-                      : newlyCreatedDonation.communicationResults.whatsappStatus || "N/A"}
+                      : newlyCreatedDonation.communicationResults.whatsAppStatus || "N/A"}
                   </Badge>
                 </div>
               </>
