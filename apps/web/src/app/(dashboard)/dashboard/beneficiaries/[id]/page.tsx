@@ -354,6 +354,36 @@ export default function BeneficiaryProfilePage() {
     notes: "",
   });
 
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editForm, setEditForm] = useState({
+    fullName: "",
+    homeType: "ORPHAN_GIRLS",
+    gender: "",
+    dobDay: "",
+    dobMonth: "",
+    dobYear: "",
+    approxAge: "",
+    joinDate: "",
+    educationClassOrRole: "",
+    schoolOrCollege: "",
+    healthNotes: "",
+    currentHealthStatus: "",
+    background: "",
+    hobbies: "",
+    dreamCareer: "",
+    favouriteSubject: "",
+    favouriteGame: "",
+    favouriteActivityAtHome: "",
+    bestFriend: "",
+    sourceOfPrideOrHappiness: "",
+    funFact: "",
+    additionalNotes: "",
+    heightCmAtJoin: "",
+    weightKgAtJoin: "",
+    status: "ACTIVE",
+  });
+
   const [showStatusChangeDialog, setShowStatusChangeDialog] = useState(false);
   const [statusChangeSponsorship, setStatusChangeSponsorship] = useState<Sponsorship | null>(null);
   const [statusChangeData, setStatusChangeData] = useState({ status: "", note: "" });
@@ -1197,6 +1227,91 @@ export default function BeneficiaryProfilePage() {
     }
   };
 
+  const openEditDialog = () => {
+    if (!beneficiary) return;
+    setEditForm({
+      fullName: beneficiary.fullName || "",
+      homeType: beneficiary.homeType || "ORPHAN_GIRLS",
+      gender: beneficiary.gender || "",
+      dobDay: beneficiary.dobDay?.toString() || "",
+      dobMonth: beneficiary.dobMonth?.toString() || "",
+      dobYear: beneficiary.dobYear?.toString() || "",
+      approxAge: beneficiary.approxAge?.toString() || "",
+      joinDate: beneficiary.joinDate ? beneficiary.joinDate.split("T")[0] : "",
+      educationClassOrRole: beneficiary.educationClassOrRole || "",
+      schoolOrCollege: beneficiary.schoolOrCollege || "",
+      healthNotes: beneficiary.healthNotes || "",
+      currentHealthStatus: beneficiary.currentHealthStatus || "",
+      background: beneficiary.background || "",
+      hobbies: beneficiary.hobbies || "",
+      dreamCareer: beneficiary.dreamCareer || "",
+      favouriteSubject: beneficiary.favouriteSubject || "",
+      favouriteGame: beneficiary.favouriteGame || "",
+      favouriteActivityAtHome: beneficiary.favouriteActivityAtHome || "",
+      bestFriend: beneficiary.bestFriend || "",
+      sourceOfPrideOrHappiness: beneficiary.sourceOfPrideOrHappiness || "",
+      funFact: beneficiary.funFact || "",
+      additionalNotes: beneficiary.additionalNotes || "",
+      heightCmAtJoin: beneficiary.heightCmAtJoin?.toString() || "",
+      weightKgAtJoin: beneficiary.weightKgAtJoin?.toString() || "",
+      status: beneficiary.status || "ACTIVE",
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!beneficiary) return;
+    setEditLoading(true);
+    try {
+      const payload: any = {
+        fullName: editForm.fullName,
+        homeType: editForm.homeType,
+        status: editForm.status,
+      };
+      if (editForm.gender) payload.gender = editForm.gender;
+      if (editForm.dobDay) payload.dobDay = parseInt(editForm.dobDay);
+      if (editForm.dobMonth) payload.dobMonth = parseInt(editForm.dobMonth);
+      if (editForm.dobYear) payload.dobYear = parseInt(editForm.dobYear);
+      if (editForm.approxAge) payload.approxAge = parseInt(editForm.approxAge);
+      if (editForm.joinDate) payload.joinDate = editForm.joinDate;
+      if (editForm.educationClassOrRole) payload.educationClassOrRole = editForm.educationClassOrRole;
+      if (editForm.schoolOrCollege) payload.schoolOrCollege = editForm.schoolOrCollege;
+      if (editForm.healthNotes) payload.healthNotes = editForm.healthNotes;
+      if (editForm.currentHealthStatus) payload.currentHealthStatus = editForm.currentHealthStatus;
+      if (editForm.background) payload.background = editForm.background;
+      if (editForm.hobbies) payload.hobbies = editForm.hobbies;
+      if (editForm.dreamCareer) payload.dreamCareer = editForm.dreamCareer;
+      if (editForm.favouriteSubject) payload.favouriteSubject = editForm.favouriteSubject;
+      if (editForm.favouriteGame) payload.favouriteGame = editForm.favouriteGame;
+      if (editForm.favouriteActivityAtHome) payload.favouriteActivityAtHome = editForm.favouriteActivityAtHome;
+      if (editForm.bestFriend) payload.bestFriend = editForm.bestFriend;
+      if (editForm.sourceOfPrideOrHappiness) payload.sourceOfPrideOrHappiness = editForm.sourceOfPrideOrHappiness;
+      if (editForm.funFact) payload.funFact = editForm.funFact;
+      if (editForm.additionalNotes) payload.additionalNotes = editForm.additionalNotes;
+      if (editForm.heightCmAtJoin) payload.heightCmAtJoin = parseFloat(editForm.heightCmAtJoin);
+      if (editForm.weightKgAtJoin) payload.weightKgAtJoin = parseFloat(editForm.weightKgAtJoin);
+
+      const response = await fetchWithAuth(`/api/beneficiaries/${beneficiary.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || "Failed to update beneficiary");
+      }
+
+      toast({ title: "Success", description: "Beneficiary updated successfully" });
+      setShowEditDialog(false);
+      fetchBeneficiary();
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to update", variant: "destructive" });
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
   const generateWhatsAppMessage = (sponsorship: Sponsorship) => {
     if (!beneficiary) return "";
     const donorName = `${sponsorship.donor.firstName} ${sponsorship.donor.lastName || ""}`.trim();
@@ -1406,6 +1521,12 @@ export default function BeneficiaryProfilePage() {
                   <Badge variant={beneficiary.status === "ACTIVE" ? "default" : "secondary"}>
                     {beneficiary.status}
                   </Badge>
+                  {canEdit && (
+                    <Button variant="outline" size="sm" onClick={openEditDialog} data-testid="button-edit-beneficiary">
+                      <Edit className="h-4 w-4 mr-1" />
+                      Edit
+                    </Button>
+                  )}
                 </div>
               </div>
               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -3303,6 +3424,194 @@ export default function BeneficiaryProfilePage() {
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="h-5 w-5" />
+              Edit Beneficiary
+            </DialogTitle>
+            <DialogDescription>Update beneficiary details below.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Basic Information</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-fullName">Full Name *</Label>
+                  <Input id="edit-fullName" value={editForm.fullName} onChange={(e) => setEditForm({ ...editForm, fullName: e.target.value })} data-testid="input-edit-fullName" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-homeType">Home *</Label>
+                  <Select value={editForm.homeType} onValueChange={(v) => setEditForm({ ...editForm, homeType: v })}>
+                    <SelectTrigger data-testid="select-edit-homeType"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ORPHAN_GIRLS">Orphan Girls Home</SelectItem>
+                      <SelectItem value="BLIND_BOYS">Visually Challenged Boys Home</SelectItem>
+                      <SelectItem value="OLD_AGE">Old Age Home</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-gender">Gender</Label>
+                  <Select value={editForm.gender || "_none"} onValueChange={(v) => setEditForm({ ...editForm, gender: v === "_none" ? "" : v })}>
+                    <SelectTrigger data-testid="select-edit-gender"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_none">Not specified</SelectItem>
+                      <SelectItem value="MALE">Male</SelectItem>
+                      <SelectItem value="FEMALE">Female</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-status">Status</Label>
+                  <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
+                    <SelectTrigger data-testid="select-edit-status"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ACTIVE">Active</SelectItem>
+                      <SelectItem value="INACTIVE">Inactive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Date of Birth</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-dobDay">Day</Label>
+                  <Input id="edit-dobDay" type="number" min="1" max="31" value={editForm.dobDay} onChange={(e) => setEditForm({ ...editForm, dobDay: e.target.value })} data-testid="input-edit-dobDay" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-dobMonth">Month</Label>
+                  <Select value={editForm.dobMonth || "_none"} onValueChange={(v) => setEditForm({ ...editForm, dobMonth: v === "_none" ? "" : v })}>
+                    <SelectTrigger data-testid="select-edit-dobMonth"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_none">-</SelectItem>
+                      {MONTHS.map((m, i) => <SelectItem key={m} value={String(i + 1)}>{m}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-dobYear">Year</Label>
+                  <Input id="edit-dobYear" type="number" min="1920" max="2026" value={editForm.dobYear} onChange={(e) => setEditForm({ ...editForm, dobYear: e.target.value })} data-testid="input-edit-dobYear" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-approxAge">Approx Age</Label>
+                  <Input id="edit-approxAge" type="number" min="0" max="120" value={editForm.approxAge} onChange={(e) => setEditForm({ ...editForm, approxAge: e.target.value })} data-testid="input-edit-approxAge" />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Joining & Measurements</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-joinDate">Join Date</Label>
+                  <Input id="edit-joinDate" type="date" value={editForm.joinDate} onChange={(e) => setEditForm({ ...editForm, joinDate: e.target.value })} data-testid="input-edit-joinDate" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-heightCmAtJoin">Height at Join (cm)</Label>
+                  <Input id="edit-heightCmAtJoin" type="number" value={editForm.heightCmAtJoin} onChange={(e) => setEditForm({ ...editForm, heightCmAtJoin: e.target.value })} data-testid="input-edit-heightCmAtJoin" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-weightKgAtJoin">Weight at Join (kg)</Label>
+                  <Input id="edit-weightKgAtJoin" type="number" value={editForm.weightKgAtJoin} onChange={(e) => setEditForm({ ...editForm, weightKgAtJoin: e.target.value })} data-testid="input-edit-weightKgAtJoin" />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Education & Health</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-educationClassOrRole">Class / Role</Label>
+                  <Input id="edit-educationClassOrRole" value={editForm.educationClassOrRole} onChange={(e) => setEditForm({ ...editForm, educationClassOrRole: e.target.value })} data-testid="input-edit-educationClassOrRole" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-schoolOrCollege">School / College</Label>
+                  <Input id="edit-schoolOrCollege" value={editForm.schoolOrCollege} onChange={(e) => setEditForm({ ...editForm, schoolOrCollege: e.target.value })} data-testid="input-edit-schoolOrCollege" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-currentHealthStatus">Health Status</Label>
+                  <Select value={editForm.currentHealthStatus || "_none"} onValueChange={(v) => setEditForm({ ...editForm, currentHealthStatus: v === "_none" ? "" : v })}>
+                    <SelectTrigger data-testid="select-edit-currentHealthStatus"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="_none">Not specified</SelectItem>
+                      <SelectItem value="HEALTHY">Healthy</SelectItem>
+                      <SelectItem value="MILD_CONCERN">Mild Concern</SelectItem>
+                      <SelectItem value="UNDER_TREATMENT">Under Treatment</SelectItem>
+                      <SelectItem value="CHRONIC_CONDITION">Chronic Condition</SelectItem>
+                      <SelectItem value="CRITICAL">Critical</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-healthNotes">Health Notes</Label>
+                <Textarea id="edit-healthNotes" rows={2} value={editForm.healthNotes} onChange={(e) => setEditForm({ ...editForm, healthNotes: e.target.value })} data-testid="input-edit-healthNotes" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-background">Background</Label>
+                <Textarea id="edit-background" rows={2} value={editForm.background} onChange={(e) => setEditForm({ ...editForm, background: e.target.value })} data-testid="input-edit-background" />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Interests & Aspirations</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-dreamCareer">Dream Career</Label>
+                  <Input id="edit-dreamCareer" value={editForm.dreamCareer} onChange={(e) => setEditForm({ ...editForm, dreamCareer: e.target.value })} data-testid="input-edit-dreamCareer" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-hobbies">Hobbies</Label>
+                  <Input id="edit-hobbies" value={editForm.hobbies} onChange={(e) => setEditForm({ ...editForm, hobbies: e.target.value })} data-testid="input-edit-hobbies" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-favouriteSubject">Favourite Subject</Label>
+                  <Input id="edit-favouriteSubject" value={editForm.favouriteSubject} onChange={(e) => setEditForm({ ...editForm, favouriteSubject: e.target.value })} data-testid="input-edit-favouriteSubject" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-favouriteGame">Favourite Game</Label>
+                  <Input id="edit-favouriteGame" value={editForm.favouriteGame} onChange={(e) => setEditForm({ ...editForm, favouriteGame: e.target.value })} data-testid="input-edit-favouriteGame" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-favouriteActivityAtHome">Favourite Activity at Home</Label>
+                  <Input id="edit-favouriteActivityAtHome" value={editForm.favouriteActivityAtHome} onChange={(e) => setEditForm({ ...editForm, favouriteActivityAtHome: e.target.value })} data-testid="input-edit-favouriteActivityAtHome" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="edit-bestFriend">Best Friend</Label>
+                  <Input id="edit-bestFriend" value={editForm.bestFriend} onChange={(e) => setEditForm({ ...editForm, bestFriend: e.target.value })} data-testid="input-edit-bestFriend" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-sourceOfPrideOrHappiness">Source of Pride / Happiness</Label>
+                <Input id="edit-sourceOfPrideOrHappiness" value={editForm.sourceOfPrideOrHappiness} onChange={(e) => setEditForm({ ...editForm, sourceOfPrideOrHappiness: e.target.value })} data-testid="input-edit-sourceOfPrideOrHappiness" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-funFact">Fun Fact</Label>
+                <Input id="edit-funFact" value={editForm.funFact} onChange={(e) => setEditForm({ ...editForm, funFact: e.target.value })} data-testid="input-edit-funFact" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="edit-additionalNotes">Additional Notes</Label>
+              <Textarea id="edit-additionalNotes" rows={3} value={editForm.additionalNotes} onChange={(e) => setEditForm({ ...editForm, additionalNotes: e.target.value })} data-testid="input-edit-additionalNotes" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEditDialog(false)} data-testid="button-cancel-edit">Cancel</Button>
+            <Button onClick={handleSaveEdit} disabled={editLoading || !editForm.fullName} data-testid="button-save-edit">
+              {editLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Save Changes
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
