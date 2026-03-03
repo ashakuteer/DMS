@@ -143,7 +143,38 @@ export class EmailController {
             },
           ]
         : undefined,
+      featureType: attachReceipt ? 'RECEIPT' : 'MANUAL',
     });
+
+    if (!result.success) {
+      await this.prisma.emailLog.create({
+        data: {
+          donorId,
+          donationId: donationId || null,
+          templateId: templateId || null,
+          toEmail,
+          subject,
+          status: 'FAILED',
+          messageId: null,
+          errorMessage: result.error || 'Unknown error',
+          sentById: req.user.id,
+        },
+      });
+
+      await this.communicationLogService.logEmail({
+        donorId,
+        donationId: donationId || undefined,
+        templateId: templateId || undefined,
+        toEmail,
+        subject,
+        messagePreview: body.substring(0, 200),
+        status: 'FAILED',
+        errorMessage: result.error,
+        sentById: req.user.id,
+      });
+
+      throw new BadRequestException(result.error || 'Email delivery failed. Please check SMTP settings.');
+    }
 
     await this.prisma.emailLog.create({
       data: {
@@ -152,9 +183,9 @@ export class EmailController {
         templateId: templateId || null,
         toEmail,
         subject,
-        status: result.success ? 'SENT' : 'FAILED',
+        status: 'SENT',
         messageId: result.messageId || null,
-        errorMessage: result.error || null,
+        errorMessage: null,
         sentById: req.user.id,
       },
     });
@@ -166,24 +197,18 @@ export class EmailController {
       toEmail,
       subject,
       messagePreview: body.substring(0, 200),
-      status: result.success ? 'SENT' : 'FAILED',
-      errorMessage: result.error,
+      status: 'SENT',
+      errorMessage: undefined,
       sentById: req.user.id,
     });
 
-    if (result.success) {
-      await this.auditService.logEmailSend(req.user.id, 'Donor', donorId, {
-        toEmail,
-        subject,
-        donationId,
-        templateId,
-        attachReceipt: !!attachReceipt,
-      });
-    }
-
-    if (!result.success) {
-      throw new BadRequestException(`Failed to send email: ${result.error}`);
-    }
+    await this.auditService.logEmailSend(req.user.id, 'Donor', donorId, {
+      toEmail,
+      subject,
+      donationId,
+      templateId,
+      attachReceipt: !!attachReceipt,
+    });
 
     return {
       success: true,

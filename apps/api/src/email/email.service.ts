@@ -182,6 +182,15 @@ export class EmailService {
     }
   }
 
+  private buildFromAddress(orgName?: string): string {
+    const rawFrom = process.env.SMTP_FROM || process.env.SMTP_USER || '';
+    const fromName = orgName || 'NGO DMS';
+    const angleMatch = rawFrom.match(/<([^>]+)>/);
+    const plainEmail = angleMatch ? angleMatch[1].trim() : rawFrom.trim();
+    if (!plainEmail) return fromName;
+    return `"${fromName}" <${plainEmail}>`;
+  }
+
   async sendEmail(options: EmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
     if (this.emailRelayUrl) {
       return this.sendViaRelay(options);
@@ -191,13 +200,12 @@ export class EmailService {
     const featureType = options.featureType || 'UNKNOWN';
     const maskedUser = this.getMaskedSmtpUser();
     
-    const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || org.email;
-    const fromName = org.name || 'NGO DMS';
+    const fromAddress = this.buildFromAddress(org.name);
 
     if (!this.transporter) {
       this.logger.log(`[${featureType}] [Email Mock] To: ${options.to}, SMTP_USER: ${maskedUser}`);
       this.logger.log(`[${featureType}] Subject: ${options.subject}`);
-      this.logger.log(`[${featureType}] From: "${fromName}" <${fromEmail}>`);
+      this.logger.log(`[${featureType}] From: ${fromAddress}`);
       this.logger.log(`[${featureType}] Attachments: ${options.attachments?.map(a => a.filename).join(', ') || 'none'}`);
       return { success: true, messageId: `mock-${Date.now()}` };
     }
@@ -206,7 +214,7 @@ export class EmailService {
       this.logger.log(`[${featureType}] Sending email to ${options.to} via SMTP_USER: ${maskedUser}`);
       
       const mailOptions: nodemailer.SendMailOptions = {
-        from: `"${fromName}" <${fromEmail}>`,
+        from: fromAddress,
         to: options.to,
         subject: options.subject,
         html: options.html,
@@ -537,13 +545,12 @@ This is an automated email. Please do not reply.`;
     const featureType = options.featureType || 'UNKNOWN';
     const maskedUser = this.getMaskedSmtpUser();
     
-    const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || org.email;
-    const fromName = org.name || 'NGO DMS';
+    const fromAddress = this.buildFromAddress(org.name);
 
     if (!this.transporter) {
       this.logger.log(`[${featureType}] [Email Mock] To: ${options.to}, SMTP_USER: ${maskedUser}`);
       this.logger.log(`[${featureType}] Subject: ${options.subject}`);
-      this.logger.log(`[${featureType}] From: "${fromName}" <${fromEmail}>`);
+      this.logger.log(`[${featureType}] From: ${fromAddress}`);
       this.logger.log(`[${featureType}] Attachments: ${options.attachments?.map(a => a.filename).join(', ') || 'none'}`);
       this.logger.log(`[${featureType}] Inline attachments: ${options.inlineAttachments?.map(a => a.cid).join(', ') || 'none'}`);
       return { success: true, messageId: `mock-${Date.now()}` };
@@ -577,7 +584,7 @@ This is an automated email. Please do not reply.`;
       }
 
       const mailOptions: nodemailer.SendMailOptions = {
-        from: `"${fromName}" <${fromEmail}>`,
+        from: fromAddress,
         to: options.to,
         subject: options.subject,
         html: options.html,

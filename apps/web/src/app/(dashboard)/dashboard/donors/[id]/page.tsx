@@ -1140,9 +1140,11 @@ export default function DonorProfilePage() {
         fetchCommunicationLogs();
       } else {
         const data = await res.json();
+        const errorDetail = data.message || "Could not send email";
+        const friendlyMsg = errorDetail.replace(/^Failed to send email:\s*/i, '');
         toast({
           title: "Failed to Send",
-          description: data.message || "Could not send email",
+          description: friendlyMsg || "Could not send email. Please check SMTP settings.",
           variant: "destructive",
         });
       }
