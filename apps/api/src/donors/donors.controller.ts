@@ -102,6 +102,63 @@ export class DonorsController {
     return this.donorsService.lookupByPhone(phone);
   }
 
+  @Get("bulk-template")
+  @Roles(Role.ADMIN, Role.STAFF)
+  async downloadBulkTemplate(@Res() res: Response) {
+    const buffer = await this.donorsService.generateBulkTemplate();
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="donor-import-template.xlsx"',
+    );
+    res.send(buffer);
+  }
+
+  @Post("bulk-upload")
+  @Roles(Role.ADMIN)
+  @UseInterceptors(
+    FileInterceptor("file", {
+      storage: memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 },
+      fileFilter: (req, file, cb) => {
+        if (
+          file.mimetype ===
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ||
+          file.originalname.match(/\.xlsx$/i)
+        ) {
+          cb(null, true);
+        } else {
+          cb(
+            new BadRequestException("Only Excel (.xlsx) files are allowed"),
+            false,
+          );
+        }
+      },
+    }),
+  )
+  async bulkUpload(
+    @CurrentUser() user: UserContext,
+    @UploadedFile() file: Express.Multer.File,
+    @Query("mode") mode?: string,
+    @Req() req?: Request,
+  ) {
+    if (!file) {
+      throw new BadRequestException("No file uploaded");
+    }
+    const { ipAddress, userAgent } = this.getClientInfo(req!);
+    const uploadMode = mode === "insert_only" ? "insert_only" : "upsert";
+    return this.donorsService.bulkUpload(
+      file,
+      user,
+      uploadMode,
+      ipAddress,
+      userAgent,
+    );
+  }
+
   @Get("export")
   @Roles(Role.ADMIN)
   async exportDonors(

@@ -232,7 +232,10 @@ export default function DonorsPage() {
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(
     null,
   );
+  const [quickUploading, setQuickUploading] = useState(false);
+  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const quickUploadRef = useRef<HTMLInputElement>(null);
 
   const fetchDonors = useCallback(async () => {
     try {
@@ -360,8 +363,79 @@ export default function DonorsPage() {
     setDuplicateResults([]);
     setRowActions({});
     setImportSummary(null);
+    setQuickUploading(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+    if (quickUploadRef.current) {
+      quickUploadRef.current.value = "";
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    setDownloadingTemplate(true);
+    try {
+      const res = await fetchWithAuth("/api/donors/bulk-template");
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "donor-import-template.xlsx";
+        a.click();
+        URL.revokeObjectURL(url);
+        toast({ title: "Template Downloaded", description: "Fill in the Donors sheet and upload it back." });
+      } else {
+        toast({ title: "Error", description: "Failed to download template", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to download template", variant: "destructive" });
+    } finally {
+      setDownloadingTemplate(false);
+    }
+  };
+
+  const handleQuickUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setQuickUploading(true);
+    setImportStep("importing");
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetchWithAuth("/api/donors/bulk-upload?mode=upsert", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setImportSummary({
+          total: data.totalRows,
+          imported: data.importedCount,
+          updated: data.updatedCount,
+          skipped: data.skippedCount,
+          failed: data.failedCount,
+          errors: (data.errors || []).map((e: any) => ({
+            rowIndex: e.rowNumber - 2,
+            error: e.reason,
+            rowData: e.rowData,
+          })),
+        });
+        setImportStep("summary");
+        fetchDonors();
+      } else {
+        toast({ title: "Upload Failed", description: data.message || "Failed to upload file", variant: "destructive" });
+        setImportStep("upload");
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to upload file", variant: "destructive" });
+      setImportStep("upload");
+    } finally {
+      setQuickUploading(false);
+      if (quickUploadRef.current) quickUploadRef.current.value = "";
     }
   };
 
@@ -1302,35 +1376,88 @@ export default function DonorsPage() {
 
           {importStep === "upload" && (
             <div className="space-y-6">
-              <div
-                className="border-2 border-dashed rounded-lg p-12 text-center hover:border-primary/50 transition-colors cursor-pointer"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".xlsx,.xls,.csv"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  data-testid="input-import-file"
-                />
-                {uploadingFile ? (
-                  <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                    <p className="text-muted-foreground">Parsing file...</p>
-                  </div>
-                ) : (
-                  <>
-                    <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-lg font-medium">
-                      Click to upload or drag and drop
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Excel (.xlsx, .xls) or CSV files up to 10MB
-                    </p>
-                  </>
-                )}
+              <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg border">
+                <FileSpreadsheet className="h-8 w-8 text-green-600 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="font-medium text-sm">Download Excel Template</p>
+                  <p className="text-xs text-muted-foreground">
+                    Pre-formatted template with all fields and instructions
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadTemplate}
+                  disabled={downloadingTemplate}
+                  data-testid="button-download-template"
+                >
+                  {downloadingTemplate ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="mr-2 h-4 w-4" />
+                  )}
+                  {downloadingTemplate ? "Downloading..." : "Download Template"}
+                </Button>
               </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div
+                  className="border-2 border-dashed rounded-lg p-8 text-center hover:border-green-500/50 transition-colors cursor-pointer"
+                  onClick={() => quickUploadRef.current?.click()}
+                >
+                  <input
+                    ref={quickUploadRef}
+                    type="file"
+                    accept=".xlsx"
+                    onChange={handleQuickUpload}
+                    className="hidden"
+                    data-testid="input-quick-upload"
+                  />
+                  {quickUploading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-10 w-10 animate-spin text-green-600" />
+                      <p className="text-muted-foreground text-sm">Uploading & processing...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="h-10 w-10 mx-auto text-green-600 mb-3" />
+                      <p className="font-medium text-sm">Quick Upload</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        .xlsx only — auto-maps columns, upserts duplicates
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                <div
+                  className="border-2 border-dashed rounded-lg p-8 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    data-testid="input-import-file"
+                  />
+                  {uploadingFile ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                      <p className="text-muted-foreground text-sm">Parsing file...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <FileSpreadsheet className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+                      <p className="font-medium text-sm">Advanced Import</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        .xlsx, .xls, .csv — map columns, review duplicates
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
+
               <div className="text-sm text-muted-foreground">
                 <p className="font-medium mb-2">Import tips:</p>
                 <ul className="list-disc list-inside space-y-1">
@@ -1339,7 +1466,7 @@ export default function DonorsPage() {
                     At least one of: Name, Phone, or Email is required per row
                   </li>
                   <li>Phone numbers will be normalized to 10 digits</li>
-                  <li>Duplicates will be detected by phone or email</li>
+                  <li>Duplicates are detected by phone or email and updated automatically</li>
                 </ul>
               </div>
             </div>

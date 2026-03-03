@@ -870,7 +870,7 @@ export class DonorsService {
     return data;
   }
 
-     private async generateDonorCode(): Promise<string> {
+  private async generateDonorCode(): Promise<string> {
     const lastDonor = await this.prisma.donor.findFirst({
       where: {
         donorCode: { startsWith: 'AKF-DNR-' },
@@ -1066,6 +1066,347 @@ export class DonorsService {
         failed: results.failed,
       },
       results.imported + results.updated,
+      ipAddress,
+      userAgent,
+    );
+
+    return results;
+  }
+
+  async generateBulkTemplate(): Promise<Buffer> {
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = 'NGO DMS';
+
+    const donors = workbook.addWorksheet('Donors');
+    const templateColumns = [
+      { header: 'First Name *', key: 'firstName', width: 18 },
+      { header: 'Middle Name', key: 'middleName', width: 14 },
+      { header: 'Last Name', key: 'lastName', width: 16 },
+      { header: 'Primary Phone', key: 'primaryPhone', width: 18 },
+      { header: 'WhatsApp Phone', key: 'whatsappPhone', width: 18 },
+      { header: 'Personal Email', key: 'personalEmail', width: 26 },
+      { header: 'Official Email', key: 'officialEmail', width: 26 },
+      { header: 'Gender', key: 'gender', width: 10 },
+      { header: 'Approximate Age', key: 'approximateAge', width: 14 },
+      { header: 'Category', key: 'category', width: 20 },
+      { header: 'Address', key: 'address', width: 30 },
+      { header: 'City', key: 'city', width: 14 },
+      { header: 'State', key: 'state', width: 14 },
+      { header: 'Country', key: 'country', width: 12 },
+      { header: 'Pincode', key: 'pincode', width: 10 },
+      { header: 'Profession', key: 'profession', width: 16 },
+      { header: 'Religion', key: 'religion', width: 12 },
+      { header: 'PAN', key: 'pan', width: 14 },
+      { header: 'Source', key: 'sourceOfDonor', width: 16 },
+      { header: 'Donation Frequency', key: 'donationFrequency', width: 18 },
+      { header: 'Notes', key: 'notes', width: 30 },
+    ];
+    donors.columns = templateColumns;
+
+    const headerRow = donors.getRow(1);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
+    headerRow.alignment = { horizontal: 'center' };
+
+    donors.addRow({
+      firstName: 'Rajesh',
+      middleName: '',
+      lastName: 'Kumar',
+      primaryPhone: '+919876543210',
+      whatsappPhone: '+919876543210',
+      personalEmail: 'rajesh.kumar@email.com',
+      officialEmail: '',
+      gender: 'MALE',
+      approximateAge: 45,
+      category: 'INDIVIDUAL',
+      address: '42, MG Road',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      country: 'India',
+      pincode: '500001',
+      profession: 'Engineer',
+      religion: 'Hindu',
+      pan: 'ABCPK1234F',
+      sourceOfDonor: 'REFERRAL',
+      donationFrequency: 'MONTHLY',
+      notes: 'Regular donor since 2023',
+    });
+    donors.addRow({
+      firstName: 'Priya',
+      lastName: 'Sharma',
+      primaryPhone: '9123456789',
+      personalEmail: 'priya@example.com',
+      gender: 'FEMALE',
+      approximateAge: 32,
+      category: 'INDIVIDUAL',
+      city: 'Bangalore',
+      state: 'Karnataka',
+      country: 'India',
+      pincode: '560001',
+      profession: 'Doctor',
+      sourceOfDonor: 'SOCIAL_MEDIA',
+      donationFrequency: 'OCCASIONAL',
+    });
+
+    const instructions = workbook.addWorksheet('Instructions');
+    instructions.columns = [
+      { header: 'Column', key: 'column', width: 22 },
+      { header: 'Required?', key: 'required', width: 12 },
+      { header: 'Description', key: 'description', width: 50 },
+      { header: 'Example', key: 'example', width: 25 },
+      { header: 'Valid Values', key: 'validValues', width: 50 },
+    ];
+
+    const instHeaderRow = instructions.getRow(1);
+    instHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    instHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1565C0' } };
+
+    const fieldInstructions = [
+      { column: 'First Name *', required: 'YES', description: 'Donor first name', example: 'Rajesh', validValues: 'Any text' },
+      { column: 'Middle Name', required: 'No', description: 'Donor middle name', example: '', validValues: 'Any text' },
+      { column: 'Last Name', required: 'No', description: 'Donor last name / surname', example: 'Kumar', validValues: 'Any text' },
+      { column: 'Primary Phone', required: 'Recommended', description: 'Phone in E.164 or 10-digit format. Used for duplicate detection.', example: '+919876543210 or 9876543210', validValues: 'E.164 format or 10-digit Indian number' },
+      { column: 'WhatsApp Phone', required: 'No', description: 'WhatsApp number. If blank, primary phone is used.', example: '+919876543210', validValues: 'E.164 format or 10-digit' },
+      { column: 'Personal Email', required: 'Recommended', description: 'Personal email. Used for duplicate detection + receipts.', example: 'rajesh@email.com', validValues: 'Valid email address' },
+      { column: 'Official Email', required: 'No', description: 'Work / official email address', example: 'rajesh@company.com', validValues: 'Valid email address' },
+      { column: 'Gender', required: 'No', description: 'Donor gender', example: 'MALE', validValues: 'MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY' },
+      { column: 'Approximate Age', required: 'No', description: 'Donor age (number)', example: '45', validValues: 'Integer number' },
+      { column: 'Category', required: 'No', description: 'Donor category. Defaults to INDIVIDUAL.', example: 'INDIVIDUAL', validValues: 'INDIVIDUAL, NGO, CSR_REP, WHATSAPP_GROUP, SOCIAL_MEDIA_PERSON, CROWD_PULLER, VISITOR_ENQUIRY' },
+      { column: 'Address', required: 'No', description: 'Street address', example: '42, MG Road', validValues: 'Any text' },
+      { column: 'City', required: 'No', description: 'City name', example: 'Hyderabad', validValues: 'Any text' },
+      { column: 'State', required: 'No', description: 'State / Province', example: 'Telangana', validValues: 'Any text' },
+      { column: 'Country', required: 'No', description: 'Country. Defaults to India.', example: 'India', validValues: 'Any text' },
+      { column: 'Pincode', required: 'No', description: 'ZIP / Postal code', example: '500001', validValues: 'Any text/number' },
+      { column: 'Profession', required: 'No', description: 'Donor occupation', example: 'Engineer', validValues: 'Any text' },
+      { column: 'Religion', required: 'No', description: 'Donor religion', example: 'Hindu', validValues: 'Any text' },
+      { column: 'PAN', required: 'No', description: 'PAN card number for 80G receipts', example: 'ABCPK1234F', validValues: '10-character alphanumeric' },
+      { column: 'Source', required: 'No', description: 'How the donor was referred', example: 'REFERRAL', validValues: 'SOCIAL_MEDIA, JUSTDIAL, FRIEND, SPONSOR, WEBSITE, WALK_IN, REFERRAL, OTHER' },
+      { column: 'Donation Frequency', required: 'No', description: 'Typical donation pattern', example: 'MONTHLY', validValues: 'ONE_TIME, WEEKLY, MONTHLY, QUARTERLY, HALF_YEARLY, YEARLY, OCCASIONAL' },
+      { column: 'Notes', required: 'No', description: 'Any additional notes', example: 'Regular donor since 2023', validValues: 'Any text' },
+    ];
+
+    fieldInstructions.forEach(row => instructions.addRow(row));
+
+    instructions.addRow({});
+    instructions.addRow({ column: 'IMPORTANT NOTES', description: '' });
+    instructions.addRow({ column: '1.', description: 'At least one of: First Name, Phone, or Email is required per row.' });
+    instructions.addRow({ column: '2.', description: 'Duplicates are detected by phone (normalized to 10 digits) or email (case-insensitive).' });
+    instructions.addRow({ column: '3.', description: 'Default mode is UPSERT: existing donors matched by phone/email will be updated, new ones created.' });
+    instructions.addRow({ column: '4.', description: 'Phone numbers can be 10-digit (9876543210) or E.164 (+919876543210). Country code +91 is assumed if omitted.' });
+    instructions.addRow({ column: '5.', description: 'Empty rows are automatically skipped.' });
+    instructions.addRow({ column: '6.', description: 'Delete the 2 sample rows in the Donors sheet before uploading your actual data.' });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
+  async bulkUpload(
+    file: Express.Multer.File,
+    user: UserContext,
+    mode: 'upsert' | 'insert_only' = 'upsert',
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(file.buffer);
+
+    let sheet = workbook.getWorksheet('Donors') || workbook.worksheets[0];
+    if (!sheet) {
+      throw new BadRequestException('No worksheet found in the uploaded file.');
+    }
+
+    const headerRow = sheet.getRow(1);
+    const headers: string[] = [];
+    headerRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+      headers[colNumber - 1] = String(cell.value || '').trim().toLowerCase();
+    });
+
+    const fieldMapping: Record<string, string> = {
+      'first name': 'firstName', 'first name *': 'firstName', 'firstname': 'firstName', 'name': 'firstName', 'donor name': 'firstName',
+      'middle name': 'middleName', 'middlename': 'middleName',
+      'last name': 'lastName', 'lastname': 'lastName', 'surname': 'lastName',
+      'primary phone': 'primaryPhone', 'phone': 'primaryPhone', 'mobile': 'primaryPhone', 'phone number': 'primaryPhone', 'contact': 'primaryPhone',
+      'whatsapp phone': 'whatsappPhone', 'whatsapp': 'whatsappPhone', 'whatsapp number': 'whatsappPhone',
+      'personal email': 'personalEmail', 'email': 'personalEmail', 'email address': 'personalEmail',
+      'official email': 'officialEmail', 'work email': 'officialEmail',
+      'gender': 'gender', 'sex': 'gender',
+      'approximate age': 'approximateAge', 'age': 'approximateAge',
+      'category': 'category', 'donor category': 'category', 'type': 'category',
+      'address': 'address', 'street': 'address',
+      'city': 'city', 'town': 'city',
+      'state': 'state', 'province': 'state',
+      'country': 'country',
+      'pincode': 'pincode', 'zip': 'pincode', 'zip code': 'pincode', 'postal code': 'pincode', 'pin': 'pincode',
+      'profession': 'profession', 'occupation': 'profession',
+      'religion': 'religion',
+      'pan': 'pan', 'pan number': 'pan',
+      'source': 'sourceOfDonor', 'source of donor': 'sourceOfDonor',
+      'donation frequency': 'donationFrequency', 'frequency': 'donationFrequency',
+      'notes': 'notes', 'remarks': 'notes',
+    };
+
+    const colFieldMap: Record<number, string> = {};
+    headers.forEach((h, idx) => {
+      const field = fieldMapping[h];
+      if (field) colFieldMap[idx] = field;
+    });
+
+    if (Object.keys(colFieldMap).length === 0) {
+      throw new BadRequestException('No recognizable column headers found. Please use the template.');
+    }
+
+    const genderMap: Record<string, string> = {
+      m: 'MALE', male: 'MALE', f: 'FEMALE', female: 'FEMALE',
+      o: 'OTHER', other: 'OTHER', 'prefer not to say': 'PREFER_NOT_TO_SAY',
+    };
+    const validCategories = new Set(['INDIVIDUAL', 'NGO', 'CSR_REP', 'WHATSAPP_GROUP', 'SOCIAL_MEDIA_PERSON', 'CROWD_PULLER', 'VISITOR_ENQUIRY']);
+    const validSources = new Set(['SOCIAL_MEDIA', 'JUSTDIAL', 'FRIEND', 'SPONSOR', 'WEBSITE', 'WALK_IN', 'REFERRAL', 'OTHER']);
+    const validFrequencies = new Set(['ONE_TIME', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'HALF_YEARLY', 'YEARLY', 'OCCASIONAL']);
+
+    const results = {
+      totalRows: 0,
+      importedCount: 0,
+      updatedCount: 0,
+      skippedCount: 0,
+      failedCount: 0,
+      errors: [] as Array<{ rowNumber: number; reason: string; rowData: Record<string, any> }>,
+    };
+
+    const dataRows: Array<{ rowNumber: number; data: Record<string, any> }> = [];
+
+    sheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+      if (rowNumber === 1) return;
+      const rowData: Record<string, any> = {};
+      let hasAnyValue = false;
+
+      row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+        const field = colFieldMap[colNumber - 1];
+        if (field) {
+          const val = cell.value;
+          if (val !== undefined && val !== null && val !== '') {
+            rowData[field] = String(val).trim();
+            hasAnyValue = true;
+          }
+        }
+      });
+
+      if (hasAnyValue) {
+        dataRows.push({ rowNumber, data: rowData });
+      }
+    });
+
+    results.totalRows = dataRows.length;
+
+    for (const { rowNumber, data } of dataRows) {
+      try {
+        if (data.primaryPhone) {
+          data.primaryPhone = this.normalizePhone(data.primaryPhone);
+        }
+        if (data.whatsappPhone) {
+          data.whatsappPhone = this.normalizePhone(data.whatsappPhone);
+        }
+        if (data.personalEmail) {
+          data.personalEmail = this.normalizeEmail(data.personalEmail);
+        }
+        if (data.officialEmail) {
+          data.officialEmail = this.normalizeEmail(data.officialEmail);
+        }
+        if (data.approximateAge) {
+          const age = parseInt(String(data.approximateAge));
+          data.approximateAge = isNaN(age) ? null : age;
+          if (data.approximateAge === null) delete data.approximateAge;
+        }
+        if (data.gender) {
+          data.gender = genderMap[String(data.gender).toLowerCase()] || null;
+          if (!data.gender) delete data.gender;
+        }
+        if (data.category) {
+          const cat = String(data.category).toUpperCase().replace(/\s+/g, '_');
+          data.category = validCategories.has(cat) ? cat : undefined;
+          if (!data.category) delete data.category;
+        }
+        if (data.sourceOfDonor) {
+          const src = String(data.sourceOfDonor).toUpperCase().replace(/\s+/g, '_');
+          data.sourceOfDonor = validSources.has(src) ? src : undefined;
+          if (!data.sourceOfDonor) delete data.sourceOfDonor;
+        }
+        if (data.donationFrequency) {
+          const freq = String(data.donationFrequency).toUpperCase().replace(/\s+/g, '_');
+          data.donationFrequency = validFrequencies.has(freq) ? freq : undefined;
+          if (!data.donationFrequency) delete data.donationFrequency;
+        }
+
+        const hasMinimum = data.firstName || data.primaryPhone || data.personalEmail || data.officialEmail;
+        if (!hasMinimum) {
+          results.errors.push({ rowNumber, reason: 'Missing required data: need at least First Name, Phone, or Email', rowData: data });
+          results.failedCount++;
+          continue;
+        }
+
+        if (data.personalEmail && !data.personalEmail.includes('@')) {
+          results.errors.push({ rowNumber, reason: `Invalid email format: ${data.personalEmail}`, rowData: data });
+          results.failedCount++;
+          continue;
+        }
+
+        const phone = data.primaryPhone;
+        const email = data.personalEmail || data.officialEmail;
+        let existingDonor: any = null;
+
+        if (mode === 'upsert' && (phone || email)) {
+          const conditions: any[] = [];
+          if (phone) {
+            conditions.push({ primaryPhone: phone });
+            conditions.push({ whatsappPhone: phone });
+          }
+          if (email) {
+            conditions.push({ personalEmail: { equals: email, mode: 'insensitive' } });
+            conditions.push({ officialEmail: { equals: email, mode: 'insensitive' } });
+          }
+
+          existingDonor = await this.prisma.donor.findFirst({
+            where: { isDeleted: false, OR: conditions },
+            select: { id: true },
+          });
+        }
+
+        if (existingDonor) {
+          await this.prisma.donor.update({
+            where: { id: existingDonor.id },
+            data,
+          });
+          results.updatedCount++;
+        } else {
+          await this.createDonorWithRetry(
+            { ...data, firstName: data.firstName || 'Unknown' },
+            user.id,
+          );
+          results.importedCount++;
+        }
+      } catch (error: any) {
+        results.errors.push({
+          rowNumber,
+          reason: error.message || 'Unknown error',
+          rowData: data,
+        });
+        results.failedCount++;
+      }
+    }
+
+    results.skippedCount = results.totalRows - results.importedCount - results.updatedCount - results.failedCount;
+
+    await this.auditService.logDataExport(
+      user.id,
+      'Bulk Upload',
+      {
+        totalRows: results.totalRows,
+        imported: results.importedCount,
+        updated: results.updatedCount,
+        skipped: results.skippedCount,
+        failed: results.failedCount,
+        mode,
+      },
+      results.importedCount + results.updatedCount,
       ipAddress,
       userAgent,
     );
