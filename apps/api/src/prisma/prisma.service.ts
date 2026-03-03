@@ -17,12 +17,28 @@ function resolveDbUrl(): string {
   throw new Error('No database connection configured. Set PGHOST/PGUSER/PGPASSWORD/PGDATABASE or DATABASE_URL.');
 }
 
+function appendPoolParams(url: string): string {
+  const separator = url.includes('?') ? '&' : '?';
+  const params: string[] = [];
+
+  if (!url.includes('connection_limit')) {
+    params.push('connection_limit=5');
+  }
+  if (url.includes('6543') && !url.includes('pgbouncer')) {
+    params.push('pgbouncer=true');
+  }
+
+  if (params.length === 0) return url;
+  return `${url}${separator}${params.join('&')}`;
+}
+
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
 
   constructor() {
-    const url = resolveDbUrl();
+    const rawUrl = resolveDbUrl();
+    const url = appendPoolParams(rawUrl);
     super({ datasources: { db: { url } } });
     const safeUrl = url.replace(/\/\/.*@/, '//***@');
     this.logger.log(`Database target: ${safeUrl}`);
