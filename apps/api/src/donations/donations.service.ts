@@ -15,6 +15,7 @@ import { Role, CommunicationType, CommunicationStatus, CommunicationChannel } fr
 import { maskDonorInDonation } from "../common/utils/masking.util";
 import { CommunicationsService } from "../communications/communications.service";
 import { normalizeToE164 } from "../common/phone-utils";
+import { NotificationService } from "../notifications/notification.service";
 
 export interface DonationQueryOptions {
   page?: number;
@@ -47,6 +48,7 @@ export class DonationsService {
     private communicationLogService: CommunicationLogService,
     private orgProfileService: OrganizationProfileService,
     private communicationsService: CommunicationsService,
+    private notificationService: NotificationService,
   ) {}
 
   private getDonorAccessFilter(user: UserContext): Record<string, any> {
@@ -269,81 +271,37 @@ export class DonationsService {
 
     const orgProfile = await this.orgProfileService.getProfile();
 
-    // EMAIL
-    if (orgProfile.enableDonationEmail) {
-      const donor = await this.prisma.donor.findUnique({
-        where: { id: data.donorId },
-        select: { personalEmail: true, officialEmail: true },
-      });
+    const notificationParams = {
+      donationId: donation.id,
+      donorId: data.donorId,
+      receiptNumber,
+      donationAmount: Number(donation.donationAmount),
+      currency: donation.currency,
+      donationType: donation.donationType || 'General',
+      donationDate: donation.donationDate,
+      userId: user.id,
+    };
 
-      const donorEmail = donor?.personalEmail || donor?.officialEmail;
-      if (donorEmail) {
-        communicationResults.emailStatus = "queued";
-        this.logger.log(`Queuing donation receipt email to ${donorEmail} for ${receiptNumber}`);
-        this.sendDonationReceiptEmail(
-          donation.id,
-          data.donorId,
-          receiptNumber,
-          user.id,
-        ).then(() => {
-          this.logger.log(`Donation receipt email completed for ${receiptNumber}`);
-        }).catch((err) => {
-          this.logger.error(
-            `Failed to send donation receipt email for ${receiptNumber}: ${err?.message || err}`,
-          );
-          this.logger.error(`Email error stack: ${err?.stack || 'no stack'}`);
+    if (orgProfile.enableDonationEmail) {
+      communicationResults.emailStatus = "queued";
+      this.notificationService.sendDonationEmail(notificationParams)
+        .then((result) => {
+          this.logger.log(`Donation email for ${donation.id}: status=${result.status}`);
+        })
+        .catch((err) => {
+          this.logger.error(`Donation email error for ${donation.id}: ${err?.message}`);
         });
-      } else {
-        communicationResults.emailStatus = "skipped_no_email";
-      }
     }
 
-    // WHATSAPP auto-send using template key
     if (orgProfile.enableDonationWhatsApp !== false) {
-      const donor = await this.prisma.donor.findUnique({
-        where: { id: data.donorId },
-        select: {
-          primaryPhone: true,
-          primaryPhoneCode: true,
-          whatsappPhone: true,
-          firstName: true,
-          lastName: true,
-        },
-      });
-
-      const rawPhone = donor?.whatsappPhone || donor?.primaryPhone;
-      if (!rawPhone) {
-        communicationResults.whatsAppStatus = "skipped_no_phone";
-      } else {
-        const e164 = normalizeToE164(rawPhone, donor?.primaryPhoneCode);
-
-        if (!e164) {
-          communicationResults.whatsAppStatus = "skipped_invalid_phone";
-        } else {
-          const donorName = [donor?.firstName, donor?.lastName].filter(Boolean).join(" ") || "Valued Donor";
-
-          try {
-            const result = await this.communicationsService.sendByTemplateKey(
-              "DONATION_THANK_YOU",
-              data.donorId,
-              e164,
-              {
-                "1": donorName,
-                "2": donation.donationType || "General",
-                "3": `${donation.currency} ${donation.donationAmount}`,
-              },
-              user.id,
-            );
-            communicationResults.whatsAppStatus = result.status;
-            communicationResults.whatsAppMessageId = result.messageId;
-            this.logger.log(`Auto WhatsApp thank-you for donation ${donation.id}: status=${result.status}`);
-          } catch (err: any) {
-            communicationResults.whatsAppStatus = "failed";
-            this.logger.error(
-              `Failed to auto-send WhatsApp for donation ${donation.id}: ${err?.message || err}`,
-            );
-          }
-        }
+      try {
+        const waResult = await this.notificationService.sendDonationWhatsApp(notificationParams);
+        communicationResults.whatsAppStatus = waResult.status;
+        communicationResults.whatsAppMessageId = waResult.messageId;
+        this.logger.log(`Donation WhatsApp for ${donation.id}: status=${waResult.status}`);
+      } catch (err: any) {
+        communicationResults.whatsAppStatus = "failed";
+        this.logger.error(`Donation WhatsApp error for ${donation.id}: ${err?.message}`);
       }
     }
 

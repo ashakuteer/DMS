@@ -1758,32 +1758,46 @@ enum TaskCategory {
   OTHER
 }
 
-model StaffTask {
-  id            String       @id @default(uuid())
-  title         String
-  description   String?
-  status        TaskStatus   @default(PENDING)
-  priority      TaskPriority @default(MEDIUM)
-  category      TaskCategory @default(GENERAL)
-  assignedToId  String
-  createdById   String
-  linkedDonorId String?
-  dueDate       DateTime?
-  startedAt     DateTime?
-  completedAt   DateTime?
-  notes         String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  deletedAt     DateTime?
+enum RecurrenceType {
+  NONE
+  DAILY
+  WEEKLY
+  MONTHLY
+}
 
-  assignedTo    User         @relation("TaskAssignedTo", fields: [assignedToId], references: [id])
-  createdBy     User         @relation("TaskCreatedBy", fields: [createdById], references: [id])
-  linkedDonor   Donor?       @relation("TaskLinkedDonor", fields: [linkedDonorId], references: [id])
+model StaffTask {
+  id              String         @id @default(uuid())
+  title           String
+  description     String?
+  status          TaskStatus     @default(PENDING)
+  priority        TaskPriority   @default(MEDIUM)
+  category        TaskCategory   @default(GENERAL)
+  assignedToId    String
+  createdById     String
+  linkedDonorId   String?
+  dueDate         DateTime?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  notes           String?
+  isRecurring     Boolean        @default(false)
+  recurrenceType  RecurrenceType @default(NONE)
+  parentTaskId    String?
+  checklist       Json?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  deletedAt       DateTime?
+
+  assignedTo      User           @relation("TaskAssignedTo", fields: [assignedToId], references: [id])
+  createdBy       User           @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  linkedDonor     Donor?         @relation("TaskLinkedDonor", fields: [linkedDonorId], references: [id])
+  parentTask      StaffTask?     @relation("RecurringTasks", fields: [parentTaskId], references: [id])
+  childTasks      StaffTask[]    @relation("RecurringTasks")
 
   @@index([assignedToId])
   @@index([status])
   @@index([dueDate])
   @@index([createdById])
+  @@index([parentTaskId])
   @@map("staff_tasks")
 }
 
@@ -1832,6 +1846,7 @@ enum CommStatus {
 model CommunicationMessage {
   id                  String       @id @default(uuid())
   donorId             String?
+  donationId          String?
   channel             CommChannel
   provider            CommProvider
   to                  String
@@ -1852,6 +1867,7 @@ model CommunicationMessage {
   createdBy           User?        @relation("CommunicationMessageCreatedBy", fields: [createdByUserId], references: [id])
 
   @@index([donorId])
+  @@index([donationId])
   @@index([providerMessageId])
   @@index([status])
   @@index([createdAt])

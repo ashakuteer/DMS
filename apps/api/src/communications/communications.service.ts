@@ -5,6 +5,7 @@ import { CommChannel, CommProvider, CommStatus } from "@prisma/client";
 
 export interface SendWhatsAppTemplateDto {
   donorId?: string;
+  donationId?: string;
   toE164: string;
   contentSid: string;
   variables?: Record<string, string>;
@@ -68,6 +69,7 @@ export class CommunicationsService {
     const row = await this.prisma.communicationMessage.create({
       data: {
         donorId: validDonorId,
+        donationId: dto.donationId || null,
         channel: CommChannel.WHATSAPP,
         provider: CommProvider.TWILIO,
         to: dto.toE164,
@@ -115,6 +117,7 @@ export class CommunicationsService {
     toE164: string,
     variables?: Record<string, string>,
     userId?: string,
+    donationId?: string,
   ) {
     const contentSid = this.twilioWhatsApp.getContentSidForKey(templateKey);
     if (!contentSid) {
@@ -139,6 +142,7 @@ export class CommunicationsService {
     const result = await this.sendWhatsAppTemplate(
       {
         donorId,
+        donationId,
         toE164,
         contentSid,
         variables,
