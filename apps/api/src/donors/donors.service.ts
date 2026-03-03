@@ -1739,8 +1739,11 @@ export class DonorsService {
       userAgent,
     );
 
-    const buffer = await workbook.xlsx.writeBuffer();
-    return Buffer.from(buffer);
+  await workbook.xlsx.load(
+  Buffer.isBuffer(file.buffer)
+    ? file.buffer
+    : Buffer.from(file.buffer as any)
+);
   }
 
   async getTimeline(
