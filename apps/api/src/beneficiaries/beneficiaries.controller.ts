@@ -73,6 +73,48 @@ export class BeneficiariesController {
     });
   }
 
+  @Get('export/excel')
+  @Roles(Role.ADMIN)
+  async exportExcel(@CurrentUser() user: UserContext) {
+    return this.beneficiariesService.exportToExcel(user);
+  }
+
+  @Get('bulk-template')
+  @Roles(Role.ADMIN, Role.STAFF)
+  async downloadBulkTemplate(@Res() res: Response) {
+    const buffer = await this.beneficiariesService.generateBulkTemplate();
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="beneficiary-import-template.xlsx"');
+    res.send(buffer);
+  }
+
+  @Post('bulk-upload')
+  @Roles(Role.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 },
+      fileFilter: (req, file, cb) => {
+        if (file.mimetype.includes('spreadsheet') || file.mimetype.includes('excel') || file.originalname.endsWith('.xlsx')) {
+          cb(null, true);
+        } else {
+          cb(new BadRequestException('Only .xlsx files are allowed'), false);
+        }
+      },
+    }),
+  )
+  async bulkUpload(
+    @CurrentUser() user: UserContext,
+    @UploadedFile() file: Express.Multer.File,
+    @Query('mode') mode?: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
+    }
+    const uploadMode = mode === 'insert_only' ? 'insert_only' : 'upsert';
+    return this.beneficiariesService.bulkUpload(user, file.buffer, uploadMode);
+  }
+
   @Get(':id')
   @Roles(Role.ADMIN, Role.STAFF)
   async findById(@Param('id') id: string) {
@@ -249,12 +291,6 @@ export class BeneficiariesController {
     return this.beneficiariesService.addTimelineEvent(id, dto);
   }
 
-  @Get('export/excel')
-  @Roles(Role.ADMIN)
-  async exportExcel(@CurrentUser() user: UserContext) {
-    return this.beneficiariesService.exportToExcel(user);
-  }
-
   @Get(':id/metrics')
   @Roles(Role.ADMIN, Role.STAFF)
   async getMetrics(@Param('id') id: string) {
@@ -378,32 +414,12 @@ export class BeneficiariesController {
       throw new BadRequestException('No file uploaded');
     }
 
-    const { createClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
-      throw new BadRequestException('Storage not configured');
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const fileName = `documents/beneficiaries/${id}/${Date.now()}-${file.originalname}`;
-
-    const { error } = await supabase.storage
-      .from('uploads')
-      .upload(fileName, file.buffer, {
-        contentType: file.mimetype,
-        upsert: true,
-      });
-
-    if (error) {
-      console.error('Supabase upload error:', error);
-      throw new BadRequestException('Failed to upload file');
-    }
-
-    const { data: publicUrl } = supabase.storage
-      .from('uploads')
-      .getPublicUrl(fileName);
+    const { path: storagePath, url: publicUrl } = await this.storageService.uploadDocument(
+      `documents/beneficiaries/${id}`,
+      file.buffer,
+      file.mimetype,
+      file.originalname,
+    );
 
     const dto: CreateDocumentDto = {
       ownerType: 'BENEFICIARY' as any,
@@ -412,7 +428,7 @@ export class BeneficiariesController {
       title: body.title || file.originalname,
       description: body.description,
       storageBucket: 'uploads',
-      storagePath: publicUrl.publicUrl,
+      storagePath: publicUrl,
       mimeType: file.mimetype,
       sizeBytes: file.size,
       isSensitive: body.isSensitive === 'true' || body.isSensitive === true,

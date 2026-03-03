@@ -12,19 +12,22 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { createClient } from '@supabase/supabase-js';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Role, ReportCampaignType } from '@prisma/client';
 import { ReportCampaignsService } from './report-campaigns.service';
+import { StorageService } from '../storage/storage.service';
 
 @Controller('report-campaigns')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.ADMIN)
 export class ReportCampaignsController {
-  constructor(private readonly service: ReportCampaignsService) {}
+  constructor(
+    private readonly service: ReportCampaignsService,
+    private readonly storageService: StorageService,
+  ) {}
 
   @Get()
   async findAll() {
@@ -100,37 +103,18 @@ export class ReportCampaignsController {
       throw new BadRequestException('No file uploaded');
     }
 
-    const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
-      throw new BadRequestException('Storage not configured. Please configure Supabase storage settings.');
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-    const fileName = `documents/reports/${id}/${Date.now()}-${file.originalname}`;
-
-    const { error } = await supabase.storage
-      .from('uploads')
-      .upload(fileName, file.buffer, {
-        contentType: file.mimetype,
-        upsert: true,
-      });
-
-    if (error) {
-      console.error('Supabase upload error:', error);
-      throw new BadRequestException('Failed to upload file');
-    }
-
-    const { data: publicUrl } = supabase.storage
-      .from('uploads')
-      .getPublicUrl(fileName);
+    const { path: storagePath, url: publicUrl } = await this.storageService.uploadDocument(
+      `documents/reports/${id}`,
+      file.buffer,
+      file.mimetype,
+      file.originalname,
+    );
 
     return this.service.attachDocument(
       id,
       {
         title: body.title || file.originalname,
-        storagePath: publicUrl.publicUrl,
+        storagePath: publicUrl,
         storageBucket: 'uploads',
         mimeType: file.mimetype,
         sizeBytes: file.size,
