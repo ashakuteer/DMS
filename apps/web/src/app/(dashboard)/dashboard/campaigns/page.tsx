@@ -1819,12 +1819,12 @@ export default function CampaignsPage() {
                 <Button
                   variant="outline"
                   onClick={() => {
-                    const encoded = encodeURIComponent(whatsappUpdateText);
-                    window.open(`https://wa.me/?text=${encoded}`, "_blank");
+                    navigator.clipboard.writeText(whatsappUpdateText);
+                    toast({ title: "Copied", description: "Campaign update copied to clipboard" });
                   }}
                   data-testid="button-open-whatsapp-update"
                 >
-                  <SiWhatsapp className="h-4 w-4 mr-1" /> Open WhatsApp
+                  <SiWhatsapp className="h-4 w-4 mr-1" /> Copy for WhatsApp
                 </Button>
               </div>
             </div>

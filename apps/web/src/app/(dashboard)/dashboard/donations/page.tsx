@@ -652,7 +652,7 @@ export default function DonationsPage() {
     }
   };
 
-  const handleWhatsAppThankYou = () => {
+  const handleWhatsAppThankYou = async () => {
     if (!detailDonation) return;
     const phone = detailDonation.donor.whatsappPhone || detailDonation.donor.primaryPhone;
     if (!phone) {
@@ -668,14 +668,21 @@ export default function DonationsPage() {
     }
 
     const message = buildThankYouMessage(detailDonation);
-    const cleaned = phone.replace(/\D/g, "");
-    const fullNumber = cleaned.startsWith("91") ? cleaned : `91${cleaned}`;
-    window.open(`https://wa.me/${fullNumber}?text=${encodeURIComponent(message)}`, "_blank");
-
-    toast({
-      title: "WhatsApp Opened",
-      description: "Thank you message pre-filled in WhatsApp",
-    });
+    try {
+      const donorId = detailDonation?.donor?.id || detailDonation?.donorId || "";
+      const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+        method: "POST",
+        body: JSON.stringify({ donorId, toE164: phone, message, type: "DONATION_THANK_YOU" }),
+      });
+      if (res.ok) {
+        toast({ title: "WhatsApp Sent", description: "Thank you message sent via WhatsApp" });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast({ title: "WhatsApp Failed", description: err.message || "Could not send", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to send WhatsApp", variant: "destructive" });
+    }
   };
 
   const handleDownloadReceipt = async (donationId: string) => {

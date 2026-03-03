@@ -249,9 +249,9 @@ function WhatsAppCopyButton({ phone, message, testId }: { phone?: string; messag
   const [copied, setCopied] = useState(false);
   const handleClick = () => {
     if (phone) {
-      const cleanPhone = phone.replace(/\D/g, "");
-      const fullPhone = cleanPhone.startsWith("91") ? cleanPhone : `91${cleanPhone}`;
-      window.open(`https://wa.me/${fullPhone}?text=${encodeURIComponent(message)}`, "_blank");
+      navigator.clipboard.writeText(message);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } else {
       navigator.clipboard.writeText(message);
       setCopied(true);

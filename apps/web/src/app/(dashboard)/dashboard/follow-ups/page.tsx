@@ -976,7 +976,21 @@ export default function FollowUpsPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => window.open(`https://wa.me/91${phone}?text=${encodeURIComponent("Hi, following up on our conversation.")}`, "_blank")}
+                                onClick={async () => {
+                                  try {
+                                    const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+                                      method: "POST",
+                                      body: JSON.stringify({ donorId: fu.donorId, toE164: phone, message: "Hi, following up on our conversation.", type: "FOLLOWUP_REMINDER" }),
+                                    });
+                                    if (res.ok) {
+                                      toast({ title: "WhatsApp Sent" });
+                                    } else {
+                                      toast({ title: "WhatsApp Failed", variant: "destructive" });
+                                    }
+                                  } catch {
+                                    toast({ title: "Error sending WhatsApp", variant: "destructive" });
+                                  }
+                                }}
                                 data-testid={`button-whatsapp-${fu.id}`}
                               >
                                 <MessageCircle className="h-4 w-4 text-green-600" />

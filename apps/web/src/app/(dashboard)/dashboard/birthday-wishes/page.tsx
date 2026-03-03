@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL } from "@/lib/api-config";
+
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,7 +40,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { authStorage } from "@/lib/auth";
+import { authStorage, fetchWithAuth } from "@/lib/auth";
 import { canAccessModule, hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { useToast } from "@/hooks/use-toast";
@@ -145,7 +147,7 @@ export default function BirthdayWishesPage() {
   const fetchDonorBirthdays = useCallback(async () => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/birthday-wishes/upcoming?range=next7", {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/upcoming?range=next7`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setDonorBirthdays(await res.json());
@@ -157,7 +159,7 @@ export default function BirthdayWishesPage() {
   const fetchBeneficiaryBirthdays = useCallback(async () => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/birthday-wishes/upcoming-beneficiaries?range=next7", {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/upcoming-beneficiaries?range=next7`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setBeneficiaryBirthdays(await res.json());
@@ -169,7 +171,7 @@ export default function BirthdayWishesPage() {
   const fetchSentLog = useCallback(async (page: number = 1) => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/sent-log?page=${page}&limit=15`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/sent-log?page=${page}&limit=15`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -185,7 +187,7 @@ export default function BirthdayWishesPage() {
     if (!isAdmin) return;
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/birthday-wishes/templates", {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/templates`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setTemplates(await res.json());
@@ -208,7 +210,7 @@ export default function BirthdayWishesPage() {
     setActionLoading(`donor-email-${donorId}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/queue-email/${donorId}`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/queue-email/${donorId}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -227,7 +229,7 @@ export default function BirthdayWishesPage() {
     setActionLoading(`donor-wa-${donorId}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/mark-sent/${donorId}`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/mark-sent/${donorId}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ channel: "WHATSAPP" }),
@@ -242,12 +244,24 @@ export default function BirthdayWishesPage() {
     }
   };
 
-  const handleCopyWhatsApp = (item: DonorBirthday) => {
-    navigator.clipboard.writeText(item.whatsappText);
-    toast({ title: "Copied", description: "WhatsApp message copied to clipboard" });
+  const handleCopyWhatsApp = async (item: DonorBirthday) => {
     if (item.whatsappPhone) {
-      const cleanPhone = item.whatsappPhone.replace(/[^0-9]/g, "");
-      window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(item.whatsappText)}`, "_blank");
+      try {
+        const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+          method: "POST",
+          body: JSON.stringify({ donorId: item.donorId || "", toE164: item.whatsappPhone, message: item.whatsappText, type: "SPECIAL_DAY_WISH" }),
+        });
+        if (res.ok) {
+          toast({ title: "WhatsApp Sent", description: "Birthday wish sent via WhatsApp" });
+        } else {
+          toast({ title: "WhatsApp Failed", variant: "destructive" });
+        }
+      } catch {
+        toast({ title: "Error sending WhatsApp", variant: "destructive" });
+      }
+    } else {
+      navigator.clipboard.writeText(item.whatsappText);
+      toast({ title: "Copied", description: "No phone number. Message copied to clipboard." });
     }
   };
 
@@ -255,7 +269,7 @@ export default function BirthdayWishesPage() {
     setActionLoading(`ben-email-${beneficiaryId}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/send-beneficiary-wish/${beneficiaryId}`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/send-beneficiary-wish/${beneficiaryId}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -280,7 +294,7 @@ export default function BirthdayWishesPage() {
     setActionLoading(`save-template-${id}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/templates/${id}`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/templates/${id}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ subject: editSubject, body: editBody }),

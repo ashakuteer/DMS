@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL } from "@/lib/api-config";
+
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,7 +56,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { authStorage } from "@/lib/auth";
+import { authStorage, fetchWithAuth } from "@/lib/auth";
 import { canAccessModule } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { useToast } from "@/hooks/use-toast";
@@ -332,7 +334,7 @@ export default function DailyActionsPage() {
     setLoading(true);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/dashboard/daily-actions", {
+      const res = await fetch(`${API_URL}/api/dashboard/daily-actions`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -351,7 +353,7 @@ export default function DailyActionsPage() {
     setSponsorBirthdaysLoading(true);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/birthday-wishes/upcoming?range=next7", {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/upcoming?range=next7`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -369,7 +371,7 @@ export default function DailyActionsPage() {
     setBeneficiaryBirthdaysLoading(true);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/birthday-wishes/upcoming-beneficiaries?range=next7", {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/upcoming-beneficiaries?range=next7`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -393,23 +395,33 @@ export default function DailyActionsPage() {
     setExpandedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const copyWhatsApp = (donor: DonorInfo, message: string) => {
+  const copyWhatsApp = async (donor: DonorInfo, message: string) => {
     const phone = donor.whatsappPhone || donor.primaryPhone;
     if (!phone) {
       toast({ title: "No phone number", description: "This donor has no phone number on file", variant: "destructive" });
       return;
     }
-    navigator.clipboard.writeText(message);
-    toast({ title: "Copied", description: "WhatsApp message copied to clipboard" });
-    const cleanPhone = phone.replace(/[^0-9]/g, '');
-    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+    try {
+      const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+        method: "POST",
+        body: JSON.stringify({ donorId: donor.id, toE164: phone, message }),
+      });
+      if (res.ok) {
+        toast({ title: "WhatsApp Sent", description: "Message sent via WhatsApp" });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast({ title: "WhatsApp Failed", description: err.message || "Could not send", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to send WhatsApp", variant: "destructive" });
+    }
     logWhatsApp(donor.id, message);
   };
 
   const logWhatsApp = async (donorId: string, message: string) => {
     try {
       const token = authStorage.getAccessToken();
-      await fetch("/api/communication-logs/whatsapp", {
+      await fetch(`${API_URL}/api/communication-logs/whatsapp`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ donorId, type: "GREETING", messagePreview: message.substring(0, 200) }),
@@ -424,7 +436,7 @@ export default function DailyActionsPage() {
     setActionLoading(loadingKey);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/dashboard/daily-actions/mark-done", {
+      const res = await fetch(`${API_URL}/api/dashboard/daily-actions/mark-done`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ donorId, actionType, description }),
@@ -453,7 +465,7 @@ export default function DailyActionsPage() {
     setActionLoading(`snooze-${snoozeTarget.donorId}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/dashboard/daily-actions/snooze", {
+      const res = await fetch(`${API_URL}/api/dashboard/daily-actions/snooze`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ ...snoozeTarget, days: snoozeDays }),
@@ -476,7 +488,7 @@ export default function DailyActionsPage() {
     setActionLoading(reminderId);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/reminder-tasks/${reminderId}/done`, {
+      const res = await fetch(`${API_URL}/api/reminder-tasks/${reminderId}/done`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -495,7 +507,7 @@ export default function DailyActionsPage() {
     setActionLoading(reminderId);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/reminder-tasks/${reminderId}/snooze`, {
+      const res = await fetch(`${API_URL}/api/reminder-tasks/${reminderId}/snooze`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ days }),
@@ -515,7 +527,7 @@ export default function DailyActionsPage() {
     setActionLoading(`email-${reminder.id}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/reminder-tasks/${reminder.id}/send-email`, {
+      const res = await fetch(`${API_URL}/api/reminder-tasks/${reminder.id}/send-email`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -545,7 +557,7 @@ export default function DailyActionsPage() {
     setActionLoading(loadingKey);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/sponsorships/${markPaidItem.sponsorshipId}/mark-paid`, {
+      const res = await fetch(`${API_URL}/api/sponsorships/${markPaidItem.sponsorshipId}/mark-paid`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ paymentMode: markPaidMode, notes: markPaidNotes || undefined }),
@@ -569,7 +581,7 @@ export default function DailyActionsPage() {
     setActionLoading(`skip-${item.id}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/sponsorships/${item.sponsorshipId}/skip`, {
+      const res = await fetch(`${API_URL}/api/sponsorships/${item.sponsorshipId}/skip`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -588,7 +600,7 @@ export default function DailyActionsPage() {
     setActionLoading(`sp-email-${item.id}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/sponsorships/${item.sponsorshipId}/queue-reminder`, {
+      const res = await fetch(`${API_URL}/api/sponsorships/${item.sponsorshipId}/queue-reminder`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -624,7 +636,7 @@ export default function DailyActionsPage() {
     setActionLoading(fulfillPledgeTarget.id);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/pledges/${fulfillPledgeTarget.id}/mark-fulfilled`, {
+      const res = await fetch(`${API_URL}/api/pledges/${fulfillPledgeTarget.id}/mark-fulfilled`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -671,7 +683,7 @@ export default function DailyActionsPage() {
     setActionLoading(postponePledgeTarget.id);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/pledges/${postponePledgeTarget.id}/postpone`, {
+      const res = await fetch(`${API_URL}/api/pledges/${postponePledgeTarget.id}/postpone`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ newDate: pledgePostponeForm.newDate, notes: pledgePostponeForm.notes || undefined }),
@@ -707,7 +719,7 @@ export default function DailyActionsPage() {
     setActionLoading(cancelPledgeTarget.id);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/pledges/${cancelPledgeTarget.id}/cancel`, {
+      const res = await fetch(`${API_URL}/api/pledges/${cancelPledgeTarget.id}/cancel`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ reason: pledgeCancelReason }),
@@ -730,14 +742,14 @@ export default function DailyActionsPage() {
   const handlePledgeWhatsApp = async (pledge: PledgeItem) => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/pledges/${pledge.id}/whatsapp-text`, {
+      const res = await fetch(`${API_URL}/api/pledges/${pledge.id}/whatsapp-text`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const { text } = await res.json();
         await navigator.clipboard.writeText(text);
         toast({ title: "Copied", description: "Pledge reminder copied to clipboard" });
-        await fetch(`/api/pledges/${pledge.id}/log-whatsapp`, {
+        await fetch(`${API_URL}/api/pledges/${pledge.id}/log-whatsapp`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -751,7 +763,7 @@ export default function DailyActionsPage() {
     setActionLoading(`pledge-email-${pledge.id}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/pledges/${pledge.id}/send-reminder-email`, {
+      const res = await fetch(`${API_URL}/api/pledges/${pledge.id}/send-reminder-email`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -769,11 +781,22 @@ export default function DailyActionsPage() {
     }
   };
 
-  const handleSponsorBirthdayWhatsApp = (item: SponsorBirthdayItem) => {
+  const handleSponsorBirthdayWhatsApp = async (item: SponsorBirthdayItem) => {
     const phone = item.whatsappPhone;
     if (!phone) return;
-    const cleanPhone = phone.replace(/[^0-9]/g, '');
-    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(item.whatsappText)}`, '_blank');
+    try {
+      const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+        method: "POST",
+        body: JSON.stringify({ donorId: item.donorId || "", toE164: phone, message: item.whatsappText, type: "SPECIAL_DAY_WISH" }),
+      });
+      if (res.ok) {
+        toast({ title: "WhatsApp Sent", description: "Birthday wish sent via WhatsApp" });
+      } else {
+        toast({ title: "WhatsApp Failed", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error sending WhatsApp", variant: "destructive" });
+    }
   };
 
   const handleSponsorBirthdayCopyWhatsApp = (item: SponsorBirthdayItem) => {
@@ -785,7 +808,7 @@ export default function DailyActionsPage() {
     setActionLoading(`bday-email-${item.donorId}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/birthday-wishes/queue-email", {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/queue-email`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ donorId: item.donorId }),
@@ -807,7 +830,7 @@ export default function DailyActionsPage() {
     setActionLoading(`ben-bday-email-${item.beneficiaryId}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/send-beneficiary-wish/${item.beneficiaryId}`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/send-beneficiary-wish/${item.beneficiaryId}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });

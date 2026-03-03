@@ -107,6 +107,41 @@ export class CommunicationsController {
     return result;
   }
 
+  @Post("whatsapp/send-freeform")
+  async sendFreeform(
+    @Body()
+    body: {
+      donorId: string;
+      toE164: string;
+      message: string;
+      type?: string;
+    },
+    @Req() req: any,
+  ) {
+    if (!body.donorId || !body.toE164 || !body.message) {
+      throw new HttpException(
+        "donorId, toE164, and message are required",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const normalizedPhone = normalizeToE164(body.toE164) || body.toE164;
+    if (!/^\+\d{10,15}$/.test(normalizedPhone)) {
+      throw new HttpException(
+        "toE164 must be a valid E.164 phone number (e.g. +919876543210)",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return this.service.sendFreeform(
+      body.donorId,
+      normalizedPhone,
+      body.message,
+      body.type,
+      req.user?.id,
+    );
+  }
+
   @Get("whatsapp/templates")
   async getConfiguredTemplates() {
     return {

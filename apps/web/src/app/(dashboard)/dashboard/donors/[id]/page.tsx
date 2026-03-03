@@ -1044,26 +1044,26 @@ export default function DonorProfilePage() {
     const phone = getWhatsAppNumber();
     if (!phone || !donor?.id) return;
 
-    const encodedMessage = encodeURIComponent(message);
-    const url = `https://wa.me/${phone}?text=${encodedMessage}`;
-    window.open(url, "_blank");
-
     try {
-      await fetchWithAuth("/api/communication-logs/whatsapp", {
+      const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           donorId: donor.id,
-          donationId: donationId || undefined,
-          templateId: templateId || undefined,
-          phoneNumber: phone,
-          messagePreview: message.substring(0, 200),
+          toE164: phone,
+          message,
           type: type || "GENERAL",
         }),
       });
+      if (res.ok) {
+        toast({ title: "WhatsApp Sent", description: "Message sent via WhatsApp" });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast({ title: "WhatsApp Failed", description: err.message || "Could not send", variant: "destructive" });
+      }
       fetchCommunicationLogs();
     } catch (error) {
-      console.error("Error logging WhatsApp click:", error);
+      console.error("Error sending WhatsApp:", error);
+      toast({ title: "Error", description: "Failed to send WhatsApp", variant: "destructive" });
     }
   };
 
@@ -2793,12 +2793,23 @@ export default function DonorProfilePage() {
                       });
                     };
 
-                    const handleWhatsAppClick = (e: React.MouseEvent) => {
+                    const handleWhatsAppClick = async (e: React.MouseEvent) => {
                       e.stopPropagation();
                       const phone = donor?.whatsappPhone || donor?.primaryPhone;
-                      if (phone) {
-                        const url = `https://wa.me/${phone.replace(/\D/g, "")}?text=${encodeURIComponent(sponsorshipMessage)}`;
-                        window.open(url, "_blank");
+                      if (phone && donor?.id) {
+                        try {
+                          const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+                            method: "POST",
+                            body: JSON.stringify({ donorId: donor.id, toE164: phone, message: sponsorshipMessage }),
+                          });
+                          if (res.ok) {
+                            toast({ title: "WhatsApp Sent", description: "Sponsorship message sent" });
+                          } else {
+                            toast({ title: "WhatsApp Failed", variant: "destructive" });
+                          }
+                        } catch {
+                          toast({ title: "Error sending WhatsApp", variant: "destructive" });
+                        }
                       } else {
                         toast({
                           title: "No Phone",

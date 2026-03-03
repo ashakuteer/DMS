@@ -206,4 +206,53 @@ export class TwilioWhatsAppService {
       return { success: false, errorCode, errorMessage };
     }
   }
+
+  async sendFreeform(
+    toE164: string,
+    messageBody: string,
+  ): Promise<SendTemplateResult> {
+    if (!this.client || this.disabled) {
+      return {
+        success: false,
+        errorCode: "NOT_CONFIGURED",
+        errorMessage: this.disableReason || "Twilio client is not configured",
+      };
+    }
+
+    try {
+      const params: Record<string, any> = {
+        body: messageBody,
+        to: `whatsapp:${toE164}`,
+      };
+
+      if (this.fromNumber) {
+        params.from = this.fromNumber;
+      } else if (this.messagingServiceSid) {
+        params.messagingServiceSid = this.messagingServiceSid;
+      }
+
+      if (this.statusCallbackUrl) {
+        params.statusCallback = this.statusCallbackUrl;
+      }
+
+      this.logger.log(
+        `Sending freeform WhatsApp to ${toE164} | from: ${params.from || "N/A"}`,
+      );
+
+      const message = await this.client.messages.create(params as any);
+
+      this.logger.log(
+        `Freeform WhatsApp sent to ${toE164} | SID: ${message.sid} | Status: ${message.status}`,
+      );
+
+      return { success: true, messageSid: message.sid, status: message.status };
+    } catch (error: any) {
+      const errorCode = error?.code?.toString() || "UNKNOWN";
+      const errorMessage = error?.message || "Unknown Twilio error";
+      this.logger.error(
+        `Freeform WhatsApp FAILED to ${toE164} | Code: ${errorCode} | Message: ${errorMessage}`,
+      );
+      return { success: false, errorCode, errorMessage };
+    }
+  }
 }

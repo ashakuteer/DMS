@@ -1719,17 +1719,29 @@ export default function BeneficiaryProfilePage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          asChild
                           data-testid={`button-whatsapp-${sponsorship.id}`}
+                          onClick={async () => {
+                            try {
+                              const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+                                method: "POST",
+                                body: JSON.stringify({
+                                  donorId: sponsorship.donorId || sponsorship.donor?.id || "",
+                                  toE164: sponsorship.donor.primaryPhone,
+                                  message: decodeURIComponent(generateWhatsAppMessage(sponsorship)),
+                                }),
+                              });
+                              if (res.ok) {
+                                toast({ title: "WhatsApp Sent", description: "Message sent to sponsor" });
+                              } else {
+                                toast({ title: "WhatsApp Failed", variant: "destructive" });
+                              }
+                            } catch {
+                              toast({ title: "Error sending WhatsApp", variant: "destructive" });
+                            }
+                          }}
                         >
-                          <a
-                            href={`https://wa.me/${sponsorship.donor.primaryPhone.replace(/\D/g, "")}?text=${generateWhatsAppMessage(sponsorship)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <SiWhatsapp className="h-4 w-4 mr-1" />
-                            WhatsApp
-                          </a>
+                          <SiWhatsapp className="h-4 w-4 mr-1" />
+                          WhatsApp
                         </Button>
                       )}
                       {canEdit && (

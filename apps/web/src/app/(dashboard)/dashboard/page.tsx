@@ -264,10 +264,21 @@ export default function DashboardPage() {
       }),
     });
     
-    const message = encodeURIComponent(
-      `Hello ${reminder.donor.firstName}, this is a follow-up from Asha Kuteer Foundation. We hope you are doing well and would love to hear from you!`
-    );
-    window.open(`https://wa.me/91${phone}?text=${message}`, "_blank");
+    const message = `Hello ${reminder.donor.firstName}, this is a follow-up from Asha Kuteer Foundation. We hope you are doing well and would love to hear from you!`;
+    try {
+      const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+        method: "POST",
+        body: JSON.stringify({ donorId: reminder.donorId, toE164: phone, message }),
+      });
+      if (res.ok) {
+        toast({ title: "WhatsApp Sent", description: "Follow-up message sent via WhatsApp" });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast({ title: "WhatsApp Failed", description: err.message || "Could not send", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to send WhatsApp", variant: "destructive" });
+    }
   };
 
   const fetchData = async () => {

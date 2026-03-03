@@ -149,6 +149,52 @@ export class CommunicationsService {
     };
   }
 
+  async sendFreeform(
+    donorId: string,
+    toE164: string,
+    message: string,
+    type?: string,
+    userId?: string,
+  ) {
+    const row = await this.prisma.communicationMessage.create({
+      data: {
+        donorId: donorId || null,
+        channel: CommChannel.WHATSAPP,
+        provider: CommProvider.TWILIO,
+        to: toE164,
+        status: CommStatus.QUEUED,
+        templateKey: type || 'FREEFORM',
+        templateVariables: { message },
+        createdByUserId: userId || null,
+      },
+    });
+
+    const result = await this.twilioWhatsApp.sendFreeform(toE164, message);
+
+    if (result.success) {
+      const mappedStatus = this.mapTwilioStatusToCommStatus(result.status);
+      const updated = await this.prisma.communicationMessage.update({
+        where: { id: row.id },
+        data: {
+          status: mappedStatus,
+          providerMessageId: result.messageSid,
+          sentAt: new Date(),
+        },
+      });
+      return { success: true, status: updated.status?.toLowerCase(), messageId: updated.id };
+    } else {
+      await this.prisma.communicationMessage.update({
+        where: { id: row.id },
+        data: {
+          status: CommStatus.FAILED,
+          errorCode: result.errorCode,
+          errorMessage: result.errorMessage,
+        },
+      });
+      return { success: false, error: result.errorMessage };
+    }
+  }
+
   async getWhatsAppStatusForDonor(donorId: string, limit = 1) {
     return this.prisma.communicationMessage.findMany({
       where: {

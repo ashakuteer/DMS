@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL } from "@/lib/api-config";
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,7 +36,7 @@ import {
   RefreshCw,
   Loader2,
 } from "lucide-react";
-import { authStorage } from "@/lib/auth";
+import { authStorage, fetchWithAuth } from "@/lib/auth";
 import { canAccessModule } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { useToast } from "@/hooks/use-toast";
@@ -108,7 +110,7 @@ export default function RemindersPage() {
     setLoading(true);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/reminder-tasks?filter=${filter}`, {
+      const res = await fetch(`${API_URL}/api/reminder-tasks?filter=${filter}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -125,7 +127,7 @@ export default function RemindersPage() {
   const fetchStats = async () => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/reminder-tasks/stats", {
+      const res = await fetch(`${API_URL}/api/reminder-tasks/stats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -145,7 +147,7 @@ export default function RemindersPage() {
   const handleMarkDone = async (id: string) => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/reminder-tasks/${id}/done`, {
+      const res = await fetch(`${API_URL}/api/reminder-tasks/${id}/done`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -164,7 +166,7 @@ export default function RemindersPage() {
   const handleSnooze = async (id: string, days: number) => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/reminder-tasks/${id}/snooze`, {
+      const res = await fetch(`${API_URL}/api/reminder-tasks/${id}/snooze`, {
         method: "PATCH",
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -188,7 +190,7 @@ export default function RemindersPage() {
     setGenerating(true);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/reminder-tasks/generate", {
+      const res = await fetch(`${API_URL}/api/reminder-tasks/generate`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -218,16 +220,22 @@ export default function RemindersPage() {
 
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/reminder-tasks/${id}/whatsapp-log`, {
+      const res = await fetch(`${API_URL}/api/reminder-tasks/${id}/whatsapp-log`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
       
       if (res.ok) {
         const data = await res.json();
-        const url = `https://wa.me/${data.phone}?text=${encodeURIComponent(data.message)}`;
-        window.open(url, "_blank");
-        toast({ title: "WhatsApp opened and logged" });
+        const sendRes = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+          method: "POST",
+          body: JSON.stringify({ donorId: donor.id, toE164: data.phone, message: data.message, type: "SPECIAL_DAY_WISH" }),
+        });
+        if (sendRes.ok) {
+          toast({ title: "WhatsApp Sent", description: "Reminder sent via WhatsApp" });
+        } else {
+          toast({ title: "WhatsApp Failed", variant: "destructive" });
+        }
       } else {
         toast({ title: "Failed to log WhatsApp action. Please try again.", variant: "destructive" });
       }
