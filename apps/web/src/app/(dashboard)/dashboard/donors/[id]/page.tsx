@@ -2024,28 +2024,18 @@ export default function DonorProfilePage() {
         return;
       }
 
-      const contentSid = process.env.NEXT_PUBLIC_TWILIO_DONATION_THANK_YOU_CONTENT_SID || "";
-      if (!contentSid) {
-        toast({
-          title: "Not Configured",
-          description: "WhatsApp template content SID is not configured. Please set TWILIO_DONATION_THANK_YOU_CONTENT_SID.",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const variables: Record<string, string> = {
         "1": getDonorName(),
         "2": formatCurrency(newlyCreatedDonation.donationAmount),
         "3": formatDate(newlyCreatedDonation.donationDate),
       };
 
-      const res = await fetchWithAuth("/api/communications/whatsapp/send-template", {
+      const res = await fetchWithAuth("/api/communications/whatsapp/send-by-key", {
         method: "POST",
         body: JSON.stringify({
+          templateKey: "DONATION_THANK_YOU",
           donorId: donor.id,
           toE164: e164Phone,
-          contentSid,
           variables,
         }),
       });

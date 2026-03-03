@@ -111,16 +111,16 @@ export class CommunicationsController {
   async sendFreeform(
     @Body()
     body: {
-      donorId: string;
+      donorId?: string;
       toE164: string;
       message: string;
       type?: string;
     },
     @Req() req: any,
   ) {
-    if (!body.donorId || !body.toE164 || !body.message) {
+    if (!body.toE164 || !body.message) {
       throw new HttpException(
-        "donorId, toE164, and message are required",
+        "toE164 and message are required",
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -134,7 +134,7 @@ export class CommunicationsController {
     }
 
     return this.service.sendFreeform(
-      body.donorId,
+      body.donorId || '',
       normalizedPhone,
       body.message,
       body.type,

@@ -59,9 +59,15 @@ export class CommunicationsService {
     dto: SendWhatsAppTemplateDto,
     userId?: string,
   ) {
+    let validDonorId: string | null = null;
+    if (dto.donorId) {
+      const donor = await this.prisma.donor.findUnique({ where: { id: dto.donorId }, select: { id: true } });
+      if (donor) validDonorId = donor.id;
+    }
+
     const row = await this.prisma.communicationMessage.create({
       data: {
-        donorId: dto.donorId || null,
+        donorId: validDonorId,
         channel: CommChannel.WHATSAPP,
         provider: CommProvider.TWILIO,
         to: dto.toE164,
@@ -156,9 +162,15 @@ export class CommunicationsService {
     type?: string,
     userId?: string,
   ) {
+    let validDonorId: string | null = null;
+    if (donorId) {
+      const donor = await this.prisma.donor.findUnique({ where: { id: donorId }, select: { id: true } });
+      if (donor) validDonorId = donor.id;
+    }
+
     const row = await this.prisma.communicationMessage.create({
       data: {
-        donorId: donorId || null,
+        donorId: validDonorId,
         channel: CommChannel.WHATSAPP,
         provider: CommProvider.TWILIO,
         to: toE164,
