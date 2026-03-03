@@ -10,7 +10,7 @@ export interface EmailAttachment {
   contentType: string;
 }
 
-export type EmailFeatureType = 'TEST' | 'AUTO' | 'PLEDGE' | 'SPECIALDAY' | 'RECEIPT' | 'QUEUE' | 'MANUAL';
+export type EmailFeatureType = 'TEST' | 'AUTO' | 'PLEDGE' | 'SPECIALDAY' | 'RECEIPT' | 'QUEUE' | 'MANUAL' | 'RELAY';
 
 export interface EmailOptions {
   to: string;
@@ -43,6 +43,9 @@ export class EmailService {
    * Initialize email transporter using ONLY environment variables:
    * SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM
    */
+  private emailRelayUrl: string | null = null;
+  private emailRelaySecret: string | null = null;
+
   private initializeTransporter() {
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
@@ -50,34 +53,35 @@ export class EmailService {
     const smtpPass = process.env.SMTP_PASS;
     const smtpFrom = process.env.SMTP_FROM || smtpUser;
 
+    this.emailRelayUrl = process.env.EMAIL_RELAY_URL || null;
+    this.emailRelaySecret = process.env.EMAIL_RELAY_SECRET || process.env.SESSION_SECRET || null;
+
+    if (this.emailRelayUrl) {
+      this.logger.log(`=== EMAIL RELAY MODE ===`);
+      this.logger.log(`Relay URL: ${this.emailRelayUrl}`);
+      this.configStatus = {
+        configured: true,
+        smtpUser: smtpUser || 'relay',
+        smtpHost: 'relay',
+        fromEmail: smtpFrom,
+      };
+      return;
+    }
+
     if (smtpHost && smtpUser && smtpPass) {
-      const useGmailService = smtpHost === 'smtp.gmail.com';
-      const transportConfig: any = useGmailService
-        ? {
-            service: 'gmail',
-            auth: {
-              user: smtpUser,
-              pass: smtpPass,
-            },
-            connectionTimeout: 15000,
-            greetingTimeout: 15000,
-            socketTimeout: 20000,
-            tls: { rejectUnauthorized: false },
-          }
-        : {
-            host: smtpHost,
-            port: smtpPort,
-            secure: smtpPort === 465,
-            auth: {
-              user: smtpUser,
-              pass: smtpPass,
-            },
-            connectionTimeout: 15000,
-            greetingTimeout: 15000,
-            socketTimeout: 20000,
-            tls: { rejectUnauthorized: false },
-          };
-      this.transporter = nodemailer.createTransport(transportConfig);
+      this.transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: smtpPort === 465,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass,
+        },
+        connectionTimeout: 15000,
+        greetingTimeout: 15000,
+        socketTimeout: 20000,
+        tls: { rejectUnauthorized: false },
+      } as any);
 
       this.configStatus = {
         configured: true,
@@ -137,12 +141,56 @@ export class EmailService {
     return user.substring(0, 3) + '***' + user.substring(user.length - 4);
   }
 
+  private async sendViaRelay(options: EmailOptions & { inlineAttachments?: any[] }): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    if (!this.emailRelayUrl) return { success: false, error: 'No relay URL configured' };
+    const featureType = options.featureType || 'UNKNOWN';
+    try {
+      this.logger.log(`[${featureType}] Sending email via relay to ${options.to}`);
+      const payload: any = {
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+        text: options.text,
+      };
+      if (options.attachments?.length) {
+        payload.attachments = options.attachments.map(att => ({
+          filename: att.filename,
+          content: Buffer.isBuffer(att.content) ? att.content.toString('base64') : att.content,
+          contentType: att.contentType,
+          encoding: 'base64',
+        }));
+      }
+      const res = await fetch(this.emailRelayUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Relay-Secret': this.emailRelaySecret || '',
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(30000),
+      });
+      const result = await res.json() as any;
+      if (result.success) {
+        this.logger.log(`[${featureType}] Relay email sent to ${options.to}, messageId: ${result.messageId}`);
+      } else {
+        this.logger.error(`[${featureType}] Relay email failed: ${result.error}`);
+      }
+      return result;
+    } catch (err: any) {
+      this.logger.error(`[${featureType}] Relay error: ${err?.message}`);
+      return { success: false, error: err?.message || 'Relay failed' };
+    }
+  }
+
   async sendEmail(options: EmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    if (this.emailRelayUrl) {
+      return this.sendViaRelay(options);
+    }
+
     const org = await this.orgProfileService.getProfile();
     const featureType = options.featureType || 'UNKNOWN';
     const maskedUser = this.getMaskedSmtpUser();
     
-    // Use SMTP_FROM env var, fallback to SMTP_USER, then org email
     const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || org.email;
     const fromName = org.name || 'NGO DMS';
 
@@ -481,6 +529,10 @@ This is an automated email. Please do not reply.`;
   private async sendEmailWithInline(options: EmailOptions & {
     inlineAttachments?: Array<{ filename: string; content: Buffer; cid: string; contentType: string }>;
   }): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    if (this.emailRelayUrl) {
+      return this.sendViaRelay(options);
+    }
+
     const org = await this.orgProfileService.getProfile();
     const featureType = options.featureType || 'UNKNOWN';
     const maskedUser = this.getMaskedSmtpUser();
