@@ -5,47 +5,64 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
   private supabase: SupabaseClient | null = null;
-  private readonly beneficiaryBucket: string;
-  private readonly donorBucket: string;
-  private readonly uploadsBucket: string;
+  private beneficiaryBucket: string = 'beneficiary-photos';
+  private donorBucket: string = 'donor-photos';
+  private readonly uploadsBucket: string = 'uploads';
   private initializedBuckets = new Set<string>();
+  private clientInitialized = false;
 
   constructor() {
-    const supabaseUrl = (process.env.SUPABASE_URL || '').trim();
-    const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+    this.initClient();
+  }
+
+  private initClient(): void {
+    const supabaseUrl = process.env.SUPABASE_URL?.trim();
+    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+
+    console.log("ENV CHECK:");
+    console.log("SUPABASE_URL exists:", !!supabaseUrl, "length:", supabaseUrl?.length);
+    console.log("SUPABASE_SERVICE_ROLE_KEY exists:", !!serviceKey, "length:", serviceKey?.length);
+    console.log("SUPABASE_BENEFICIARY_BUCKET:", process.env.SUPABASE_BENEFICIARY_BUCKET);
+    console.log("SUPABASE_DONOR_BUCKET:", process.env.SUPABASE_DONOR_BUCKET);
 
     this.beneficiaryBucket = (process.env.SUPABASE_BENEFICIARY_BUCKET || 'beneficiary-photos').trim();
     this.donorBucket = (process.env.SUPABASE_DONOR_BUCKET || 'donor-photos').trim();
-    this.uploadsBucket = 'uploads';
 
-    this.logger.log(`Storage env check: SUPABASE_URL=${!!supabaseUrl} (len=${supabaseUrl.length}), SUPABASE_SERVICE_ROLE_KEY=${!!supabaseKey} (len=${supabaseKey.length})`);
-    this.logger.log(`Buckets: beneficiary=${this.beneficiaryBucket}, donor=${this.donorBucket}, uploads=${this.uploadsBucket}`);
-
-    if (supabaseUrl && supabaseKey) {
-      this.supabase = createClient(supabaseUrl, supabaseKey);
-      this.logger.log('Supabase client initialized successfully');
-    } else {
-      this.logger.warn('Supabase NOT configured - missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+    if (!supabaseUrl || !serviceKey) {
+      console.error("Supabase credentials missing at runtime");
+      return;
     }
+
+    this.supabase = createClient(supabaseUrl, serviceKey);
+    this.clientInitialized = true;
+    this.logger.log('Supabase client initialized successfully');
+  }
+
+  private getClient(): SupabaseClient | null {
+    if (!this.clientInitialized) {
+      this.initClient();
+    }
+    return this.supabase;
   }
 
   isConfigured(): boolean {
-    return this.supabase !== null;
+    return this.getClient() !== null;
   }
 
   private async ensureBucketExists(bucketName: string): Promise<void> {
-    if (!this.supabase) return;
+    const client = this.getClient();
+    if (!client) return;
     if (this.initializedBuckets.has(bucketName)) return;
 
     try {
-      const { data: buckets, error: listError } = await this.supabase.storage.listBuckets();
+      const { data: buckets, error: listError } = await client.storage.listBuckets();
       if (listError) {
         this.logger.error(`Failed to list buckets: ${listError.message}`);
         return;
       }
       const exists = buckets?.some(b => b.name === bucketName);
       if (!exists) {
-        const { error: createError } = await this.supabase.storage.createBucket(bucketName, {
+        const { error: createError } = await client.storage.createBucket(bucketName, {
           public: true,
           fileSizeLimit: 5 * 1024 * 1024,
           allowedMimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
@@ -63,14 +80,15 @@ export class StorageService {
   }
 
   private async ensureDocBucketExists(bucketName: string): Promise<void> {
-    if (!this.supabase) return;
+    const client = this.getClient();
+    if (!client) return;
     if (this.initializedBuckets.has(bucketName)) return;
 
     try {
-      const { data: buckets } = await this.supabase.storage.listBuckets();
+      const { data: buckets } = await client.storage.listBuckets();
       const exists = buckets?.some(b => b.name === bucketName);
       if (!exists) {
-        const { error: createError } = await this.supabase.storage.createBucket(bucketName, {
+        const { error: createError } = await client.storage.createBucket(bucketName, {
           public: true,
           fileSizeLimit: 10 * 1024 * 1024,
         });
@@ -93,7 +111,8 @@ export class StorageService {
     originalName: string,
     bucket?: string,
   ): Promise<{ path: string; url: string }> {
-    if (!this.supabase) {
+    const client = this.getClient();
+    if (!client) {
       this.logger.error('Upload failed: Supabase client not initialized');
       throw new BadRequestException('Storage not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
     }
@@ -113,7 +132,7 @@ export class StorageService {
 
     this.logger.log(`Upload path: ${bucketName}/${storagePath}`);
 
-    const { error } = await this.supabase.storage
+    const { error } = await client.storage
       .from(bucketName)
       .upload(storagePath, fileBuffer, {
         contentType: mimeType,
@@ -125,7 +144,7 @@ export class StorageService {
       throw new BadRequestException(`Upload failed: ${error.message}`);
     }
 
-    const { data: urlData } = this.supabase.storage
+    const { data: urlData } = client.storage
       .from(bucketName)
       .getPublicUrl(storagePath);
 
@@ -152,7 +171,8 @@ export class StorageService {
     mimeType: string,
     originalName: string,
   ): Promise<{ path: string; url: string }> {
-    if (!this.supabase) {
+    const client = this.getClient();
+    if (!client) {
       this.logger.error('Document upload failed: Supabase client not initialized');
       throw new BadRequestException('Storage not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.');
     }
@@ -163,7 +183,7 @@ export class StorageService {
 
     const fileName = `${folder}/${Date.now()}-${originalName}`;
 
-    const { error } = await this.supabase.storage
+    const { error } = await client.storage
       .from(bucketName)
       .upload(fileName, fileBuffer, {
         contentType: mimeType,
@@ -175,7 +195,7 @@ export class StorageService {
       throw new BadRequestException(`Upload failed: ${error.message}`);
     }
 
-    const { data: urlData } = this.supabase.storage
+    const { data: urlData } = client.storage
       .from(bucketName)
       .getPublicUrl(fileName);
 
@@ -188,11 +208,12 @@ export class StorageService {
   }
 
   async deletePhoto(storagePath: string, bucket?: string): Promise<void> {
-    if (!this.supabase || !storagePath) return;
+    const client = this.getClient();
+    if (!client || !storagePath) return;
 
     const bucketName = bucket || this.beneficiaryBucket;
     try {
-      const { error } = await this.supabase.storage
+      const { error } = await client.storage
         .from(bucketName)
         .remove([storagePath]);
 
