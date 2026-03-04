@@ -1,4 +1,5 @@
 import ExcelJS from "exceljs";
+import { Buffer } from "buffer";
 import {
   Injectable,
   NotFoundException,
@@ -2331,88 +2332,96 @@ export class BeneficiariesService {
       paidThisMonth,
     };
   }
+async buildWhatsAppReminderText(sponsorship: any): Promise<string> {
+  const donorName = [sponsorship.donor?.firstName, sponsorship.donor?.lastName]
+    .filter(Boolean)
+    .join(" ");
 
-  async buildWhatsAppReminderText(sponsorship: any): Promise<string> {
-    const donorName = [sponsorship.donor?.firstName, sponsorship.donor?.lastName].filter(Boolean).join(' ');
-    const isPrivacyProtected = sponsorship.beneficiary?.protectPrivacy || sponsorship.protectPrivacy;
-    const beneficiaryLabel = isPrivacyProtected ? 'one of our children/elders' : (sponsorship.beneficiary?.fullName || sponsorship.beneficiaryName);
-    const homeName = this.getHomeTypeName(sponsorship.beneficiary?.homeType || sponsorship.homeType);
+  const isPrivacyProtected =
+    sponsorship.beneficiary?.protectPrivacy || sponsorship.protectPrivacy;
 
-    const isInKind = sponsorship.sponsorshipType === 'FOOD' || sponsorship.sponsorshipType === 'GROCERIES' || sponsorship.inKindItem;
-    const amountLine = isInKind
-      ? 'monthly in-kind sponsorship'
-      : sponsorship.amount ? `monthly sponsorship of Rs. ${Number(sponsorship.amount).toLocaleString('en-IN')}` : 'monthly sponsorship';
+  const beneficiaryLabel = isPrivacyProtected
+    ? "one of our children/elders"
+    : sponsorship.beneficiary?.fullName || sponsorship.beneficiaryName;
 
-    const org = await this.orgProfileService.getProfile();
-    return `Dear ${donorName},\n\nThis is a gentle reminder about your ${amountLine} for ${beneficiaryLabel} at ${homeName}.\n\nYour continued support makes a meaningful difference. Thank you for your generosity!\n\nIf you have already supported this month, please ignore this message.\n\nWarm regards,\n${org.name}`;
-  
+  const homeName = this.getHomeTypeName(
+    sponsorship.beneficiary?.homeType || sponsorship.homeType,
+  );
 
-// ... inside BeneficiariesService class
+  const isInKind =
+    sponsorship.sponsorshipType === "FOOD" ||
+    sponsorship.sponsorshipType === "GROCERIES" ||
+    sponsorship.inKindItem;
 
-async generateBulkTemplate() {
+  const amountLine = isInKind
+    ? "monthly in-kind sponsorship"
+    : sponsorship.amount
+      ? `monthly sponsorship of Rs. ${Number(sponsorship.amount).toLocaleString("en-IN")}`
+      : "monthly sponsorship";
+
+  const org = await this.orgProfileService.getProfile();
+
+  return `Dear ${donorName},\n\nThis is a gentle reminder about your ${amountLine} for ${beneficiaryLabel} at ${homeName}.\n\nYour continued support makes a meaningful difference. Thank you for your generosity!\n\nIf you have already supported this month, please ignore this message.\n\nWarm regards,\n${org.name}`;
+} // ✅ IMPORTANT: closes buildWhatsAppReminderText()
+
+// ✅ Keep these methods INSIDE the class (same indentation level)
+
+async generateBulkTemplate(): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("Beneficiaries");
 
-  // Minimum required columns
   sheet.addRow(["name", "phone"]);
-
-  // Optional columns (add as you wish)
   sheet.addRow(["Sample Beneficiary", "+919999999999"]);
 
-  const buffer = await workbook.xlsx.writeBuffer();
-  return Buffer.from(buffer);
+  const buf = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buf);
 }
 
 async bulkUpload(
   user: any,
   file: Express.Multer.File,
-  uploadMode: "upsert" | "insert_only" = "upsert"
+  uploadMode: "upsert" | "insert_only" = "upsert",
 ) {
   if (!file?.buffer) throw new BadRequestException("File is missing");
 
   const workbook = new ExcelJS.Workbook();
 
-  // ✅ Fix for Railway types
   await workbook.xlsx.load(
-    Buffer.isBuffer(file.buffer) ? file.buffer : Buffer.from(file.buffer as any)
+    Buffer.isBuffer(file.buffer) ? file.buffer : Buffer.from(file.buffer as any),
   );
 
   const sheet = workbook.getWorksheet("Beneficiaries") || workbook.worksheets[0];
   if (!sheet) throw new BadRequestException("No worksheet found in file");
 
-  // Read headers from row 1
   const headerRow = sheet.getRow(1);
   const headers: string[] = [];
   headerRow.eachCell({ includeEmpty: true }, (cell, col) => {
-    headers[col - 1] = String(cell.value || "").trim().toLowerCase();
+    headers[col - 1] = String(cell.value || "")
+      .trim()
+      .toLowerCase();
   });
 
-  // Validate minimum columns
   const nameIdx = headers.findIndex((h) => ["name", "full name"].includes(h));
   const phoneIdx = headers.findIndex((h) =>
-    ["phone", "mobile", "contact", "phone number"].includes(h)
+    ["phone", "mobile", "contact", "phone number"].includes(h),
   );
 
   if (nameIdx === -1 || phoneIdx === -1) {
-    throw new BadRequestException(
-      "Excel must contain minimum columns: name and phone"
-    );
+    throw new BadRequestException("Excel must contain minimum columns: name and phone");
   }
 
-  // Parse rows
   const rows: Array<{ name: string; phone: string }> = [];
   for (let r = 2; r <= sheet.rowCount; r++) {
     const row = sheet.getRow(r);
     const name = String(row.getCell(nameIdx + 1).value || "").trim();
     const phone = String(row.getCell(phoneIdx + 1).value || "").trim();
 
-    if (!name && !phone) continue; // skip empty row
-    if (!name || !phone) continue; // skip incomplete row (or throw if you want)
+    if (!name && !phone) continue;
+    if (!name || !phone) continue;
 
     rows.push({ name, phone });
   }
 
-  // TODO: Save to DB using Prisma (we’ll do next)
   return {
     uploadMode,
     total: rows.length,
@@ -2420,5 +2429,4 @@ async bulkUpload(
     message: "Parsed successfully. Next: save to database.",
   };
 }
-  }
-}
+ 
