@@ -1,12 +1,39 @@
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { AuditService } from '../audit/audit.service';
-import { RolePermissionsService } from '../role-permissions/role-permissions.service';
-import { EmailService } from '../email/email.service';
-import { EmailJobsService, CreateEmailJobDto } from '../email-jobs/email-jobs.service';
-import { OrganizationProfileService } from '../organization-profile/organization-profile.service';
-import { Role, HomeType, BeneficiaryStatus, SponsorshipType, SponsorshipFrequency, BeneficiaryEventType, SponsorshipStatus, DonationType, DonationPurpose, DonationMode, DonationHomeType, ProgressTerm, HealthEventSeverity, BeneficiaryHealthStatus, DocumentOwnerType, DocumentType } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
+import ExcelJS from "exceljs";
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+  Logger,
+} from "@nestjs/common";
+
+import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
+import { RolePermissionsService } from "../role-permissions/role-permissions.service";
+import { EmailService } from "../email/email.service";
+import { EmailJobsService, CreateEmailJobDto } from "../email-jobs/email-jobs.service";
+import { OrganizationProfileService } from "../organization-profile/organization-profile.service";
+
+import {
+  Role,
+  HomeType,
+  BeneficiaryStatus,
+  SponsorshipType,
+  SponsorshipFrequency,
+  BeneficiaryEventType,
+  SponsorshipStatus,
+  DonationType,
+  DonationPurpose,
+  DonationMode,
+  DonationHomeType,
+  ProgressTerm,
+  HealthEventSeverity,
+  BeneficiaryHealthStatus,
+  DocumentOwnerType,
+  DocumentType,
+} from "@prisma/client";
+
+import { Decimal } from "@prisma/client/runtime/library";
 
 export interface UserContext {
   id: string;
@@ -2318,9 +2345,7 @@ export class BeneficiariesService {
 
     const org = await this.orgProfileService.getProfile();
     return `Dear ${donorName},\n\nThis is a gentle reminder about your ${amountLine} for ${beneficiaryLabel} at ${homeName}.\n\nYour continued support makes a meaningful difference. Thank you for your generosity!\n\nIf you have already supported this month, please ignore this message.\n\nWarm regards,\n${org.name}`;
-  import * as ExcelJS from "exceljs";
-import { Buffer } from "buffer";
-import { BadRequestException } from "@nestjs/common";
+  
 
 // ... inside BeneficiariesService class
 
