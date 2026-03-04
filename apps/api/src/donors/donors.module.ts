@@ -4,18 +4,19 @@ import { DonorsService } from "./donors.service";
 import { DonorDuplicatesService } from "./donor-duplicates.service";
 import { PrismaModule } from "../prisma/prisma.module";
 import { AuditModule } from "../audit/audit.module";
+import { StorageModule } from "../storage/storage.module";
 import { BeneficiariesModule } from "../beneficiaries/beneficiaries.module";
 
 @Module({
-  imports: [PrismaModule, AuditModule, forwardRef(() => BeneficiariesModule)],
+  imports: [PrismaModule, AuditModule, StorageModule, forwardRef(() => BeneficiariesModule)],
   controllers: [DonorsController],
   providers: [
     DonorsService,
-    DonorDuplicatesService, // ✅ THIS WAS MISSING
+    DonorDuplicatesService,
   ],
   exports: [
     DonorsService,
-    DonorDuplicatesService, // optional but safe
+    DonorDuplicatesService,
   ],
 })
 export class DonorsModule {}
