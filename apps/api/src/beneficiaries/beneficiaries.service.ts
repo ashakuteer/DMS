@@ -1,4 +1,5 @@
-import ExcelJS from "exceljs";
+import * as ExcelJS from "exceljs";
+import { Buffer } from "buffer";
 import {
   Injectable,
   NotFoundException,
@@ -1127,8 +1128,7 @@ export class BeneficiariesService {
   }
 
   async exportToExcel(user: UserContext) {
-    const ExcelJS = await import('exceljs');
-    const workbook = new ExcelJS.Workbook();
+       const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Beneficiaries');
 
     // Define columns
