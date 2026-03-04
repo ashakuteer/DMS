@@ -13,7 +13,7 @@ import {
   UploadedFile,
   BadRequestException,
 } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response, Express } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -79,41 +79,40 @@ export class BeneficiariesController {
     return this.beneficiariesService.exportToExcel(user);
   }
 
-  @Get('bulk-template')
-  @Roles(Role.ADMIN, Role.STAFF)
-  async downloadBulkTemplate(@Res() res: Response) {
-    const buffer = await this.beneficiariesService.generateBulkTemplate();
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename="beneficiary-import-template.xlsx"');
-    res.send(buffer);
-  }
+ @Get("bulk-template")
+@Roles(Role.ADMIN, Role.STAFF)
+async downloadBulkTemplate() {
+  // Beneficiary bulk import is disabled for now
+  throw new BadRequestException("Beneficiary bulk template download is disabled.");
+}
 
-  @Post('bulk-upload')
-  @Roles(Role.ADMIN)
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: memoryStorage(),
-      limits: { fileSize: 10 * 1024 * 1024 },
-      fileFilter: (req, file, cb) => {
-        if (file.mimetype.includes('spreadsheet') || file.mimetype.includes('excel') || file.originalname.endsWith('.xlsx')) {
-          cb(null, true);
-        } else {
-          cb(new BadRequestException('Only .xlsx files are allowed'), false);
-        }
-      },
-    }),
-  )
-  async bulkUpload(
-    @CurrentUser() user: UserContext,
-    @UploadedFile() file: Express.Multer.File,
-    @Query('mode') mode?: string,
-  ) {
-    if (!file) {
-      throw new BadRequestException('No file uploaded');
-    }
-    const uploadMode = mode === 'insert_only' ? 'insert_only' : 'upsert';
-    return this.beneficiariesService.bulkUpload(user, file.buffer, uploadMode);
-  }
+@Post("bulk-upload")
+@Roles(Role.ADMIN)
+@UseInterceptors(
+  FileInterceptor("file", {
+    storage: memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      if (
+        file.mimetype.includes("spreadsheet") ||
+        file.mimetype.includes("excel") ||
+        file.originalname.endsWith(".xlsx")
+      ) {
+        cb(null, true);
+      } else {
+        cb(new BadRequestException("Only .xlsx files are allowed"), false);
+      }
+    },
+  }),
+)
+async bulkUpload(
+  @CurrentUser() user: UserContext,
+  @UploadedFile() file: Express.Multer.File,
+  @Query("mode") mode?: string,
+) {
+  // Beneficiary bulk import is disabled for now
+  throw new BadRequestException("Beneficiary bulk upload is disabled.");
+}
 
   @Get(':id')
   @Roles(Role.ADMIN, Role.STAFF)
