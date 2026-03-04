@@ -1207,11 +1207,11 @@ export class DonorsService {
     userAgent?: string,
   ) {
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(
-  Buffer.isBuffer(file.buffer)
-    ? file.buffer
-    : Buffer.from(file.buffer as any)
-);
+       await workbook.xlsx.load(
+      Buffer.isBuffer(file.buffer)
+        ? file.buffer
+        : Buffer.from(file.buffer as any) as any
+    );
     let sheet = workbook.getWorksheet('Donors') || workbook.worksheets[0];
     if (!sheet) {
       throw new BadRequestException('No worksheet found in the uploaded file.');
@@ -1742,11 +1742,10 @@ export class DonorsService {
       userAgent,
     );
 
-  await workbook.xlsx.load(
-  Buffer.isBuffer(file.buffer)
-    ? file.buffer
-    : Buffer.from(file.buffer as any)
-);
+     );
+
+    const buf = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buf);
   }
 
   async getTimeline(
