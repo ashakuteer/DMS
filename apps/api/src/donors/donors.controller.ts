@@ -452,5 +452,22 @@ export class DonorsController {
       throw new BadRequestException("No photo uploaded");
     }
     return this.donorsService.uploadPhoto(user, id, file);
-  }
+    }
+  import { Controller, Get, Res } from "@nestjs/common";
+import { Response } from "express";
+
+@Get("bulk-template")
+async bulkTemplate(@Res() res: Response) {
+  const file = await this.donorsService.generateBulkTemplate();
+
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=donors-template.xlsx"
+  );
+  return res.send(file);
+}
 }
