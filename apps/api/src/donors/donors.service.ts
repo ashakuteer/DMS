@@ -2097,9 +2097,10 @@ export class DonorsService {
     return { count: result.count };
   }
 
-  async countDonorsByAssignee(userId: string) {
+    async countDonorsByAssignee(userId: string) {
     return this.prisma.donor.count({
       where: { assignedToUserId: userId, isDeleted: false },
     });
   }
+}
  
