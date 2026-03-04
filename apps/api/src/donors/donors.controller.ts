@@ -48,7 +48,22 @@ export class DonorsController {
     const userAgent = req.headers["user-agent"] || "unknown";
     return { ipAddress, userAgent };
   }
+@Public()
+@Get("bulk-template")
+async downloadBulkTemplate(@Res() res: Response) {
+  const file = await this.donorsService.generateBulkTemplate();
 
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  );
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=donors-template.xlsx",
+  );
+
+  return res.send(file);
+}
   @Get()
   @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
   async findAll(
