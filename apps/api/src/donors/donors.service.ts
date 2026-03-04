@@ -2102,4 +2102,40 @@ export class DonorsService {
       where: { assignedToUserId: userId, isDeleted: false },
     });
   }
+  import * as ExcelJS from "exceljs";
+import { Buffer } from "buffer";
+
+async generateBulkTemplate() {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("Donors");
+
+  // ✅ All columns (full template)
+  sheet.addRow([
+    "name",
+    "phone",
+    "email",
+    "whatsapp",
+    "address",
+    "city",
+    "state",
+    "pincode",
+    "category",
+  ]);
+
+  // sample row
+  sheet.addRow([
+    "Sample Donor",
+    "+919999999999",
+    "",
+    "",
+    "",
+    "Hyderabad",
+    "Telangana",
+    "",
+    "INDIVIDUAL",
+  ]);
+
+  const buf = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buf);
+}
 }
