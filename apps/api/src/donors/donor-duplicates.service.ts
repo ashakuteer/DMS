@@ -91,29 +91,35 @@ export class DonorDuplicatesService {
     }
 
     for (const [phone, phoneDonors] of phoneMap) {
-      if (phoneDonors.length > 1) {
-        const uniqueDonors = phoneDonors.filter(d => !processedIds.has(d.id));
-        if (uniqueDonors.length > 1) {
-          duplicateGroups.push({
-            matchType: 'phone',
-            matchValue: phone,
-            donors: uniqueDonors.map(d => ({
-              id: d.id,
-              donorCode: d.donorCode,
-              firstName: d.firstName,
-              lastName: d.lastName || undefined,
-              primaryPhone: d.primaryPhone || undefined,
-              personalEmail: d.personalEmail || undefined,
-              createdAt: d.createdAt,
-              donationCount: d._count.donations,
-              totalDonations: d.donations.reduce((sum, don) => sum + Number(don.donationAmount), 0),
-            })),
-          });
-          uniqueDonors.forEach(d => processedIds.add(d.id));
-        }
-      }
-    }
+  if (phoneDonors.length > 1) {
+    const uniqueDonors = phoneDonors.filter(d => !processedIds.has(d.id));
 
+    if (uniqueDonors.length > 1) {
+
+      // Mark donors as processed BEFORE pushing to avoid duplication later
+      uniqueDonors.forEach(d => processedIds.add(d.id));
+
+      duplicateGroups.push({
+        matchType: 'phone',
+        matchValue: phone,
+        donors: uniqueDonors.map(d => ({
+          id: d.id,
+          donorCode: d.donorCode,
+          firstName: d.firstName,
+          lastName: d.lastName || undefined,
+          primaryPhone: d.primaryPhone || undefined,
+          personalEmail: d.personalEmail || undefined,
+          createdAt: d.createdAt,
+          donationCount: d._count.donations,
+          totalDonations: d.donations.reduce(
+            (sum, don) => sum + Number(don.donationAmount),
+            0,
+          ),
+        })),
+      });
+    }
+  }
+}
     for (const [email, emailDonors] of emailMap) {
       if (emailDonors.length > 1) {
         const uniqueDonors = emailDonors.filter(d => !processedIds.has(d.id));
