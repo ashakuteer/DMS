@@ -2064,7 +2064,7 @@ export class DonorsService {
 
     return updated;
   }
-
+  
   async assignDonor(id: string, assignedToUserId: string | null) {
     const donor = await this.prisma.donor.findFirst({
       where: { id, isDeleted: false },
