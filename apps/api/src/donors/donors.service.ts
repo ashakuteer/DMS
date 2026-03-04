@@ -349,7 +349,7 @@ export class DonorsService {
       file.originalname,
     );
      
-    return { profilePicUrl: updated.profilePicUrl };
+    return { profilePicUrl: url };
   }
 
   async computeEngagementScores(
