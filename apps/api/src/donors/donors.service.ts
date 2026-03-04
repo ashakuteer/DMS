@@ -338,8 +338,8 @@ export class DonorsService {
       throw new NotFoundException("Donor not found");
     }
 
-    if (donor.profilePicPath) {
-      await this.storageService.deleteDonorPhoto(donor.profilePicPath);
+        if (donor.profilePicUrl) {
+      await this.storageService.deleteDonorPhoto(donor.profilePicUrl);
     }
 
     const { path, url } = await this.storageService.uploadDonorPhoto(
@@ -351,7 +351,7 @@ export class DonorsService {
 
     const updated = await this.prisma.donor.update({
       where: { id },
-      data: { profilePicUrl: url, profilePicPath: path },
+      data: { profilePicUrl: url },
     });
 
     return { profilePicUrl: updated.profilePicUrl };
