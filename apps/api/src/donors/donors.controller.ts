@@ -23,7 +23,6 @@ import { RolesGuard } from "../auth/guards/roles.guard";
 import { Roles } from "../auth/decorators/roles.decorator";
 import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequirePermission } from "../auth/decorators/permissions.decorator";
-import { Public } from "../auth/public.decorator";
 import { DonorsService } from "./donors.service";
 import { UserContext } from "./donors.types";
 import { DonorDuplicatesService } from "./donor-duplicates.service";
@@ -50,26 +49,6 @@ export class DonorsController {
     return { ipAddress, userAgent };
   }
 
-  @Public()
-  @Get("bulk-template")
-  async downloadBulkTemplate(@Res() res: Response) {
-    const file = await this.donorsService.generateBulkTemplate();
-
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    );
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=donors-template.xlsx",
-    );
-
-    return res.send(file);
-  }
-
-  // ✅ keep your other routes here (Get/Post/Patch etc)
-  // ...
-}
   @Get()
   @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
   async findAll(
@@ -331,7 +310,6 @@ export class DonorsController {
           "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           "application/vnd.ms-excel",
           "text/csv",
-          "application/csv",
         ];
         if (
           allowedMimes.includes(file.mimetype) ||
@@ -439,7 +417,6 @@ export class DonorsController {
     );
   }
 
-  // ✅ MUST BE INSIDE CLASS
   @Patch(":id/assign")
   @RequirePermission("donors", "assign")
   async assignDonor(
@@ -459,7 +436,12 @@ export class DonorsController {
         if (file.mimetype.match(/^image\/(jpeg|jpg|png|webp)$/)) {
           cb(null, true);
         } else {
-          cb(new BadRequestException("Only jpg, jpeg, png, webp files are allowed"), false);
+          cb(
+            new BadRequestException(
+              "Only jpg, jpeg, png, webp files are allowed",
+            ),
+            false,
+          );
         }
       },
     }),
@@ -473,22 +455,5 @@ export class DonorsController {
       throw new BadRequestException("No photo uploaded");
     }
     return this.donorsService.uploadPhoto(user, id, file);
-    }
-  import { Controller, Get, Res } from "@nestjs/common";
-import { Response } from "express";
-
-@Get("bulk-template")
-async bulkTemplate(@Res() res: Response) {
-  const file = await this.donorsService.generateBulkTemplate();
-
-  res.setHeader(
-    "Content-Type",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  );
-  res.setHeader(
-    "Content-Disposition",
-    "attachment; filename=donors-template.xlsx"
-  );
-  return res.send(file);
-}
+  }
 }
