@@ -348,12 +348,7 @@ export class DonorsService {
       file.mimetype,
       file.originalname,
     );
-
-    const updated = await this.prisma.donor.update({
-      where: { id },
-      data: { profilePicUrl: url },
-    });
-
+     
     return { profilePicUrl: updated.profilePicUrl };
   }
 
@@ -1199,7 +1194,7 @@ export class DonorsService {
     return Buffer.from(buffer);
   }
 
-  async bulkUpload(
+    async bulkUpload(
     file: Express.Multer.File,
     user: UserContext,
     mode: 'upsert' | 'insert_only' = 'upsert',
@@ -1207,7 +1202,7 @@ export class DonorsService {
     userAgent?: string,
   ) {
     const workbook = new ExcelJS.Workbook();
-       await workbook.xlsx.load(
+    await workbook.xlsx.load(
       Buffer.isBuffer(file.buffer)
         ? file.buffer
         : Buffer.from(file.buffer as any) as any
@@ -1741,8 +1736,6 @@ export class DonorsService {
       ipAddress,
       userAgent,
     );
-
-     );
 
     const buf = await workbook.xlsx.writeBuffer();
     return Buffer.from(buf);
