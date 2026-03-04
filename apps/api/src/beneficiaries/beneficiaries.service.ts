@@ -1,5 +1,4 @@
 import ExcelJS from "exceljs";
-import { Buffer } from "buffer";
 import {
   Injectable,
   NotFoundException,
@@ -35,7 +34,6 @@ import {
 } from "@prisma/client";
 
 import { Decimal } from "@prisma/client/runtime/library";
-
 export interface UserContext {
   id: string;
   role: Role;
@@ -2342,7 +2340,7 @@ async buildWhatsAppReminderText(sponsorship: any): Promise<string> {
 
   const beneficiaryLabel = isPrivacyProtected
     ? "one of our children/elders"
-    : sponsorship.beneficiary?.fullName || sponsorship.beneficiaryName;
+    : (sponsorship.beneficiary?.fullName || sponsorship.beneficiaryName);
 
   const homeName = this.getHomeTypeName(
     sponsorship.beneficiary?.homeType || sponsorship.homeType,
@@ -2362,15 +2360,20 @@ async buildWhatsAppReminderText(sponsorship: any): Promise<string> {
   const org = await this.orgProfileService.getProfile();
 
   return `Dear ${donorName},\n\nThis is a gentle reminder about your ${amountLine} for ${beneficiaryLabel} at ${homeName}.\n\nYour continued support makes a meaningful difference. Thank you for your generosity!\n\nIf you have already supported this month, please ignore this message.\n\nWarm regards,\n${org.name}`;
-} // ✅ IMPORTANT: closes buildWhatsAppReminderText()
+} // ✅ IMPORTANT: this closing brace was missing
 
-// ✅ Keep these methods INSIDE the class (same indentation level)
+// ==============================
+// Bulk import template + upload
+// ==============================
 
 async generateBulkTemplate(): Promise<Buffer> {
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("Beneficiaries");
 
+  // headers
   sheet.addRow(["name", "phone"]);
+
+  // sample row
   sheet.addRow(["Sample Beneficiary", "+919999999999"]);
 
   const buf = await workbook.xlsx.writeBuffer();
@@ -2378,17 +2381,16 @@ async generateBulkTemplate(): Promise<Buffer> {
 }
 
 async bulkUpload(
-  user: any,
-  file: Express.Multer.File,
+  user: UserContext,
+  fileBuffer: Buffer,
   uploadMode: "upsert" | "insert_only" = "upsert",
 ) {
-  if (!file?.buffer) throw new BadRequestException("File is missing");
+  if (!fileBuffer) throw new BadRequestException("File is missing");
 
   const workbook = new ExcelJS.Workbook();
 
-  await workbook.xlsx.load(
-    Buffer.isBuffer(file.buffer) ? file.buffer : Buffer.from(file.buffer as any),
-  );
+  // ✅ load buffer safely
+  await workbook.xlsx.load(Buffer.isBuffer(fileBuffer) ? fileBuffer : Buffer.from(fileBuffer as any));
 
   const sheet = workbook.getWorksheet("Beneficiaries") || workbook.worksheets[0];
   if (!sheet) throw new BadRequestException("No worksheet found in file");
@@ -2396,9 +2398,7 @@ async bulkUpload(
   const headerRow = sheet.getRow(1);
   const headers: string[] = [];
   headerRow.eachCell({ includeEmpty: true }, (cell, col) => {
-    headers[col - 1] = String(cell.value || "")
-      .trim()
-      .toLowerCase();
+    headers[col - 1] = String(cell.value || "").trim().toLowerCase();
   });
 
   const nameIdx = headers.findIndex((h) => ["name", "full name"].includes(h));
@@ -2429,4 +2429,3 @@ async bulkUpload(
     message: "Parsed successfully. Next: save to database.",
   };
 }
- 
