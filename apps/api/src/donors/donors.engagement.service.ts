@@ -13,7 +13,7 @@ export class DonorsEngagementService {
     const [donationStats, lastDonation] = await Promise.all([
       this.prisma.donation.aggregate({
         where: { donorId, isDeleted: false },
-        _sum: { amount: true },
+        _sum: { donationAmount: true },
         _count: true,
       }),
       this.prisma.donation.findFirst({
@@ -33,7 +33,7 @@ export class DonorsEngagementService {
       };
     }
 
-    const totalAmount = Number(donationStats._sum.amount || 0);
+    const totalAmount = Number(donationStats._sum.donationAmount || 0);
     const lastDonationDate = lastDonation?.createdAt;
 
     const daysSinceLastDonation = lastDonationDate
