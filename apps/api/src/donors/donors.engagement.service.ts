@@ -60,9 +60,9 @@ export class DonorsEngagementService {
       }),
     ]);
 
-    const donationsByDonor: Record<string, typeof donations> = {};
-    const pledgesByDonor: Record<string, typeof pledges> = {};
-    const sponsorsByDonor: Record<string, typeof sponsorships> = {};
+   const donationsByDonor: Record<string, typeof donations[number][]> = {};
+const pledgesByDonor: Record<string, typeof pledges[number][]> = {};
+const sponsorsByDonor: Record<string, typeof sponsorships[number][]> = {};
 
     for (const d of donations) {
       if (!donationsByDonor[d.donorId]) donationsByDonor[d.donorId] = [];
