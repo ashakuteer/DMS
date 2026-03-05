@@ -1997,8 +1997,13 @@ async assignDonor(id: string, assignedToUserId: string | null) {
 
 async bulkReassignDonors(fromUserId: string, toUserId: string) {
   const result = await this.prisma.donor.updateMany({
-    where: { assignedToUserId: fromUserId, isDeleted: false },
-    data: { assignedToUserId: toUserId },
+    where: {
+      assignedToUserId: fromUserId,
+      isDeleted: false,
+    },
+    data: {
+      assignedToUserId: toUserId,
+    },
   });
 
   return { count: result.count };
@@ -2012,4 +2017,3 @@ async countDonorsByAssignee(userId: string) {
     },
   });
 }
-    });
