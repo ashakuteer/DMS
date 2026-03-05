@@ -171,17 +171,15 @@ const sponsorsByDonor: Record<string, typeof sponsorships[number][]> = {};
     }
 
     await Promise.allSettled(
-      Object.entries(results).map(([donorId, { score, status }]) =>
-        this.prisma.donor.update({
-          where: { id: donorId },
-          data: {
-            healthScore: score,
-            healthStatus: status,
-          },
-        }),
-      ),
-    );
-
-    return results;
-  }
-}
+  Object.entries(results).map(([donorId, { score, status }]) =>
+    this.prisma.donor
+      .update({
+        where: { id: donorId },
+        data: {
+          healthScore: score,
+          healthStatus: status,
+        },
+      })
+      .catch(() => null),
+  ),
+);
