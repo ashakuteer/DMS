@@ -2008,6 +2008,8 @@ async bulkReassignDonors(fromUserId: string, toUserId: string) {
 
   return { count: result.count };
 }
+  return { count: result.count };
+}
 
 async countDonorsByAssignee(userId: string) {
   return this.prisma.donor.count({
