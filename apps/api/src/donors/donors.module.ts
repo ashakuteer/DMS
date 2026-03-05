@@ -1,6 +1,7 @@
 import { Module, forwardRef } from "@nestjs/common";
 import { DonorsController } from "./donors.controller";
 import { DonorsService } from "./donors.service";
+import { DonorsCrudService } from "./donors.crud.service";
 import { DonorDuplicatesService } from "./donor-duplicates.service";
 import { DonorsEngagementService } from "./donors.engagement.service";
 import { DonorsImportService } from "./donors.import.service";
