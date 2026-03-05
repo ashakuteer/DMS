@@ -39,103 +39,112 @@ export class DonorsService {
     return user.role === Role.TELECALLER || user.role === Role.VIEWER;
   }
 
-  async findAll(user: UserContext, options: DonorQueryOptions = {}) {
-    const {
-      page = 1,
-      limit = 20,
-      search,
-      sortBy = "createdAt",
-      sortOrder = "desc",
-      category,
-      city,
-      country,
-      religion,
-      assignedToUserId,
-      donationFrequency,
-      healthStatus,
-      supportPreferences,
-    } = options;
+```ts
+async findAll(user: UserContext, options: DonorQueryOptions = {}) {
+  const {
+    page = 1,
+    limit = 20,
+    search,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+    category,
+    city,
+    country,
+    religion,
+    assignedToUserId,
+    donationFrequency,
+    healthStatus,
+    supportPreferences,
+  } = options;
 
-    const accessFilter = this.getAccessFilter(user);
+  const accessFilter = this.getAccessFilter(user);
 
-    const where: any = {
-      isDeleted: false,
-      ...accessFilter,
-    };
+  const where: any = {
+    isDeleted: false,
+    ...accessFilter,
+  };
 
-    if (search) {
-      where.OR = [
-        { firstName: { contains: search, mode: "insensitive" } },
-        { lastName: { contains: search, mode: "insensitive" } },
-        { donorCode: { contains: search, mode: "insensitive" } },
-        { primaryPhone: { contains: search, mode: "insensitive" } },
-        { personalEmail: { contains: search, mode: "insensitive" } },
-        { city: { contains: search, mode: "insensitive" } },
-      ];
-    }
-
-    if (category) where.category = category;
-    if (city) where.city = { contains: city, mode: "insensitive" };
-    if (country) where.country = { contains: country, mode: "insensitive" };
-    if (religion) where.religion = { contains: religion, mode: "insensitive" };
-    if (assignedToUserId) where.assignedToUserId = assignedToUserId;
-    if (donationFrequency) where.donationFrequency = donationFrequency;
-
-    if (supportPreferences) {
-      const prefs = supportPreferences.split(",").map((p) => p.trim()).filter(Boolean);
-      if (prefs.length > 0) {
-        where.supportPreferences = { hasSome: prefs };
-      }
-    }
-
-    if (healthStatus && !["GREEN", "YELLOW", "RED"].includes(healthStatus)) {
-      // invalid filter, ignore
-    } else if (healthStatus) {
-      where.healthStatus = healthStatus;
-    }
-
-    const [donors, total] = await Promise.all([
-      this.prisma.donor.findMany({
-        where,
-        include: {
-          assignedToUser: {
-            select: { id: true, name: true, email: true },
-          },
-          createdBy: {
-            select: { id: true, name: true },
-          },
-          _count: { select: { donations: true, pledges: true } },
-        },
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      this.prisma.donor.count({ where }),
-    ]);
-
-    const donorIds = donors.map((d) => d.id);
-   constructor =
-  await this.engagementService.computeEngagementScores(donorIds);
-
-    const donorsWithHealth = donors.map((donor) => ({
-      ...donor,
-      healthScore: engagementMap[donor.id]?.score ?? 100,
-      healthStatus: engagementMap[donor.id]?.status ?? donor.healthStatus,
-      healthReasons: engagementMap[donor.id]?.reasons ?? [],
-    }));
-
-    const maskedDonors = this.shouldMaskData(user)
-      ? donorsWithHealth.map((donor) => maskDonorData(donor))
-      : donorsWithHealth;
-
-    return {
-      items: maskedDonors,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
+  if (search) {
+    where.OR = [
+      { firstName: { contains: search, mode: "insensitive" } },
+      { lastName: { contains: search, mode: "insensitive" } },
+      { donorCode: { contains: search, mode: "insensitive" } },
+      { primaryPhone: { contains: search, mode: "insensitive" } },
+      { personalEmail: { contains: search, mode: "insensitive" } },
+      { city: { contains: search, mode: "insensitive" } },
+    ];
   }
+
+  if (category) where.category = category;
+  if (city) where.city = { contains: city, mode: "insensitive" };
+  if (country) where.country = { contains: country, mode: "insensitive" };
+  if (religion) where.religion = { contains: religion, mode: "insensitive" };
+  if (assignedToUserId) where.assignedToUserId = assignedToUserId;
+  if (donationFrequency) where.donationFrequency = donationFrequency;
+
+  if (supportPreferences) {
+    const prefs = supportPreferences
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+
+    if (prefs.length > 0) {
+      where.supportPreferences = { hasSome: prefs };
+    }
+  }
+
+  if (healthStatus && !["GREEN", "YELLOW", "RED"].includes(healthStatus)) {
+    // ignore invalid filter
+  } else if (healthStatus) {
+    where.healthStatus = healthStatus;
+  }
+
+  const [donors, total] = await Promise.all([
+    this.prisma.donor.findMany({
+      where,
+      include: {
+        assignedToUser: {
+          select: { id: true, name: true, email: true },
+        },
+        createdBy: {
+          select: { id: true, name: true },
+        },
+        _count: {
+          select: { donations: true, pledges: true },
+        },
+      },
+      orderBy: { [sortBy]: sortOrder },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    this.prisma.donor.count({ where }),
+  ]);
+
+  const donorIds = donors.map((d) => d.id);
+
+  const engagementMap =
+    await this.engagementService.computeEngagementScores(donorIds);
+
+  const donorsWithHealth = donors.map((donor) => ({
+    ...donor,
+    healthScore: engagementMap[donor.id]?.score ?? 100,
+    healthStatus: engagementMap[donor.id]?.status ?? donor.healthStatus,
+    healthReasons: engagementMap[donor.id]?.reasons ?? [],
+  }));
+
+  const maskedDonors = this.shouldMaskData(user)
+    ? donorsWithHealth.map((donor) => maskDonorData(donor))
+    : donorsWithHealth;
+
+  return {
+    items: maskedDonors,
+    total,
+    page,
+    limit,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+```
 
   async findOne(user: UserContext, id: string) {
     const accessFilter = this.getAccessFilter(user);
@@ -355,49 +364,7 @@ export class DonorsService {
     return { profilePicUrl: url };
   }
 
-  async computeEngagementScores(
-    donorIds: string[],
-  ): Promise<Record<string, EngagementResult>> {
-    if (donorIds.length === 0) return {};
-
-    // Batch process in chunks to avoid memory issues
-    const CHUNK_SIZE = 100;
-    const results: Record<string, EngagementResult> = {};
-    
-    for (let i = 0; i < donorIds.length; i += CHUNK_SIZE) {
-      const chunk = donorIds.slice(i, i + CHUNK_SIZE);
-      const chunkResults = await this.computeEngagementScoresChunk(chunk);
-      Object.assign(results, chunkResults);
-    }
-    
-    return results;
-  }
-
-  private async computeEngagementScoresChunk(
-    donorIds: string[],
-  ): Promise<Record<string, EngagementResult>> {
-    if (donorIds.length === 0) return {};
-
-    const now = new Date();
-    const results: Record<string, EngagementResult> = {};
-
-    const [donations, pledges, sponsorships] = await Promise.all([
-      this.prisma.donation.findMany({
-        where: { donorId: { in: donorIds }, isDeleted: false },
-        select: { donorId: true, donationDate: true, donationAmount: true },
-        orderBy: { donationDate: "desc" },
-      }),
-      this.prisma.pledge.findMany({
-        where: { donorId: { in: donorIds }, isDeleted: false },
-        select: { donorId: true, status: true, expectedFulfillmentDate: true },
-      }),
-      this.prisma.sponsorship.findMany({
-        where: { donorId: { in: donorIds } },
-        select: { donorId: true, status: true },
-      }),
-    ]);
-
-    const donationsByDonor: Record<string, typeof donations> = {};
+   const donationsByDonor: Record<string, typeof donations> = {};
     for (const d of donations) {
       if (!donationsByDonor[d.donorId]) donationsByDonor[d.donorId] = [];
       donationsByDonor[d.donorId].push(d);
