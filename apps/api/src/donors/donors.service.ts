@@ -982,87 +982,103 @@ async findAll(user: UserContext, options: DonorQueryOptions = {}) {
   workbook.creator = 'NGO DMS';
 
   const donors = workbook.addWorksheet('Donors');
-  const instructions = workbook.addWorksheet('Instructions'); // ADD THIS LINE
+  async generateBulkTemplate(): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "NGO DMS";
+
+  const donors = workbook.addWorksheet("Donors");
+  const instructions = workbook.addWorksheet("Instructions"); // keep ONLY this one
 
   const templateColumns = [
-    { header: 'First Name *', key: 'firstName', width: 18 },
-    { header: 'Middle Name', key: 'middleName', width: 14 },
-    { header: 'Last Name', key: 'lastName', width: 16 },
-    { header: 'Primary Phone', key: 'primaryPhone', width: 18 },
-    { header: 'WhatsApp Phone', key: 'whatsappPhone', width: 18 },
-    { header: 'Personal Email', key: 'personalEmail', width: 26 },
-    { header: 'Official Email', key: 'officialEmail', width: 26 },
-    { header: 'Gender', key: 'gender', width: 10 },
-    { header: 'Approximate Age', key: 'approximateAge', width: 14 },
-    { header: 'Category', key: 'category', width: 20 },
-    { header: 'Address', key: 'address', width: 30 },
-    { header: 'City', key: 'city', width: 14 },
-    { header: 'State', key: 'state', width: 14 },
-    { header: 'Country', key: 'country', width: 12 },
-    { header: 'Pincode', key: 'pincode', width: 10 },
-    { header: 'Profession', key: 'profession', width: 16 },
-    { header: 'Religion', key: 'religion', width: 12 },
-    { header: 'PAN', key: 'pan', width: 14 },
-    { header: 'Source', key: 'sourceOfDonor', width: 16 },
-    { header: 'Donation Frequency', key: 'donationFrequency', width: 18 },
-    { header: 'Notes', key: 'notes', width: 30 },
+    { header: "First Name *", key: "firstName", width: 18 },
+    { header: "Middle Name", key: "middleName", width: 14 },
+    { header: "Last Name", key: "lastName", width: 16 },
+    { header: "Primary Phone", key: "primaryPhone", width: 18 },
+    { header: "WhatsApp Phone", key: "whatsappPhone", width: 18 },
+    { header: "Personal Email", key: "personalEmail", width: 26 },
+    { header: "Official Email", key: "officialEmail", width: 26 },
+    { header: "Gender", key: "gender", width: 10 },
+    { header: "Approximate Age", key: "approximateAge", width: 14 },
+    { header: "Category", key: "category", width: 20 },
+    { header: "Address", key: "address", width: 30 },
+    { header: "City", key: "city", width: 14 },
+    { header: "State", key: "state", width: 14 },
+    { header: "Country", key: "country", width: 12 },
+    { header: "Pincode", key: "pincode", width: 10 },
+    { header: "Profession", key: "profession", width: 16 },
+    { header: "Religion", key: "religion", width: 12 },
+    { header: "PAN", key: "pan", width: 14 },
+    { header: "Source", key: "sourceOfDonor", width: 16 },
+    { header: "Donation Frequency", key: "donationFrequency", width: 18 },
+    { header: "Notes", key: "notes", width: 30 },
   ];
-    donors.columns = templateColumns;
 
-    const headerRow = donors.getRow(1);
-    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2E7D32' } };
-    headerRow.alignment = { horizontal: 'center' };
+  donors.columns = templateColumns;
 
-    donors.addRow({
-      firstName: 'Rajesh',
-      middleName: '',
-      lastName: 'Kumar',
-      primaryPhone: '+919876543210',
-      whatsappPhone: '+919876543210',
-      personalEmail: 'rajesh.kumar@email.com',
-      officialEmail: '',
-      gender: 'MALE',
-      approximateAge: 45,
-      category: 'INDIVIDUAL',
-      address: '42, MG Road',
-      city: 'Hyderabad',
-      state: 'Telangana',
-      country: 'India',
-      pincode: '500001',
-      profession: 'Engineer',
-      religion: 'Hindu',
-      pan: 'ABCPK1234F',
-      sourceOfDonor: 'REFERRAL',
-      donationFrequency: 'MONTHLY',
-      notes: 'Regular donor since 2023',
-    });
-    donors.addRow({
-      firstName: 'Priya',
-      lastName: 'Sharma',
-      primaryPhone: '9123456789',
-      personalEmail: 'priya@example.com',
-      gender: 'FEMALE',
-      approximateAge: 32,
-      category: 'INDIVIDUAL',
-      city: 'Bangalore',
-      state: 'Karnataka',
-      country: 'India',
-      pincode: '560001',
-      profession: 'Doctor',
-      sourceOfDonor: 'SOCIAL_MEDIA',
-      donationFrequency: 'OCCASIONAL',
-    });
+  const headerRow = donors.getRow(1);
+  headerRow.font = { bold: true, color: { argb: "FFFFFFFF" } };
+  headerRow.fill = {
+    type: "pattern",
+    pattern: "solid",
+    fgColor: { argb: "FF2E7D32" },
+  };
+  headerRow.alignment = { horizontal: "center" };
 
-    const instructions = workbook.addWorksheet('Instructions');
-    instructions.columns = [
-      { header: 'Column', key: 'column', width: 22 },
-      { header: 'Required?', key: 'required', width: 12 },
-      { header: 'Description', key: 'description', width: 50 },
-      { header: 'Example', key: 'example', width: 25 },
-      { header: 'Valid Values', key: 'validValues', width: 50 },
-    ];
+  donors.addRow({
+    firstName: "Rajesh",
+    middleName: "",
+    lastName: "Kumar",
+    primaryPhone: "+919876543210",
+    whatsappPhone: "+919876543210",
+    personalEmail: "rajesh.kumar@email.com",
+    officialEmail: "",
+    gender: "MALE",
+    approximateAge: 45,
+    category: "INDIVIDUAL",
+    address: "42, MG Road",
+    city: "Hyderabad",
+    state: "Telangana",
+    country: "India",
+    pincode: "500001",
+    profession: "Engineer",
+    religion: "Hindu",
+    pan: "ABCPK1234F",
+    sourceOfDonor: "REFERRAL",
+    donationFrequency: "MONTHLY",
+    notes: "Regular donor since 2023",
+  });
 
+  donors.addRow({
+    firstName: "Priya",
+    lastName: "Sharma",
+    primaryPhone: "9123456789",
+    personalEmail: "priya@example.com",
+    gender: "FEMALE",
+    approximateAge: 32,
+    category: "INDIVIDUAL",
+    city: "Bangalore",
+    state: "Karnataka",
+    country: "India",
+    pincode: "560001",
+    profession: "Doctor",
+    sourceOfDonor: "SOCIAL_MEDIA",
+    donationFrequency: "OCCASIONAL",
+  });
+
+  // ✅ REUSE the same instructions worksheet (do NOT re-declare it)
+  instructions.columns = [
+    { header: "Column", key: "column", width: 22 },
+    { header: "Required?", key: "required", width: 12 },
+    { header: "Description", key: "description", width: 50 },
+    { header: "Example", key: "example", width: 25 },
+    { header: "Valid Values", key: "validValues", width: 50 },
+  ];
+
+  // ... add instruction rows here ...
+
+  const buffer = (await workbook.xlsx.writeBuffer()) as Buffer;
+  return buffer;
+}
     const instHeaderRow = instructions.getRow(1);
     instHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
     instHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1565C0' } };
