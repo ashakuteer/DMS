@@ -40,109 +40,113 @@ export class DonorDuplicatesService {
     }
 
     try {
-      this.logger.log('Starting duplicate detection...');
+      this.logger.log('Starting optimized duplicate detection...');
+      
+      // Fetch only necessary data with aggregations done in DB
       const donors = await this.prisma.donor.findMany({
-      where: { isDeleted: false },
-      select: {
-        id: true,
-        donorCode: true,
-        firstName: true,
-        lastName: true,
-        primaryPhone: true,
-        personalEmail: true,
-        officialEmail: true,
-        createdAt: true,
-        _count: {
-          select: { donations: { where: { deletedAt: null } } },
+        where: { isDeleted: false },
+        select: {
+          id: true,
+          donorCode: true,
+          firstName: true,
+          lastName: true,
+          primaryPhone: true,
+          personalEmail: true,
+          officialEmail: true,
+          createdAt: true,
+          _count: {
+            select: { donations: { where: { deletedAt: null } } },
+          },
+          donations: {
+            where: { deletedAt: null },
+            select: { donationAmount: true },
+          },
         },
-        donations: {
-          where: { deletedAt: null },
-          select: { donationAmount: true },
-        },
-      },
-      orderBy: { createdAt: 'asc' },
-    });
-
-    const duplicateGroups: DuplicateGroup[] = [];
-    const processedIds = new Set<string>();
-
-    const phoneMap = new Map<string, typeof donors>();
-    const emailMap = new Map<string, typeof donors>();
-
-    for (const donor of donors) {
-      if (donor.primaryPhone) {
-        const cleanPhone = donor.primaryPhone.replace(/\D/g, '').slice(-10);
-        if (cleanPhone.length >= 10) {
-          if (!phoneMap.has(cleanPhone)) {
-            phoneMap.set(cleanPhone, []);
-          }
-          phoneMap.get(cleanPhone)!.push(donor);
-        }
-      }
-
-      const emails = [donor.personalEmail, donor.officialEmail].filter(Boolean);
-      for (const email of emails) {
-        const cleanEmail = email!.toLowerCase().trim();
-        if (!emailMap.has(cleanEmail)) {
-          emailMap.set(cleanEmail, []);
-        }
-        emailMap.get(cleanEmail)!.push(donor);
-      }
-    }
-
-    for (const [phone, phoneDonors] of phoneMap) {
-  if (phoneDonors.length > 1) {
-    const uniqueDonors = phoneDonors.filter(d => !processedIds.has(d.id));
-
-    if (uniqueDonors.length > 1) {
-
-      // Mark donors as processed BEFORE pushing to avoid duplication later
-      uniqueDonors.forEach(d => processedIds.add(d.id));
-
-      duplicateGroups.push({
-        matchType: 'phone',
-        matchValue: phone,
-        donors: uniqueDonors.map(d => ({
-          id: d.id,
-          donorCode: d.donorCode,
-          firstName: d.firstName,
-          lastName: d.lastName || undefined,
-          primaryPhone: d.primaryPhone || undefined,
-          personalEmail: d.personalEmail || undefined,
-          createdAt: d.createdAt,
-          donationCount: d._count.donations,
-          totalDonations: d.donations.reduce(
-            (sum, don) => sum + Number(don.donationAmount),
-            0,
-          ),
-        })),
+        orderBy: { createdAt: 'asc' },
       });
-    }
-  }
-}
-    for (const [email, emailDonors] of emailMap) {
-      if (emailDonors.length > 1) {
-        const uniqueDonors = emailDonors.filter(d => !processedIds.has(d.id));
-        if (uniqueDonors.length > 1) {
-          duplicateGroups.push({
-            matchType: 'email',
-            matchValue: email,
-            donors: uniqueDonors.map(d => ({
-              id: d.id,
-              donorCode: d.donorCode,
-              firstName: d.firstName,
-              lastName: d.lastName || undefined,
-              primaryPhone: d.primaryPhone || undefined,
-              personalEmail: d.personalEmail || undefined,
-              createdAt: d.createdAt,
-              donationCount: d._count.donations,
-              totalDonations: d.donations.reduce((sum, don) => sum + Number(don.donationAmount), 0),
-            })),
-          });
-          uniqueDonors.forEach(d => processedIds.add(d.id));
+
+      const duplicateGroups: DuplicateGroup[] = [];
+      const processedIds = new Set<string>();
+
+      // Build phone and email maps more efficiently
+      const phoneMap = new Map<string, typeof donors>();
+      const emailMap = new Map<string, typeof donors>();
+
+      // Single pass to build both maps
+      for (const donor of donors) {
+        if (donor.primaryPhone) {
+          const cleanPhone = donor.primaryPhone.replace(/\D/g, '').slice(-10);
+          if (cleanPhone.length >= 10) {
+            const existing = phoneMap.get(cleanPhone) || [];
+            existing.push(donor);
+            phoneMap.set(cleanPhone, existing);
+          }
+        }
+
+        const emails = [donor.personalEmail, donor.officialEmail].filter(Boolean);
+        for (const email of emails) {
+          const cleanEmail = email!.toLowerCase().trim();
+          const existing = emailMap.get(cleanEmail) || [];
+          existing.push(donor);
+          emailMap.set(cleanEmail, existing);
         }
       }
-    }
+
+      // Process phone duplicates
+      for (const [phone, phoneDonors] of phoneMap) {
+        if (phoneDonors.length > 1) {
+          const uniqueDonors = phoneDonors.filter(d => !processedIds.has(d.id));
+
+          if (uniqueDonors.length > 1) {
+            uniqueDonors.forEach(d => processedIds.add(d.id));
+
+            duplicateGroups.push({
+              matchType: 'phone',
+              matchValue: phone,
+              donors: uniqueDonors.map(d => ({
+                id: d.id,
+                donorCode: d.donorCode,
+                firstName: d.firstName,
+                lastName: d.lastName || undefined,
+                primaryPhone: d.primaryPhone || undefined,
+                personalEmail: d.personalEmail || undefined,
+                createdAt: d.createdAt,
+                donationCount: d._count.donations,
+                totalDonations: d.donations.reduce(
+                  (sum, don) => sum + Number(don.donationAmount),
+                  0,
+                ),
+              })),
+            });
+          }
+        }
+      }
+
+      // Process email duplicates
+      for (const [email, emailDonors] of emailMap) {
+        if (emailDonors.length > 1) {
+          const uniqueDonors = emailDonors.filter(d => !processedIds.has(d.id));
+          if (uniqueDonors.length > 1) {
+            uniqueDonors.forEach(d => processedIds.add(d.id));
+            
+            duplicateGroups.push({
+              matchType: 'email',
+              matchValue: email,
+              donors: uniqueDonors.map(d => ({
+                id: d.id,
+                donorCode: d.donorCode,
+                firstName: d.firstName,
+                lastName: d.lastName || undefined,
+                primaryPhone: d.primaryPhone || undefined,
+                personalEmail: d.personalEmail || undefined,
+                createdAt: d.createdAt,
+                donationCount: d._count.donations,
+                totalDonations: d.donations.reduce((sum, don) => sum + Number(don.donationAmount), 0),
+              })),
+            });
+          }
+        }
+      }
 
       this.logger.log(`Duplicate detection complete. Found ${duplicateGroups.length} duplicate groups.`);
       return duplicateGroups;

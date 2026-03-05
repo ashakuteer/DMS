@@ -357,6 +357,24 @@ export class DonorsService {
   ): Promise<Record<string, EngagementResult>> {
     if (donorIds.length === 0) return {};
 
+    // Batch process in chunks to avoid memory issues
+    const CHUNK_SIZE = 100;
+    const results: Record<string, EngagementResult> = {};
+    
+    for (let i = 0; i < donorIds.length; i += CHUNK_SIZE) {
+      const chunk = donorIds.slice(i, i + CHUNK_SIZE);
+      const chunkResults = await this.computeEngagementScoresChunk(chunk);
+      Object.assign(results, chunkResults);
+    }
+    
+    return results;
+  }
+
+  private async computeEngagementScoresChunk(
+    donorIds: string[],
+  ): Promise<Record<string, EngagementResult>> {
+    if (donorIds.length === 0) return {};
+
     const now = new Date();
     const results: Record<string, EngagementResult> = {};
 
@@ -503,20 +521,17 @@ export class DonorsService {
       results[donorId] = { score, status, reasons };
     }
 
-    const entries = Object.entries(results);
-    for (const [donorId, { score, status }] of entries) {
-      try {
-        await this.prisma.donor.update({
-          where: { id: donorId },
-          data: { healthScore: score, healthStatus: status },
-        });
-      } catch (err: any) {
-        console.warn(
-          `Failed to persist health score for donor ${donorId}:`,
-          err.message,
-        );
-      }
-    }
+    // Batch update health scores for better performance
+    const updatePromises = Object.entries(results).map(([donorId, { score, status }]) =>
+      this.prisma.donor.update({
+        where: { id: donorId },
+        data: { healthScore: score, healthStatus: status },
+      }).catch(err => {
+        console.warn(`Failed to persist health score for donor ${donorId}:`, err.message);
+      })
+    );
+    
+    await Promise.allSettled(updatePromises);
 
     return results;
   }
@@ -774,7 +789,9 @@ export class DonorsService {
     rows: any[],
     columnMapping: Record<string, string>,
   ) {
-    const results: Array<{
+    // Batch process to avoid overwhelming the database
+    const BATCH_SIZE = 50;
+    const allResults: Array<{
       rowIndex: number;
       duplicate: boolean;
       existingDonor?: {
@@ -788,66 +805,130 @@ export class DonorsService {
       matchedOn?: string[];
     }> = [];
 
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
+    for (let batchStart = 0; batchStart < rows.length; batchStart += BATCH_SIZE) {
+      const batchRows = rows.slice(batchStart, batchStart + BATCH_SIZE);
+      const batchResults = await this.detectDuplicatesBatch(batchRows, columnMapping, batchStart);
+      allResults.push(...batchResults);
+    }
+
+    return { results: allResults };
+  }
+
+  private async detectDuplicatesBatch(
+    rows: any[],
+    columnMapping: Record<string, string>,
+    startIndex: number,
+  ) {
+    // Collect all phones and emails first
+    const phonesToCheck = new Set<string>();
+    const emailsToCheck = new Set<string>();
+    const rowData: Array<{ phone: string | null; email: string | null; mappedData: any }> = [];
+
+    for (const row of rows) {
       const mappedData = this.mapRowToFields(row, columnMapping);
       const phone = this.normalizePhone(mappedData.primaryPhone);
       const email =
         this.normalizeEmail(mappedData.personalEmail) ||
         this.normalizeEmail(mappedData.officialEmail);
 
+      rowData.push({ phone, email, mappedData });
+      
+      if (phone) phonesToCheck.add(phone);
+      if (email) emailsToCheck.add(email);
+    }
+
+    // Single query to fetch all potential duplicates
+    const conditions: any[] = [];
+    if (phonesToCheck.size > 0) {
+      conditions.push({ primaryPhone: { in: Array.from(phonesToCheck) } });
+      conditions.push({ whatsappPhone: { in: Array.from(phonesToCheck) } });
+    }
+    if (emailsToCheck.size > 0) {
+      conditions.push({ personalEmail: { in: Array.from(emailsToCheck), mode: "insensitive" } });
+      conditions.push({ officialEmail: { in: Array.from(emailsToCheck), mode: "insensitive" } });
+    }
+
+    const existingDonors = conditions.length > 0 ? await this.prisma.donor.findMany({
+      where: {
+        isDeleted: false,
+        OR: conditions,
+      },
+      select: {
+        id: true,
+        donorCode: true,
+        firstName: true,
+        lastName: true,
+        primaryPhone: true,
+        whatsappPhone: true,
+        personalEmail: true,
+        officialEmail: true,
+      },
+    }) : [];
+
+    // Build lookup maps
+    const phoneMap = new Map<string, typeof existingDonors[0]>();
+    const emailMap = new Map<string, typeof existingDonors[0]>();
+    
+    for (const donor of existingDonors) {
+      if (donor.primaryPhone) phoneMap.set(donor.primaryPhone, donor);
+      if (donor.whatsappPhone) phoneMap.set(donor.whatsappPhone, donor);
+      if (donor.personalEmail) emailMap.set(donor.personalEmail.toLowerCase(), donor);
+      if (donor.officialEmail) emailMap.set(donor.officialEmail.toLowerCase(), donor);
+    }
+
+    // Match rows against existing donors
+    const results: Array<{
+      rowIndex: number;
+      duplicate: boolean;
+      existingDonor?: any;
+      matchedOn?: string[];
+    }> = [];
+
+    for (let i = 0; i < rowData.length; i++) {
+      const { phone, email } = rowData[i];
+      const rowIndex = startIndex + i;
+
       if (!phone && !email) {
-        results.push({ rowIndex: i, duplicate: false });
+        results.push({ rowIndex, duplicate: false });
         continue;
       }
 
-      const conditions: any[] = [];
+      let existing = null;
       const matchedOn: string[] = [];
 
-      if (phone) {
-        conditions.push({ primaryPhone: phone });
-        conditions.push({ whatsappPhone: phone });
+      if (phone && phoneMap.has(phone)) {
+        existing = phoneMap.get(phone);
+        matchedOn.push("phone");
       }
-      if (email) {
-        conditions.push({
-          personalEmail: { equals: email, mode: "insensitive" },
-        });
-        conditions.push({
-          officialEmail: { equals: email, mode: "insensitive" },
-        });
+      
+      if (email && emailMap.has(email)) {
+        const emailMatch = emailMap.get(email);
+        if (!existing) {
+          existing = emailMatch;
+        }
+        matchedOn.push("email");
       }
-
-      const existing = await this.prisma.donor.findFirst({
-        where: {
-          isDeleted: false,
-          OR: conditions,
-        },
-        select: {
-          id: true,
-          donorCode: true,
-          firstName: true,
-          lastName: true,
-          primaryPhone: true,
-          personalEmail: true,
-        },
-      });
 
       if (existing) {
-        if (phone && existing.primaryPhone === phone) matchedOn.push("phone");
-        if (email && existing.personalEmail?.toLowerCase() === email)
-          matchedOn.push("email");
         results.push({
-          rowIndex: i,
+          rowIndex,
           duplicate: true,
-          existingDonor: existing,
+          existingDonor: {
+            id: existing.id,
+            donorCode: existing.donorCode,
+            firstName: existing.firstName,
+            lastName: existing.lastName,
+            primaryPhone: existing.primaryPhone,
+            personalEmail: existing.personalEmail,
+          },
           matchedOn,
         });
       } else {
-        results.push({ rowIndex: i, duplicate: false });
+        results.push({ rowIndex, duplicate: false });
       }
     }
 
-    return { results };
+    return results;
   }
 
   private mapRowToFields(

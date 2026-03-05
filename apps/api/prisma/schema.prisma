@@ -157,6 +157,13 @@ model Donor {
   @@index([donorCode])
   @@index([assignedToUserId])
   @@index([isDeleted])
+  @@index([isDeleted, createdAt])
+  @@index([isDeleted, category])
+  @@index([isDeleted, city])
+  @@index([isDeleted, healthStatus])
+  @@index([whatsappPhone])
+  @@index([firstName, lastName])
+  @@index([healthScore])
   @@map("donors")
 }
 model DonorSpecialOccasion {
@@ -241,6 +248,8 @@ model Donation {
   @@index([financialYear])
   @@index([isDeleted])
   @@index([donationHomeType])
+  @@index([donorId, isDeleted, donationDate])
+  @@index([isDeleted, donationDate])
   @@map("donations")
 }
 
@@ -272,6 +281,7 @@ model Pledge {
   @@index([status])
   @@index([expectedFulfillmentDate])
   @@index([isDeleted])
+  @@index([donorId, isDeleted, status])
   @@map("pledges")
 }
 
@@ -437,6 +447,7 @@ model Sponsorship {
   @@index([isActive])
   @@index([status])
   @@index([nextDueDate])
+  @@index([donorId, status])
   @@map("sponsorships")
 }
 

@@ -6,15 +6,26 @@ export class DonorsEngagementService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Get engagement score for a donor
+   * Get engagement score for a donor - optimized version
    */
   async calculateEngagementScore(donorId: string) {
-    const donations = await this.prisma.donation.findMany({
-      where: { donorId },
-      select: { amount: true, createdAt: true },
-    });
+    // Use a single query with aggregations
+    const [donationStats, lastDonation] = await Promise.all([
+      this.prisma.donation.aggregate({
+        where: { donorId, isDeleted: false },
+        _sum: { amount: true },
+        _count: true,
+      }),
+      this.prisma.donation.findFirst({
+        where: { donorId, isDeleted: false },
+        orderBy: { createdAt: 'desc' },
+        select: { createdAt: true },
+      }),
+    ]);
 
-    if (donations.length === 0) {
+    const donationCount = donationStats._count || 0;
+    
+    if (donationCount === 0) {
       return {
         donorId,
         score: 0,
@@ -22,15 +33,12 @@ export class DonorsEngagementService {
       };
     }
 
-    const totalAmount = donations.reduce((sum, d) => sum + Number(d.amount), 0);
-    const donationCount = donations.length;
+    const totalAmount = Number(donationStats._sum.amount || 0);
+    const lastDonationDate = lastDonation?.createdAt;
 
-    const lastDonation = donations.reduce((latest, d) =>
-      d.createdAt > latest ? d.createdAt : latest,
-    , donations[0].createdAt);
-
-    const daysSinceLastDonation =
-      (Date.now() - new Date(lastDonation).getTime()) / (1000 * 60 * 60 * 24);
+    const daysSinceLastDonation = lastDonationDate
+      ? (Date.now() - new Date(lastDonationDate).getTime()) / (1000 * 60 * 60 * 24)
+      : Infinity;
 
     let score = donationCount * 10 + totalAmount / 100;
 
@@ -46,24 +54,31 @@ export class DonorsEngagementService {
       score: Math.round(score),
       donationCount,
       totalAmount,
-      lastDonation,
+      lastDonation: lastDonationDate,
       status,
     };
   }
 
   /**
-   * Get engagement for all donors
+   * Get engagement for all donors - batch optimized
    */
   async getAllDonorEngagement() {
     const donors = await this.prisma.donor.findMany({
+      where: { isDeleted: false },
       select: { id: true },
     });
 
+    // Process in batches to avoid overwhelming the system
+    const BATCH_SIZE = 50;
     const results = [];
 
-    for (const donor of donors) {
-      const engagement = await this.calculateEngagementScore(donor.id);
-      results.push(engagement);
+    for (let i = 0; i < donors.length; i += BATCH_SIZE) {
+      const batch = donors.slice(i, i + BATCH_SIZE);
+      const batchPromises = batch.map(donor => 
+        this.calculateEngagementScore(donor.id)
+      );
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
     }
 
     return results;
