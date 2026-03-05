@@ -9,6 +9,7 @@ import { AuditService } from "../audit/audit.service";
 import { Role, DonorCategory } from "@prisma/client";
 import { maskDonorData } from "../common/utils/masking.util";
 import { DonorsEngagementService } from "./donors.engagement.service";
+import { DonorsCrudService } from "./donors.crud.service";
 import {
   UserContext,
   DonorQueryOptions,
@@ -25,7 +26,8 @@ export class DonorsService {
     private prisma: PrismaService,
     private auditService: AuditService,
     private storageService: StorageService,
-    private engagementService: DonorsEngagementService
+    private engagementService: DonorsEngagementService,
+     private readonly crud: DonorsCrudService,
   ) {}
 
   private getAccessFilter(user: UserContext): any {
