@@ -22,6 +22,7 @@ import { BeneficiariesModule } from "../beneficiaries/beneficiaries.module";
   controllers: [DonorsController],
   providers: [
     DonorsService,
+    DonorsCrudService,
     DonorDuplicatesService,
     DonorsEngagementService,
     DonorsImportService,
