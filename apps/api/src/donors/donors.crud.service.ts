@@ -20,7 +20,6 @@ export class DonorsCrudService {
   }
 
   async findAll(user: UserContext, options: DonorQueryOptions = {}) {
-   async findAll(user: UserContext, options: DonorQueryOptions = {}) {
   const {
     page = 1,
     limit = 20,
@@ -43,6 +42,9 @@ export class DonorsCrudService {
     isDeleted: false,
     ...accessFilter,
   };
+
+  // continue the rest of your original findAll logic here...
+}
 
   }
 
