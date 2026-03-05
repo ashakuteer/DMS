@@ -226,7 +226,6 @@ async findAll(user: UserContext, options: DonorQueryOptions = {}) {
       },
     };
   }
-
   async create(
     user: UserContext,
     data: any,
