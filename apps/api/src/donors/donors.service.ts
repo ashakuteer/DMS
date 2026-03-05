@@ -8,6 +8,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { AuditService } from "../audit/audit.service";
 import { Role, DonorCategory } from "@prisma/client";
 import { maskDonorData } from "../common/utils/masking.util";
+import { DonorsEngagementService } from "./donors.engagement.service";
 import {
   UserContext,
   DonorQueryOptions,
@@ -24,6 +25,7 @@ export class DonorsService {
     private prisma: PrismaService,
     private auditService: AuditService,
     private storageService: StorageService,
+    private engagementService: DonorsEngagementService
   ) {}
 
   private getAccessFilter(user: UserContext): any {
@@ -112,7 +114,8 @@ export class DonorsService {
     ]);
 
     const donorIds = donors.map((d) => d.id);
-    const engagementMap = await this.computeEngagementScores(donorIds);
+   constructor =
+  await this.engagementService.computeEngagementScores(donorIds);
 
     const donorsWithHealth = donors.map((donor) => ({
       ...donor,
