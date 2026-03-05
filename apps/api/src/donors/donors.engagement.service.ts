@@ -183,4 +183,7 @@ const sponsorsByDonor: Record<string, typeof sponsorships[number][]> = {};
       .catch(() => null)
   )
 );
+
+return results;
+}
   
