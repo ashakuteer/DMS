@@ -349,7 +349,7 @@ async findAll(user: UserContext, options: DonorQueryOptions = {}) {
       throw new NotFoundException("Donor not found");
     }
 
-        if (donor.profilePicUrl) {
+    if (donor.profilePicUrl) {
       await this.storageService.deleteDonorPhoto(donor.profilePicUrl);
     }
 
@@ -359,6 +359,11 @@ async findAll(user: UserContext, options: DonorQueryOptions = {}) {
       file.mimetype,
       file.originalname,
     );
+
+    await this.prisma.donor.update({
+      where: { id },
+      data: { profilePicUrl: url },
+    });
      
     return { profilePicUrl: url };
   }
