@@ -1980,34 +1980,36 @@ async findAll(user: UserContext, options: DonorQueryOptions = {}) {
     return updated;
   }
   
-  async assignDonor(id: string, assignedToUserId: string | null) {
-    const donor = await this.prisma.donor.findFirst({
-      where: { id, isDeleted: false },
-    });
+async assignDonor(id: string, assignedToUserId: string | null) {
+  const donor = await this.prisma.donor.findFirst({
+    where: { id, isDeleted: false },
+  });
 
-    if (!donor) {
-      throw new NotFoundException("Donor not found");
-    }
-
-    return this.prisma.donor.update({
-      where: { id },
-      data: { assignedToUserId },
-    });
+  if (!donor) {
+    throw new NotFoundException("Donor not found");
   }
 
-  async bulkReassignDonors(fromUserId: string, toUserId: string) {
-    const result = await this.prisma.donor.updateMany({
-      where: { assignedToUserId: fromUserId, isDeleted: false },
-      data: { assignedToUserId: toUserId },
-    });
-
-    return { count: result.count };
-  }
-
-    async countDonorsByAssignee(userId: string) {
-    return this.prisma.donor.count({
-      where: { assignedToUserId: userId, isDeleted: false },
-    });
-  }
+  return this.prisma.donor.update({
+    where: { id },
+    data: { assignedToUserId },
+  });
 }
- 
+
+async bulkReassignDonors(fromUserId: string, toUserId: string) {
+  const result = await this.prisma.donor.updateMany({
+    where: { assignedToUserId: fromUserId, isDeleted: false },
+    data: { assignedToUserId: toUserId },
+  });
+
+  return { count: result.count };
+}
+
+async countDonorsByAssignee(userId: string) {
+  return this.prisma.donor.count({
+    where: {
+      assignedToUserId: userId,
+      isDeleted: false,
+    },
+  });
+}
+    });
