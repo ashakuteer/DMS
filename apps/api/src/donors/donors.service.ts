@@ -38,8 +38,6 @@ export class DonorsService {
   private shouldMaskData(user: UserContext): boolean {
     return user.role === Role.TELECALLER || user.role === Role.VIEWER;
   }
-
-```ts
 async findAll(user: UserContext, options: DonorQueryOptions = {}) {
   const {
     page = 1,
@@ -144,7 +142,6 @@ async findAll(user: UserContext, options: DonorQueryOptions = {}) {
     totalPages: Math.ceil(total / limit),
   };
 }
-```
 
   async findOne(user: UserContext, id: string) {
     const accessFilter = this.getAccessFilter(user);
