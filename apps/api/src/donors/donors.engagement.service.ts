@@ -180,6 +180,7 @@ const sponsorsByDonor: Record<string, typeof sponsorships[number][]> = {};
           healthStatus: status,
         },
       })
-      .catch(() => null),
-  ),
+      .catch(() => null)
+  )
 );
+  
