@@ -980,34 +980,36 @@ async findAll(user: UserContext, options: DonorQueryOptions = {}) {
     return results;
   }
 
-  async generateBulkTemplate(): Promise<Buffer> {
-    const workbook = new ExcelJS.Workbook();
-    workbook.creator = 'NGO DMS';
+ async generateBulkTemplate(): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'NGO DMS';
 
-    const donors = workbook.addWorksheet('Donors');
-    const templateColumns = [
-      { header: 'First Name *', key: 'firstName', width: 18 },
-      { header: 'Middle Name', key: 'middleName', width: 14 },
-      { header: 'Last Name', key: 'lastName', width: 16 },
-      { header: 'Primary Phone', key: 'primaryPhone', width: 18 },
-      { header: 'WhatsApp Phone', key: 'whatsappPhone', width: 18 },
-      { header: 'Personal Email', key: 'personalEmail', width: 26 },
-      { header: 'Official Email', key: 'officialEmail', width: 26 },
-      { header: 'Gender', key: 'gender', width: 10 },
-      { header: 'Approximate Age', key: 'approximateAge', width: 14 },
-      { header: 'Category', key: 'category', width: 20 },
-      { header: 'Address', key: 'address', width: 30 },
-      { header: 'City', key: 'city', width: 14 },
-      { header: 'State', key: 'state', width: 14 },
-      { header: 'Country', key: 'country', width: 12 },
-      { header: 'Pincode', key: 'pincode', width: 10 },
-      { header: 'Profession', key: 'profession', width: 16 },
-      { header: 'Religion', key: 'religion', width: 12 },
-      { header: 'PAN', key: 'pan', width: 14 },
-      { header: 'Source', key: 'sourceOfDonor', width: 16 },
-      { header: 'Donation Frequency', key: 'donationFrequency', width: 18 },
-      { header: 'Notes', key: 'notes', width: 30 },
-    ];
+  const donors = workbook.addWorksheet('Donors');
+  const instructions = workbook.addWorksheet('Instructions'); // ADD THIS LINE
+
+  const templateColumns = [
+    { header: 'First Name *', key: 'firstName', width: 18 },
+    { header: 'Middle Name', key: 'middleName', width: 14 },
+    { header: 'Last Name', key: 'lastName', width: 16 },
+    { header: 'Primary Phone', key: 'primaryPhone', width: 18 },
+    { header: 'WhatsApp Phone', key: 'whatsappPhone', width: 18 },
+    { header: 'Personal Email', key: 'personalEmail', width: 26 },
+    { header: 'Official Email', key: 'officialEmail', width: 26 },
+    { header: 'Gender', key: 'gender', width: 10 },
+    { header: 'Approximate Age', key: 'approximateAge', width: 14 },
+    { header: 'Category', key: 'category', width: 20 },
+    { header: 'Address', key: 'address', width: 30 },
+    { header: 'City', key: 'city', width: 14 },
+    { header: 'State', key: 'state', width: 14 },
+    { header: 'Country', key: 'country', width: 12 },
+    { header: 'Pincode', key: 'pincode', width: 10 },
+    { header: 'Profession', key: 'profession', width: 16 },
+    { header: 'Religion', key: 'religion', width: 12 },
+    { header: 'PAN', key: 'pan', width: 14 },
+    { header: 'Source', key: 'sourceOfDonor', width: 16 },
+    { header: 'Donation Frequency', key: 'donationFrequency', width: 18 },
+    { header: 'Notes', key: 'notes', width: 30 },
+  ];
     donors.columns = templateColumns;
 
     const headerRow = donors.getRow(1);
