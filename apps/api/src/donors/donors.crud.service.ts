@@ -20,8 +20,30 @@ export class DonorsCrudService {
   }
 
   async findAll(user: UserContext, options: DonorQueryOptions = {}) {
-    // ⛔ IMPORTANT
-    // Paste your ORIGINAL findAll logic here
+   async findAll(user: UserContext, options: DonorQueryOptions = {}) {
+  const {
+    page = 1,
+    limit = 20,
+    search,
+    sortBy = "createdAt",
+    sortOrder = "desc",
+    category,
+    city,
+    country,
+    religion,
+    assignedToUserId,
+    donationFrequency,
+    healthStatus,
+    supportPreferences,
+  } = options;
+
+  const accessFilter = this.getAccessFilter(user);
+
+  const where: any = {
+    isDeleted: false,
+    ...accessFilter,
+  };
+
   }
 
   async findOne(user: UserContext, id: string) {
