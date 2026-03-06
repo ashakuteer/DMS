@@ -89,36 +89,45 @@ export class DonorsCrudService {
     };
 
     if (search?.trim()) {
-      const q = search.trim();
-      where.OR = [
-        { firstName: { contains: q, mode: "insensitive" } },
-        { lastName: { contains: q, mode: "insensitive" } },
-        { donorCode: { contains: q, mode: "insensitive" } },
-        { primaryPhone: { contains: q, mode: "insensitive" } },
-        { personalEmail: { contains: q, mode: "insensitive" } },
-        { city: { contains: q, mode: "insensitive" } },
-      ];
-    }
+  const q = search.trim();
+  where.OR = [
+    { firstName: { contains: q, mode: "insensitive" } },
+    { lastName: { contains: q, mode: "insensitive" } },
+    { donorCode: { contains: q, mode: "insensitive" } },
+    { primaryPhone: { contains: q, mode: "insensitive" } },
+    { personalEmail: { contains: q, mode: "insensitive" } },
+    { city: { contains: q, mode: "insensitive" } },
+  ];
+}
 
-    if (category) {
-      where.category = category as DonorCategory;
-    }
+if (category) {
+  where.category = category as DonorCategory;
+}
 
-    if (city?.trim()) {
-      where.city = { contains: city.trim(), mode: "insensitive" };
-    }
+if (city?.trim()) {
+  where.city = {
+    contains: city.trim(),
+    mode: Prisma.QueryMode.insensitive,
+  };
+}
 
-    if (country?.trim()) {
-      where.country = { contains: country.trim(), mode: "insensitive" };
-    }
+if (country?.trim()) {
+  where.country = {
+    contains: country.trim(),
+    mode: Prisma.QueryMode.insensitive,
+  };
+}
 
-    if (religion?.trim()) {
-      where.religion = { contains: religion.trim(), mode: "insensitive" };
-    }
+if (religion?.trim()) {
+  where.religion = {
+    contains: religion.trim(),
+    mode: Prisma.QueryMode.insensitive,
+  };
+}
 
-    if (assignedToUserId) {
-      where.assignedToUserId = assignedToUserId;
-    }
+if (assignedToUserId) {
+  where.assignedToUserId = assignedToUserId;
+}
 
     if (donationFrequency) {
       where.donationFrequency = donationFrequency as DonationFrequency;
