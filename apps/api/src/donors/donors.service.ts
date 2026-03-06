@@ -1,33 +1,35 @@
-import {
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditService } from "../audit/audit.service";
-import { Role } from "@prisma/client";
 import { DonorsCrudService } from "./donors.crud.service";
 import { DonorsImportService } from "./donors.import.service";
 import { DonorsExportService } from "./donors.export.service";
 import { UserContext, DonorQueryOptions } from "./donors.types";
 import { StorageService } from "../storage/storage.service";
 import { DonorsTimelineService } from "./donors.timeline.service";
+
 @Injectable()
 export class DonorsService {
   constructor(
-  private readonly prisma: PrismaService,
-  private readonly auditService: AuditService,
-  private readonly storageService: StorageService,
-  private readonly crud: DonorsCrudService,
-  private readonly importService: DonorsImportService,
-  private readonly exportService: DonorsExportService,
-  private readonly timelineService: DonorsTimelineService,
-) {}
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+    private readonly storageService: StorageService,
+    private readonly crud: DonorsCrudService,
+    private readonly importService: DonorsImportService,
+    private readonly exportService: DonorsExportService,
+    private readonly timelineService: DonorsTimelineService,
+  ) {}
 
-  private getAccessFilter(user: UserContext): any {
-    if (user.role === Role.TELECALLER) {
-      return { assignedToUserId: user.id };
+  private async getActiveDonorOrThrow(id: string) {
+    const donor = await this.prisma.donor.findFirst({
+      where: { id, isDeleted: false },
+    });
+
+    if (!donor) {
+      throw new NotFoundException("Donor not found");
     }
-    return {};
+
+    return donor;
   }
 
   findAll(user: UserContext, options: DonorQueryOptions = {}) {
@@ -81,19 +83,21 @@ export class DonorsService {
   countDonorsByAssignee(userId: string) {
     return this.crud.countDonorsByAssignee(userId);
   }
-getTimeline(
-  user: UserContext,
-  donorId: string,
-  options: {
-    page?: number;
-    limit?: number;
-    startDate?: string;
-    endDate?: string;
-    types?: string[];
-  } = {},
-) {
-  return this.timelineService.getTimeline(user, donorId, options);
-}
+
+  getTimeline(
+    user: UserContext,
+    donorId: string,
+    options: {
+      page?: number;
+      limit?: number;
+      startDate?: string;
+      endDate?: string;
+      types?: string[];
+    } = {},
+  ) {
+    return this.timelineService.getTimeline(user, donorId, options);
+  }
+
   parseImportFile(file: Express.Multer.File) {
     return this.importService.parseImportFile(file);
   }
@@ -176,13 +180,7 @@ getTimeline(
   }
 
   async uploadPhoto(user: UserContext, id: string, file: Express.Multer.File) {
-    const donor = await this.prisma.donor.findFirst({
-      where: { id, isDeleted: false },
-    });
-
-    if (!donor) {
-      throw new NotFoundException("Donor not found");
-    }
+    const donor = await this.getActiveDonorOrThrow(id);
 
     if (donor.profilePicUrl) {
       await this.storageService.deleteDonorPhoto(donor.profilePicUrl);
@@ -210,13 +208,7 @@ getTimeline(
     ipAddress?: string,
     userAgent?: string,
   ) {
-    const donor = await this.prisma.donor.findFirst({
-      where: { id: donorId, isDeleted: false },
-    });
-
-    if (!donor) {
-      throw new NotFoundException("Donor not found");
-    }
+    await this.getActiveDonorOrThrow(donorId);
 
     await this.auditService.logFullAccessRequest(
       user.id,
@@ -273,21 +265,14 @@ getTimeline(
     return { duplicates };
   }
 
-   async assignTelecaller(
+  async assignTelecaller(
     user: UserContext,
     donorId: string,
     assignedToUserId: string,
     ipAddress?: string,
     userAgent?: string,
   ) {
-    const donor = await this.prisma.donor.findFirst({
-      where: { id: donorId, isDeleted: false },
-    });
-
-    if (!donor) {
-      throw new NotFoundException("Donor not found");
-    }
-
+    const donor = await this.getActiveDonorOrThrow(donorId);
     const oldAssignee = donor.assignedToUserId;
 
     const updated = await this.prisma.donor.update({
