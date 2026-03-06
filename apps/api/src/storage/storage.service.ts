@@ -13,6 +13,81 @@ export class StorageService {
     );
   }
 
+  // Generic photo upload (used by beneficiaries)
+  async uploadPhoto(
+    folder: string,
+    id: string,
+    buffer: Buffer,
+    mimetype: string,
+    originalname: string,
+  ) {
+    const fileExt = originalname.split('.').pop();
+    const fileName = `${folder}/${id}.${fileExt}`;
+
+    const { data, error } = await this.supabase.storage
+      .from(this.bucketName)
+      .upload(fileName, buffer, {
+        contentType: mimetype,
+        upsert: true,
+      });
+
+    if (error) {
+      throw new Error(`Failed to upload photo: ${error.message}`);
+    }
+
+    const { data: urlData } = this.supabase.storage
+      .from(this.bucketName)
+      .getPublicUrl(fileName);
+
+    return { 
+      path: fileName,
+      url: urlData.publicUrl 
+    };
+  }
+
+  // Generic photo delete
+  async deletePhoto(filePath: string) {
+    try {
+      await this.supabase.storage.from(this.bucketName).remove([filePath]);
+    } catch (error) {
+      console.error('Error deleting photo:', error);
+    }
+  }
+
+  // Document upload (for reports, etc.)
+  async uploadDocument(
+    folder: string,
+    id: string,
+    buffer: Buffer,
+    mimetype: string,
+    originalname: string,
+  ) {
+    const fileExt = originalname.split('.').pop();
+    const timestamp = Date.now();
+    const fileName = `${folder}/${id}_${timestamp}.${fileExt}`;
+
+    const { data, error } = await this.supabase.storage
+      .from(this.bucketName)
+      .upload(fileName, buffer, {
+        contentType: mimetype,
+        upsert: false,
+      });
+
+    if (error) {
+      throw new Error(`Failed to upload document: ${error.message}`);
+    }
+
+    const { data: urlData } = this.supabase.storage
+      .from(this.bucketName)
+      .getPublicUrl(fileName);
+
+    return { 
+      path: fileName,
+      url: urlData.publicUrl 
+    };
+  }
+
+  // Donor-specific methods
   async uploadDonorPhoto(
     donorId: string,
     buffer: Buffer,
@@ -49,6 +124,7 @@ export class StorageService {
     }
   }
 
+  // Beneficiary-specific methods
   async uploadBeneficiaryPhoto(
     beneficiaryId: string,
     buffer: Buffer,
