@@ -1,65 +1,121 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Injectable, Logger, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { Prisma, PrismaClient } from '@prisma/client';
 
 function resolveDbUrl(): string {
-  const { PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE, DATABASE_URL } = process.env;
+  const {
+    PGHOST,
+    PGPORT,
+    PGUSER,
+    PGPASSWORD,
+    PGDATABASE,
+    DATABASE_URL,
+  } = process.env;
+
+  if (DATABASE_URL?.trim()) {
+    return DATABASE_URL.trim();
+  }
 
   if (PGHOST && PGUSER && PGPASSWORD && PGDATABASE) {
     const port = PGPORT || '5432';
-    const url = `postgresql://${PGUSER}:${PGPASSWORD}@${PGHOST}:${port}/${PGDATABASE}`;
-    return url;
+    return `postgresql://${encodeURIComponent(PGUSER)}:${encodeURIComponent(PGPASSWORD)}@${PGHOST}:${port}/${PGDATABASE}`;
   }
 
-  if (DATABASE_URL) {
-    return DATABASE_URL;
-  }
-
-  throw new Error('No database connection configured. Set PGHOST/PGUSER/PGPASSWORD/PGDATABASE or DATABASE_URL.');
+  throw new Error(
+    'No database connection configured. Set DATABASE_URL or PGHOST/PGUSER/PGPASSWORD/PGDATABASE.',
+  );
 }
 
-function appendPoolParams(url: string): string {
-  const separator = url.includes('?') ? '&' : '?';
-  const params: string[] = [];
+function appendPoolParams(rawUrl: string): string {
+  const url = new URL(rawUrl);
 
-  if (!url.includes('connection_limit')) {
-    params.push('connection_limit=5');
-  }
-  if (url.includes('6543') && !url.includes('pgbouncer')) {
-    params.push('pgbouncer=true');
+  if (!url.searchParams.has('connection_limit')) {
+    url.searchParams.set('connection_limit', '5');
   }
 
-  if (params.length === 0) return url;
-  return `${url}${separator}${params.join('&')}`;
+  const isSupabasePoolerPort = url.port === '6543';
+  if (isSupabasePoolerPort && !url.searchParams.has('pgbouncer')) {
+    url.searchParams.set('pgbouncer', 'true');
+  }
+
+  return url.toString();
+}
+
+function maskDbUrl(rawUrl: string): string {
+  try {
+    const url = new URL(rawUrl);
+    if (url.username) {
+      url.username = '***';
+    }
+    if (url.password) {
+      url.password = '***';
+    }
+    return url.toString();
+  } catch {
+    return rawUrl.replace(/\/\/(.*?)(:.*)?@/, '//***:***@');
+  }
 }
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(PrismaService.name);
+  private isConnected = false;
 
   constructor() {
     const rawUrl = resolveDbUrl();
     const url = appendPoolParams(rawUrl);
-    super({ datasources: { db: { url } } });
-    const safeUrl = url.replace(/\/\/.*@/, '//***@');
-    this.logger.log(`Database target: ${safeUrl}`);
+
+    const prismaOptions: Prisma.PrismaClientOptions = {
+      datasources: {
+        db: { url },
+      },
+      log:
+        process.env.NODE_ENV === 'development'
+          ? ['query', 'info', 'warn', 'error']
+          : ['error'],
+    };
+
+    super(prismaOptions);
+
+    this.logger.log(`Database target: ${maskDbUrl(url)}`);
   }
 
-  async onModuleInit() {
+  async onModuleInit(): Promise<void> {
+    if (this.isConnected) {
+      return;
+    }
+
     const maxRetries = 5;
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         await this.$connect();
+        this.isConnected = true;
         this.logger.log('Database connected successfully');
         return;
-      } catch (err) {
-        this.logger.warn(`DB connect attempt ${attempt}/${maxRetries} failed: ${(err as Error).message}`);
-        if (attempt === maxRetries) throw err;
-        await new Promise(r => setTimeout(r, attempt * 2000));
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : 'Unknown database connection error';
+
+        this.logger.warn(`DB connect attempt ${attempt}/${maxRetries} failed: ${message}`);
+
+        if (attempt === maxRetries) {
+          this.logger.error('Database connection failed after maximum retries');
+          throw error;
+        }
+
+        const delayMs = attempt * 2000;
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
   }
 
-  async onModuleDestroy() {
+  async onModuleDestroy(): Promise<void> {
+    if (!this.isConnected) {
+      return;
+    }
+
     await this.$disconnect();
+    this.isConnected = false;
+    this.logger.log('Database disconnected');
   }
 }
