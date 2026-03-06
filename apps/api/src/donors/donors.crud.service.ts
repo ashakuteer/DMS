@@ -93,7 +93,7 @@ export class DonorsCrudService {
       ];
     }
 
-    if (category) where.category = category as any;
+  if (category) where.category = category as DonorCategory;
     if (city?.trim()) where.city = { contains: city.trim(), mode: "insensitive" };
     if (country?.trim()) {
       where.country = { contains: country.trim(), mode: "insensitive" };
@@ -102,20 +102,23 @@ export class DonorsCrudService {
       where.religion = { contains: religion.trim(), mode: "insensitive" };
     }
     if (assignedToUserId) where.assignedToUserId = assignedToUserId;
-    if (donationFrequency) where.donationFrequency = donationFrequency as any;
+  if (donationFrequency) {
+  where.donationFrequency = donationFrequency as DonationFrequency;
+}
 
-    if (supportPreferences) {
-      const prefs = supportPreferences
-        .split(",")
-        .map((p) => p.trim())
-        .filter(Boolean);
-      if (prefs.length > 0) {
-        where.supportPreferences = { hasSome: prefs as any };
-      }
-    }
+   if (supportPreferences) {
+  const prefs = supportPreferences
+    .split(",")
+    .map((p) => p.trim())
+    .filter(Boolean) as SupportPreference[];
+
+  if (prefs.length > 0) {
+    where.supportPreferences = { hasSome: prefs };
+  }
+}
 
     if (healthStatus && ["GREEN", "YELLOW", "RED"].includes(healthStatus)) {
-      where.healthStatus = healthStatus as any;
+      where.healthStatus = healthStatus as HealthStatus;
     }
 
     const [donors, total] = await Promise.all([
