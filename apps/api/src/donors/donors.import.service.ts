@@ -1,7 +1,3 @@
-import { Injectable } from '@nestjs/common';
-
-@Injectable()
-export class DonorsImportService {}
 import { Injectable, BadRequestException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditService } from "../audit/audit.service";
