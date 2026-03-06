@@ -10,7 +10,7 @@ import { DonorsImportService } from "./donors.import.service";
 import { DonorsExportService } from "./donors.export.service";
 import { UserContext, DonorQueryOptions } from "./donors.types";
 import { StorageService } from "../storage/storage.service";
-
+import { DonorsTimelineService } from "./donors.timeline.service";
 @Injectable()
 export class DonorsService {
   constructor(
