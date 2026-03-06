@@ -14,13 +14,14 @@ import { DonorsTimelineService } from "./donors.timeline.service";
 @Injectable()
 export class DonorsService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly auditService: AuditService,
-    private readonly storageService: StorageService,
-    private readonly crud: DonorsCrudService,
-    private readonly importService: DonorsImportService,
-    private readonly exportService: DonorsExportService,
-  ) {}
+  private readonly prisma: PrismaService,
+  private readonly auditService: AuditService,
+  private readonly storageService: StorageService,
+  private readonly crud: DonorsCrudService,
+  private readonly importService: DonorsImportService,
+  private readonly exportService: DonorsExportService,
+  private readonly timelineService: DonorsTimelineService,
+) {}
 
   private getAccessFilter(user: UserContext): any {
     if (user.role === Role.TELECALLER) {
