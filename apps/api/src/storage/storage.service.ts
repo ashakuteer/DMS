@@ -13,16 +13,15 @@ export class StorageService {
     );
   }
 
-  // Generic photo upload (used by beneficiaries)
+  // Generic photo upload (used by beneficiaries) - 4 parameters
   async uploadPhoto(
-    folder: string,
     id: string,
     buffer: Buffer,
     mimetype: string,
     originalname: string,
   ) {
     const fileExt = originalname.split('.').pop();
-    const fileName = `${folder}/${id}.${fileExt}`;
+    const fileName = `beneficiaries/${id}.${fileExt}`;
 
     const { data, error } = await this.supabase.storage
       .from(this.bucketName)
@@ -54,9 +53,8 @@ export class StorageService {
     }
   }
 
-  // Document upload (for reports, etc.)
+  // Document upload (for reports, etc.) - 4 parameters
   async uploadDocument(
-    folder: string,
     id: string,
     buffer: Buffer,
     mimetype: string,
@@ -64,7 +62,7 @@ export class StorageService {
   ) {
     const fileExt = originalname.split('.').pop();
     const timestamp = Date.now();
-    const fileName = `${folder}/${id}_${timestamp}.${fileExt}`;
+    const fileName = `documents/${id}_${timestamp}.${fileExt}`;
 
     const { data, error } = await this.supabase.storage
       .from(this.bucketName)
