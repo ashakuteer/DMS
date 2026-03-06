@@ -4,7 +4,14 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { Prisma, Role } from "@prisma/client";
+import {
+  Prisma,
+  Role,
+  DonorCategory,
+  DonationFrequency,
+  SupportPreference,
+  HealthStatus,
+} from "@prisma/client";
 import { UserContext, DonorQueryOptions } from "./donors.types";
 import { maskDonorData } from "../common/utils/masking.util";
 import { DonorsEngagementService } from "./donors.engagement.service";
