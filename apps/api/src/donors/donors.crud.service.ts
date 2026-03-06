@@ -4,7 +4,7 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { Role } from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { UserContext, DonorQueryOptions } from "./donors.types";
 import { maskDonorData } from "../common/utils/masking.util";
 import { DonorsEngagementService } from "./donors.engagement.service";
@@ -16,7 +16,7 @@ export class DonorsCrudService {
     private readonly engagementService: DonorsEngagementService,
   ) {}
 
-  private getAccessFilter(user: UserContext): any {
+  private getAccessFilter(user: UserContext): Prisma.DonorWhereInput {
     if (user.role === Role.TELECALLER) {
       return { assignedToUserId: user.id };
     }
@@ -25,6 +25,18 @@ export class DonorsCrudService {
 
   private shouldMaskData(user: UserContext): boolean {
     return user.role === Role.TELECALLER || user.role === Role.VIEWER;
+  }
+
+  private async getActiveDonorOrThrow(id: string) {
+    const donor = await this.prisma.donor.findFirst({
+      where: { id, isDeleted: false },
+    });
+
+    if (!donor) {
+      throw new NotFoundException("Donor not found");
+    }
+
+    return donor;
   }
 
   async findAll(user: UserContext, options: DonorQueryOptions = {}) {
@@ -44,28 +56,51 @@ export class DonorsCrudService {
       supportPreferences,
     } = options;
 
-    const accessFilter = this.getAccessFilter(user);
+    const safePage = Math.max(1, Number(page) || 1);
+    const safeLimit = Math.min(100, Math.max(1, Number(limit) || 20));
 
-    const where: any = {
+    const allowedSortFields = [
+      "createdAt",
+      "updatedAt",
+      "firstName",
+      "lastName",
+      "donorCode",
+      "city",
+      "healthStatus",
+    ] as const;
+
+    const safeSortBy = allowedSortFields.includes(sortBy as any)
+      ? (sortBy as (typeof allowedSortFields)[number])
+      : "createdAt";
+
+    const safeSortOrder: Prisma.SortOrder =
+      sortOrder === "asc" ? "asc" : "desc";
+
+    const where: Prisma.DonorWhereInput = {
       isDeleted: false,
-      ...accessFilter,
+      ...this.getAccessFilter(user),
     };
 
-    if (search) {
+    if (search?.trim()) {
+      const q = search.trim();
       where.OR = [
-        { firstName: { contains: search, mode: "insensitive" } },
-        { lastName: { contains: search, mode: "insensitive" } },
-        { donorCode: { contains: search, mode: "insensitive" } },
-        { primaryPhone: { contains: search, mode: "insensitive" } },
-        { personalEmail: { contains: search, mode: "insensitive" } },
-        { city: { contains: search, mode: "insensitive" } },
+        { firstName: { contains: q, mode: "insensitive" } },
+        { lastName: { contains: q, mode: "insensitive" } },
+        { donorCode: { contains: q, mode: "insensitive" } },
+        { primaryPhone: { contains: q, mode: "insensitive" } },
+        { personalEmail: { contains: q, mode: "insensitive" } },
+        { city: { contains: q, mode: "insensitive" } },
       ];
     }
 
     if (category) where.category = category;
-    if (city) where.city = { contains: city, mode: "insensitive" };
-    if (country) where.country = { contains: country, mode: "insensitive" };
-    if (religion) where.religion = { contains: religion, mode: "insensitive" };
+    if (city?.trim()) where.city = { contains: city.trim(), mode: "insensitive" };
+    if (country?.trim()) {
+      where.country = { contains: country.trim(), mode: "insensitive" };
+    }
+    if (religion?.trim()) {
+      where.religion = { contains: religion.trim(), mode: "insensitive" };
+    }
     if (assignedToUserId) where.assignedToUserId = assignedToUserId;
     if (donationFrequency) where.donationFrequency = donationFrequency;
 
@@ -81,13 +116,30 @@ export class DonorsCrudService {
     }
 
     if (healthStatus && ["GREEN", "YELLOW", "RED"].includes(healthStatus)) {
-      where.healthStatus = healthStatus;
+      where.healthStatus = healthStatus as any;
     }
 
     const [donors, total] = await Promise.all([
       this.prisma.donor.findMany({
         where,
-        include: {
+        select: {
+          id: true,
+          donorCode: true,
+          firstName: true,
+          lastName: true,
+          primaryPhone: true,
+          whatsappPhone: true,
+          personalEmail: true,
+          city: true,
+          country: true,
+          category: true,
+          donationFrequency: true,
+          healthScore: true,
+          healthStatus: true,
+          profilePicUrl: true,
+          assignedToUserId: true,
+          createdAt: true,
+          updatedAt: true,
           assignedToUser: {
             select: { id: true, name: true, email: true },
           },
@@ -98,34 +150,36 @@ export class DonorsCrudService {
             select: { donations: true, pledges: true },
           },
         },
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * limit,
-        take: limit,
+        orderBy: { [safeSortBy]: safeSortOrder },
+        skip: (safePage - 1) * safeLimit,
+        take: safeLimit,
       }),
       this.prisma.donor.count({ where }),
     ]);
 
     const donorIds = donors.map((d) => d.id);
-    const engagementMap =
-      await this.engagementService.computeEngagementScores(donorIds);
+
+    const engagementMap = donorIds.length
+      ? await this.engagementService.computeEngagementScores(donorIds)
+      : {};
 
     const donorsWithHealth = donors.map((donor) => ({
       ...donor,
-      healthScore: engagementMap[donor.id]?.score ?? 100,
+      healthScore: engagementMap[donor.id]?.score ?? donor.healthScore ?? 100,
       healthStatus: engagementMap[donor.id]?.status ?? donor.healthStatus,
       healthReasons: engagementMap[donor.id]?.reasons ?? [],
     }));
 
-    const maskedDonors = this.shouldMaskData(user)
+    const items = this.shouldMaskData(user)
       ? donorsWithHealth.map((donor) => maskDonorData(donor))
       : donorsWithHealth;
 
     return {
-      items: maskedDonors,
+      items,
       total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+      page: safePage,
+      limit: safeLimit,
+      totalPages: Math.ceil(total / safeLimit),
     };
   }
 
@@ -187,13 +241,7 @@ export class DonorsCrudService {
     ipAddress?: string,
     userAgent?: string,
   ) {
-    const existing = await this.prisma.donor.findFirst({
-      where: { id, isDeleted: false },
-    });
-
-    if (!existing) {
-      throw new NotFoundException("Donor not found");
-    }
+    const existing = await this.getActiveDonorOrThrow(id);
 
     if (
       user.role === Role.TELECALLER &&
@@ -220,13 +268,7 @@ export class DonorsCrudService {
       throw new ForbiddenException("Only administrators can delete donors");
     }
 
-    const existing = await this.prisma.donor.findFirst({
-      where: { id, isDeleted: false },
-    });
-
-    if (!existing) {
-      throw new NotFoundException("Donor not found");
-    }
+    await this.getActiveDonorOrThrow(id);
 
     return this.prisma.donor.update({
       where: { id },
@@ -278,13 +320,7 @@ export class DonorsCrudService {
   }
 
   async assignDonor(id: string, assignedToUserId: string | null) {
-    const donor = await this.prisma.donor.findFirst({
-      where: { id, isDeleted: false },
-    });
-
-    if (!donor) {
-      throw new NotFoundException("Donor not found");
-    }
+    await this.getActiveDonorOrThrow(id);
 
     return this.prisma.donor.update({
       where: { id },
