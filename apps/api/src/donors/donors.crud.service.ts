@@ -4,14 +4,7 @@ import {
   ForbiddenException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import {
-  Prisma,
-  Role,
-  DonorCategory,
-  DonationFrequency,
-  SupportPreference,
-  HealthStatus,
-} from "@prisma/client";
+import { Prisma, Role } from "@prisma/client";
 import { UserContext, DonorQueryOptions } from "./donors.types";
 import { maskDonorData } from "../common/utils/masking.util";
 import { DonorsEngagementService } from "./donors.engagement.service";
@@ -100,7 +93,7 @@ export class DonorsCrudService {
       ];
     }
 
-    if (category) where.category = category;
+    if (category) where.category = category as any;
     if (city?.trim()) where.city = { contains: city.trim(), mode: "insensitive" };
     if (country?.trim()) {
       where.country = { contains: country.trim(), mode: "insensitive" };
@@ -109,16 +102,15 @@ export class DonorsCrudService {
       where.religion = { contains: religion.trim(), mode: "insensitive" };
     }
     if (assignedToUserId) where.assignedToUserId = assignedToUserId;
-    if (donationFrequency) where.donationFrequency = donationFrequency;
+    if (donationFrequency) where.donationFrequency = donationFrequency as any;
 
     if (supportPreferences) {
       const prefs = supportPreferences
         .split(",")
         .map((p) => p.trim())
         .filter(Boolean);
-
       if (prefs.length > 0) {
-        where.supportPreferences = { hasSome: prefs };
+        where.supportPreferences = { hasSome: prefs as any };
       }
     }
 
@@ -165,7 +157,6 @@ export class DonorsCrudService {
     ]);
 
     const donorIds = donors.map((d) => d.id);
-
     const engagementMap = donorIds.length
       ? await this.engagementService.computeEngagementScores(donorIds)
       : {};
