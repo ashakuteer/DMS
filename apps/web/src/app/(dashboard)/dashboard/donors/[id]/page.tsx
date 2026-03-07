@@ -83,7 +83,59 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
+import type {
+  Donor,
+  Donation,
+  DonationFormData,
+  Pledge,
+  PledgeFormData,
+  SpecialOccasion,
+  SpecialOccasionFormData,
+  FamilyMember,
+  FamilyMemberFormData,
+  Template,
+  CommunicationLog,
+  SponsoredBeneficiary,
+  UserProfile,
+  TimelineItem,
+} from "./types";
 
+import {
+  formatCurrency,
+  formatDate,
+  formatMonthDay,
+  getCategoryColor,
+  getOccasionTypeLabel,
+  getPledgeStatusColor,
+  getPledgeTypeLabel,
+  getRelationTypeLabel,
+  getSponsorStatusBadgeVariant,
+} from "./utils";
+
+import DonorHeader from "./components/DonorHeader";
+import DonorStatsCards from "./components/DonorStatsCards";
+import DonorSmartSummary from "./components/DonorSmartSummary";
+
+import DonorOverviewTab from "./components/DonorOverviewTab";
+import DonorSponsorshipsTab from "./components/DonorSponsorshipsTab";
+import DonorTimelineTab from "./components/DonorTimelineTab";
+import DonorDonationsTab from "./components/DonorDonationsTab";
+import DonorPledgesTab from "./components/DonorPledgesTab";
+import DonorSpecialDaysTab from "./components/DonorSpecialDaysTab";
+import DonorFamilyTab from "./components/DonorFamilyTab";
+import DonorCommunicationTab from "./components/DonorCommunicationTab";
+import DonorCommunicationLogTab from "./components/DonorCommunicationLogTab";
+
+import DonationDialog from "./dialogs/DonationDialog";
+import EmailDialog from "./dialogs/EmailDialog";
+import FamilyMemberDialog from "./dialogs/FamilyMemberDialog";
+import SpecialOccasionDialog from "./dialogs/SpecialOccasionDialog";
+import PledgeDialog from "./dialogs/PledgeDialog";
+import FulfillPledgeDialog from "./dialogs/FulfillPledgeDialog";
+import PostponePledgeDialog from "./dialogs/PostponePledgeDialog";
+import CancelPledgeDialog from "./dialogs/CancelPledgeDialog";
+import SponsorStatusDialog from "./dialogs/SponsorStatusDialog";
+import SponsorHistoryDialog from "./dialogs/SponsorHistoryDialog";
 export default function DonorProfilePage() {
   const router = useRouter();
   const params = useParams();
@@ -704,19 +756,7 @@ export default function DonorProfilePage() {
     return (first + last).toUpperCase() || "?";
   };
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "INDIVIDUAL":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-      case "CSR_REP":
-        return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
-      case "NGO":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
-      case "WHATSAPP_GROUP":
-        return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
-    }
+ 
   };
 
   const formatDate = (dateStr: string) => {
@@ -1587,59 +1627,7 @@ export default function DonorProfilePage() {
     }
   };
 
-  const getPledgeTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      MONEY: "Money",
-      RICE: "Rice",
-      GROCERIES: "Groceries",
-      MEDICINES: "Medicines",
-      MEAL_SPONSOR: "Meal Sponsor",
-      VISIT: "Visit",
-      OTHER: "Other",
-    };
-    return labels[type] || type;
-  };
-
-  const getPledgeStatusColor = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "secondary";
-      case "FULFILLED":
-        return "default";
-      case "POSTPONED":
-        return "outline";
-      case "CANCELLED":
-        return "destructive";
-      default:
-        return "secondary";
-    }
-  };
-
-  const getOccasionTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      DOB_SELF: "Birthday (Self)",
-      DOB_SPOUSE: "Birthday (Spouse)",
-      DOB_CHILD: "Birthday (Child)",
-      ANNIVERSARY: "Wedding Anniversary",
-      DEATH_ANNIVERSARY: "Memorial Day",
-      OTHER: "Other",
-    };
-    return labels[type] || type.replace(/_/g, " ");
-  };
-
-  const getRelationTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      SPOUSE: "Spouse",
-      CHILD: "Child",
-      FATHER: "Father",
-      MOTHER: "Mother",
-      SIBLING: "Sibling",
-      IN_LAW: "In-law",
-      GRANDPARENT: "Grandparent",
-      OTHER: "Other",
-    };
-    return labels[type] || type;
-  };
+ 
 
   const logPostDonationAction = async (
     action: "send_email" | "send_whatsapp" | "send_whatsapp_auto" | "remind_later" | "skip",
