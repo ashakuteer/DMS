@@ -164,6 +164,9 @@ model Donor {
   @@index([whatsappPhone])
   @@index([firstName, lastName])
   @@index([healthScore])
+  // ✅ Phase 1: Performance indexes
+  @@index([isDeleted, donationFrequency])
+  @@index([isDeleted, updatedAt])
   @@map("donors")
 }
 model DonorSpecialOccasion {
@@ -248,6 +251,11 @@ model Donation {
   @@index([financialYear])
   @@index([isDeleted])
   @@index([donationHomeType])
+  // ✅ Phase 1: Performance indexes
+  @@index([isDeleted, donationDate])
+  @@index([donorId, isDeleted, donationDate])
+  @@index([donationMode])
+  @@index([donationType])
   @@index([donorId, isDeleted, donationDate])
   @@index([isDeleted, donationDate])
   @@map("donations")
@@ -448,6 +456,10 @@ model Sponsorship {
   @@index([status])
   @@index([nextDueDate])
   @@index([donorId, status])
+  // ✅ Phase 1: Performance indexes
+  @@index([isActive, status])
+  @@index([frequency, dueDayOfMonth])
+  @@index([isActive, frequency])
   @@map("sponsorships")
 }
 
