@@ -86,3 +86,30 @@ export function getCategoryColor(category: string) {
       return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
   }
 }
+export function getPledgeTypeLabel(type: string) {
+  const labels: Record<string, string> = {
+    MONEY: "Money",
+    RICE: "Rice",
+    GROCERIES: "Groceries",
+    MEDICINES: "Medicines",
+    MEAL_SPONSOR: "Meal Sponsor",
+    VISIT: "Visit",
+    OTHER: "Other",
+  };
+  return labels[type] || type;
+}
+
+export function getPledgeStatusColor(status: string) {
+  switch (status) {
+    case "PENDING":
+      return "secondary";
+    case "FULFILLED":
+      return "default";
+    case "POSTPONED":
+      return "outline";
+    case "CANCELLED":
+      return "destructive";
+    default:
+      return "secondary";
+  }
+}
