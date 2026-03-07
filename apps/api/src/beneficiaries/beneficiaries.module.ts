@@ -6,9 +6,10 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { AuditModule } from '../audit/audit.module';
 import { EmailModule } from '../email/email.module';
 import { EmailJobsModule } from '../email-jobs/email-jobs.module';
+import { StorageModule } from '../storage/storage.module';
 
 @Module({
-  imports: [PrismaModule, AuditModule, EmailModule, EmailJobsModule],
+  imports: [PrismaModule, AuditModule, EmailModule, EmailJobsModule, StorageModule],
   controllers: [BeneficiariesController, SponsorshipsController, BeneficiaryUpdatesController, SponsorDispatchesController, ReportCampaignsController],
   providers: [BeneficiariesService, SponsorshipReminderScheduler],
   exports: [BeneficiariesService],
