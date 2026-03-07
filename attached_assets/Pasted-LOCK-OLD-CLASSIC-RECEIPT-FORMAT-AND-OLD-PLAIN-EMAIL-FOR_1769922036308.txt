@@ -1,0 +1,98 @@
+LOCK OLD / CLASSIC RECEIPT FORMAT AND OLD / PLAIN EMAIL FORMAT AS FINAL.
+
+Objective:
+Use simple, reliable, text-based formats for both donation receipts (PDF) and receipt emails.
+No logos, no images, no styled headers.
+
+========================
+A) RECEIPT PDF FORMAT
+========================
+
+1) Receipt header text:
+   ASHA KUTEER FOUNDATION
+
+2) Place DONATION RECEIPT title BETWEEN two horizontal lines exactly like below:
+
+   -----------------------------------------
+              DONATION RECEIPT
+   -----------------------------------------
+
+3) Receipt body fields (left aligned):
+   - Receipt No : {{receipt_number}}
+   - Date       : {{date}}
+   - Donor Name : {{donor_name}}
+   - Amount     : Rs. {{amount}} ({{amount_in_words}})
+   - Mode       : {{payment_mode}}
+
+4) After donation details, add one horizontal separator line.
+
+5) Organization details block:
+   Asha Kuteer Foundation
+   Asha Kuteer Girls Home – Uppal, Hyderabad
+   Asha Kuteer Blind Boys Home – Begumpet, Hyderabad
+   Asha Kuteer Old Age Home – Boduppal, Hyderabad
+
+6) Contact details:
+   Phone   : 9700700700 / 8600600600
+   Email   : info@ashakuteer.org
+   Website : www.ashakuteer.org
+
+7) Footer (plain text):
+   PAN: AADAA4681R
+   Eligible for deduction under Section 80G of the Income Tax Act, 1961
+   This is a system generated receipt. No signature required.
+
+8) Ensure:
+   - Single page only
+   - No logos or images
+   - No registration number
+   - No purpose of donation
+   - Consistent spacing
+
+========================
+B) RECEIPT EMAIL FORMAT
+========================
+
+Subject:
+Donation Receipt – Asha Kuteer Foundation
+
+Email Body (plain text / simple HTML, no logo):
+
+Dear {{donor_name}},
+
+Thank you for your generous donation to Asha Kuteer Foundation.
+
+Your support helps us continue our mission of serving those in need and
+making a positive difference in their lives.
+
+Please find your donation receipt attached.
+This donation is eligible for tax exemption under Section 80G
+of the Income Tax Act, 1961.
+
+If you have any questions, please feel free to contact us.
+
+With heartfelt gratitude,
+Asha Kuteer Foundation
+
+Phone: 9700700700 / 8600600600
+Email: info@ashakuteer.org
+Website: www.ashakuteer.org
+
+========================
+C) APPLY & VERIFY
+========================
+
+- Apply this receipt format to:
+  • New receipt generation
+  • Receipt resend
+  • Bulk receipts
+
+- Apply this email format to:
+  • Auto receipt emails
+  • Manual resend emails
+
+- Generate one test donation and verify:
+  • Receipt layout matches exactly
+  • Email text matches exactly
+
+Mark both receipt and email formats as FINAL and LOCKED.

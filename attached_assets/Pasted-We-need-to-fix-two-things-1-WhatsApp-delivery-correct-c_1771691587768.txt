@@ -1,0 +1,81 @@
+We need to fix two things:
+
+1) WhatsApp delivery + correct configuration + clear status
+
+We already send WhatsApp templates using Twilio Content API and show “Queued” in UI.
+
+Sometimes backend logs show “accepted”, but Twilio Console shows “Undelivered”.
+
+Improve our implementation so we can debug + show correct status.
+
+Required changes:
+
+Validate env vars on startup and log clearly (without secrets):
+
+TWILIO_ACCOUNT_SID must start with “AC”
+
+TWILIO_AUTH_TOKEN must be present
+
+TWILIO_MESSAGING_SERVICE_SID must start with “MG” (NOT “whatsapp:+…”)
+
+TWILIO_WHATSAPP_NUMBER must start with “whatsapp:+”
+
+TWILIO_DONATION_THANK_YOU_CONTENT_SID / REMINDER / OCCASION must start with “HX”
+If any invalid, mark WhatsApp status as “Not Configured” and don’t attempt sending.
+
+When sending WhatsApp:
+
+Ensure “to” is always E.164 with + (ex: +919700700700)
+
+Log “to”, “from”, “contentSid”, “messagingServiceSid”, and Twilio response SID + status.
+
+After creating the message, do NOT say “sent” immediately. Save CommunicationLog status = “accepted/queued” initially.
+
+Add a webhook endpoint for Twilio status callbacks:
+
+POST /api/webhooks/twilio/status
+
+Verify signature if possible (optional for now)
+
+Update CommunicationLog status to delivered/undelivered/failed + errorCode/errorMessage.
+
+Update donation API response to return last known WhatsApp status from CommunicationLog.
+
+Frontend post-donation dialog:
+
+Keep it as “Donation Saved Successfully” with auto status lines only (Email + WhatsApp + receipt generated + Close).
+
+Show WhatsApp as: Queued / Delivered / Undelivered / Failed / Not Configured (based on CommunicationLog).
+
+Do NOT add manual send buttons here (manual resend stays in Donation Details page only).
+
+2) Email template + PDF receipt design fixes
+
+Email HTML:
+
+Make header logo larger and more visible.
+
+Under “Asha Kuteer Foundation” show:
+“Healing Hearts – Shaping Lives”
+“In the service of Mankind since 2013”
+
+Keep the green theme and background like current design.
+
+PDF receipt:
+
+Use full green theme (not only green lines) — header/footer should have green background and consistent branding.
+
+Add Asha Kuteer logo in PDF header.
+
+Footer “Our Homes” must be 1 line (no wrap). If needed, reduce font size and use separators:
+“Asha Kuteer Girls Home – Uppal, Hyderabad | Asha Kuteer Blind Boys Home – Begumpet, Hyderabad | Asha Kuteer Old Age Home – Boduppal, Hyderabad”
+
+Important: Logo file exists at /public/asha-kuteer-logo.jpg. Use it in both email and PDF.
+
+Deliverables:
+
+Code changes for Twilio webhook + status tracking.
+
+Updated email HTML template.
+
+Updated PDF receipt generator.

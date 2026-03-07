@@ -1,0 +1,54 @@
+FIX BRANDING VALUES + LOGO IN BOTH EMAIL + PDF RECEIPTS (FINAL).
+
+Problems to fix:
+A) Email footer still shows wrong phone 9876543210 instead of 9700700700 / 8600600600.
+B) Email header logo is overlapped/hidden by the blue background banner.
+C) PDF receipt has no logo and still shows wrong phone (9876543210).
+
+LOCKED Official values (use ONLY these everywhere):
+- Phones: 9700700700 and 8600600600
+- Email: info@ashakuteer.org
+- Website: www.ashakuteer.org
+- Logo file path (local): public/asha-kuteer-logo.jpg
+- Homes list:
+  Girls Home – Uppal, Hyderabad
+  Blind Boys Home – Begumpet, Hyderabad
+  Old Age Home – Boduppal, Hyderabad
+- PAN: AADAA4681R
+
+TASKS:
+
+1) EMAIL TEMPLATE FIX:
+- Replace any hardcoded phone numbers (including 9876543210) with:
+  "Phone: 9700700700 / 8600600600"
+- Ensure the email header shows logo clearly:
+  - Put the logo INSIDE the blue header area OR place it above the blue header.
+  - Add CSS so logo is not hidden:
+    img { display:block; margin:0 auto; height:60px; max-width:180px; }
+    and ensure padding-top in header so logo has space.
+- Remove any “Reg No” from email.
+- Use taglines:
+  Healing Hearts – Shaping Lives
+  In the service of Mankind since 2013
+
+2) PDF RECEIPT FIX (PDFKit generator):
+- Embed logo at the top center using local filesystem path:
+  path.join(process.cwd(), "public", "asha-kuteer-logo.jpg")
+- If logo load fails, log an error and continue, but DO NOT skip silently.
+- Replace any hardcoded phone numbers (including 9876543210) with:
+  9700700700 / 8600600600
+- Keep final locked receipt structure (no “Received with thanks”, no donation purpose, two full-width separators, OUR HOMES, contacts, PAN+80G, system-generated note).
+
+3) REMOVE OLD DEFAULTS:
+- Search entire codebase for "9876543210" and replace/remove so it can never appear again.
+- Also search for "Jayanagar" and remove from templates if present.
+
+4) VERIFY:
+- Generate a new receipt PDF and confirm:
+  - Logo visible
+  - Phone line shows 9700700700 / 8600600600
+- Send a receipt email and confirm:
+  - Logo visible (not overlapped)
+  - Phone shows correct numbers
+
+No schema changes unless absolutely required.

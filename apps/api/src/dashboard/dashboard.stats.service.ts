@@ -1,12 +1,26 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
 import { PrismaService } from "../prisma/prisma.service";
 import { getCurrentFY, getMonthRange } from "./dashboard.helpers";
 
 @Injectable()
 export class DashboardStatsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
   async getStats() {
+    const cacheKey = "dashboard:stats";
+    
+    // ✅ Try to get from cache
+    const cached = await this.cacheManager.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    // Calculate stats
     const { fyStart, fyEnd } = getCurrentFY();
     const { start: monthStart, end: monthEnd } = getMonthRange();
 
@@ -38,12 +52,17 @@ export class DashboardStatsService {
       }),
     ]);
 
-    return {
+    const stats = {
       totalDonationsFY: totalDonationsFY._sum.donationAmount?.toNumber() || 0,
       donationsThisMonth: donationsThisMonth._sum.donationAmount?.toNumber() || 0,
       activeDonors,
       totalBeneficiaries,
     };
+
+    // ✅ Cache for 5 minutes
+    await this.cacheManager.set(cacheKey, stats, 300000);
+    
+    return stats;
   }
 
   async getDonationModeSplit() {

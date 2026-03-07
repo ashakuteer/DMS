@@ -1,0 +1,55 @@
+Task: Improve Thank-You Email HTML + PDF Receipt design (minimal changes, keep existing logic).
+
+Goal: Make the email and receipt look professional with branding, green theme, and logo. Do NOT change database models, donation flow logic, or any unrelated files. Only update template/design.
+
+Branding requirements:
+
+Add logo at top (left or centered). Logo file path: public/asha-kuteer-logo.jpg.
+
+Under title “Asha Kuteer Foundation”, add 2 lines:
+
+“Healing Hearts – Shaping Lives”
+
+“In the service of Mankind since 2013”
+
+Use a clean green theme (header background green; also use green accents for section titles/borders).
+
+Email should be responsive and look good in Gmail.
+
+Email template changes:
+
+Locate the email HTML used for donation thank-you/receipt email (likely in EmailService / receipt email function).
+
+Add the logo image in the header and apply better spacing, typography, and a light background like the screenshot style (card look).
+
+Keep existing placeholders/variables exactly (donor name, receipt number, etc.). Do not rename variables.
+
+Footer should include phone/email/website as before, but styled neatly.
+
+PDF receipt changes:
+
+Locate receipt PDF generation (likely ReceiptService or similar).
+
+Add the same logo at top.
+
+Apply green branding: header background green, headings in green, and optionally a thin green border.
+
+Include the same 2 tagline lines under the foundation name in the PDF too.
+
+Keep all receipt fields and numbering logic exactly the same. Only improve layout/branding.
+
+Important constraints:
+
+Do NOT modify donation creation logic, WhatsApp logic, resend buttons, or DB schema.
+
+Keep receipt PDF file size reasonable.
+
+If the PDF generator cannot read from public/asha-kuteer-logo.jpg directly, copy/resolve the path appropriately within the API side (e.g., absolute path at runtime).
+
+Deliverables:
+
+Updated email template with logo + taglines + improved styling.
+
+Updated PDF receipt template with logo + taglines + green theme styling.
+
+Test by creating a donation and verify: email renders nicely + PDF contains logo and green branding.

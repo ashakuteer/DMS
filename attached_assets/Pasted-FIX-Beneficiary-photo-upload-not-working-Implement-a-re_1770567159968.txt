@@ -1,0 +1,61 @@
+FIX: Beneficiary photo upload not working. Implement a reliable Supabase Storage setup + correct upload code + clear error logs.
+
+Goal:
+- Beneficiary photo upload must work from the Add Beneficiary modal and Beneficiary Profile page.
+- Store file in Supabase Storage and save photoPath/photoUrl in beneficiaries table.
+- If upload fails, show a friendly toast + log exact Supabase error (status, message).
+
+Do this:
+
+1) Supabase Storage Bucket
+- Ensure a bucket exists named: "beneficiary-photos"
+- Public access is OK for now (simpler), OR keep private but generate signed URLs.
+Preferred (simple): make bucket PUBLIC.
+
+2) Storage Policies (most common failure)
+If bucket is PUBLIC:
+- Add policy to allow INSERT/UPDATE/SELECT for anon + authenticated on storage.objects for bucket "beneficiary-photos".
+If bucket is PRIVATE:
+- Allow INSERT/UPDATE for authenticated only and use signed URLs. (Avoid this now—use PUBLIC to fix quickly.)
+
+Implement SQL migration file (server/migrations or supabase/migrations):
+- Create bucket if missing
+- Create policies if missing
+
+Example policies (PUBLIC bucket approach):
+- Allow read: true
+- Allow insert: (bucket_id = 'beneficiary-photos')
+- Allow update/delete: (bucket_id = 'beneficiary-photos')
+
+3) Upload Implementation (frontend)
+- On file select:
+  - Validate file type: image/jpeg, image/png, image/webp
+  - Max size: 5MB
+  - Show preview immediately
+- Upload path format:
+  beneficiary-photos/{beneficiaryId}/profile-{timestamp}.{ext}
+- Use supabase.storage.from('beneficiary-photos').upload(path, file, { upsert: true, contentType: file.type })
+- After upload, get public URL:
+  const { data } = supabase.storage.from('beneficiary-photos').getPublicUrl(path)
+- Save in DB:
+  beneficiaries.photoPath = path
+  beneficiaries.photoUrl = data.publicUrl
+
+4) Server/API consistency
+- If there is an API route for beneficiary updates, ensure it accepts photoPath/photoUrl and persists it.
+- If uploads are handled server-side instead, move upload to server and keep keys safe. But simplest is direct client upload with PUBLIC bucket.
+
+5) UI Fix
+- Show "Upload Photo" button + spinner while uploading
+- Disable "Save Beneficiary" until upload completes (or allow save but update photo after).
+- If upload fails, show toast:
+  "Photo upload failed. Please try again." and console.log exact Supabase error object.
+
+6) Debug output
+- Add one-time debug line on upload failure to show:
+  bucket name, path, user session status, error.message, error.statusCode
+
+Deliverables:
+- Working upload in Add Beneficiary modal
+- Photo saved to DB and displayed in list/profile
+- No silent failures; proper toast + logs

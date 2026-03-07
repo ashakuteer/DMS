@@ -1,0 +1,94 @@
+We need to finalize comms. Please do these changes:
+
+A) WhatsApp automation reliability + correct status
+
+Ensure recipient phone is ALWAYS normalized to E.164 in backend before calling Twilio:
+
+Accept donor values like:
+
+phoneCode: "91" or "+91"
+
+phone: "8600600600"
+
+Convert to: "+918600600600"
+
+Strip spaces, hyphens, leading zeros, etc.
+
+If phone missing/invalid -> mark whatsappStatus="SKIPPED_INVALID_PHONE"
+
+Fix Twilio sending:
+
+Use ONLY ONE of these patterns consistently:
+a) messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_SID (MG…) AND do NOT pass from
+OR
+b) from: process.env.TWILIO_WHATSAPP_NUMBER (whatsapp:+91...) and do NOT pass messagingServiceSid.
+
+Right now Twilio logs show Undelivered even though backend says queued. We must reflect truth:
+
+When Twilio API returns status "queued/accepted" -> UI should show "QUEUED (Twilio accepted)"
+
+Add note: "Delivery pending" and store Twilio Message SID in DB.
+
+Add delivery status webhook:
+
+Expose endpoint: POST /api/webhooks/twilio/status
+
+Validate Twilio signature (optional but preferred).
+
+When Twilio posts MessageStatus (delivered/undelivered/failed) update CommunicationLog row by messageSid.
+
+Then donor UI can show real delivery result later (delivered/undelivered).
+
+In Donation Saved modal:
+
+Keep it buttonless: only show
+
+Email: queued/sent/skipped
+
+WhatsApp: queued/delivered/undelivered/skipped
+
+Receipt generated
+
+Close button only
+
+B) Email template improvements (HTML)
+
+Use logo from: public/asha-kuteer-logo.jpg in the header.
+
+Make the logo bigger and clearly visible (increase size).
+
+Under “Asha Kuteer Foundation” add 2 lines:
+
+“Healing Hearts – Shaping Lives”
+
+“In the service of Mankind since 2013”
+
+Keep green theme and clean spacing like the screenshot.
+
+Do NOT change the manual resend buttons in Donation Details page.
+
+C) PDF receipt improvements
+
+Add logo at top of receipt (same file public/asha-kuteer-logo.jpg)
+
+In header, include:
+
+“Healing Hearts – Shaping Lives”
+
+“In the service of Mankind since 2013”
+Use green background AND green text accents (not only green lines).
+
+Footer “OUR HOMES” must be ONE SINGLE LINE (no wrap):
+
+“Asha Kuteer Girls Home – Uppal, Hyderabad | Asha Kuteer Blind Boys Home – Begumpet, Hyderabad | Asha Kuteer Old Age Home – Boduppal, Hyderabad”
+Reduce font slightly if needed, and make the container wide enough to prevent wrapping.
+
+Keep receipt number, donor name, date, amount, payment mode, 80G note as is.
+
+Deliverables:
+
+WhatsApp auto send + webhook status update
+
+Improved email HTML with bigger logo + tagline
+
+Improved PDF with logo + full green theme + single-line OUR HOMES
