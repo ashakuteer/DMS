@@ -1,174 +1,292 @@
 "use client";
 
-import { History, Mail, Trash2 } from "lucide-react";
+import { Check, Copy, ExternalLink, Mail, MessageSquare, MessageSquareText } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import type { CommunicationLog } from "../types";
-import { formatDate } from "../utils";
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import type { Donation, Template } from "../types";
+import { formatCurrency, formatDate } from "../utils";
 
-interface DonorCommunicationLogTabProps {
-  canDeleteLogs: boolean;
-  logsLoading: boolean;
-  communicationLogs: CommunicationLog[];
-  onDeleteLog: (logId: string) => void;
+interface DonorCommunicationTabProps {
+  templates: Template[];
+  donations: Donation[];
+  copiedField: string | null;
+  canSendWhatsApp: boolean;
+  canSendEmail: boolean;
+  hasWhatsAppNumber: boolean;
+  hasEmail: boolean;
+  donorName: string;
+  resolvePlaceholders: (template: string, donation?: Donation) => string;
+  copyToClipboard: (text: string, fieldId: string) => void;
+  openWhatsApp: (
+    message: string,
+    templateId?: string,
+    donationId?: string,
+    type?: string,
+  ) => void;
+  openEmailComposer: (template: Template | null, donation: Donation | null) => void;
 }
 
-export default function DonorCommunicationLogTab({
-  canDeleteLogs,
-  logsLoading,
-  communicationLogs,
-  onDeleteLog,
-}: DonorCommunicationLogTabProps) {
+export default function DonorCommunicationTab({
+  templates,
+  donations,
+  copiedField,
+  canSendWhatsApp,
+  canSendEmail,
+  hasWhatsAppNumber,
+  hasEmail,
+  donorName,
+  resolvePlaceholders,
+  copyToClipboard,
+  openWhatsApp,
+  openEmailComposer,
+}: DonorCommunicationTabProps) {
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
-          <History className="h-5 w-5 text-primary" />
-          <CardTitle>Communication Log</CardTitle>
+          <MessageSquareText className="h-5 w-5 text-primary" />
+          <CardTitle>Communication Templates</CardTitle>
         </div>
         <CardDescription>
-          History of all email and WhatsApp communications with this donor
+          Copy personalized messages to send via WhatsApp or Email. No messages are sent automatically.
         </CardDescription>
       </CardHeader>
 
       <CardContent>
-        {logsLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
-          </div>
-        ) : communicationLogs.length === 0 ? (
+        {templates.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <History className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>No communication history yet</p>
+            <MessageSquare className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>No templates available</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm" data-testid="table-comm-log">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-2 px-2 font-medium">Date/Time</th>
-                  <th className="text-left py-2 px-2 font-medium">Channel</th>
-                  <th className="text-left py-2 px-2 font-medium">Type</th>
-                  <th className="text-left py-2 px-2 font-medium">Status</th>
-                  <th className="text-left py-2 px-2 font-medium">Sent By</th>
-                  <th className="text-left py-2 px-2 font-medium">Details</th>
-                  {canDeleteLogs && (
-                    <th className="text-left py-2 px-2 font-medium">Actions</th>
+          <div className="space-y-6">
+            {donations.length > 0 && (
+              <div className="bg-muted/50 rounded-lg p-4 border mb-4">
+                <p className="text-sm font-medium mb-2">
+                  Latest Donation Details (used for placeholders):
+                </p>
+                <div className="flex flex-wrap gap-3 text-sm">
+                  <Badge variant="outline">
+                    Amount: {formatCurrency(donations[0].donationAmount)}
+                  </Badge>
+                  <Badge variant="outline">
+                    Date: {formatDate(donations[0].donationDate)}
+                  </Badge>
+                  {donations[0].receiptNumber && (
+                    <Badge variant="outline">
+                      Receipt: {donations[0].receiptNumber}
+                    </Badge>
                   )}
-                </tr>
-              </thead>
+                </div>
+              </div>
+            )}
 
-              <tbody>
-                {communicationLogs.map((log) => (
-                  <tr
-                    key={log.id}
-                    className="border-b hover:bg-muted/50"
-                    data-testid={`log-row-${log.id}`}
+            <div className="grid gap-4 md:grid-cols-2">
+              {templates.map((template) => {
+                const latestDonation = donations[0];
+                const whatsappResolved = resolvePlaceholders(
+                  template.whatsappMessage,
+                  latestDonation,
+                );
+                const emailSubjectResolved = resolvePlaceholders(
+                  template.emailSubject,
+                  latestDonation,
+                );
+                const emailBodyResolved = resolvePlaceholders(
+                  template.emailBody,
+                  latestDonation,
+                );
+
+                return (
+                  <Card
+                    key={template.id}
+                    className="border"
+                    data-testid={`comm-template-${template.type.toLowerCase()}`}
                   >
-                    <td className="py-2 px-2">
-                      <div className="flex flex-col">
-                        <span>{formatDate(log.createdAt)}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {new Date(log.createdAt).toLocaleTimeString()}
-                        </span>
-                      </div>
-                    </td>
-
-                    <td className="py-2 px-2">
-                      <Badge
-                        variant={log.channel === "EMAIL" ? "secondary" : "default"}
-                        className={log.channel === "WHATSAPP" ? "bg-green-600" : ""}
-                      >
-                        {log.channel === "EMAIL" ? (
-                          <Mail className="h-3 w-3 mr-1" />
-                        ) : (
-                          <SiWhatsapp className="h-3 w-3 mr-1" />
-                        )}
-                        {log.channel}
-                      </Badge>
-                    </td>
-
-                    <td className="py-2 px-2">
-                      <span className="capitalize">
-                        {log.type.replace(/_/g, " ").toLowerCase()}
-                      </span>
-                    </td>
-
-                    <td className="py-2 px-2">
-                      <Badge
-                        variant={
-                          log.status === "SENT"
-                            ? "default"
-                            : log.status === "FAILED"
-                              ? "destructive"
-                              : log.status === "TRIGGERED"
-                                ? "outline"
-                                : "secondary"
-                        }
-                      >
-                        {log.status}
-                      </Badge>
-                    </td>
-
-                    <td className="py-2 px-2">
-                      {log.sentBy?.name || "System"}
-                      {log.sentBy?.role && (
-                        <span className="text-xs text-muted-foreground ml-1">
-                          ({log.sentBy.role})
-                        </span>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">{template.name}</CardTitle>
+                      {template.description && (
+                        <CardDescription className="text-xs">
+                          {template.description}
+                        </CardDescription>
                       )}
-                    </td>
+                    </CardHeader>
 
-                    <td className="py-2 px-2">
-                      <div className="max-w-[200px]">
-                        {log.subject && (
-                          <div className="text-xs truncate" title={log.subject}>
-                            <span className="font-medium">Subject:</span> {log.subject}
-                          </div>
-                        )}
-                        {log.recipient && (
-                          <div
-                            className="text-xs text-muted-foreground truncate"
-                            title={log.recipient}
+                    <CardContent className="space-y-3">
+                      <div>
+                        <Label className="text-xs font-medium flex items-center gap-1 mb-1">
+                          <MessageSquare className="h-3 w-3" />
+                          WhatsApp Message
+                        </Label>
+
+                        <div className="bg-muted/50 rounded p-2 text-xs max-h-24 overflow-y-auto whitespace-pre-wrap border">
+                          {whatsappResolved}
+                        </div>
+
+                        <div className="flex gap-2 mt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() =>
+                              copyToClipboard(whatsappResolved, `wa-${template.id}`)
+                            }
+                            data-testid={`button-copy-whatsapp-${template.type.toLowerCase()}`}
                           >
-                            To: {log.recipient}
-                          </div>
-                        )}
-                        {log.errorMessage && (
-                          <div
-                            className="text-xs text-destructive truncate"
-                            title={log.errorMessage}
-                          >
-                            Error: {log.errorMessage}
-                          </div>
-                        )}
+                            {copiedField === `wa-${template.id}` ? (
+                              <>
+                                <Check className="h-3 w-3 mr-1" /> Copied
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-3 w-3 mr-1" /> Copy
+                              </>
+                            )}
+                          </Button>
+
+                          {canSendWhatsApp && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="flex-1">
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    className="w-full bg-green-600 hover:bg-green-700"
+                                    onClick={() => {
+                                      const typeMap: Record<string, string> = {
+                                        THANK_YOU: "THANK_YOU",
+                                        GENTLE_FOLLOWUP: "FOLLOW_UP",
+                                        MONTHLY_REMINDER: "FOLLOW_UP",
+                                        FESTIVAL_GREETING: "GREETING",
+                                        RECEIPT_RESEND: "RECEIPT",
+                                        BIRTHDAY_ANNIVERSARY: "GREETING",
+                                      };
+
+                                      openWhatsApp(
+                                        whatsappResolved,
+                                        template.id,
+                                        latestDonation?.id,
+                                        typeMap[template.type] || "GENERAL",
+                                      );
+                                    }}
+                                    disabled={!hasWhatsAppNumber}
+                                    data-testid={`button-send-whatsapp-${template.type.toLowerCase()}`}
+                                  >
+                                    <SiWhatsapp className="h-3 w-3 mr-1" />
+                                    Send
+                                    <ExternalLink className="h-3 w-3 ml-1" />
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+
+                              {!hasWhatsAppNumber && (
+                                <TooltipContent>
+                                  <p>No phone number available for this donor</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          )}
+                        </div>
                       </div>
-                    </td>
 
-                    {canDeleteLogs && (
-                      <td className="py-2 px-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => onDeleteLog(log.id)}
-                          data-testid={`button-delete-log-${log.id}`}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <div>
+                        <Label className="text-xs font-medium flex items-center gap-1 mb-1">
+                          <Mail className="h-3 w-3" />
+                          Email
+                        </Label>
+
+                        <div className="space-y-1">
+                          <div className="bg-muted/50 rounded p-2 text-xs border">
+                            <span className="text-muted-foreground">Subject: </span>
+                            {emailSubjectResolved}
+                          </div>
+
+                          <div className="bg-muted/50 rounded p-2 text-xs max-h-20 overflow-y-auto whitespace-pre-wrap border">
+                            {emailBodyResolved}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2 mt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() =>
+                              copyToClipboard(emailSubjectResolved, `subj-${template.id}`)
+                            }
+                            data-testid={`button-copy-subject-${template.type.toLowerCase()}`}
+                          >
+                            {copiedField === `subj-${template.id}` ? (
+                              <>
+                                <Check className="h-3 w-3 mr-1" /> Copied
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-3 w-3 mr-1" /> Subject
+                              </>
+                            )}
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() =>
+                              copyToClipboard(emailBodyResolved, `body-${template.id}`)
+                            }
+                            data-testid={`button-copy-body-${template.type.toLowerCase()}`}
+                          >
+                            {copiedField === `body-${template.id}` ? (
+                              <>
+                                <Check className="h-3 w-3 mr-1" /> Copied
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="h-3 w-3 mr-1" /> Body
+                              </>
+                            )}
+                          </Button>
+
+                          {canSendEmail && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="flex-1">
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    className="w-full"
+                                    onClick={() => openEmailComposer(template, latestDonation)}
+                                    disabled={!hasEmail}
+                                    data-testid={`button-send-email-${template.type.toLowerCase()}`}
+                                  >
+                                    <Mail className="h-3 w-3 mr-1" />
+                                    Send
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+
+                              {!hasEmail && (
+                                <TooltipContent>
+                                  <p>No email address available for this donor</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         )}
       </CardContent>
