@@ -1,6 +1,6 @@
 # 🔧 Build Fix Applied
 
-## Issue
+## Issue 1: Missing Prisma Types
 Railway deployment was failing with TypeScript errors:
 ```
 Module '@prisma/client' has no exported member 'Role'
@@ -8,10 +8,25 @@ Module '@prisma/client' has no exported member 'AuditAction'
 ... (188 errors)
 ```
 
-## Root Cause
-Prisma Client types were not being generated before the TypeScript build step. The `@prisma/client` package needs to run `prisma generate` to create the TypeScript types based on your schema.
+### Fix 1: ✅ APPLIED
+Added postinstall script and explicit prisma generate step.
 
-## Fix Applied
+## Issue 2: Duplicate Index Definitions
+Prisma schema validation error:
+```
+Error code: P1012
+The given constraint name `donations_isDeleted_donationDate_idx` has to be unique
+```
+
+### Fix 2: ✅ APPLIED
+Removed duplicate index definitions in Donation model:
+- Removed duplicate `@@index([isDeleted, donationDate])`
+- Removed duplicate `@@index([donorId, isDeleted, donationDate])`
+
+## Status
+✅ Both fixes committed and pushed to GitHub
+✅ Railway will automatically redeploy
+✅ Build should succeed now
 
 ### 1. Updated `package.production.json`
 Added postinstall script:
