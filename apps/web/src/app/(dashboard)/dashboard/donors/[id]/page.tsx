@@ -242,18 +242,7 @@ export default function DonorProfilePage() {
   const [sponsorHistoryEntries, setSponsorHistoryEntries] = useState<any[]>([]);
   const [sponsorHistoryLoading, setSponsorHistoryLoading] = useState(false);
 
-  interface TimelineItem {
-    id: string;
-    type: string;
-    date: string;
-    title: string;
-    description: string;
-    amount?: number;
-    currency?: string;
-    status?: string;
-    metadata?: Record<string, any>;
-  }
-  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
+    const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
   const [timelineLoading, setTimelineLoading] = useState(false);
   const [timelinePage, setTimelinePage] = useState(1);
   const [timelineTotal, setTimelineTotal] = useState(0);
