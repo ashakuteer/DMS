@@ -256,8 +256,6 @@ model Donation {
   @@index([donorId, isDeleted, donationDate])
   @@index([donationMode])
   @@index([donationType])
-  @@index([donorId, isDeleted, donationDate])
-  @@index([isDeleted, donationDate])
   @@map("donations")
 }
 
