@@ -72,3 +72,17 @@ export function getOccasionTypeLabel(type?: string) {
 
   return map[type || ""] || type || "-";
 }
+export function getCategoryColor(category: string) {
+  switch (category) {
+    case "INDIVIDUAL":
+      return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+    case "CSR_REP":
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200";
+    case "NGO":
+      return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+    case "WHATSAPP_GROUP":
+      return "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200";
+    default:
+      return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+  }
+}
