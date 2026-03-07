@@ -1,712 +1,1047 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
-import { 
-  ArrowLeft,
-  Calendar,
-  User,
-  Edit,
-  Receipt,
-  CreditCard,
-  Package,
-  Home,
-  Loader2,
-  ExternalLink
-} from "lucide-react";
+import { Users, IndianRupee, HandHeart, TrendingUp, Lightbulb, AlertTriangle, Info, ArrowUpRight, ArrowDownRight, Clock, Receipt, Shield, Phone, Target, CalendarCheck, CheckCircle2, Bell, Mail, MessageCircle, Check, AlarmClockOff, Inbox, BarChart3, RefreshCcw, WifiOff } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { fetchWithAuth, authStorage } from "@/lib/auth";
-import { canAccessModule } from "@/lib/permissions";
-import { AccessDenied } from "@/components/access-denied";
-import { format } from "date-fns";
+import { fetchWithAuth } from "@/lib/auth";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts";
 
-interface Donor {
-  id: string;
-  donorCode: string;
-  firstName: string;
-  lastName?: string;
-  primaryPhone?: string;
-  personalEmail?: string;
-  officialEmail?: string;
-  whatsappPhone?: string;
-  city?: string;
-  state?: string;
+interface Stats {
+  totalDonationsFY: number;
+  donationsThisMonth: number;
+  activeDonors: number;
+  totalBeneficiaries: number;
 }
 
-interface DonationDetails {
+interface MonthlyTrend {
+  month: string;
+  amount: number;
+  count: number;
+}
+
+interface ModeSplit {
+  mode: string;
+  amount: number;
+  count: number;
+}
+
+interface TopDonor {
+  donorId: string;
+  donorCode: string;
+  name: string;
+  category: string;
+  totalAmount: number;
+  donationCount: number;
+}
+
+interface RecentDonation {
   id: string;
   donorId: string;
-  donationDate: string;
-  donationAmount: string;
-  currency: string;
-  donationType: string;
-  donationMode: string | null;
-  transactionId?: string;
-  remarks?: string;
-  quantity?: string;
-  unit?: string;
-  itemDescription?: string;
-  donationHomeType?: string;
-  receiptNumber?: string;
-  financialYear?: string;
-  visitedHome: boolean;
-  servedFood: boolean;
-  donor: Donor;
-  createdBy?: { id: string; name: string };
-  home?: { id: string; fullName: string };
-  campaign?: { id: string; name: string };
-  kindCategory?: string;
-  kindDescription?: string;
-  createdAt: string;
-  updatedAt: string;
+  donorCode: string;
+  donorName: string;
+  amount: number;
+  date: string;
+  mode: string;
+  type: string;
+  receiptNumber: string;
 }
 
-const DONATION_TYPES = [
-  { value: "CASH", label: "Cash" },
-  { value: "ANNADANAM", label: "Annadanam (Prepared Meals)" },
-  { value: "GROCERIES", label: "Groceries" },
-  { value: "MEDICINES", label: "Medicines" },
-  { value: "RICE_BAGS", label: "Rice Bags" },
-  { value: "STATIONERY", label: "Stationery" },
-  { value: "SPORTS_KITS", label: "Sports Kits" },
-  { value: "USED_ITEMS", label: "Used Items" },
-  { value: "OTHER", label: "Other" },
-];
+interface Insight {
+  type: "positive" | "warning" | "info";
+  title: string;
+  description: string;
+}
 
-const DONATION_MODES = [
-  { value: "CASH", label: "Cash" },
-  { value: "UPI", label: "UPI" },
-  { value: "GPAY", label: "GPay" },
-  { value: "PHONEPE", label: "PhonePe" },
-  { value: "CHEQUE", label: "Cheque" },
-  { value: "ONLINE", label: "Online" },
-  { value: "BANK_TRANSFER", label: "Bank Transfer" },
-];
+interface AdminInsight {
+  type: string;
+  title: string;
+  description: string;
+}
 
-const DONATION_HOME_TYPES = [
-  { value: "GIRLS_HOME", label: "Girls Home" },
-  { value: "BLIND_BOYS_HOME", label: "Blind Boys Home" },
-  { value: "OLD_AGE_HOME", label: "Old Age Home" },
-  { value: "GENERAL", label: "General" },
-];
+interface InsightCard {
+  key: string;
+  title: string;
+  count: number;
+  description: string;
+  type: 'warning' | 'info' | 'positive' | 'urgent';
+  details?: { name: string; id: string; extra?: string }[];
+}
 
-export default function DonationDetailsPage() {
-  const params = useParams();
-  const router = useRouter();
-  const { toast } = useToast();
-  const donationId = params.id as string;
+interface FollowUpDonor {
+  id: string;
+  name: string;
+  donorCode: string;
+  phone: string;
+  daysSinceLastDonation: number;
+  healthStatus: "AT_RISK" | "DORMANT";
+  bestTimeToContact: string;
+  followUpReason: string;
+}
 
-  const [donation, setDonation] = useState<DonationDetails | null>(null);
+interface StaffActionsData {
+  followUpDonors: FollowUpDonor[];
+  atRiskCount: number;
+  dormantCount: number;
+  bestCallTime: { day: string; slot: string };
+  summary: { total: number; atRisk: number; dormant: number };
+}
+
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface DueReminder {
+  id: string;
+  donorId: string;
+  donationId: string | null;
+  type: string;
+  title: string;
+  description: string | null;
+  dueDate: string;
+  status: string;
+  donor: {
+    id: string;
+    donorCode: string;
+    firstName: string;
+    lastName: string | null;
+    primaryPhone: string | null;
+    personalEmail: string | null;
+  };
+  donation: {
+    id: string;
+    donationAmount: number;
+    receiptNumber: string | null;
+    donationDate: string;
+  } | null;
+  createdBy: {
+    id: string;
+    name: string;
+  };
+}
+
+const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
+const formatMode = (mode: string) => {
+  const map: Record<string, string> = {
+    CASH: "Cash",
+    UPI: "UPI",
+    GPAY: "Google Pay",
+    PHONEPE: "PhonePe",
+    BANK_TRANSFER: "Bank Transfer",
+    CHEQUE: "Cheque",
+    ONLINE: "Online",
+  };
+  return map[mode] || mode;
+};
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [trends, setTrends] = useState<MonthlyTrend[]>([]);
+  const [modeSplit, setModeSplit] = useState<ModeSplit[]>([]);
+  const [topDonors, setTopDonors] = useState<TopDonor[]>([]);
+  const [recentDonations, setRecentDonations] = useState<RecentDonation[]>([]);
+  const [insights, setInsights] = useState<Insight[]>([]);
+  const [adminInsights, setAdminInsights] = useState<AdminInsight[]>([]);
+  const [insightCards, setInsightCards] = useState<InsightCard[]>([]);
+  const [staffActions, setStaffActions] = useState<StaffActionsData | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [dueReminders, setDueReminders] = useState<DueReminder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userRole, setUserRole] = useState<string>("");
-  
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editLoading, setEditLoading] = useState(false);
-  const [editForm, setEditForm] = useState({
-    donationAmount: "",
-    donationType: "CASH",
-    donationMode: "CASH",
-    quantity: "",
-    unit: "",
-    itemDescription: "",
-    donationHomeType: "",
-    remarks: "",
-    kindCategory: "",
-    kindDescription: "",
-  });
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    const user = authStorage.getUser();
-    if (user?.role) {
-      setUserRole(user.role);
-    }
-  }, []);
+  const isAdmin = userProfile?.role === "ADMIN";
+  const isAccountant = userProfile?.role === "ACCOUNTANT";
+  const isStaffOrTelecaller = ["STAFF", "TELECALLER"].includes(userProfile?.role || "");
+  const isStaff = userProfile?.role === "STAFF";
+  const canSeeFinancialStats = isAdmin || isAccountant;
+  const canSeeDueReminders = isAdmin || isStaff;
 
-  const fetchDonation = useCallback(async () => {
-    setLoading(true);
+  const getDaysOverdue = (dueDate: string) => {
+    const due = new Date(dueDate);
+    const today = new Date();
+    const diffTime = today.getTime() - due.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return Math.max(0, diffDays);
+  };
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const handleMarkDone = async (reminder: DueReminder) => {
     try {
-      const response = await fetchWithAuth(`/api/donations/${donationId}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch donation details");
+      const res = await fetchWithAuth(`/api/reminders/${reminder.id}/complete`, {
+        method: "PATCH",
+      });
+      if (res.ok) {
+        setDueReminders((prev) => prev.filter((r) => r.id !== reminder.id));
+        toast({
+          title: "Reminder Completed",
+          description: `Follow-up for ${reminder.donor.firstName} marked as done`,
+        });
       }
-      const data = await response.json();
-      setDonation(data);
     } catch (error) {
-      console.error("Failed to fetch donation:", error);
       toast({
         title: "Error",
-        description: "Failed to load donation details",
+        description: "Failed to mark reminder as complete",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSnooze = async (reminder: DueReminder) => {
+    try {
+      const res = await fetchWithAuth(`/api/reminders/${reminder.id}/snooze`, {
+        method: "PATCH",
+      });
+      if (res.ok) {
+        setDueReminders((prev) => prev.filter((r) => r.id !== reminder.id));
+        toast({
+          title: "Reminder Snoozed",
+          description: `Follow-up for ${reminder.donor.firstName} snoozed for 30 days`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to snooze reminder",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSendEmail = async (reminder: DueReminder) => {
+    await fetchWithAuth(`/api/reminders/${reminder.id}/log-action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        donorId: reminder.donorId,
+        donationId: reminder.donationId,
+        action: "send_email",
+      }),
+    });
+    window.location.href = `/dashboard/donors/${reminder.donorId}?tab=communication`;
+  };
+
+  const handleSendWhatsApp = async (reminder: DueReminder) => {
+    const phone = reminder.donor.primaryPhone?.replace(/\D/g, "") || "";
+    if (!phone) {
+      toast({
+        title: "No Phone Number",
+        description: "This donor doesn't have a phone number on file",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    await fetchWithAuth(`/api/reminders/${reminder.id}/log-action`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        donorId: reminder.donorId,
+        donationId: reminder.donationId,
+        action: "send_whatsapp",
+      }),
+    });
+    
+    const message = `Hello ${reminder.donor.firstName}, this is a follow-up from Asha Kuteer Foundation. We hope you are doing well and would love to hear from you!`;
+    try {
+      const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+        method: "POST",
+        body: JSON.stringify({ donorId: reminder.donorId, toE164: phone, message }),
+      });
+      if (res.ok) {
+        toast({ title: "WhatsApp Sent", description: "Follow-up message sent via WhatsApp" });
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast({ title: "WhatsApp Failed", description: err.message || "Could not send", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to send WhatsApp", variant: "destructive" });
+    }
+  };
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const profileRes = await fetchWithAuth("/api/auth/profile");
+      let profile: UserProfile | null = null;
+      if (profileRes.ok) {
+        profile = await profileRes.json();
+        setUserProfile(profile);
+      }
+
+      const userCanSeeFinancialStats = ["ADMIN", "ACCOUNTANT"].includes(profile?.role || "");
+      const userCanSeeStaffActions = ["ADMIN", "STAFF", "TELECALLER"].includes(profile?.role || "");
+
+      if (userCanSeeFinancialStats) {
+        const [statsRes, trendsRes, modeRes, topRes, recentRes, insightsRes, insightCardsRes] = await Promise.all([
+          fetchWithAuth("/api/dashboard/stats"),
+          fetchWithAuth("/api/dashboard/trends"),
+          fetchWithAuth("/api/dashboard/mode-split"),
+          fetchWithAuth("/api/dashboard/top-donors"),
+          fetchWithAuth("/api/dashboard/recent-donations"),
+          fetchWithAuth("/api/dashboard/insights"),
+          fetchWithAuth("/api/dashboard/insight-cards"),
+        ]);
+
+        if (statsRes.ok) setStats(await statsRes.json());
+        if (trendsRes.ok) setTrends(await trendsRes.json());
+        if (modeRes.ok) setModeSplit(await modeRes.json());
+        if (topRes.ok) setTopDonors(await topRes.json());
+        if (recentRes.ok) setRecentDonations(await recentRes.json());
+        if (insightsRes.ok) setInsights(await insightsRes.json());
+        if (insightCardsRes.ok) setInsightCards(await insightCardsRes.json());
+      }
+
+      const canSeeDueReminders = ["ADMIN", "STAFF"].includes(profile?.role || "");
+
+      if (profile?.role === "ADMIN") {
+        const [adminRes, staffRes, remindersRes] = await Promise.all([
+          fetchWithAuth("/api/dashboard/admin-insights"),
+          fetchWithAuth("/api/dashboard/staff-actions"),
+          fetchWithAuth("/api/reminders/due"),
+        ]);
+        if (adminRes.ok) setAdminInsights(await adminRes.json());
+        if (staffRes.ok) setStaffActions(await staffRes.json());
+        if (remindersRes.ok) setDueReminders(await remindersRes.json());
+      } else if (userCanSeeStaffActions) {
+        const staffRes = await fetchWithAuth("/api/dashboard/staff-actions");
+        if (staffRes.ok) setStaffActions(await staffRes.json());
+        if (canSeeDueReminders) {
+          const remindersRes = await fetchWithAuth("/api/reminders/due");
+          if (remindersRes.ok) setDueReminders(await remindersRes.json());
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching dashboard data:", err);
+      setError("Unable to load dashboard data. Please check your connection and try again.");
+      toast({
+        title: "Dashboard Load Failed",
+        description: "Could not fetch dashboard data. Please try refreshing the page.",
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  }, [donationId, toast]);
+  };
 
   useEffect(() => {
-    fetchDonation();
-  }, [fetchDonation]);
+    fetchData();
+  }, []);
 
-  const isInKindDonation = (type: string) => type !== "CASH";
+  const statCards = [
+    {
+      title: "Total Donations (FY)",
+      value: stats ? formatCurrency(stats.totalDonationsFY) : "—",
+      description: "Current financial year",
+      icon: IndianRupee,
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50 dark:bg-emerald-950/50",
+    },
+    {
+      title: "This Month",
+      value: stats ? formatCurrency(stats.donationsThisMonth) : "—",
+      description: "Monthly collections",
+      icon: TrendingUp,
+      color: "text-blue-600",
+      bgColor: "bg-blue-50 dark:bg-blue-950/50",
+    },
+    {
+      title: "Active Donors",
+      value: stats?.activeDonors?.toString() || "—",
+      description: "Registered donors",
+      icon: Users,
+      color: "text-violet-600",
+      bgColor: "bg-violet-50 dark:bg-violet-950/50",
+    },
+    {
+      title: "Beneficiaries",
+      value: stats?.totalBeneficiaries?.toString() || "—",
+      description: "Homes supported",
+      icon: HandHeart,
+      color: "text-rose-600",
+      bgColor: "bg-rose-50 dark:bg-rose-950/50",
+    },
+  ];
 
-  const openEditDialog = () => {
-    if (!donation) return;
-    setEditForm({
-      donationAmount: donation.donationAmount || "",
-      donationType: donation.donationType || "CASH",
-      donationMode: donation.donationMode || "CASH",
-      quantity: donation.quantity || "",
-      unit: donation.unit || "",
-      itemDescription: donation.itemDescription || "",
-      donationHomeType: donation.donationHomeType || "",
-      remarks: donation.remarks || "",
-      kindCategory: donation.kindCategory || "",
-      kindDescription: donation.kindDescription || "",
-    });
-    setShowEditDialog(true);
-  };
-
-  const handleEditSubmit = async () => {
-    setEditLoading(true);
-    try {
-      const payload: Record<string, any> = {
-        remarks: editForm.remarks || null,
-        donationType: editForm.donationType,
-        donationHomeType: editForm.donationHomeType || null,
-      };
-
-      if (editForm.donationType === "CASH") {
-        payload.donationAmount = parseFloat(editForm.donationAmount);
-        payload.donationMode = editForm.donationMode || "CASH";
-        payload.quantity = null;
-        payload.unit = null;
-        payload.itemDescription = null;
-      } else {
-        payload.quantity = editForm.quantity ? parseFloat(editForm.quantity) : null;
-        payload.unit = editForm.unit || null;
-        payload.itemDescription = editForm.itemDescription || null;
-        payload.donationMode = editForm.donationMode || null;
-        payload.donationAmount = parseFloat(editForm.donationAmount) || 0;
-        payload.kindCategory = editForm.kindCategory || null;
-        payload.kindDescription = editForm.kindDescription || null;
-      }
-
-      const response = await fetchWithAuth(`/api/donations/${donationId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to update donation");
-      }
-
-      toast({
-        title: "Success",
-        description: "Donation updated successfully",
-      });
-      setShowEditDialog(false);
-      fetchDonation();
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to update donation",
-        variant: "destructive",
-      });
-    } finally {
-      setEditLoading(false);
-    }
-  };
-
-  const formatAmount = (amount: string, currency: string = "INR") => {
-    const num = parseFloat(amount);
-    if (isNaN(num)) return "-";
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 2,
-    }).format(num);
-  };
-
-  const getDonorName = (donor: Donor) => {
-    return [donor.firstName, donor.lastName].filter(Boolean).join(" ");
-  };
-
-  const getDonationTypeBadgeColor = (type: string) => {
+  const getInsightIcon = (type: string) => {
     switch (type) {
-      case "CASH": return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100";
-      case "GROCERIES": return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100";
-      case "MEDICINES": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100";
-      case "ANNADANAM": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100";
-      case "RICE_BAGS": return "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-100";
-      case "STATIONERY": return "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100";
-      case "SPORTS_KITS": return "bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-100";
-      default: return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100";
+      case "positive": return <ArrowUpRight className="h-4 w-4 text-emerald-600" />;
+      case "warning": return <AlertTriangle className="h-4 w-4 text-amber-600" />;
+      default: return <Info className="h-4 w-4 text-blue-600" />;
     }
   };
 
-  const getTypeLabel = (value: string) => {
-    return DONATION_TYPES.find(t => t.value === value)?.label || value.replace(/_/g, " ");
+  const getInsightBg = (type: string) => {
+    switch (type) {
+      case "positive": return "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800";
+      case "warning": return "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800";
+      default: return "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800";
+    }
   };
-
-  const getModeLabel = (value: string | null) => {
-    if (!value) return "-";
-    return DONATION_MODES.find(m => m.value === value)?.label || value.replace(/_/g, " ");
-  };
-
-  const getHomeTypeLabel = (value: string | undefined) => {
-    if (!value) return "-";
-    return DONATION_HOME_TYPES.find(h => h.value === value)?.label || value.replace(/_/g, " ");
-  };
-
-  const user = authStorage.getUser();
-  if (user && !canAccessModule(user?.role, 'donations')) return <AccessDenied />;
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="p-8 space-y-8 max-w-7xl mx-auto" data-testid="dashboard-loading">
+        <div>
+          <Skeleton className="h-9 w-48" />
+          <Skeleton className="h-5 w-80 mt-2" />
+        </div>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="border-0 shadow-sm">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-7 w-24" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                  <Skeleton className="h-12 w-12 rounded-xl" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <Card key={i} className="border-0 shadow-sm">
+              <CardHeader>
+                <Skeleton className="h-5 w-36" />
+                <Skeleton className="h-4 w-56 mt-1" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-72 w-full rounded-lg" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <Card key={i} className="border-0 shadow-sm">
+              <CardHeader>
+                <Skeleton className="h-5 w-32" />
+                <Skeleton className="h-4 w-48 mt-1" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, j) => (
+                    <div key={j} className="flex items-center justify-between p-3 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <div className="space-y-1.5">
+                          <Skeleton className="h-4 w-32" />
+                          <Skeleton className="h-3 w-24" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-5 w-20" />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
 
-  if (!donation) {
+  if (error) {
     return (
-      <div className="p-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Donation not found</p>
-              <Button 
-                variant="outline" 
-                className="mt-4"
-                onClick={() => router.push("/dashboard/donations")}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Donations
-              </Button>
+      <div className="flex items-center justify-center h-96" data-testid="dashboard-error">
+        <Card className="border-0 shadow-sm max-w-md w-full">
+          <CardContent className="p-8 text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="p-4 rounded-full bg-red-50 dark:bg-red-950/30">
+                <WifiOff className="h-8 w-8 text-red-500" />
+              </div>
             </div>
+            <div>
+              <h3 className="text-lg font-semibold" data-testid="text-error-title">Something went wrong</h3>
+              <p className="text-sm text-muted-foreground mt-1" data-testid="text-error-message">{error}</p>
+            </div>
+            <Button onClick={fetchData} data-testid="button-retry">
+              <RefreshCcw className="h-4 w-4 mr-2" />
+              Try Again
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
-
-  const isInKind = isInKindDonation(donation.donationType);
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={() => router.push("/dashboard/donations")}
-            data-testid="button-back"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Donation Details</h1>
-            <p className="text-muted-foreground">
-              Receipt: {donation.receiptNumber || "N/A"}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {userRole === "ADMIN" && (
-            <Button onClick={openEditDialog} data-testid="button-edit-donation">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Donation
-            </Button>
-          )}
-        </div>
+    <div className="p-8 space-y-8 max-w-7xl mx-auto">
+      <div>
+        <h1 className="text-3xl font-semibold text-foreground tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground mt-1">
+          Welcome to the Asha Kuteer Foundation Donor Management System
+        </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Receipt className="h-5 w-5" />
-              Donation Information
-            </CardTitle>
+      {canSeeFinancialStats && (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {statCards.map((stat) => (
+            <Card key={stat.title} className="border-0 shadow-sm" data-testid={`card-stat-${stat.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
+                    <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+                  </div>
+                  <div className={`p-3 rounded-xl ${stat.bgColor}`}>
+                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {canSeeFinancialStats && insights.length > 0 && (
+        <Card className="border-0 shadow-sm" data-testid="card-ai-insights">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Lightbulb className="h-5 w-5 text-amber-500" />
+              <CardTitle className="text-lg">AI Insights</CardTitle>
+            </div>
+            <CardDescription>Smart observations based on your data</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-muted-foreground text-sm">Date</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="font-medium">
-                    {format(new Date(donation.donationDate), "dd MMMM yyyy")}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <Label className="text-muted-foreground text-sm">Receipt Number</Label>
-                <div className="mt-1">
-                  <Badge variant="outline" className="font-mono">
-                    {donation.receiptNumber || "-"}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label className="text-muted-foreground text-sm">Type</Label>
-                <div className="mt-1">
-                  <Badge className={getDonationTypeBadgeColor(donation.donationType)}>
-                    {getTypeLabel(donation.donationType)}
-                  </Badge>
-                </div>
-              </div>
-              <div>
-                <Label className="text-muted-foreground text-sm">Mode</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
-                  <span>{getModeLabel(donation.donationMode)}</span>
-                </div>
-              </div>
-            </div>
-
-            <Separator />
-
-            {isInKind ? (
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Quantity</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Package className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium text-lg">
-                        {donation.quantity || "-"} {donation.unit || ""}
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Estimated Value</Label>
-                    <div className="mt-1">
-                      <span className="font-medium">
-                        {formatAmount(donation.donationAmount, donation.currency)}
-                      </span>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {insights.map((insight, idx) => (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-lg border ${getInsightBg(insight.type)}`}
+                  data-testid={`insight-${idx}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5">{getInsightIcon(insight.type)}</div>
+                    <div>
+                      <p className="font-medium text-sm">{insight.title}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{insight.description}</p>
                     </div>
                   </div>
                 </div>
-                {donation.itemDescription && (
-                  <div>
-                    <Label className="text-muted-foreground text-sm">Description</Label>
-                    <p className="mt-1">{donation.itemDescription}</p>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {canSeeFinancialStats && insightCards.length > 0 && (
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-testid="insight-cards-grid">
+          {insightCards.map((card) => {
+            const colorMap = {
+              warning: {
+                border: 'border-l-amber-500',
+                bg: 'bg-amber-50 dark:bg-amber-950/30',
+                text: 'text-amber-600',
+                countColor: 'text-amber-700 dark:text-amber-400',
+              },
+              info: {
+                border: 'border-l-blue-500',
+                bg: 'bg-blue-50 dark:bg-blue-950/30',
+                text: 'text-blue-600',
+                countColor: 'text-blue-700 dark:text-blue-400',
+              },
+              positive: {
+                border: 'border-l-emerald-500',
+                bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+                text: 'text-emerald-600',
+                countColor: 'text-emerald-700 dark:text-emerald-400',
+              },
+              urgent: {
+                border: 'border-l-red-500',
+                bg: 'bg-red-50 dark:bg-red-950/30',
+                text: 'text-red-600',
+                countColor: 'text-red-700 dark:text-red-400',
+              },
+            };
+            const colors = colorMap[card.type];
+            const iconMap: Record<string, typeof Users> = {
+              follow_up_needed: Users,
+              high_value: TrendingUp,
+              dormant: Clock,
+              pledges_due: CalendarCheck,
+            };
+            const IconComponent = iconMap[card.key] || Info;
+
+            return (
+              <Card
+                key={card.key}
+                className="border-0 shadow-sm"
+                data-testid={`insight-card-${card.key}`}
+              >
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className={`p-2 rounded-lg ${colors.bg}`}>
+                      <IconComponent className={`h-5 w-5 ${colors.text}`} />
+                    </div>
+                    <span className={`text-3xl font-bold ${colors.countColor}`} data-testid={`insight-count-${card.key}`}>
+                      {card.count}
+                    </span>
                   </div>
+                  <p className="font-medium text-sm mb-1">{card.title}</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{card.description}</p>
+                  {card.details && card.details.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-muted space-y-1.5">
+                      {card.details.map((detail) => (
+                        <div
+                          key={detail.id}
+                          className="flex items-center justify-between text-xs"
+                          data-testid={`insight-detail-${card.key}-${detail.id}`}
+                        >
+                          <span className="font-medium truncate mr-2">{detail.name}</span>
+                          {detail.extra && (
+                            <span className="text-muted-foreground text-right flex-shrink-0">{detail.extra}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {isAdmin && adminInsights.length > 0 && (
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20" data-testid="card-admin-strategy">
+          <CardHeader className="pb-3">
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-indigo-600" />
+              <CardTitle className="text-lg">Admin Strategy Panel</CardTitle>
+              <Badge variant="secondary" className="text-xs">Admin Only</Badge>
+            </div>
+            <CardDescription>Strategic insights for organizational planning</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {adminInsights.map((insight, idx) => (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-lg border ${getInsightBg(insight.type)}`}
+                  data-testid={`admin-insight-${idx}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5">{getInsightIcon(insight.type)}</div>
+                    <div>
+                      <p className="font-medium text-sm">{insight.title}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{insight.description}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {(isAdmin || isStaffOrTelecaller) && staffActions && (
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-teal-50/50 to-cyan-50/50 dark:from-teal-950/20 dark:to-cyan-950/20" data-testid="card-staff-actions">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-teal-600" />
+                <CardTitle className="text-lg">Next Best Actions</CardTitle>
+                {isAdmin && <Badge variant="secondary" className="text-xs">Staff View</Badge>}
+              </div>
+              <div className="flex items-center gap-2">
+                {staffActions.summary.atRisk > 0 && (
+                  <Badge variant="outline" className="text-xs border-amber-500 text-amber-600 bg-amber-50 dark:bg-amber-950/30" data-testid="badge-at-risk">
+                    {staffActions.summary.atRisk} At-Risk
+                  </Badge>
+                )}
+                {staffActions.summary.dormant > 0 && (
+                  <Badge variant="outline" className="text-xs border-red-500 text-red-600 bg-red-50 dark:bg-red-950/30" data-testid="badge-dormant">
+                    {staffActions.summary.dormant} Dormant
+                  </Badge>
                 )}
               </div>
-            ) : (
-              <div>
-                <Label className="text-muted-foreground text-sm">Amount</Label>
-                <div className="mt-1">
-                  <span className="font-bold text-2xl text-primary">
-                    {formatAmount(donation.donationAmount, donation.currency)}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {donation.donationHomeType && (
-              <>
-                <Separator />
-                <div>
-                  <Label className="text-muted-foreground text-sm">Designated Home</Label>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Home className="h-4 w-4 text-muted-foreground" />
-                    <span>{getHomeTypeLabel(donation.donationHomeType)}</span>
+            </div>
+            <CardDescription>Donors requiring follow-up based on inactivity</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg border bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800" data-testid="best-call-time">
+                <div className="flex items-start gap-3">
+                  <Clock className="h-4 w-4 text-blue-600 mt-0.5" />
+                  <div>
+                    <p className="font-medium text-sm">Best Time to Call</p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Based on donation patterns, <strong>{staffActions.bestCallTime.day}</strong> during <strong>{staffActions.bestCallTime.slot}</strong> shows highest engagement.
+                    </p>
                   </div>
                 </div>
-              </>
-            )}
+              </div>
 
-            {donation.transactionId && (
-              <>
-                <Separator />
-                <div>
-                  <Label className="text-muted-foreground text-sm">Transaction ID</Label>
-                  <p className="mt-1 font-mono text-sm">{donation.transactionId}</p>
+              {staffActions.followUpDonors.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                    <Phone className="h-4 w-4" />
+                    <span>Donors to Follow Up ({staffActions.followUpDonors.length})</span>
+                  </div>
+                  <div className="space-y-2">
+                    {staffActions.followUpDonors.slice(0, 10).map((donor) => (
+                      <div
+                        key={donor.id}
+                        className="p-4 rounded-lg bg-white/60 dark:bg-gray-900/40 border border-muted"
+                        data-testid={`followup-donor-${donor.id}`}
+                      >
+                        <div className="flex items-start justify-between gap-3 flex-wrap">
+                          <div className="flex items-center gap-3">
+                            <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium text-sm">{donor.name}</p>
+                              <p className="text-xs text-muted-foreground">{donor.donorCode} • {donor.phone}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${donor.healthStatus === 'DORMANT' ? 'border-red-500 text-red-600 bg-red-50 dark:bg-red-950/30' : 'border-amber-500 text-amber-600 bg-amber-50 dark:bg-amber-950/30'}`}
+                              data-testid={`health-status-${donor.id}`}
+                            >
+                              {donor.healthStatus === 'DORMANT' ? 'Dormant' : 'At-Risk'}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs" data-testid={`days-since-${donor.id}`}>
+                              {donor.daysSinceLastDonation} days
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="mt-3 pl-7 space-y-1">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Clock className="h-3 w-3" />
+                            <span>Best time: <strong>{donor.bestTimeToContact}</strong></span>
+                          </div>
+                          <div className="flex items-start gap-2 text-xs text-muted-foreground">
+                            <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                            <span data-testid={`reason-${donor.id}`}>{donor.followUpReason}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {staffActions.followUpDonors.length > 10 && (
+                      <p className="text-xs text-muted-foreground text-center py-2">
+                        + {staffActions.followUpDonors.length - 10} more donors to follow up
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </>
-            )}
-
-            {donation.remarks && (
-              <>
-                <Separator />
-                <div>
-                  <Label className="text-muted-foreground text-sm">Notes/Remarks</Label>
-                  <p className="mt-1 text-muted-foreground">{donation.remarks}</p>
+              ) : (
+                <div className="p-4 rounded-lg border bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5" />
+                    <div>
+                      <p className="font-medium text-sm">All Donors Engaged</p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        No donors currently require follow-up. Great job keeping donors engaged!
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </>
-            )}
-
-            <Separator />
-
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p>Financial Year: {donation.financialYear || "-"}</p>
-              <p>Recorded by: {donation.createdBy?.name || "-"}</p>
-              <p>Created: {format(new Date(donation.createdAt), "dd MMM yyyy, HH:mm")}</p>
+              )}
             </div>
           </CardContent>
         </Card>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Donor Information
-            </CardTitle>
-            <CardDescription>
-              Donor who made this contribution
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-semibold text-lg">{getDonorName(donation.donor)}</p>
-                <Badge variant="outline" className="font-mono mt-1">
-                  {donation.donor.donorCode}
+      {canSeeDueReminders && dueReminders.length > 0 && (
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50/50 to-amber-50/50 dark:from-orange-950/20 dark:to-amber-950/20" data-testid="card-followups-due">
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-2">
+                <Bell className="h-5 w-5 text-orange-600" />
+                <CardTitle className="text-lg">Follow-ups Due</CardTitle>
+                <Badge variant="outline" className="text-xs border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-950/30" data-testid="badge-due-count">
+                  {dueReminders.length} pending
                 </Badge>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push(`/dashboard/donors/${donation.donorId}`)}
-                data-testid="button-view-donor-profile"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                View Profile
-              </Button>
             </div>
-
-            <Separator />
-
+            <CardDescription>Scheduled reminders that need action</CardDescription>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-3">
-              {donation.donor.primaryPhone && (
-                <div>
-                  <Label className="text-muted-foreground text-sm">Phone</Label>
-                  <p className="mt-1">{donation.donor.primaryPhone}</p>
-                </div>
-              )}
-              {(donation.donor.personalEmail || donation.donor.officialEmail) && (
-                <div>
-                  <Label className="text-muted-foreground text-sm">Email</Label>
-                  <p className="mt-1">{donation.donor.personalEmail || donation.donor.officialEmail}</p>
-                </div>
-              )}
-              {(donation.donor.city || donation.donor.state) && (
-                <div>
-                  <Label className="text-muted-foreground text-sm">Location</Label>
-                  <p className="mt-1">
-                    {[donation.donor.city, donation.donor.state].filter(Boolean).join(", ")}
-                  </p>
-                </div>
+              {dueReminders.slice(0, 10).map((reminder) => {
+                const daysOverdue = getDaysOverdue(reminder.dueDate);
+                const donorName = `${reminder.donor.firstName} ${reminder.donor.lastName || ""}`.trim();
+                
+                return (
+                  <div
+                    key={reminder.id}
+                    className="p-4 rounded-lg bg-white/60 dark:bg-gray-900/40 border border-muted"
+                    data-testid={`reminder-${reminder.id}`}
+                  >
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="flex items-center gap-3">
+                        <Bell className="h-4 w-4 text-orange-500" />
+                        <div>
+                          <p className="font-medium text-sm">{donorName}</p>
+                          <p className="text-xs text-muted-foreground">{reminder.donor.donorCode}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {daysOverdue > 0 && (
+                          <Badge variant="outline" className="text-xs border-red-500 text-red-600 bg-red-50 dark:bg-red-950/30" data-testid={`overdue-${reminder.id}`}>
+                            {daysOverdue} day{daysOverdue > 1 ? "s" : ""} overdue
+                          </Badge>
+                        )}
+                        <Badge variant="secondary" className="text-xs" data-testid={`due-date-${reminder.id}`}>
+                          Due: {formatDate(reminder.dueDate)}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="mt-3 pl-7">
+                      <div className="flex items-start gap-2 text-xs text-muted-foreground mb-3">
+                        <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span data-testid={`reason-${reminder.id}`}>{reminder.title}: {reminder.description || "Follow-up reminder"}</span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs"
+                          onClick={() => handleSendEmail(reminder)}
+                          data-testid={`button-email-${reminder.id}`}
+                        >
+                          <Mail className="h-3 w-3 mr-1" />
+                          Email
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs"
+                          onClick={() => handleSendWhatsApp(reminder)}
+                          data-testid={`button-whatsapp-${reminder.id}`}
+                        >
+                          <MessageCircle className="h-3 w-3 mr-1" />
+                          WhatsApp
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          className="h-7 text-xs"
+                          onClick={() => handleMarkDone(reminder)}
+                          data-testid={`button-done-${reminder.id}`}
+                        >
+                          <Check className="h-3 w-3 mr-1" />
+                          Mark Done
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          className="h-7 text-xs"
+                          onClick={() => handleSnooze(reminder)}
+                          data-testid={`button-snooze-${reminder.id}`}
+                        >
+                          <Clock className="h-3 w-3 mr-1" />
+                          Snooze 30d
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {dueReminders.length > 10 && (
+                <p className="text-xs text-muted-foreground text-center py-2">
+                  + {dueReminders.length - 10} more reminders due
+                </p>
               )}
             </div>
           </CardContent>
         </Card>
-      </div>
+      )}
 
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Edit Donation</DialogTitle>
-            <DialogDescription>
-              Update donation details. Receipt number cannot be changed.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-donationType">Donation Type</Label>
-              <Select
-                value={editForm.donationType}
-                onValueChange={(v) => setEditForm({ ...editForm, donationType: v })}
-              >
-                <SelectTrigger id="edit-donationType" data-testid="select-edit-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {DONATION_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+      {canSeeFinancialStats && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card className="border-0 shadow-sm" data-testid="card-donation-trends">
+            <CardHeader>
+              <CardTitle className="text-lg">Donation Trends</CardTitle>
+              <CardDescription>Monthly donations over the last 12 months</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {trends.length > 0 ? (
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trends} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis dataKey="month" tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                      <YAxis tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} className="text-muted-foreground" />
+                      <Tooltip
+                        formatter={(value: number) => [formatCurrency(value), "Amount"]}
+                        labelClassName="font-medium"
+                        contentStyle={{ borderRadius: "8px", border: "1px solid hsl(var(--border))" }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="amount"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-72 text-muted-foreground" data-testid="empty-donation-trends">
+                  <BarChart3 className="h-10 w-10 mb-3 text-muted-foreground/50" />
+                  <p className="font-medium text-sm">No Trend Data Yet</p>
+                  <p className="text-xs mt-1">Donation trends will appear once donations are recorded</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-sm" data-testid="card-mode-split">
+            <CardHeader>
+              <CardTitle className="text-lg">Payment Modes</CardTitle>
+              <CardDescription>Distribution by payment method (FY)</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {modeSplit.length > 0 ? (
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={modeSplit}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={2}
+                        dataKey="amount"
+                        nameKey="mode"
+                        label={({ mode, percent }) => `${formatMode(mode)} (${(percent * 100).toFixed(0)}%)`}
+                        labelLine={{ strokeWidth: 1 }}
+                      >
+                        {modeSplit.map((entry, idx) => (
+                          <Cell key={entry.mode} fill={COLORS[idx % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-72 text-muted-foreground" data-testid="empty-payment-modes">
+                  <IndianRupee className="h-10 w-10 mb-3 text-muted-foreground/50" />
+                  <p className="font-medium text-sm">No Payment Data Yet</p>
+                  <p className="text-xs mt-1">Payment mode distribution will appear after donations are received</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {canSeeFinancialStats && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card className="border-0 shadow-sm" data-testid="card-top-donors">
+            <CardHeader>
+              <CardTitle className="text-lg">Top Donors</CardTitle>
+              <CardDescription>Highest contributors this financial year</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {topDonors.length > 0 ? (
+                <div className="space-y-3">
+                  {topDonors.map((donor, idx) => (
+                    <div
+                      key={donor.donorId}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                      data-testid={`top-donor-${idx}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-semibold text-sm">
+                          {idx + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{donor.name}</p>
+                          <p className="text-xs text-muted-foreground">{donor.donorCode} • {donor.donationCount} donation(s)</p>
+                        </div>
+                      </div>
+                      <p className="font-semibold text-emerald-600">{formatCurrency(donor.totalAmount)}</p>
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-48 text-muted-foreground" data-testid="empty-top-donors">
+                  <Users className="h-10 w-10 mb-3 text-muted-foreground/50" />
+                  <p className="font-medium text-sm">No Top Donors Yet</p>
+                  <p className="text-xs mt-1">Top donors will be listed once donations are recorded</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-            {editForm.donationType === "CASH" ? (
-              <>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-amount">Amount (INR)</Label>
-                  <Input
-                    id="edit-amount"
-                    type="number"
-                    step="0.01"
-                    value={editForm.donationAmount}
-                    onChange={(e) => setEditForm({ ...editForm, donationAmount: e.target.value })}
-                    data-testid="input-edit-amount"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-mode">Payment Mode</Label>
-                  <Select
-                    value={editForm.donationMode}
-                    onValueChange={(v) => setEditForm({ ...editForm, donationMode: v })}
-                  >
-                    <SelectTrigger id="edit-mode" data-testid="select-edit-mode">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {DONATION_MODES.map((m) => (
-                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-quantity">Quantity</Label>
-                    <Input
-                      id="edit-quantity"
-                      type="number"
-                      step="0.01"
-                      value={editForm.quantity}
-                      onChange={(e) => setEditForm({ ...editForm, quantity: e.target.value })}
-                      placeholder="e.g., 25"
-                      data-testid="input-edit-quantity"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-unit">Unit</Label>
-                    <Input
-                      id="edit-unit"
-                      value={editForm.unit}
-                      onChange={(e) => setEditForm({ ...editForm, unit: e.target.value })}
-                      placeholder="e.g., kg, bags, pieces"
-                      data-testid="input-edit-unit"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-description">Description</Label>
-                  <Textarea
-                    id="edit-description"
-                    value={editForm.itemDescription}
-                    onChange={(e) => setEditForm({ ...editForm, itemDescription: e.target.value })}
-                    placeholder="Describe the donated items..."
-                    data-testid="input-edit-description"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-kind-category">Kind Category</Label>
-                  <Select
-                    value={editForm.kindCategory || "none"}
-                    onValueChange={(v) => setEditForm({ ...editForm, kindCategory: v === "none" ? "" : v })}
-                  >
-                    <SelectTrigger id="edit-kind-category" data-testid="select-edit-kind-category">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">None</SelectItem>
-                      <SelectItem value="GROCERIES">Groceries</SelectItem>
-                      <SelectItem value="MEDICINES">Medicines</SelectItem>
-                      <SelectItem value="TOILETRIES">Toiletries</SelectItem>
-                      <SelectItem value="STATIONERY">Stationery</SelectItem>
-                      <SelectItem value="CLOTHES">Clothes</SelectItem>
-                      <SelectItem value="OTHER">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-kind-description">Kind Description</Label>
-                  <Input
-                    id="edit-kind-description"
-                    value={editForm.kindDescription}
-                    onChange={(e) => setEditForm({ ...editForm, kindDescription: e.target.value })}
-                    placeholder="Optional description"
-                    data-testid="input-edit-kind-description"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-amount-inkind">Estimated Value (INR) - Optional</Label>
-                  <Input
-                    id="edit-amount-inkind"
-                    type="number"
-                    step="0.01"
-                    value={editForm.donationAmount}
-                    onChange={(e) => setEditForm({ ...editForm, donationAmount: e.target.value })}
-                    data-testid="input-edit-amount-inkind"
-                  />
-                </div>
-              </>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-home">Designated Home (Optional)</Label>
-              <Select
-                value={editForm.donationHomeType || "none"}
-                onValueChange={(v) => setEditForm({ ...editForm, donationHomeType: v === "none" ? "" : v })}
-              >
-                <SelectTrigger id="edit-home" data-testid="select-edit-home">
-                  <SelectValue placeholder="Select home..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  {DONATION_HOME_TYPES.map((h) => (
-                    <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>
+          <Card className="border-0 shadow-sm" data-testid="card-recent-donations">
+            <CardHeader>
+              <CardTitle className="text-lg">Recent Donations</CardTitle>
+              <CardDescription>Latest 10 donations received</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {recentDonations.length > 0 ? (
+                <div className="space-y-3">
+                  {recentDonations.slice(0, 5).map((donation) => (
+                    <div
+                      key={donation.id}
+                      className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
+                      data-testid={`recent-donation-${donation.id}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/50">
+                          <Receipt className="h-4 w-4 text-emerald-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{donation.donorName}</p>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>{new Date(donation.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}</span>
+                            <span>•</span>
+                            <span>{formatMode(donation.mode)}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="font-semibold">{formatCurrency(donation.amount)}</p>
+                    </div>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="edit-remarks">Notes/Remarks</Label>
-              <Textarea
-                id="edit-remarks"
-                value={editForm.remarks}
-                onChange={(e) => setEditForm({ ...editForm, remarks: e.target.value })}
-                placeholder="Additional notes..."
-                data-testid="input-edit-remarks"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowEditDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleEditSubmit} disabled={editLoading} data-testid="button-save-edit">
-              {editLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-48 text-muted-foreground" data-testid="empty-recent-donations">
+                  <Inbox className="h-10 w-10 mb-3 text-muted-foreground/50" />
+                  <p className="font-medium text-sm">No Recent Donations</p>
+                  <p className="text-xs mt-1">Recent donations will appear here as they are recorded</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
