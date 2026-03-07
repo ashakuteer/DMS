@@ -18,19 +18,9 @@ export class DashboardActionsService {
 
   async getStaffActions() {
     const now = new Date();
-    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-    // ✅ OPTIMIZED: Filter donors at database level who need follow-up
-    const donorsNeedingFollowUp = await this.prisma.donor.findMany({
-      where: {
-        deletedAt: null,
-        donations: {
-          some: {
-            deletedAt: null,
-            donationDate: { lt: sixtyDaysAgo },
-          },
-        },
-      },
+    const allDonors = await this.prisma.donor.findMany({
+      where: { deletedAt: null },
       select: {
         id: true,
         firstName: true,
@@ -45,7 +35,6 @@ export class DashboardActionsService {
           select: { donationDate: true },
         },
       },
-      take: 50, // ✅ Limit results for performance
     });
 
     const followUpDonors: {
@@ -59,8 +48,7 @@ export class DashboardActionsService {
       followUpReason: string;
     }[] = [];
 
-    // ✅ OPTIMIZED: Process only filtered donors (much smaller set)
-    for (const donor of donorsNeedingFollowUp) {
+    for (const donor of allDonors) {
       const lastDonation = donor.donations[0];
 
       if (lastDonation) {
@@ -69,37 +57,39 @@ export class DashboardActionsService {
           (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24),
         );
 
-        const healthStatus =
-          daysSinceLastDonation >= 120 ? "DORMANT" : "AT_RISK";
+        if (daysSinceLastDonation >= 60) {
+          const healthStatus =
+            daysSinceLastDonation >= 120 ? "DORMANT" : "AT_RISK";
 
-        const donationHour = lastDate.getHours();
-        const bestTimeToContact = donationHour < 12 ? "Morning" : "Evening";
+          const donationHour = lastDate.getHours();
+          const bestTimeToContact = donationHour < 12 ? "Morning" : "Evening";
 
-        let followUpReason = "";
-        if (healthStatus === "DORMANT") {
-          followUpReason =
-            "Re-engage: Last donated over 4 months ago. Gentle reminder about ongoing projects.";
-        } else if (donor.donationFrequency === "MONTHLY") {
-          followUpReason =
-            "Monthly donor overdue. Check if they need payment assistance or reminders.";
-        } else if (donor.donationFrequency === "QUARTERLY") {
-          followUpReason =
-            "Quarterly donor approaching due date. Share recent impact stories.";
-        } else {
-          followUpReason =
-            "Regular check-in: Share recent accomplishments and upcoming initiatives.";
+          let followUpReason = "";
+          if (healthStatus === "DORMANT") {
+            followUpReason =
+              "Re-engage: Last donated over 4 months ago. Gentle reminder about ongoing projects.";
+          } else if (donor.donationFrequency === "MONTHLY") {
+            followUpReason =
+              "Monthly donor overdue. Check if they need payment assistance or reminders.";
+          } else if (donor.donationFrequency === "QUARTERLY") {
+            followUpReason =
+              "Quarterly donor approaching due date. Share recent impact stories.";
+          } else {
+            followUpReason =
+              "Regular check-in: Share recent accomplishments and upcoming initiatives.";
+          }
+
+          followUpDonors.push({
+            id: donor.id,
+            name: `${donor.firstName} ${donor.lastName || ""}`.trim(),
+            donorCode: donor.donorCode,
+            phone: donor.primaryPhone || "N/A",
+            daysSinceLastDonation,
+            healthStatus,
+            bestTimeToContact,
+            followUpReason,
+          });
         }
-
-        followUpDonors.push({
-          id: donor.id,
-          name: `${donor.firstName} ${donor.lastName || ""}`.trim(),
-          donorCode: donor.donorCode,
-          phone: donor.primaryPhone || "N/A",
-          daysSinceLastDonation,
-          healthStatus,
-          bestTimeToContact,
-          followUpReason,
-        });
       }
     }
 
@@ -108,12 +98,11 @@ export class DashboardActionsService {
     const atRiskDonors = followUpDonors.filter((d) => d.healthStatus === "AT_RISK");
     const dormantDonors = followUpDonors.filter((d) => d.healthStatus === "DORMANT");
 
-    // ✅ OPTIMIZED: Limit to 50 recent donations for time analysis
     const recentDonations = await this.prisma.donation.findMany({
       where: { deletedAt: null },
       select: { donationDate: true },
       orderBy: { donationDate: "desc" },
-      take: 50,
+      take: 100,
     });
 
     let bestCallTime = { day: "Weekdays", slot: "Morning (9AM-12PM)" };

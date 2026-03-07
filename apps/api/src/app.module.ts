@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { ScheduleModule } from "@nestjs/schedule";
-import { CacheModule } from "@nestjs/cache-manager";
 
 import { PrismaModule } from "./prisma/prisma.module";
 import { AuthModule } from "./auth/auth.module";
@@ -44,12 +43,6 @@ import { BroadcastingModule } from "./broadcasting/broadcasting.module";
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     ScheduleModule.forRoot(),
-    // ✅ Add caching with 5-minute TTL
-    CacheModule.register({
-      isGlobal: true,
-      ttl: 300000, // 5 minutes in milliseconds
-      max: 100, // Maximum number of items in cache
-    }),
 
     PrismaModule,
     StorageModule,
