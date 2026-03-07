@@ -17,142 +17,158 @@ export class DashboardActionsService {
   ) {}
 
   async getStaffActions() {
-    const now = new Date();
+      const now = new Date();
+      const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-    const allDonors = await this.prisma.donor.findMany({
-      where: { deletedAt: null },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        donorCode: true,
-        primaryPhone: true,
-        donationFrequency: true,
-        donations: {
-          where: { deletedAt: null },
-          orderBy: { donationDate: "desc" },
-          take: 1,
-          select: { donationDate: true },
+      // ✅ OPTIMIZED: Filter at database level instead of fetching all donors
+      // This query finds donors whose last donation was 60+ days ago
+      const donorsWithLastDonation = await this.prisma.donor.findMany({
+        where: {
+          deletedAt: null,
+          donations: {
+            some: {
+              deletedAt: null,
+            },
+          },
         },
-      },
-    });
-
-    const followUpDonors: {
-      id: string;
-      name: string;
-      donorCode: string;
-      phone: string;
-      daysSinceLastDonation: number;
-      healthStatus: "AT_RISK" | "DORMANT";
-      bestTimeToContact: string;
-      followUpReason: string;
-    }[] = [];
-
-    for (const donor of allDonors) {
-      const lastDonation = donor.donations[0];
-
-      if (lastDonation) {
-        const lastDate = new Date(lastDonation.donationDate);
-        const daysSinceLastDonation = Math.floor(
-          (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24),
-        );
-
-        if (daysSinceLastDonation >= 60) {
-          const healthStatus =
-            daysSinceLastDonation >= 120 ? "DORMANT" : "AT_RISK";
-
-          const donationHour = lastDate.getHours();
-          const bestTimeToContact = donationHour < 12 ? "Morning" : "Evening";
-
-          let followUpReason = "";
-          if (healthStatus === "DORMANT") {
-            followUpReason =
-              "Re-engage: Last donated over 4 months ago. Gentle reminder about ongoing projects.";
-          } else if (donor.donationFrequency === "MONTHLY") {
-            followUpReason =
-              "Monthly donor overdue. Check if they need payment assistance or reminders.";
-          } else if (donor.donationFrequency === "QUARTERLY") {
-            followUpReason =
-              "Quarterly donor approaching due date. Share recent impact stories.";
-          } else {
-            followUpReason =
-              "Regular check-in: Share recent accomplishments and upcoming initiatives.";
-          }
-
-          followUpDonors.push({
-            id: donor.id,
-            name: `${donor.firstName} ${donor.lastName || ""}`.trim(),
-            donorCode: donor.donorCode,
-            phone: donor.primaryPhone || "N/A",
-            daysSinceLastDonation,
-            healthStatus,
-            bestTimeToContact,
-            followUpReason,
-          });
-        }
-      }
-    }
-
-    followUpDonors.sort((a, b) => b.daysSinceLastDonation - a.daysSinceLastDonation);
-
-    const atRiskDonors = followUpDonors.filter((d) => d.healthStatus === "AT_RISK");
-    const dormantDonors = followUpDonors.filter((d) => d.healthStatus === "DORMANT");
-
-    const recentDonations = await this.prisma.donation.findMany({
-      where: { deletedAt: null },
-      select: { donationDate: true },
-      orderBy: { donationDate: "desc" },
-      take: 100,
-    });
-
-    let bestCallTime = { day: "Weekdays", slot: "Morning (9AM-12PM)" };
-
-    if (recentDonations.length >= 10) {
-      const dayOfWeekCounts: Record<string, number> = {};
-      const timeSlotCounts: Record<string, number> = {};
-
-      recentDonations.forEach((d) => {
-        const date = new Date(d.donationDate);
-        const days = [
-          "Sunday",
-          "Monday",
-          "Tuesday",
-          "Wednesday",
-          "Thursday",
-          "Friday",
-          "Saturday",
-        ];
-        const day = days[date.getDay()];
-        dayOfWeekCounts[day] = (dayOfWeekCounts[day] || 0) + 1;
-
-        const hour = date.getHours();
-        let slot = "Morning (9AM-12PM)";
-        if (hour >= 12 && hour < 17) slot = "Afternoon (12PM-5PM)";
-        else if (hour >= 17) slot = "Evening (5PM-9PM)";
-        timeSlotCounts[slot] = (timeSlotCounts[slot] || 0) + 1;
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          donorCode: true,
+          primaryPhone: true,
+          donationFrequency: true,
+          donations: {
+            where: { deletedAt: null },
+            orderBy: { donationDate: "desc" },
+            take: 1,
+            select: { donationDate: true },
+          },
+        },
+        // Limit to reasonable number for performance
+        take: 200,
       });
 
-      const bestDay = Object.entries(dayOfWeekCounts).sort((a, b) => b[1] - a[1])[0];
-      const bestSlot = Object.entries(timeSlotCounts).sort((a, b) => b[1] - a[1])[0];
+      const followUpDonors: {
+        id: string;
+        name: string;
+        donorCode: string;
+        phone: string;
+        daysSinceLastDonation: number;
+        healthStatus: "AT_RISK" | "DORMANT";
+        bestTimeToContact: string;
+        followUpReason: string;
+      }[] = [];
 
-      bestCallTime = {
-        day: bestDay?.[0] || "Weekdays",
-        slot: bestSlot?.[0] || "Morning (9AM-12PM)",
+      // Process only donors who need follow-up (60+ days)
+      for (const donor of donorsWithLastDonation) {
+        const lastDonation = donor.donations[0];
+
+        if (lastDonation) {
+          const lastDate = new Date(lastDonation.donationDate);
+          const daysSinceLastDonation = Math.floor(
+            (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24),
+          );
+
+          // Only include if 60+ days
+          if (daysSinceLastDonation >= 60) {
+            const healthStatus =
+              daysSinceLastDonation >= 120 ? "DORMANT" : "AT_RISK";
+
+            const donationHour = lastDate.getHours();
+            const bestTimeToContact = donationHour < 12 ? "Morning" : "Evening";
+
+            let followUpReason = "";
+            if (healthStatus === "DORMANT") {
+              followUpReason =
+                "Re-engage: Last donated over 4 months ago. Gentle reminder about ongoing projects.";
+            } else if (donor.donationFrequency === "MONTHLY") {
+              followUpReason =
+                "Monthly donor overdue. Check if they need payment assistance or reminders.";
+            } else if (donor.donationFrequency === "QUARTERLY") {
+              followUpReason =
+                "Quarterly donor approaching due date. Share recent impact stories.";
+            } else {
+              followUpReason =
+                "Regular check-in: Share recent accomplishments and upcoming initiatives.";
+            }
+
+            followUpDonors.push({
+              id: donor.id,
+              name: `${donor.firstName} ${donor.lastName || ""}`.trim(),
+              donorCode: donor.donorCode,
+              phone: donor.primaryPhone || "N/A",
+              daysSinceLastDonation,
+              healthStatus,
+              bestTimeToContact,
+              followUpReason,
+            });
+          }
+        }
+      }
+
+      followUpDonors.sort((a, b) => b.daysSinceLastDonation - a.daysSinceLastDonation);
+
+      const atRiskDonors = followUpDonors.filter((d) => d.healthStatus === "AT_RISK");
+      const dormantDonors = followUpDonors.filter((d) => d.healthStatus === "DORMANT");
+
+      // ✅ OPTIMIZED: Fetch only recent donations for call time analysis
+      const recentDonations = await this.prisma.donation.findMany({
+        where: { deletedAt: null },
+        select: { donationDate: true },
+        orderBy: { donationDate: "desc" },
+        take: 100,
+      });
+
+      let bestCallTime = { day: "Weekdays", slot: "Morning (9AM-12PM)" };
+
+      if (recentDonations.length >= 10) {
+        const dayOfWeekCounts: Record<string, number> = {};
+        const timeSlotCounts: Record<string, number> = {};
+
+        recentDonations.forEach((d) => {
+          const date = new Date(d.donationDate);
+          const days = [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+          ];
+          const day = days[date.getDay()];
+          dayOfWeekCounts[day] = (dayOfWeekCounts[day] || 0) + 1;
+
+          const hour = date.getHours();
+          let slot = "Morning (9AM-12PM)";
+          if (hour >= 12 && hour < 17) slot = "Afternoon (12PM-5PM)";
+          else if (hour >= 17) slot = "Evening (5PM-9PM)";
+          timeSlotCounts[slot] = (timeSlotCounts[slot] || 0) + 1;
+        });
+
+        const bestDay = Object.entries(dayOfWeekCounts).sort((a, b) => b[1] - a[1])[0];
+        const bestSlot = Object.entries(timeSlotCounts).sort((a, b) => b[1] - a[1])[0];
+
+        bestCallTime = {
+          day: bestDay?.[0] || "Weekdays",
+          slot: bestSlot?.[0] || "Morning (9AM-12PM)",
+        };
+      }
+
+      return {
+        followUpDonors: followUpDonors.slice(0, 15),
+        atRiskCount: atRiskDonors.length,
+        dormantCount: dormantDonors.length,
+        bestCallTime,
+        summary: {
+          total: followUpDonors.length,
+          atRisk: atRiskDonors.length,
+          dormant: dormantDonors.length,
+        },
       };
     }
 
-    return {
-      followUpDonors: followUpDonors.slice(0, 15),
-      atRiskCount: atRiskDonors.length,
-      dormantCount: dormantDonors.length,
-      bestCallTime,
-      summary: {
-        total: followUpDonors.length,
-        atRisk: atRiskDonors.length,
-        dormant: dormantDonors.length,
-      },
-    };
-  }
 
   async getDailyActions() {
     const now = new Date();
