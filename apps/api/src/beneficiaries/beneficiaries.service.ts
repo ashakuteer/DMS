@@ -118,5 +118,11 @@ getReportCampaigns() {
 getDueSponsorships() {
   return this.reminders.getDueSponsorships();
 }
-
+// --------------------------------------------------
+// beneficiaries.service.ts
+// --------------------------------------------------
+  async queueSponsorshipReminderEmail(id: string) {
+  return this.reminders.queueSponsorshipReminderEmail(id);
+}
+  
 }
