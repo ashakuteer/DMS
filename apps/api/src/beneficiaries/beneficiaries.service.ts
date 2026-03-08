@@ -166,11 +166,7 @@ export class BeneficiariesService {
   // REMINDERS
   // ----------------------------
 
-  getDueSponsorships() {
-    return this.reminders.getDueSponsorships();
-  }
-
-  queueSponsorshipReminderEmail(id: string) {
+   queueSponsorshipReminderEmail(id: string) {
     return this.reminders.queueSponsorshipReminderEmail(id);
   }
 // ----------------------------
