@@ -39,8 +39,8 @@ export class BeneficiariesService {
   }
 
   update(user: any, id: string, dto: any) {
-    return (this.core as any).update(user, id, dto);
-  }
+  return (this.core as any).update(user, id, dto);
+}
 
   delete(user: any, id: string) {
     return this.core.delete(user, id);
@@ -48,7 +48,7 @@ export class BeneficiariesService {
 
   updatePhoto(id: string, url: string | null, path?: string | null) {
   return (this.core as any).updatePhoto(id, url, path);
-  }
+}
 
   // ----------------------------
   // SPONSORSHIPS
@@ -59,8 +59,8 @@ export class BeneficiariesService {
   }
 
   addSponsor(user: any, beneficiaryId: string, dto: any) {
-    return (this.sponsorship as any).addSponsor(user, beneficiaryId, dto);
-  }
+  return (this.sponsorship as any).addSponsor(user, beneficiaryId, dto);
+}
 
   getDonorSponsorships(donorId: string) {
     return this.sponsorship.getSponsors(donorId);
@@ -71,32 +71,31 @@ export class BeneficiariesService {
   // ----------------------------
 
   getUpdates(beneficiaryId: string) {
-    return this.updates.getUpdates(beneficiaryId);
-  }
+  return (this.updates as any).getUpdates(beneficiaryId);
+}
 
   addUpdate(user: any, beneficiaryId: string, dto: any) {
-   return (this.updates as any).addUpdate(user, beneficiaryId, dto);
-  }
-
+  return (this.updates as any).addUpdate(user, beneficiaryId, dto);
+}
   deleteUpdate(updateId: string) {
     return this.updates.deleteUpdate(updateId);
   }
 
   markDispatchCopied(id: string) {
-    return this.updates.markDispatchCopied(id);
-  }
+  return (this.updates as any).markDispatchCopied(id);
+}
 
   // ----------------------------
   // TIMELINE
   // ----------------------------
 
   getTimelineEvents(beneficiaryId: string) {
-    return this.core.getTimelineEvents(beneficiaryId);
-  }
+  return (this.core as any).getTimelineEvents(beneficiaryId);
+}
 
   addTimelineEvent(beneficiaryId: string, dto: any) {
-    return this.core.addTimelineEvent(beneficiaryId, dto);
-  }
+  return (this.core as any).addTimelineEvent(beneficiaryId, dto);
+}
 
   // ----------------------------
   // HEALTH
