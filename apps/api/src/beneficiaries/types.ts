@@ -53,3 +53,35 @@ export interface CreateProgressCardDto {
   term: string;
   classGrade: string;
 }
+export interface CreateHealthEventDto {
+  eventDate: string;
+  title: string;
+  description: string;
+  severity?: string;
+  requiresDonorUpdate?: boolean;
+  shareWithDonor?: boolean;
+  documentId?: string;
+}
+
+export interface CreateDocumentDto {
+  ownerType: string;
+  ownerId?: string;
+  docType: string;
+  title: string;
+  description?: string;
+  storageBucket: string;
+  storagePath: string;
+  mimeType: string;
+  sizeBytes: number;
+  isSensitive?: boolean;
+  shareWithDonor?: boolean;
+}
+
+export interface CreateReportCampaignDto {
+  name: string;
+  type: 'QUARTERLY' | 'ANNUAL';
+  periodStart: string;
+  periodEnd: string;
+  documentId?: string;
+  target?: 'ALL_DONORS' | 'SPONSORS_ONLY' | 'CUSTOM';
+}
