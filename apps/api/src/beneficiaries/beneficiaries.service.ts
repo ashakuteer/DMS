@@ -212,7 +212,7 @@ queueReportCampaignEmails(user: any, campaignId: string) {
 // ----------------------------
 
 getDueSponsorships(windowDays?: number) {
-  return this.reminders.getDueSponsorships(windowDays);
+  return (this.reminders as any).getDueSponsorships(windowDays);
 
 }
   // ----------------------------
