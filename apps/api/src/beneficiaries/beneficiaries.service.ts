@@ -173,4 +173,50 @@ export class BeneficiariesService {
   queueSponsorshipReminderEmail(id: string) {
     return this.reminders.queueSponsorshipReminderEmail(id);
   }
+// ----------------------------
+// HEALTH EVENTS
+// ----------------------------
+
+addHealthEvent(user: any, beneficiaryId: string, dto: any) {
+  return this.health.addHealthEvent(user, beneficiaryId, dto);
+}
+
+sendHealthEventToSponsors(user: any, eventId: string) {
+  return this.health.sendHealthEventToSponsors(user, eventId);
+}
+
+getHealthTimeline(beneficiaryId: string) {
+  return this.health.getHealthTimeline(beneficiaryId);
+}
+
+exportHealthHistoryPdf(beneficiaryId: string) {
+  return this.health.exportHealthHistoryPdf(beneficiaryId);
+}
+
+
+// ----------------------------
+// DOCUMENTS
+// ----------------------------
+
+getDocumentById(user: any, docId: string) {
+  return this.documents.getDocumentById(user, docId);
+}
+
+
+// ----------------------------
+// REPORT CAMPAIGNS
+// ----------------------------
+
+queueReportCampaignEmails(user: any, campaignId: string) {
+  return this.reports.queueReportCampaignEmails(user, campaignId);
+}
+
+
+// ----------------------------
+// REMINDERS
+// ----------------------------
+
+getDueSponsorships(windowDays?: number) {
+  return this.reminders.getDueSponsorships(windowDays);
+}
 }
