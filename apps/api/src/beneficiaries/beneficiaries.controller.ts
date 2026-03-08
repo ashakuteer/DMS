@@ -603,11 +603,7 @@ export class BeneficiaryUpdatesController {
     @Param('id') id: string,
     @Body() body: { donorIds?: string[]; channel: 'EMAIL' | 'WHATSAPP' },
   ) {
-    return this.beneficiariesService.sendUpdateToSponsors(
-      user,
-      id,
-      body.donorIds,
-      body.channel,
+    return this.beneficiariesService.sendUpdateToSponsors(user, id);,
     );
   }
 }
