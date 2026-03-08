@@ -7,7 +7,7 @@ export class BeneficiarySponsorshipService {
 
 constructor(private prisma: PrismaService) {}
 
-async getSponsors(beneficiaryId: string) {
+async getSponsors(beneficiaryId: string) { 
 
 const beneficiary = await this.prisma.beneficiary.findFirst({
   where: { id: beneficiaryId, isDeleted: false },
