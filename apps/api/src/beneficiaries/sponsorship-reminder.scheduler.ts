@@ -25,7 +25,7 @@ export class SponsorshipReminderScheduler {
             continue;
           }
 
-          await this.beneficiariesService.queueSponsorshipReminderEmail(s.sponsorshipId);
+         await this.beneficiariesService.queueSponsorshipReminderEmail(s.id);
           queued++;
         } catch (error) {
           const msg = error instanceof Error ? error.message : 'Unknown';
@@ -33,7 +33,7 @@ export class SponsorshipReminderScheduler {
             skipped++;
           } else {
             failed++;
-            this.logger.warn(`Failed to queue reminder for sponsorship ${s.sponsorshipId}: ${msg}`);
+           this.logger.warn(`Failed to queue reminder for sponsorship ${s.id}: ${msg}`);
           }
         }
       }
