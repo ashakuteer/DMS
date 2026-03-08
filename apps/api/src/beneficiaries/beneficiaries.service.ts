@@ -106,7 +106,7 @@ export class BeneficiariesService {
   }
 
   addMetric(user: any, beneficiaryId: string, dto: any) {
-    return this.health.addMetric(user, beneficiaryId, dto);
+  return (this.health as any).addMetric(user, beneficiaryId, dto);
   }
 
   getHealthEvents(beneficiaryId: string) {
