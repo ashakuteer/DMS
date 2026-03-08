@@ -124,5 +124,33 @@ getDueSponsorships() {
   async queueSponsorshipReminderEmail(id: string) {
   return this.reminders.queueSponsorshipReminderEmail(id);
 }
-  
+  // REPORTS
+exportToExcel(user: any) {
+  return this.reports.exportToExcel(user);
+}
+
+// BENEFICIARY UPDATE
+update(user: any, id: string, dto: any) {
+  return this.core.update(user, id, dto);
+}
+
+// PHOTO
+updatePhoto(id: string, url: string | null, path?: string | null) {
+  return this.core.updatePhoto(id, url, path);
+}
+
+// SPONSORSHIP
+addSponsor(user: any, id: string, dto: any) {
+  return this.sponsorship.addSponsor(user, id, dto);
+}
+
+// DISPATCH
+markDispatchCopied(id: string) {
+  return this.updates.markDispatchCopied(id);
+}
+
+// DONOR SPONSORSHIPS
+getDonorSponsorships(donorId: string) {
+  return this.sponsorship.getSponsors(donorId);
+}
 }
