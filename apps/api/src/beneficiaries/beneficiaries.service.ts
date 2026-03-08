@@ -39,7 +39,7 @@ export class BeneficiariesService {
   }
 
   update(user: any, id: string, dto: any) {
-    return this.core.update(user, id, dto);
+    return this.core.updateBeneficiary(user, id, dto);
   }
 
   delete(user: any, id: string) {
@@ -47,7 +47,7 @@ export class BeneficiariesService {
   }
 
   updatePhoto(id: string, url: string | null, path?: string | null) {
-    return this.core.updatePhoto(id, url, path);
+   return this.core.updateBeneficiaryPhoto(id, url, path);
   }
 
   // ----------------------------
@@ -59,7 +59,7 @@ export class BeneficiariesService {
   }
 
   addSponsor(user: any, beneficiaryId: string, dto: any) {
-    return this.sponsorship.addSponsor(user, beneficiaryId, dto);
+    return this.sponsorship.createSponsorship(user, beneficiaryId, dto);
   }
 
   getDonorSponsorships(donorId: string) {
@@ -75,7 +75,7 @@ export class BeneficiariesService {
   }
 
   addUpdate(user: any, beneficiaryId: string, dto: any) {
-    return this.updates.addUpdate(user, beneficiaryId, dto);
+   return this.updates.createUpdate(user, beneficiaryId, dto);
   }
 
   deleteUpdate(updateId: string) {
@@ -235,10 +235,7 @@ deleteSponsorship(id: string) {
 markSponsorshipPaid(user: any, id: string, body: any) {
   return this.sponsorship.markSponsorshipPaid(user, id, body);
 }
-sendSponsorshipReminderEmail(id: string) {
-  return this.reminders.queueSponsorshipReminderEmail(id);
-}
-  sendSponsorshipReminderEmail(id: string) {
+ sendSponsorshipReminderEmail(id: string) {
   return this.reminders.queueSponsorshipReminderEmail(id);
 }
 skipSponsorshipMonth(user: any, id: string) {
@@ -253,7 +250,7 @@ getSponsorshipHistory(id: string) {
 // ----------------------------
 
 getUpdateWithBeneficiary(id: string) {
-  return this.updates.getUpdateWithBeneficiary(id);
+  return this.updates.getUpdateWithBeneficiaryDetails(id);
 }
 
 getSponsorsForUpdate(beneficiaryId: string) {
@@ -261,6 +258,6 @@ getSponsorsForUpdate(beneficiaryId: string) {
 }
 
 sendUpdateToSponsors(user: any, updateId: string) {
-  return this.updates.sendUpdateToSponsors(user, updateId);
+  return this.updates.dispatchUpdateToSponsors(user, updateId);
 }
 }
