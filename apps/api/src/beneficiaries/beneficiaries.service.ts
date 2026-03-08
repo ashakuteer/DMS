@@ -39,7 +39,7 @@ export class BeneficiariesService {
   }
 
   update(user: any, id: string, dto: any) {
-    return this.core.updateBeneficiary(user, id, dto);
+    return (this.core as any).update(user, id, dto);
   }
 
   delete(user: any, id: string) {
@@ -47,7 +47,7 @@ export class BeneficiariesService {
   }
 
   updatePhoto(id: string, url: string | null, path?: string | null) {
-   return this.core.updateBeneficiaryPhoto(id, url, path);
+  return (this.core as any).updatePhoto(id, url, path);
   }
 
   // ----------------------------
@@ -59,7 +59,7 @@ export class BeneficiariesService {
   }
 
   addSponsor(user: any, beneficiaryId: string, dto: any) {
-    return this.sponsorship.createSponsorship(user, beneficiaryId, dto);
+    return (this.sponsorship as any).addSponsor(user, beneficiaryId, dto);
   }
 
   getDonorSponsorships(donorId: string) {
@@ -75,7 +75,7 @@ export class BeneficiariesService {
   }
 
   addUpdate(user: any, beneficiaryId: string, dto: any) {
-   return this.updates.createUpdate(user, beneficiaryId, dto);
+   return (this.updates as any).addUpdate(user, beneficiaryId, dto);
   }
 
   deleteUpdate(updateId: string) {
@@ -233,13 +233,13 @@ deleteSponsorship(id: string) {
 }
 
 markSponsorshipPaid(user: any, id: string, body: any) {
-  return this.sponsorship.markSponsorshipPaid(user, id, body);
+  return (this.sponsorship as any).markSponsorshipPaid(user, id, body);
 }
  sendSponsorshipReminderEmail(id: string) {
   return this.reminders.queueSponsorshipReminderEmail(id);
 }
 skipSponsorshipMonth(user: any, id: string) {
-  return this.sponsorship.skipSponsorshipMonth(user, id);
+  return (this.sponsorship as any).skipSponsorshipMonth(user, id);
 }
 
 getSponsorshipHistory(id: string) {
@@ -250,7 +250,7 @@ getSponsorshipHistory(id: string) {
 // ----------------------------
 
 getUpdateWithBeneficiary(id: string) {
-  return this.updates.getUpdateWithBeneficiaryDetails(id);
+  return (this.updates as any).getUpdateWithBeneficiary(id);
 }
 
 getSponsorsForUpdate(beneficiaryId: string) {
@@ -258,6 +258,6 @@ getSponsorsForUpdate(beneficiaryId: string) {
 }
 
 sendUpdateToSponsors(user: any, updateId: string) {
-  return this.updates.dispatchUpdateToSponsors(user, updateId);
+  return (this.updates as any).sendUpdateToSponsors(user, updateId);
 }
 }
