@@ -11,146 +11,166 @@ import { BeneficiaryRemindersService } from './services/beneficiary-reminders.se
 
 @Injectable()
 export class BeneficiariesService {
+  constructor(
+    private core: BeneficiaryCoreService,
+    private sponsorship: BeneficiarySponsorshipService,
+    private updates: BeneficiaryUpdatesService,
+    private health: BeneficiaryHealthService,
+    private education: BeneficiaryEducationService,
+    private documents: BeneficiaryDocumentsService,
+    private reports: BeneficiaryReportsService,
+    private reminders: BeneficiaryRemindersService,
+  ) {}
 
-constructor(
-  private core: BeneficiaryCoreService,
-  private sponsorship: BeneficiarySponsorshipService,
-  private updates: BeneficiaryUpdatesService,
-  private health: BeneficiaryHealthService,
-  private education: BeneficiaryEducationService,
-  private documents: BeneficiaryDocumentsService,
-  private reports: BeneficiaryReportsService,
-  private reminders: BeneficiaryRemindersService,
-) {}
+  // ----------------------------
+  // BENEFICIARY CORE
+  // ----------------------------
 
+  findAll(user: any, options: any) {
+    return this.core.findAll(options);
+  }
 
-// --------------------------------------------------
-// BENEFICIARY CORE
-// --------------------------------------------------
+  findById(id: string) {
+    return this.core.findById(id);
+  }
 
-findAll(user: any, options: any) {
-  return this.core.findAll(options);
-}
+  create(user: any, dto: any) {
+    return this.core.create(user, dto);
+  }
 
-findById(id: string) {
-  return this.core.findById(id);
-}
+  update(user: any, id: string, dto: any) {
+    return this.core.update(user, id, dto);
+  }
 
-create(user: any, dto: any) {
-  return this.core.create(user, dto);
-}
+  delete(user: any, id: string) {
+    return this.core.delete(user, id);
+  }
 
-delete(user: any, id: string) {
-  return this.core.delete(user, id);
-}
+  updatePhoto(id: string, url: string | null, path?: string | null) {
+    return this.core.updatePhoto(id, url, path);
+  }
 
+  // ----------------------------
+  // SPONSORSHIPS
+  // ----------------------------
 
-// --------------------------------------------------
-// SPONSORSHIPS
-// --------------------------------------------------
+  getSponsors(beneficiaryId: string) {
+    return this.sponsorship.getSponsors(beneficiaryId);
+  }
 
-getSponsors(beneficiaryId: string) {
-  return this.sponsorship.getSponsors(beneficiaryId);
-}
+  addSponsor(user: any, beneficiaryId: string, dto: any) {
+    return this.sponsorship.addSponsor(user, beneficiaryId, dto);
+  }
 
-getSponsorshipHistory(id: string) {
-  return this.sponsorship.getSponsorshipHistory(id);
-}
+  getDonorSponsorships(donorId: string) {
+    return this.sponsorship.getSponsors(donorId);
+  }
 
+  // ----------------------------
+  // UPDATES
+  // ----------------------------
 
-// --------------------------------------------------
-// UPDATES
-// --------------------------------------------------
+  getUpdates(beneficiaryId: string) {
+    return this.updates.getUpdates(beneficiaryId);
+  }
 
-getUpdates(beneficiaryId: string) {
-  return this.updates.getUpdates(beneficiaryId);
-}
+  addUpdate(user: any, beneficiaryId: string, dto: any) {
+    return this.updates.addUpdate(user, beneficiaryId, dto);
+  }
 
-deleteUpdate(updateId: string) {
-  return this.updates.deleteUpdate(updateId);
-}
+  deleteUpdate(updateId: string) {
+    return this.updates.deleteUpdate(updateId);
+  }
 
+  markDispatchCopied(id: string) {
+    return this.updates.markDispatchCopied(id);
+  }
 
-// --------------------------------------------------
-// HEALTH
-// --------------------------------------------------
+  // ----------------------------
+  // TIMELINE
+  // ----------------------------
 
-getMetrics(beneficiaryId: string) {
-  return this.health.getMetrics(beneficiaryId);
-}
+  getTimelineEvents(beneficiaryId: string) {
+    return this.core.getTimelineEvents(beneficiaryId);
+  }
 
-getHealthEvents(beneficiaryId: string) {
-  return this.health.getHealthEvents(beneficiaryId);
-}
+  addTimelineEvent(beneficiaryId: string, dto: any) {
+    return this.core.addTimelineEvent(beneficiaryId, dto);
+  }
 
+  // ----------------------------
+  // HEALTH
+  // ----------------------------
 
-// --------------------------------------------------
-// EDUCATION
-// --------------------------------------------------
+  getMetrics(beneficiaryId: string) {
+    return this.health.getMetrics(beneficiaryId);
+  }
 
-getProgressCards(beneficiaryId: string) {
-  return this.education.getProgressCards(beneficiaryId);
-}
+  addMetric(user: any, beneficiaryId: string, dto: any) {
+    return this.health.addMetric(user, beneficiaryId, dto);
+  }
 
+  getHealthEvents(beneficiaryId: string) {
+    return this.health.getHealthEvents(beneficiaryId);
+  }
 
-// --------------------------------------------------
-// DOCUMENTS
-// --------------------------------------------------
+  // ----------------------------
+  // EDUCATION
+  // ----------------------------
 
-getDocuments(ownerType: string, ownerId?: string) {
-  return this.documents.getDocuments(ownerType, ownerId);
-}
+  getProgressCards(beneficiaryId: string) {
+    return this.education.getProgressCards(beneficiaryId);
+  }
 
+  addProgressCard(user: any, beneficiaryId: string, dto: any) {
+    return this.education.addProgressCard(user, beneficiaryId, dto);
+  }
 
-// --------------------------------------------------
-// REPORTS
-// --------------------------------------------------
+  getEducationTimeline(beneficiaryId: string) {
+    return this.education.getEducationTimeline(beneficiaryId);
+  }
 
-getReportCampaigns() {
-  return this.reports.getReportCampaigns();
-}
+  exportEducationSummaryPdf(beneficiaryId: string) {
+    return this.education.exportEducationSummaryPdf(beneficiaryId);
+  }
 
+  // ----------------------------
+  // DOCUMENTS
+  // ----------------------------
 
-// --------------------------------------------------
-// REMINDERS
-// --------------------------------------------------
+  getDocuments(user: any, ownerType: string, ownerId?: string) {
+    return this.documents.getDocuments(user, ownerType, ownerId);
+  }
 
-getDueSponsorships() {
-  return this.reminders.getDueSponsorships();
-}
-// --------------------------------------------------
-// beneficiaries.service.ts
-// --------------------------------------------------
-  async queueSponsorshipReminderEmail(id: string) {
-  return this.reminders.queueSponsorshipReminderEmail(id);
-}
+  createDocument(user: any, dto: any) {
+    return this.documents.createDocument(user, dto);
+  }
+
+  // ----------------------------
   // REPORTS
-exportToExcel(user: any) {
-  return this.reports.exportToExcel(user);
-}
+  // ----------------------------
 
-// BENEFICIARY UPDATE
-update(user: any, id: string, dto: any) {
-  return this.core.update(user, id, dto);
-}
+  exportToExcel(user: any) {
+    return this.reports.exportToExcel(user);
+  }
 
-// PHOTO
-updatePhoto(id: string, url: string | null, path?: string | null) {
-  return this.core.updatePhoto(id, url, path);
-}
+  getReportCampaigns() {
+    return this.reports.getReportCampaigns();
+  }
 
-// SPONSORSHIP
-addSponsor(user: any, id: string, dto: any) {
-  return this.sponsorship.addSponsor(user, id, dto);
-}
+  createReportCampaign(user: any, dto: any) {
+    return this.reports.createReportCampaign(user, dto);
+  }
 
-// DISPATCH
-markDispatchCopied(id: string) {
-  return this.updates.markDispatchCopied(id);
-}
+  // ----------------------------
+  // REMINDERS
+  // ----------------------------
 
-// DONOR SPONSORSHIPS
-getDonorSponsorships(donorId: string) {
-  return this.sponsorship.getSponsors(donorId);
-}
+  getDueSponsorships() {
+    return this.reminders.getDueSponsorships();
+  }
+
+  queueSponsorshipReminderEmail(id: string) {
+    return this.reminders.queueSponsorshipReminderEmail(id);
+  }
 }
