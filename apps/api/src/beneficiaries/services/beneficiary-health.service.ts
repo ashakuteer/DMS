@@ -1,10 +1,7 @@
 import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../prisma/prisma.service";
 
 @Injectable()
 export class BeneficiaryHealthService {
-
-  constructor(private prisma: PrismaService) {}
 
   async getMetrics(beneficiaryId: string) {
     return [];
