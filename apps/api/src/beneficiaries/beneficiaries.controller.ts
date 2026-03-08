@@ -34,7 +34,7 @@ import {
   CreateHealthEventDto,
   CreateDocumentDto,
   CreateReportCampaignDto,
-} from './beneficiaries.service';
+} from '.from './types';
 import { Role, HomeType, BeneficiaryStatus } from '@prisma/client';
 import { StorageService } from '../storage/storage.service';
 
