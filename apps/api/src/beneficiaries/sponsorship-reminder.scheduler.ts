@@ -12,7 +12,7 @@ export class SponsorshipReminderScheduler {
   async autoQueueSponsorshipReminders() {
     this.logger.log('Running daily sponsorship reminder auto-queue...');
     try {
-      const dueSponsorships = await this.beneficiariesService.getDueSponsorships(3);
+      const dueSponsorships = await this.beneficiariesService.getDueSponsorships();
       let queued = 0;
       let skipped = 0;
       let failed = 0;
