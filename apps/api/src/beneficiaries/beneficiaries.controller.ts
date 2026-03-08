@@ -13,15 +13,21 @@ import {
   UploadedFile,
   BadRequestException,
 } from '@nestjs/common';
+
 import type { Response, Express } from 'express';
+
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
+
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { 
-  BeneficiariesService, 
+
+import { BeneficiariesService } from './beneficiaries.service';
+
+import {
   UserContext,
   CreateBeneficiaryDto,
   UpdateBeneficiaryDto,
@@ -34,8 +40,10 @@ import {
   CreateHealthEventDto,
   CreateDocumentDto,
   CreateReportCampaignDto,
-} from '.from './types';
+} from './types';
+
 import { Role, HomeType, BeneficiaryStatus } from '@prisma/client';
+
 import { StorageService } from '../storage/storage.service';
 
 @Controller('beneficiaries')
