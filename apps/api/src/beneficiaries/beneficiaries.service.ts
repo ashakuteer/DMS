@@ -235,16 +235,32 @@ deleteSponsorship(id: string) {
 markSponsorshipPaid(user: any, id: string, body: any) {
   return this.sponsorship.markSponsorshipPaid(user, id, body);
 }
-
 sendSponsorshipReminderEmail(id: string) {
-  return this.reminders.sendSponsorshipReminderEmail(id);
+  return this.reminders.queueSponsorshipReminderEmail(id);
 }
-
+  sendSponsorshipReminderEmail(id: string) {
+  return this.reminders.queueSponsorshipReminderEmail(id);
+}
 skipSponsorshipMonth(user: any, id: string) {
   return this.sponsorship.skipSponsorshipMonth(user, id);
 }
 
 getSponsorshipHistory(id: string) {
   return this.sponsorship.getSponsorshipHistory(id);
+}
+// ----------------------------
+// UPDATE DISPATCH / SPONSOR UPDATE HELPERS
+// ----------------------------
+
+getUpdateWithBeneficiary(id: string) {
+  return this.updates.getUpdateWithBeneficiary(id);
+}
+
+getSponsorsForUpdate(beneficiaryId: string) {
+  return this.sponsorship.getSponsors(beneficiaryId);
+}
+
+sendUpdateToSponsors(user: any, updateId: string) {
+  return this.updates.sendUpdateToSponsors(user, updateId);
 }
 }
