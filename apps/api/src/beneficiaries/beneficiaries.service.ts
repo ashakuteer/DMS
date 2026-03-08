@@ -214,5 +214,37 @@ queueReportCampaignEmails(user: any, campaignId: string) {
 
 getDueSponsorships(windowDays?: number) {
   return this.reminders.getDueSponsorships(windowDays);
+
+}
+  // ----------------------------
+// SPONSORSHIP MANAGEMENT
+// ----------------------------
+
+getSponsorshipSummary() {
+  return this.sponsorship.getSponsorshipSummary();
+}
+
+updateSponsorship(user: any, id: string, dto: any) {
+  return this.sponsorship.updateSponsorship(user, id, dto);
+}
+
+deleteSponsorship(id: string) {
+  return this.sponsorship.deleteSponsorship(id);
+}
+
+markSponsorshipPaid(user: any, id: string, body: any) {
+  return this.sponsorship.markSponsorshipPaid(user, id, body);
+}
+
+sendSponsorshipReminderEmail(id: string) {
+  return this.reminders.sendSponsorshipReminderEmail(id);
+}
+
+skipSponsorshipMonth(user: any, id: string) {
+  return this.sponsorship.skipSponsorshipMonth(user, id);
+}
+
+getSponsorshipHistory(id: string) {
+  return this.sponsorship.getSponsorshipHistory(id);
 }
 }
