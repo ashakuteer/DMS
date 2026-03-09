@@ -788,6 +788,7 @@ model EmailLog {
   @@index([sentAt])
   @@index([type])
   @@map("email_logs")
+  @@index([donorId, sentAt])
 }
 
 enum EmailLogType {
@@ -823,6 +824,7 @@ model CommunicationLog {
   @@index([channel])
   @@index([status])
   @@index([createdAt])
+  @@index([donorId, createdAt])
   @@map("communication_logs")
 }
 
@@ -847,6 +849,7 @@ model Reminder {
   @@index([dueDate])
   @@index([status])
   @@map("reminders")
+  @@index([donorId, status])
 }
 
 model ReminderTask {
@@ -942,6 +945,7 @@ model EmailJob {
   @@index([scheduledAt])
   @@index([type])
   @@map("email_jobs")
+  @@index([donorId])
 }
 
 enum EmailJobType {
