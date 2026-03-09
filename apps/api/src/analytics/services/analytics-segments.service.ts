@@ -1,59 +1,83 @@
-import { Injectable } from "@nestjs/common"
-import { PrismaService } from "../../prisma/prisma.service"
-import { getCurrentFY } from "../utils/analytics-date.utils"
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../../prisma/prisma.service";
+import { getCurrentFY } from "../utils/analytics-date.utils";
 
 @Injectable()
 export class AnalyticsSegmentsService {
+constructor(private prisma: PrismaService) {}
 
-  constructor(private prisma: PrismaService) {}
+// simple memory cache
+private cache = new Map<string, { data: any; expires: number }>();
 
-  async getTopDonorsSegment() {
+async getTopDonorsSegment() {
+const cacheKey = "analytics_top_donors";
 
-    const { fyStart, fyEnd } = getCurrentFY()
+```
+const cached = this.cache.get(cacheKey);
 
-    const top = await this.prisma.donation.groupBy({
-      by: ["donorId"],
-      _sum: { donationAmount: true },
-      _count: { id: true },
-      where: {
-        deletedAt: null,
-        donationDate: { gte: fyStart, lte: fyEnd },
-      },
-      orderBy: {
-        _sum: { donationAmount: "desc" },
-      },
-      take: 20,
-    })
+if (cached && cached.expires > Date.now()) {
+  return cached.data;
+}
 
-    const donorIds = top.map((d) => d.donorId)
+const { fyStart, fyEnd } = getCurrentFY();
 
-    const donors = await this.prisma.donor.findMany({
-      where: {
-        id: { in: donorIds },
-      },
-      select: {
-        id: true,
-        donorCode: true,
-        firstName: true,
-        lastName: true,
-      },
-    })
+const top = await this.prisma.donation.groupBy({
+  by: ["donorId"],
+  _sum: { donationAmount: true },
+  _count: { id: true },
+  where: {
+    deletedAt: null,
+    donationDate: { gte: fyStart, lte: fyEnd },
+  },
+  orderBy: {
+    _sum: { donationAmount: "desc" },
+  },
+  take: 20,
+});
 
-    const donorMap = new Map(donors.map((d) => [d.id, d]))
+const donorIds = top.map((d) => d.donorId);
 
-    return top.map((t) => {
+if (!donorIds.length) {
+  return [];
+}
 
-      const donor = donorMap.get(t.donorId)
+const donors = await this.prisma.donor.findMany({
+  where: {
+    id: { in: donorIds },
+    deletedAt: null,
+  },
+  select: {
+    id: true,
+    donorCode: true,
+    firstName: true,
+    lastName: true,
+  },
+});
 
-      return {
-        donorId: t.donorId,
-        donorCode: donor?.donorCode || "",
-        donorName: donor
-          ? `${donor.firstName} ${donor.lastName || ""}`.trim()
-          : "Unknown",
-        totalAmount: Number(t._sum.donationAmount || 0),
-        donationCount: t._count.id || 0,
-      }
-    })
-  }
+const donorMap = new Map(donors.map((d) => [d.id, d]));
+
+const result = top.map((t) => {
+  const donor = donorMap.get(t.donorId);
+
+  return {
+    donorId: t.donorId,
+    donorCode: donor?.donorCode ?? "",
+    donorName: donor
+      ? `${donor.firstName} ${donor.lastName ?? ""}`.trim()
+      : "Unknown",
+    totalAmount: Number(t._sum.donationAmount) || 0,
+    donationCount: t._count.id || 0,
+  };
+});
+
+// cache for 5 minutes
+this.cache.set(cacheKey, {
+  data: result,
+  expires: Date.now() + 5 * 60 * 1000,
+});
+
+return result;
+```
+
+}
 }
