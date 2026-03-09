@@ -1,9 +1,8 @@
+@Injectable()
+export class ImportNormalizerService {
 import { Injectable } from "@nestjs/common";
 
-@Injectable()
-export class DonorsImportNormalizerService {
-
-  normalizePhone(phone?: string): string | null {
+ normalizePhone(phone?: string): string | null {
     if (!phone) return null;
 
     const cleaned = String(phone).replace(/[\s\-\(\)\+]/g, "");
