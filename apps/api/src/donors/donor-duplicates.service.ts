@@ -1,7 +1,5 @@
 import { Injectable } from "@nestjs/common";
-
-@Injectable()
-export class DuplicatesService {
+import { DonorDuplicatesService } from "../donor-duplicates.service"; 
 import { Injectable, ForbiddenException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
