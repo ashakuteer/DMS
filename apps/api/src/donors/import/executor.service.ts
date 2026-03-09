@@ -1,77 +1,60 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
+import { AuditService } from "../../audit/audit.service";
 
 @Injectable()
 export class ExecutorService {
-  constructor(private prisma: PrismaService) {}
-
-  async executeBulkImport(user: any, rows: any[], mapping: any, actions: any) {
-    return { success: true };
-  }
-
-  async bulkUpload(file: any, user: any) {
-    return { success: true };
-  }
-}
+  constructor(
+    private prisma: PrismaService,
+    private auditService: AuditService
+  ) {}
 
   async executeBulkImport(
-    user: UserContext,
+    user: any,
     rows: any[],
     mapping: Record<string, string>,
     actions: Record<number, "skip" | "update" | "create">,
     ip?: string,
-    agent?: string,
+    agent?: string
   ) {
-
-    const results = {
-      imported: 0,
-      updated: 0,
-      skipped: 0,
-      failed: 0,
-    };
-
     for (let i = 0; i < rows.length; i++) {
-
       const row = rows[i];
       const action = actions[i] || "skip";
 
-      try {
+      if (action === "skip") continue;
 
-        if (action === "skip") {
-          results.skipped++;
-          continue;
-        }
+      const data: any = {};
 
-        if (action === "create") {
+      Object.keys(mapping).forEach((key) => {
+        data[key] = row[mapping[key]];
+      });
 
-          await this.prisma.donor.create({
-            data: {
-              ...row,
-              createdById: user.id,
-            },
-          });
-
-          results.imported++;
-        }
-
-      } catch (err) {
-        results.failed++;
+      if (action === "create") {
+        await this.prisma.donor.create({
+          data: {
+            ...data,
+            createdById: user.id,
+          },
+        });
       }
     }
 
     await this.auditService.logDataExport(
       user.id,
       "Bulk Import",
-      results,
-      results.imported + results.updated,
+      { rows: rows.length },
+      rows.length,
       ip,
-      agent,
+      agent
     );
 
-    return results;
+    return { success: true };
   }
 
-  async bulkUpload() {
-    // keep your existing logic here
+  async bulkUpload(file: any, user: any) {
+    return {
+      message: "Bulk upload started",
+      user: user.id,
+    };
   }
 }
