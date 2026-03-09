@@ -7,9 +7,9 @@ import { DonorsService } from "./donors.service";
 
 import { DonorsImportService } from "./import/donors-import.service";
 import { DonorsImportParserService } from "./import/donors-import-parser.service";
-import { DonorsImportNormalizerService } from "./import/donors-import-normalizer.service";
-import { DonorsImportDuplicatesService } from "./import/donors-import-duplicates.service";
-import { DonorsImportExecutorService } from "./import/donors-import-executor.service";
+import { ImportNormalizerService } from "./import/import-normalizer.service";
+import { DuplicatesService } from "./import/duplicates.service";
+import { ExecutorService } from "./import/executor.service";
 
 @Module({
   controllers: [DonorsController],
