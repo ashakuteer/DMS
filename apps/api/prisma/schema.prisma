@@ -756,7 +756,6 @@ model CommunicationTemplate {
   updatedBy         User?              @relation("TemplateUpdatedBy", fields: [updatedById], references: [id])
   emailLogs         EmailLog[]
 
-  @@index([type])
   @@index([isActive])
   @@map("communication_templates")
 }
