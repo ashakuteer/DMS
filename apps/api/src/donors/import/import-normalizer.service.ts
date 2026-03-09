@@ -1,11 +1,12 @@
-@Injectable()
-export class ImportNormalizerService {
 import { Injectable } from "@nestjs/common";
 
- normalizePhone(phone?: string): string | null {
+@Injectable()
+export class ImportNormalizerService {
+
+  normalizePhone(phone?: string): string | null {
     if (!phone) return null;
 
-    const cleaned = String(phone).replace(/[\s\-\(\)\+]/g, "");
+    const cleaned = String(phone).replace(/[\\s\\-()\\+]/g, "");
 
     if (cleaned.startsWith("91") && cleaned.length === 12) {
       return cleaned.slice(2);
