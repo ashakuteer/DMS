@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common"
 import { PrismaService } from "../prisma/prisma.service"
 
 import { AnalyticsController } from "./analytics.controller"
+import { AnalyticsService } from "./analytics.service"
 
 import { AnalyticsSummaryService } from "./services/analytics-summary.service"
 import { AnalyticsChartsService } from "./services/analytics-charts.service"
@@ -15,6 +16,8 @@ import { AnalyticsDashboardService } from "./services/analytics-dashboard.servic
 
   providers: [
     PrismaService,
+
+    AnalyticsService,
 
     AnalyticsSummaryService,
     AnalyticsChartsService,
