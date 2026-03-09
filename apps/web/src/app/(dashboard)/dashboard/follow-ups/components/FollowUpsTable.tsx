@@ -1,40 +1,87 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
+import {
+Table,
+TableBody,
+TableCell,
+TableHead,
+TableHeader,
+TableRow
+} from "@/components/ui/table"
 
-export default function FollowUpsTabs({
-  activeTab,
-  setActiveTab,
-  stats,
-  children
+import { Card } from "@/components/ui/card"
+
+import { getPhoneClean } from "../utils/followups.utils"
+
+export default function FollowUpsTable({
+  items,
+  actions
 }:any){
 
   return(
 
-    <Tabs value={activeTab} onValueChange={setActiveTab}>
+    <Card>
 
-      <TabsList>
+      <div className="overflow-x-auto">
 
-        <TabsTrigger value="upcoming">
-          Upcoming
-          {stats.pending > 0 &&
-            <Badge className="ml-1 bg-muted text-muted-foreground">
-              {stats.pending}
-            </Badge>}
-        </TabsTrigger>
+        <Table>
 
-        <TabsTrigger value="completed">
-          Completed
-        </TabsTrigger>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Donor</TableHead>
+              <TableHead>Phone</TableHead>
+              <TableHead>Note</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Assigned</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
 
-        <TabsTrigger value="all">
-          All
-        </TabsTrigger>
+          <TableBody>
 
-      </TabsList>
+            {items.map((fu:any)=>{
 
-      {children}
+              const phone = getPhoneClean(fu.donor.primaryPhone)
 
-    </Tabs>
+              return(
+
+                <TableRow key={fu.id}>
+
+                  <TableCell>
+                    {fu.donor.firstName} {fu.donor.lastName}
+                  </TableCell>
+
+                  <TableCell>
+                    {fu.donor.primaryPhone || "-"}
+                  </TableCell>
+
+                  <TableCell>
+                    {fu.note}
+                  </TableCell>
+
+                  <TableCell>
+                    {fu.status}
+                  </TableCell>
+
+                  <TableCell>
+                    {fu.assignedTo.name}
+                  </TableCell>
+
+                  <TableCell className="text-right">
+                    {actions(fu,phone)}
+                  </TableCell>
+
+                </TableRow>
+
+              )
+
+            })}
+
+          </TableBody>
+
+        </Table>
+
+      </div>
+
+    </Card>
 
   )
 
