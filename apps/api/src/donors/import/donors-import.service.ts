@@ -2,17 +2,17 @@ import { Injectable } from "@nestjs/common";
 import { ImportNormalizerService } from "./import-normalizer.service";
 import { DuplicatesService } from "./duplicates.service";
 import { ExecutorService } from "./executor.service";
+import { DonorsImportParserService } from "./donors-import-parser.service";
 
 @Injectable()
-export class DonorsImportService
-  export class DuplicatesService {}
-export class ExecutorService {}
-{
+export class DonorsImportService {
+
   constructor(
-  private normalizer: ImportNormalizerService,
-  private duplicates: DuplicatesService,
-  private executor: ExecutorService
-) {}
+    private parser: DonorsImportParserService,
+    private normalizer: ImportNormalizerService,
+    private duplicates: DuplicatesService,
+    private executor: ExecutorService
+  ) {}
 
   async parseImportFile(file: Express.Multer.File) {
     return this.parser.parseImportFile(file);
@@ -26,16 +26,12 @@ export class ExecutorService {}
     user: any,
     rows: any[],
     mapping: Record<string, string>,
-    actions: Record<number, "skip" | "update" | "create">,
+    actions: Record<number, "skip" | "update" | "create">
   ) {
     return this.executor.executeBulkImport(user, rows, mapping, actions);
   }
 
   async bulkUpload(file: Express.Multer.File, user: any) {
     return this.executor.bulkUpload(file, user);
-  }
-
-  async generateBulkTemplate() {
-    return this.parser.generateBulkTemplate();
   }
 }
