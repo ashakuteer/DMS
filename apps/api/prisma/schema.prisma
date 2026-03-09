@@ -848,8 +848,8 @@ model Reminder {
   @@index([donorId])
   @@index([dueDate])
   @@index([status])
-  @@map("reminders")
   @@index([donorId, status])
+  @@map("reminders")
 }
 
 model ReminderTask {
@@ -944,8 +944,8 @@ model EmailJob {
   @@index([status])
   @@index([scheduledAt])
   @@index([type])
-  @@map("email_jobs")
   @@index([donorId])
+  @@map("email_jobs")
 }
 
 enum EmailJobType {
