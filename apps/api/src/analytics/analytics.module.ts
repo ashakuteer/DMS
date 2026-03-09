@@ -1,12 +1,25 @@
-import { Module } from '@nestjs/common';
-import { AnalyticsController } from './analytics.controller';
-import { AnalyticsService } from './analytics.service';
-import { PrismaModule } from '../prisma/prisma.module';
-import { OrganizationProfileModule } from '../organization-profile/organization-profile.module';
+import { Module } from "@nestjs/common"
+
+import { AnalyticsService } from "./analytics.service"
+import { AnalyticsController } from "./analytics.controller"
+
+import { AnalyticsSummaryService } from "./services/analytics-summary.service"
+import { AnalyticsChartsService } from "./services/analytics-charts.service"
+import { AnalyticsSegmentsService } from "./services/analytics-segments.service"
+import { AnalyticsRiskService } from "./services/analytics-risk.service"
+import { AnalyticsExportService } from "./services/analytics-export.service"
+import { AnalyticsDashboardService } from "./services/analytics-dashboard.service"
 
 @Module({
-  imports: [PrismaModule, OrganizationProfileModule],
+  providers: [
+    AnalyticsService,
+    AnalyticsSummaryService,
+    AnalyticsChartsService,
+    AnalyticsSegmentsService,
+    AnalyticsRiskService,
+    AnalyticsExportService,
+    AnalyticsDashboardService,
+  ],
   controllers: [AnalyticsController],
-  providers: [AnalyticsService],
 })
 export class AnalyticsModule {}
