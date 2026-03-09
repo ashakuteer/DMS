@@ -6,7 +6,6 @@ import { DonorsImportParserService } from "./donors-import-parser.service";
 
 @Injectable()
 export class DonorsImportService {
-
   constructor(
     private parser: DonorsImportParserService,
     private normalizer: ImportNormalizerService,
