@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { DonorsImportParserService } from "./donors-import-parser.service";
+import { ImportNormalizerService } from "./import-normalizer.service";
 import { DuplicatesService } from "./duplicates.service";
 import { ExecutorService } from "./executor.service";
 
@@ -9,11 +9,10 @@ export class DonorsImportService
 export class ExecutorService {}
 {
   constructor(
-    private parser: DonorsImportParserService,
-    private duplicates: DuplicatesService,
-    private executor: ExecutorService,
-    
-  ) {}
+  private normalizer: ImportNormalizerService,
+  private duplicates: DuplicatesService,
+  private executor: ExecutorService
+) {}
 
   async parseImportFile(file: Express.Multer.File) {
     return this.parser.parseImportFile(file);
