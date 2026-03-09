@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditService } from "../audit/audit.service";
 import { DonorsCrudService } from "./donors.crud.service";
-import { DonorsImportService } from "./donors.import.service";
+import { DonorsImportService } from "./import/donors-import.service";
 import { DonorsExportService } from "./donors.export.service";
 import { UserContext, DonorQueryOptions } from "./donors.types";
 import { StorageService } from "../storage/storage.service";
