@@ -4,6 +4,14 @@ import { PrismaService } from "../../prisma/prisma.service";
 @Injectable()
 export class ExecutorService {
   constructor(private prisma: PrismaService) {}
+
+  async executeBulkImport(user: any, rows: any[], mapping: any, actions: any) {
+    return { success: true };
+  }
+
+  async bulkUpload(file: any, user: any) {
+    return { success: true };
+  }
 }
 
   async executeBulkImport(
