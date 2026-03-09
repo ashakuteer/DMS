@@ -1,6 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { HomeType, BeneficiaryStatus, CampaignStatus, DonorCategory } from '@prisma/client';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import {
+  HomeType,
+  BeneficiaryStatus,
+  CampaignStatus,
+  DonorCategory,
+  Prisma,
+} from "@prisma/client";
 
 export interface SearchFilters {
   donorCategory?: string;
@@ -54,70 +60,147 @@ export interface SearchResult {
 
 @Injectable()
 export class SearchService {
-  constructor(private prisma: PrismaService) {}
+  private readonly DEFAULT_LIMIT = 5;
+  private readonly MAX_LIMIT = 20;
 
-  async globalSearch(query: string, limit: number = 5, filters: SearchFilters = {}): Promise<SearchResult> {
-    const trimmed = query.trim();
-    const hasFilters = Object.values(filters).some((v) => v && v !== '');
-    
-    if ((!trimmed || trimmed.length < 2) && !hasFilters) {
-      return { donors: [], beneficiaries: [], donations: [], campaigns: [] };
+  constructor(private readonly prisma: PrismaService) {}
+
+  async globalSearch(
+    query: string,
+    limit: number = this.DEFAULT_LIMIT,
+    filters: SearchFilters = {},
+  ): Promise<SearchResult> {
+    const trimmed = (query ?? "").trim();
+    const normalizedFilters = this.normalizeFilters(filters);
+    const hasFilters = Object.values(normalizedFilters).some(
+      (v) => v !== undefined && v !== null && v !== "",
+    );
+
+    const safeLimit = this.getSafeLimit(limit);
+
+    // Empty query protection
+    if (trimmed.length < 2 && !hasFilters) {
+      return {
+        donors: [],
+        beneficiaries: [],
+        donations: [],
+        campaigns: [],
+      };
     }
 
-    const searchTerm = trimmed.length >= 2 ? trimmed : '';
-    const isNumeric = searchTerm ? /^\d+(\.\d+)?$/.test(searchTerm) : false;
-    const entityType = filters.entityType;
+    const searchTerm = trimmed.length >= 2 ? trimmed : "";
+    const isNumeric = searchTerm ? /^\d+(\.\d{1,2})?$/.test(searchTerm) : false;
+    const numericValue = isNumeric ? Number(searchTerm) : null;
+    const entityType = normalizedFilters.entityType;
 
-    const promises: [
-      Promise<SearchResult['donors']>,
-      Promise<SearchResult['beneficiaries']>,
-      Promise<SearchResult['donations']>,
-      Promise<SearchResult['campaigns']>,
-    ] = [
-      (!entityType || entityType === 'donors') ? this.searchDonors(searchTerm, limit, filters) : Promise.resolve([]),
-      (!entityType || entityType === 'beneficiaries') ? this.searchBeneficiaries(searchTerm, limit, filters) : Promise.resolve([]),
-      (!entityType || entityType === 'donations') ? this.searchDonations(searchTerm, isNumeric ? parseFloat(searchTerm) : null, limit) : Promise.resolve([]),
-      (!entityType || entityType === 'campaigns') ? this.searchCampaigns(searchTerm, limit, filters) : Promise.resolve([]),
-    ];
+    const donorPromise =
+      !entityType || entityType === "donors"
+        ? this.searchDonors(searchTerm, safeLimit, normalizedFilters)
+        : Promise.resolve([]);
 
-    const [donors, beneficiaries, donations, campaigns] = await Promise.all(promises);
+    const beneficiaryPromise =
+      !entityType || entityType === "beneficiaries"
+        ? this.searchBeneficiaries(searchTerm, safeLimit, normalizedFilters)
+        : Promise.resolve([]);
+
+    const donationPromise =
+      !entityType || entityType === "donations"
+        ? this.searchDonations(searchTerm, numericValue, safeLimit)
+        : Promise.resolve([]);
+
+    const campaignPromise =
+      !entityType || entityType === "campaigns"
+        ? this.searchCampaigns(searchTerm, safeLimit, normalizedFilters)
+        : Promise.resolve([]);
+
+    const [donors, beneficiaries, donations, campaigns] = await Promise.all([
+      donorPromise,
+      beneficiaryPromise,
+      donationPromise,
+      campaignPromise,
+    ]);
+
     return { donors, beneficiaries, donations, campaigns };
   }
 
-  private async searchDonors(searchTerm: string, limit: number, filters: SearchFilters = {}) {
-    const where: any = { deletedAt: null };
-    const andConditions: any[] = [];
+  private getSafeLimit(limit: number): number {
+    if (!Number.isFinite(limit) || limit <= 0) {
+      return this.DEFAULT_LIMIT;
+    }
+    return Math.min(Math.floor(limit), this.MAX_LIMIT);
+  }
+
+  private normalizeFilters(filters: SearchFilters): SearchFilters {
+    return {
+      donorCategory: this.clean(filters.donorCategory),
+      donorCity: this.clean(filters.donorCity),
+      beneficiaryHomeType: this.clean(filters.beneficiaryHomeType),
+      beneficiaryStatus: this.clean(filters.beneficiaryStatus),
+      beneficiaryAgeGroup: this.clean(filters.beneficiaryAgeGroup),
+      beneficiarySponsored: this.clean(filters.beneficiarySponsored),
+      campaignStatus: this.clean(filters.campaignStatus),
+      campaignStartFrom: this.clean(filters.campaignStartFrom),
+      campaignStartTo: this.clean(filters.campaignStartTo),
+      entityType: this.clean(filters.entityType),
+    };
+  }
+
+  private clean(value?: string): string | undefined {
+    if (typeof value !== "string") return undefined;
+    const trimmed = value.trim();
+    return trimmed ? trimmed : undefined;
+  }
+
+  private toValidDate(value?: string): Date | undefined {
+    if (!value) return undefined;
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? undefined : date;
+  }
+
+  private async searchDonors(
+    searchTerm: string,
+    limit: number,
+    filters: SearchFilters = {},
+  ) {
+    const andConditions: Prisma.DonorWhereInput[] = [{ deletedAt: null }];
 
     if (searchTerm) {
+      // Prefer startsWith for better index usage where possible.
+      // Keep contains only for fields where partial lookup matters.
       andConditions.push({
         OR: [
-          { firstName: { contains: searchTerm, mode: 'insensitive' } },
-          { lastName: { contains: searchTerm, mode: 'insensitive' } },
-          { donorCode: { contains: searchTerm, mode: 'insensitive' } },
-          { primaryPhone: { contains: searchTerm, mode: 'insensitive' } },
-          { whatsappPhone: { contains: searchTerm, mode: 'insensitive' } },
-          { personalEmail: { contains: searchTerm, mode: 'insensitive' } },
-          { officialEmail: { contains: searchTerm, mode: 'insensitive' } },
+          { firstName: { startsWith: searchTerm, mode: "insensitive" } },
+          { lastName: { startsWith: searchTerm, mode: "insensitive" } },
+          { donorCode: { contains: searchTerm, mode: "insensitive" } },
+          { primaryPhone: { contains: searchTerm, mode: "insensitive" } },
+          { whatsappPhone: { contains: searchTerm, mode: "insensitive" } },
+          { personalEmail: { startsWith: searchTerm, mode: "insensitive" } },
+          { officialEmail: { startsWith: searchTerm, mode: "insensitive" } },
         ],
       });
     }
 
-    if (filters.donorCategory && Object.values(DonorCategory).includes(filters.donorCategory as DonorCategory)) {
-      andConditions.push({ category: filters.donorCategory as DonorCategory });
+    if (
+      filters.donorCategory &&
+      Object.values(DonorCategory).includes(filters.donorCategory as DonorCategory)
+    ) {
+      andConditions.push({
+        category: filters.donorCategory as DonorCategory,
+      });
     }
 
     if (filters.donorCity) {
-      andConditions.push({ city: { contains: filters.donorCity, mode: 'insensitive' } });
+      andConditions.push({
+        city: { startsWith: filters.donorCity, mode: "insensitive" },
+      });
     }
 
-    if (andConditions.length > 0) {
-      where.AND = andConditions;
+    if (andConditions.length === 1 && !searchTerm && !filters.donorCategory && !filters.donorCity) {
+      return [];
     }
-
-    if (!searchTerm && andConditions.length === 0) return [];
 
     const donors = await this.prisma.donor.findMany({
-      where,
+      where: { AND: andConditions },
       select: {
         id: true,
         donorCode: true,
@@ -130,13 +213,16 @@ export class SearchService {
         category: true,
       },
       take: limit,
-      orderBy: { firstName: 'asc' },
+      orderBy: [
+        { firstName: "asc" },
+        { lastName: "asc" },
+      ],
     });
 
     return donors.map((d) => ({
       id: d.id,
       donorCode: d.donorCode,
-      name: [d.firstName, d.middleName, d.lastName].filter(Boolean).join(' '),
+      name: [d.firstName, d.middleName, d.lastName].filter(Boolean).join(" "),
       phone: d.primaryPhone,
       email: d.personalEmail,
       city: d.city,
@@ -144,71 +230,98 @@ export class SearchService {
     }));
   }
 
-  private async searchBeneficiaries(searchTerm: string, limit: number, filters: SearchFilters = {}) {
-    const where: any = { deletedAt: null };
-    const andConditions: any[] = [];
+  private async searchBeneficiaries(
+    searchTerm: string,
+    limit: number,
+    filters: SearchFilters = {},
+  ) {
+    const andConditions: Prisma.BeneficiaryWhereInput[] = [{ deletedAt: null }];
 
     if (searchTerm) {
-      const termUpper = searchTerm.toUpperCase().replace(/\s+/g, '_');
+      const termUpper = searchTerm.toUpperCase().replace(/\s+/g, "_");
+      const lowerSearch = searchTerm.toLowerCase();
+
       const matchingHomeTypes = Object.values(HomeType).filter(
-        (ht) => ht.includes(termUpper) || ht.replace(/_/g, ' ').toLowerCase().includes(searchTerm.toLowerCase()),
+        (ht) =>
+          ht.includes(termUpper) ||
+          ht.replace(/_/g, " ").toLowerCase().includes(lowerSearch),
       );
 
-      const orConditions: any[] = [
-        { fullName: { contains: searchTerm, mode: 'insensitive' } },
-        { code: { contains: searchTerm, mode: 'insensitive' } },
+      const orConditions: Prisma.BeneficiaryWhereInput[] = [
+        { fullName: { startsWith: searchTerm, mode: "insensitive" } },
+        { code: { contains: searchTerm, mode: "insensitive" } },
       ];
+
       if (matchingHomeTypes.length > 0) {
         orConditions.push({ homeType: { in: matchingHomeTypes } });
       }
+
       andConditions.push({ OR: orConditions });
     }
 
-    if (filters.beneficiaryHomeType && Object.values(HomeType).includes(filters.beneficiaryHomeType as HomeType)) {
-      andConditions.push({ homeType: filters.beneficiaryHomeType as HomeType });
+    if (
+      filters.beneficiaryHomeType &&
+      Object.values(HomeType).includes(filters.beneficiaryHomeType as HomeType)
+    ) {
+      andConditions.push({
+        homeType: filters.beneficiaryHomeType as HomeType,
+      });
     }
 
-    if (filters.beneficiaryStatus && Object.values(BeneficiaryStatus).includes(filters.beneficiaryStatus as BeneficiaryStatus)) {
-      andConditions.push({ status: filters.beneficiaryStatus as BeneficiaryStatus });
+    if (
+      filters.beneficiaryStatus &&
+      Object.values(BeneficiaryStatus).includes(
+        filters.beneficiaryStatus as BeneficiaryStatus,
+      )
+    ) {
+      andConditions.push({
+        status: filters.beneficiaryStatus as BeneficiaryStatus,
+      });
     }
 
     if (filters.beneficiaryAgeGroup) {
       const ageRange = this.getAgeRange(filters.beneficiaryAgeGroup);
       if (ageRange) {
         andConditions.push({
-          OR: [
-            { approxAge: { gte: ageRange.min, lte: ageRange.max } },
-          ],
+          approxAge: {
+            gte: ageRange.min,
+            lte: ageRange.max,
+          },
         });
       }
     }
 
-    if (filters.beneficiarySponsored === 'true') {
+    if (filters.beneficiarySponsored === "true") {
       andConditions.push({
         sponsorships: {
           some: {
-            status: 'ACTIVE',
+            status: "ACTIVE",
           },
         },
       });
-    } else if (filters.beneficiarySponsored === 'false') {
+    } else if (filters.beneficiarySponsored === "false") {
       andConditions.push({
         sponsorships: {
           none: {
-            status: 'ACTIVE',
+            status: "ACTIVE",
           },
         },
       });
     }
 
-    if (andConditions.length > 0) {
-      where.AND = andConditions;
+    if (
+      andConditions.length === 1 &&
+      !searchTerm &&
+      !filters.beneficiaryHomeType &&
+      !filters.beneficiaryStatus &&
+      !filters.beneficiaryAgeGroup &&
+      filters.beneficiarySponsored === undefined
+    ) {
+      return [];
     }
 
-    if (!searchTerm && andConditions.length === 0) return [];
-
     const beneficiaries = await this.prisma.beneficiary.findMany({
-      where,
+      where: { AND: andConditions },
       select: {
         id: true,
         code: true,
@@ -217,13 +330,13 @@ export class SearchService {
         status: true,
         approxAge: true,
         sponsorships: {
-          where: { status: 'ACTIVE' },
+          where: { status: "ACTIVE" },
           select: { id: true },
           take: 1,
         },
       },
       take: limit,
-      orderBy: { fullName: 'asc' },
+      orderBy: [{ fullName: "asc" }],
     });
 
     return beneficiaries.map((b) => ({
@@ -239,22 +352,33 @@ export class SearchService {
 
   private getAgeRange(ageGroup: string): { min: number; max: number } | null {
     switch (ageGroup) {
-      case '0-10': return { min: 0, max: 10 };
-      case '11-18': return { min: 11, max: 18 };
-      case '19-30': return { min: 19, max: 30 };
-      case '31-50': return { min: 31, max: 50 };
-      case '51-70': return { min: 51, max: 70 };
-      case '71+': return { min: 71, max: 200 };
-      default: return null;
+      case "0-10":
+        return { min: 0, max: 10 };
+      case "11-18":
+        return { min: 11, max: 18 };
+      case "19-30":
+        return { min: 19, max: 30 };
+      case "31-50":
+        return { min: 31, max: 50 };
+      case "51-70":
+        return { min: 51, max: 70 };
+      case "71+":
+        return { min: 71, max: 200 };
+      default:
+        return null;
     }
   }
 
-  private async searchDonations(searchTerm: string, numericValue: number | null, limit: number) {
+  private async searchDonations(
+    searchTerm: string,
+    numericValue: number | null,
+    limit: number,
+  ) {
     if (!searchTerm) return [];
 
-    const orConditions: any[] = [
-      { receiptNumber: { contains: searchTerm, mode: 'insensitive' } },
-      { transactionId: { contains: searchTerm, mode: 'insensitive' } },
+    const orConditions: Prisma.DonationWhereInput[] = [
+      { receiptNumber: { contains: searchTerm, mode: "insensitive" } },
+      { transactionId: { contains: searchTerm, mode: "insensitive" } },
     ];
 
     if (numericValue !== null) {
@@ -281,52 +405,77 @@ export class SearchService {
         },
       },
       take: limit,
-      orderBy: { donationDate: 'desc' },
+      orderBy: [{ donationDate: "desc" }],
     });
 
     return donations.map((d) => ({
       id: d.id,
       receiptNumber: d.receiptNumber,
       amount: Number(d.donationAmount),
-      donorName: [d.donor?.firstName, d.donor?.lastName].filter(Boolean).join(' '),
+      donorName: [d.donor?.firstName, d.donor?.lastName].filter(Boolean).join(" "),
       donorId: d.donorId,
       date: d.donationDate,
       type: d.donationType,
     }));
   }
 
-  private async searchCampaigns(searchTerm: string, limit: number, filters: SearchFilters = {}) {
-    const where: any = { deletedAt: null };
-    const andConditions: any[] = [];
+  private async searchCampaigns(
+    searchTerm: string,
+    limit: number,
+    filters: SearchFilters = {},
+  ) {
+    const andConditions: Prisma.CampaignWhereInput[] = [{ deletedAt: null }];
 
     if (searchTerm) {
+      // Avoid searching description unless really needed.
+      // Description search is expensive on large text columns.
       andConditions.push({
         OR: [
-          { name: { contains: searchTerm, mode: 'insensitive' } },
-          { description: { contains: searchTerm, mode: 'insensitive' } },
+          { name: { startsWith: searchTerm, mode: "insensitive" } },
         ],
       });
     }
 
-    if (filters.campaignStatus && Object.values(CampaignStatus).includes(filters.campaignStatus as CampaignStatus)) {
-      andConditions.push({ status: filters.campaignStatus as CampaignStatus });
+    if (
+      filters.campaignStatus &&
+      Object.values(CampaignStatus).includes(filters.campaignStatus as CampaignStatus)
+    ) {
+      andConditions.push({
+        status: filters.campaignStatus as CampaignStatus,
+      });
     }
 
-    if (filters.campaignStartFrom) {
-      andConditions.push({ startDate: { gte: new Date(filters.campaignStartFrom) } });
-    }
-    if (filters.campaignStartTo) {
-      andConditions.push({ startDate: { lte: new Date(filters.campaignStartTo) } });
+    const startFrom = this.toValidDate(filters.campaignStartFrom);
+    const startTo = this.toValidDate(filters.campaignStartTo);
+
+    if (filters.campaignStartFrom && !startFrom) {
+      throw new BadRequestException("Invalid campaignStartFrom date");
     }
 
-    if (andConditions.length > 0) {
-      where.AND = andConditions;
+    if (filters.campaignStartTo && !startTo) {
+      throw new BadRequestException("Invalid campaignStartTo date");
     }
 
-    if (!searchTerm && andConditions.length === 0) return [];
+    if (startFrom) {
+      andConditions.push({ startDate: { gte: startFrom } });
+    }
+
+    if (startTo) {
+      andConditions.push({ startDate: { lte: startTo } });
+    }
+
+    if (
+      andConditions.length === 1 &&
+      !searchTerm &&
+      !filters.campaignStatus &&
+      !filters.campaignStartFrom &&
+      !filters.campaignStartTo
+    ) {
+      return [];
+    }
 
     const campaigns = await this.prisma.campaign.findMany({
-      where,
+      where: { AND: andConditions },
       select: {
         id: true,
         name: true,
@@ -335,7 +484,7 @@ export class SearchService {
         startDate: true,
       },
       take: limit,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ createdAt: "desc" }],
     });
 
     return campaigns.map((c) => ({
