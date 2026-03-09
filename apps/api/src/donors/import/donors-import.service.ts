@@ -4,11 +4,15 @@ import { DuplicatesService } from "./duplicates.service";
 import { ExecutorService } from "./executor.service";
 
 @Injectable()
-export class DonorsImportService {
+export class DonorsImportService
+  export class DuplicatesService {}
+export class ExecutorService {}
+{
   constructor(
     private parser: DonorsImportParserService,
     private duplicates: DuplicatesService,
     private executor: ExecutorService,
+    
   ) {}
 
   async parseImportFile(file: Express.Multer.File) {
