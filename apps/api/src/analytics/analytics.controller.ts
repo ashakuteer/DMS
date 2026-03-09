@@ -44,7 +44,8 @@ export class AnalyticsController {
 
   @Get('export/pdf')
   async exportPdf(@Res() res: Response) {
-    const buffer = await this.analyticsService.exportSummaryPdf();
+    const summary = await this.analyticsService.getSummary();
+const buffer = await this.analyticsService.exportSummaryPdf(summary);
     const filename = `analytics-summary-${new Date().toISOString().split('T')[0]}.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
