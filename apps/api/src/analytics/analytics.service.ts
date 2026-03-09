@@ -1,44 +1,84 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable } from "@nestjs/common";
 
-import { AnalyticsSummaryService } from "./services/analytics-summary.service"
-import { AnalyticsChartsService } from "./services/analytics-charts.service"
-import { AnalyticsSegmentsService } from "./services/analytics-segments.service"
-import { AnalyticsRiskService } from "./services/analytics-risk.service"
-import { AnalyticsExportService } from "./services/analytics-export.service"
-import { AnalyticsDashboardService } from "./services/analytics-dashboard.service"
+import { AnalyticsSummaryService } from "./services/analytics-summary.service";
+import { AnalyticsChartsService } from "./services/analytics-charts.service";
+import { AnalyticsSegmentsService } from "./services/analytics-segments.service";
+import { AnalyticsRiskService } from "./services/analytics-risk.service";
+import { AnalyticsExportService } from "./services/analytics-export.service";
+import { AnalyticsDashboardService } from "./services/analytics-dashboard.service";
 
 @Injectable()
 export class AnalyticsService {
   constructor(
-    private summary: AnalyticsSummaryService,
-    private charts: AnalyticsChartsService,
-    private segments: AnalyticsSegmentsService,
-    private risk: AnalyticsRiskService,
-    private exports: AnalyticsExportService,
-    private dashboard: AnalyticsDashboardService
+    private summaryService: AnalyticsSummaryService,
+    private chartsService: AnalyticsChartsService,
+    private segmentsService: AnalyticsSegmentsService,
+    private riskService: AnalyticsRiskService,
+    private exportService: AnalyticsExportService,
+    private dashboardService: AnalyticsDashboardService,
   ) {}
 
+  // -----------------------------
+  // SUMMARY
+  // -----------------------------
   getSummary() {
-    return this.summary.getSummary()
+    return this.summaryService.getSummary();
   }
 
+  // -----------------------------
+  // CHARTS
+  // -----------------------------
   getCharts() {
-    return this.charts.getMonthlyDonationSeries()
+    return this.chartsService.getMonthlyDonationSeries();
   }
 
-  getTopDonors() {
-    return this.segments.getTopDonorsSegment()
+  // -----------------------------
+  // SEGMENTS
+  // -----------------------------
+  async getSegment(segment: string) {
+    switch (segment) {
+      case "top":
+        return this.segmentsService.getTopDonorsSegment();
+
+      case "risk":
+        return this.riskService.computeAtRiskDonors();
+
+      default:
+        return [];
+    }
   }
 
-  getAtRiskDonors() {
-    return this.risk.computeAtRiskDonors()
-  }
-
+  // -----------------------------
+  // EXPORTS
+  // -----------------------------
   exportSummaryPdf(data: any) {
-    return this.exports.exportSummaryPdf(data)
+    return this.exportService.exportSummaryPdf(data);
   }
 
-  getDashboard() {
-    return this.dashboard.getManagementDashboard()
+  exportDonationsDetailXlsx(filters: any) {
+    return this.exportService.exportDonationsDetailXlsx(filters);
+  }
+
+  exportDonationsXlsx() {
+    return this.exportService.exportDonationsXlsx();
+  }
+
+  exportRiskXlsx() {
+    return this.exportService.exportRiskXlsx();
+  }
+
+  exportBoardSummaryPdf() {
+    return this.exportService.exportBoardSummaryPdf();
+  }
+
+  exportHomeTotalsXlsx() {
+    return this.exportService.exportHomeTotalsXlsx();
+  }
+
+  // -----------------------------
+  // DASHBOARD
+  // -----------------------------
+  getManagementDashboard() {
+    return this.dashboardService.getManagementDashboard();
   }
 }
