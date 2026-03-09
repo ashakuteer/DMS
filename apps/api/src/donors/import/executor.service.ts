@@ -1,17 +1,10 @@
 import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../../prisma/prisma.service";
 
 @Injectable()
 export class ExecutorService {
-import { PrismaService } from "../../prisma/prisma.service";
-import { AuditService } from "../../audit/audit.service";
-import { UserContext } from "../donors.types";
-
-@Injectable()
-export class DonorsImportExecutorService {
-  constructor(
-    private prisma: PrismaService,
-    private auditService: AuditService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
+}
 
   async executeBulkImport(
     user: UserContext,
