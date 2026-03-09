@@ -1,9 +1,13 @@
-import { Injectable } from "@nestjs/common";
-import { PrismaService } from "../../prisma/prisma.service";
+import {
+  Injectable,
+  ForbiddenException,
+  BadRequestException,
+  Logger
+} from "@nestjs/common";
 
-@Injectable()
-export class DonorsImportDuplicatesService {
-  constructor(private prisma: PrismaService) {}
+import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
+import { Role, AuditAction } from "@prisma/client";
 
   async detectDuplicatesInBatch(
     rows: any[],
