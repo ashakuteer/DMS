@@ -18,17 +18,13 @@ import { ExecutorService } from "./import/executor.service";
     PrismaService,
     AuditService,
     DonorsService,
-    ImportNormalizerService,
-  DuplicatesService,
-  ExecutorService,  
-    ]
 
     // Import services
     DonorsImportService,
     DonorsImportParserService,
-    DonorsImportNormalizerService,
-    DonorsImportDuplicatesService,
-    DonorsImportExecutorService,
+    ImportNormalizerService,
+    DuplicatesService,
+    ExecutorService,
   ],
 
   exports: [
