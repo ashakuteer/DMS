@@ -1,37 +1,35 @@
-import { Module, forwardRef } from "@nestjs/common";
+import { Module } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
+
 import { DonorsController } from "./donors.controller";
 import { DonorsService } from "./donors.service";
-import { DonorsCrudService } from "./donors.crud.service";
-import { DonorDuplicatesService } from "./donor-duplicates.service";
-import { DonorsEngagementService } from "./donors.engagement.service";
-import { DonorsImportService } from "./donors.import.service";
-import { DonorsExportService } from "./donors.export.service";
-import { DonorsTimelineService } from "./donors.timeline.service";
-import { PrismaModule } from "../prisma/prisma.module";
-import { AuditModule } from "../audit/audit.module";
-import { StorageModule } from "../storage/storage.module";
-import { BeneficiariesModule } from "../beneficiaries/beneficiaries.module";
+
+import { DonorsImportService } from "./import/donors-import.service";
+import { DonorsImportParserService } from "./import/donors-import-parser.service";
+import { DonorsImportNormalizerService } from "./import/donors-import-normalizer.service";
+import { DonorsImportDuplicatesService } from "./import/donors-import-duplicates.service";
+import { DonorsImportExecutorService } from "./import/donors-import-executor.service";
 
 @Module({
-  imports: [
-    PrismaModule,
-    AuditModule,
-    StorageModule,
-    forwardRef(() => BeneficiariesModule),
-  ],
   controllers: [DonorsController],
+
   providers: [
+    PrismaService,
+    AuditService,
+
     DonorsService,
-    DonorsCrudService,
-    DonorDuplicatesService,
-    DonorsEngagementService,
+
+    // Import services
     DonorsImportService,
-    DonorsExportService,
-    DonorsTimelineService,
-     ],
+    DonorsImportParserService,
+    DonorsImportNormalizerService,
+    DonorsImportDuplicatesService,
+    DonorsImportExecutorService,
+  ],
+
   exports: [
     DonorsService,
-    DonorDuplicatesService,
   ],
 })
 export class DonorsModule {}
