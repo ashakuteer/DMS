@@ -9,11 +9,12 @@ import { DonorsExportService } from "./donors.export.service";
 import { DonorsCrudService } from "./donors.crud.service";
 import { DonorsTimelineService } from "./donors.timeline.service";
 import { DonorsEngagementService } from "./donors.engagement.service";
+import { DuplicatesService as DonorDuplicatesService } from "./donor-duplicates.service";
 
 import { DonorsImportService } from "./import/donors-import.service";
 import { DonorsImportParserService } from "./import/donors-import-parser.service";
 import { ImportNormalizerService } from "./import/import-normalizer.service";
-import { DuplicatesService } from "./import/duplicates.service";
+import { DuplicatesService as ImportDuplicatesService } from "./import/duplicates.service";
 import { ExecutorService } from "./import/executor.service";
 
 @Module({
@@ -27,10 +28,11 @@ import { ExecutorService } from "./import/executor.service";
     DonorsCrudService,
     DonorsTimelineService,
     DonorsEngagementService,
+    DonorDuplicatesService,
     DonorsImportService,
     DonorsImportParserService,
     ImportNormalizerService,
-    DuplicatesService,
+    ImportDuplicatesService,
     ExecutorService,
   ],
   exports: [DonorsService],
