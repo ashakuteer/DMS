@@ -4,7 +4,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 @Injectable()
 export class StorageService {
   private supabase: SupabaseClient;
-  private bucketName = 'photos';
+  private bucketName = 'Donors';
 
   constructor() {
     this.supabase = createClient(
