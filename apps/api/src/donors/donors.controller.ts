@@ -35,7 +35,7 @@ import { Request, Response } from "express";
 export class DonorsController {
   constructor(
     private readonly donorsService: DonorsService,
-    private readonly donorDuplicatesService: DonorDuplicatesService,
+    private readonly donorDuplicatesService: DuplicatesService,
     @Inject(forwardRef(() => BeneficiariesService))
     private readonly beneficiariesService: BeneficiariesService,
   ) {}
