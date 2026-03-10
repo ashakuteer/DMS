@@ -5,16 +5,16 @@ import { StorageModule } from "../storage/storage.module";
 
 import { DonorsController } from "./donors.controller";
 import { DonorsService } from "./donors.service";
+import { DonorsExportService } from "./donors.export.service";
+import { DonorsCrudService } from "./donors.crud.service";
+import { DonorsTimelineService } from "./donors.timeline.service";
+import { DonorsEngagementService } from "./donors-engagement.service";
 
 import { DonorsImportService } from "./import/donors-import.service";
 import { DonorsImportParserService } from "./import/donors-import-parser.service";
 import { ImportNormalizerService } from "./import/import-normalizer.service";
 import { DuplicatesService } from "./import/duplicates.service";
 import { ExecutorService } from "./import/executor.service";
-import { DonorsExportService } from "./donors.export.service";
-import { DonorsCrudService } from "./donors.crud.service";
-import { DonorsTimelineService } from "./donors.timeline.service";
-import { DonorsEngagementService } from "./donors-engagement.service";
 
 @Module({
   imports: [StorageModule],
@@ -27,7 +27,6 @@ import { DonorsEngagementService } from "./donors-engagement.service";
     DonorsCrudService,
     DonorsTimelineService,
     DonorsEngagementService,
-
     DonorsImportService,
     DonorsImportParserService,
     ImportNormalizerService,
