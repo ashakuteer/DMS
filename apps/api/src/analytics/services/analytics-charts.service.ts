@@ -18,19 +18,16 @@ if (cached && cached.expires > Date.now()) {
   return cached.data;
 }
 
-const result = await this.prisma.$queryRaw<
-  { month: string; amount: number; count: number }[]
->`
-  SELECT 
-    TO_CHAR(DATE_TRUNC('month', "donationDate"), 'Mon YY') AS month,
-    SUM("donationAmount") AS amount,
-    COUNT(*) AS count
-  FROM "Donation"
-  WHERE "deletedAt" IS NULL
-  AND "donationDate" >= NOW() - INTERVAL '12 months'
-  GROUP BY DATE_TRUNC('month', "donationDate")
-  ORDER BY DATE_TRUNC('month', "donationDate")
-`;
+const result = await this.prisma.$queryRaw<any[]>`
+SELECT 
+  TO_CHAR(DATE_TRUNC('month', "donationDate"), 'Mon YY') AS month,
+  SUM("donationAmount") AS amount,
+  COUNT(*) AS count
+FROM "Donation"
+WHERE "deletedAt" IS NULL
+AND "donationDate" >= NOW() - INTERVAL '12 months'
+GROUP BY DATE_TRUNC('month', "donationDate")
+ORDER BY DATE_TRUNC('month', "donationDate")
 
 const data = result.map((r) => ({
   month: r.month,
