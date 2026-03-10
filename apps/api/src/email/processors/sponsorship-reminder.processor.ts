@@ -31,7 +31,7 @@ export class SponsorshipReminderProcessor {
           donor.firstName,
           s.beneficiary?.fullName,
           String(s.amount)
-          "Home",
+         const home = "Home";
           0,
           { name: "NGO" }
         );
