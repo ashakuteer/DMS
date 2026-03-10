@@ -1,64 +1,44 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
+import { StorageModule } from "../storage/storage.module";
+import { BeneficiariesModule } from "../beneficiaries/beneficiaries.module";
 
-import {
-  BeneficiariesController,
-  SponsorshipsController,
-  BeneficiaryUpdatesController,
-  SponsorDispatchesController,
-  ReportCampaignsController
-} from './beneficiaries.controller';
+import { DonorsController } from "./donors.controller";
+import { DonorsService } from "./donors.service";
+import { DonorsExportService } from "./donors.export.service";
+import { DonorsCrudService } from "./donors.crud.service";
+import { DonorsTimelineService } from "./donors.timeline.service";
+import { DonorsEngagementService } from "./donors.engagement.service";
+import { DuplicatesService as DonorDuplicatesService } from "./donor-duplicates.service";
 
-import { BeneficiariesService } from './beneficiaries.service';
-import { SponsorshipReminderScheduler } from './sponsorship-reminder.scheduler';
-
-import { PrismaModule } from '../prisma/prisma.module';
-import { AuditModule } from '../audit/audit.module';
-import { EmailModule } from '../email/email.module';
-import { EmailJobsModule } from '../email-jobs/email-jobs.module';
-import { StorageModule } from '../storage/storage.module';
-
-import { BeneficiaryCoreService } from './services/beneficiary-core.service';
-import { BeneficiarySponsorshipService } from './services/beneficiary-sponsorship.service';
-import { BeneficiaryUpdatesService } from './services/beneficiary-updates.service';
-import { BeneficiaryHealthService } from './services/beneficiary-health.service';
-import { BeneficiaryEducationService } from './services/beneficiary-education.service';
-import { BeneficiaryDocumentsService } from './services/beneficiary-documents.service';
-import { BeneficiaryReportsService } from './services/beneficiary-reports.service';
-import { BeneficiaryRemindersService } from './services/beneficiary-reminders.service';
+import { DonorsImportService } from "./import/donors-import.service";
+import { DonorsImportParserService } from "./import/donors-import-parser.service";
+import { ImportNormalizerService } from "./import/import-normalizer.service";
+import { DuplicatesService as ImportDuplicatesService } from "./import/duplicates.service";
+import { ExecutorService } from "./import/executor.service";
 
 @Module({
   imports: [
-    PrismaModule,
-    AuditModule,
-    EmailModule,
-    EmailJobsModule,
-    StorageModule
+    StorageModule,
+    forwardRef(() => BeneficiariesModule),
   ],
-
-  controllers: [
-    BeneficiariesController,
-    SponsorshipsController,
-    BeneficiaryUpdatesController,
-    SponsorDispatchesController,
-    ReportCampaignsController
-  ],
-
+  controllers: [DonorsController],
   providers: [
-    BeneficiariesService,
-    SponsorshipReminderScheduler,
-
-    BeneficiaryCoreService,
-    BeneficiarySponsorshipService,
-    BeneficiaryUpdatesService,
-    BeneficiaryHealthService,
-    BeneficiaryEducationService,
-    BeneficiaryDocumentsService,
-    BeneficiaryReportsService,
-    BeneficiaryRemindersService
+    PrismaService,
+    AuditService,
+    DonorsService,
+    DonorsExportService,
+    DonorsCrudService,
+    DonorsTimelineService,
+    DonorsEngagementService,
+    DonorDuplicatesService,
+    DonorsImportService,
+    DonorsImportParserService,
+    ImportNormalizerService,
+    ImportDuplicatesService,
+    ExecutorService,
   ],
-
-  exports: [
-    BeneficiariesService
-  ],
+  exports: [DonorsService],
 })
-export class BeneficiariesModule {}
+export class DonorsModule {}
