@@ -127,8 +127,8 @@ export class DonorsService {
     );
   }
 
-  generateBulkTemplate(): Promise<Buffer> {
-    return this.importService.generateBulkTemplate();
+   generateBulkTemplate(): Promise<Buffer> {
+    return this.importService.generateTemplate();
   }
 
   bulkUpload(
@@ -138,13 +138,7 @@ export class DonorsService {
     ipAddress?: string,
     userAgent?: string,
   ) {
-    return this.importService.bulkUpload(
-      file,
-      user,
-      mode,
-      ipAddress,
-      userAgent,
-    );
+    return this.importService.bulkUpload(file, user, mode);
   }
 
   exportDonors(
