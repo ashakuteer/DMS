@@ -1,25 +1,29 @@
-import {
-  Injectable,
-  ForbiddenException,
-  BadRequestException,
-  Logger
-} from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../../prisma/prisma.service";
 
-import { PrismaService } from "../prisma/prisma.service";
-import { AuditService } from "../audit/audit.service";
-import { Role, AuditAction } from "@prisma/client";
+@Injectable()
+export class DuplicatesService {
+  constructor(private prisma: PrismaService) {}
 
-  async detectDuplicatesInBatch(
+  async detectDuplicates(
     rows: any[],
-    mapping: Record<string, string>,
+    mapping: Record<string, string>
   ) {
     const phones: string[] = [];
     const emails: string[] = [];
 
-    rows.forEach((row) => {
-      if (row[mapping["primaryPhone"]]) phones.push(row[mapping["primaryPhone"]]);
-      if (row[mapping["personalEmail"]]) emails.push(row[mapping["personalEmail"]]);
-    });
+    for (const row of rows) {
+      const phoneKey = mapping["primaryPhone"];
+      const emailKey = mapping["personalEmail"];
+
+      if (phoneKey && row[phoneKey]) {
+        phones.push(row[phoneKey]);
+      }
+
+      if (emailKey && row[emailKey]) {
+        emails.push(row[emailKey]);
+      }
+    }
 
     const donors = await this.prisma.donor.findMany({
       where: {
@@ -32,6 +36,9 @@ import { Role, AuditAction } from "@prisma/client";
         id: true,
         donorCode: true,
         firstName: true,
+        lastName: true,
+        primaryPhone: true,
+        personalEmail: true,
       },
     });
 
