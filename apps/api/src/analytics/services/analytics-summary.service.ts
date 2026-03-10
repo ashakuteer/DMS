@@ -18,8 +18,6 @@ string,
 
 async getSummary() {
 const cacheKey = "analytics_summary";
-
-```
 const cached = this.cache.get(cacheKey);
 
 // return cached result if still valid
