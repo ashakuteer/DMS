@@ -27,7 +27,6 @@ this.segmentsService.getTopDonorsSegment(),
 this.riskService.computeAtRiskDonors(),
 ]);
 
-```
 return {
   summary,
   charts: {
