@@ -1,11 +1,3 @@
-
-That must **never be inside a .ts file**. It breaks the TypeScript parser.
-
-I also cleaned the formatting slightly so it compiles safely.
-
-Replace the **entire file** with this:
-
-```ts
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import {
@@ -17,14 +9,12 @@ import {
 export class AnalyticsSummaryService {
   constructor(private prisma: PrismaService) {}
 
-  // simple memory cache with TTL
   private cache = new Map<string, { data: any; expires: number }>();
 
   async getSummary() {
     const cacheKey = "analytics_summary";
     const cached = this.cache.get(cacheKey);
 
-    // return cached result if still valid
     if (cached && cached.expires > Date.now()) {
       return cached.data;
     }
@@ -32,7 +22,6 @@ export class AnalyticsSummaryService {
     const { start: monthStart, end: monthEnd } = getMonthRange();
     const { start: t12Start, end: t12End } = getTrailing12MonthsRange();
 
-    // run queries in parallel
     const [
       totalDonors,
       donationsThisMonth,
@@ -42,7 +31,6 @@ export class AnalyticsSummaryService {
       this.prisma.donor.count({
         where: { deletedAt: null },
       }),
-
       this.prisma.donation.aggregate({
         _sum: { donationAmount: true },
         where: {
@@ -53,7 +41,6 @@ export class AnalyticsSummaryService {
           },
         },
       }),
-
       this.prisma.donation.aggregate({
         _sum: { donationAmount: true },
         where: {
@@ -64,7 +51,6 @@ export class AnalyticsSummaryService {
           },
         },
       }),
-
       this.prisma.donation.count({
         where: {
           deletedAt: null,
@@ -85,7 +71,6 @@ export class AnalyticsSummaryService {
       donationCountThisMonth,
     };
 
-    // store in cache (5 minutes)
     this.cache.set(cacheKey, {
       data: result,
       expires: Date.now() + 5 * 60 * 1000,
