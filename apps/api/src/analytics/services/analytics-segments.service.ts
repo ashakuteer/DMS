@@ -48,8 +48,8 @@ return top.map((t) => {
     donorId: t.donorId,
     donorCode: donor?.donorCode ?? "",
     donorName: donor
-      ? `${donor.firstName} ${donor.lastName ?? ""}`.trim()
-      : "Unknown",
+  ? `${donor.firstName} ${donor.lastName ?? ""}`.trim()
+  : "Unknown"
     totalAmount: Number(t._sum.donationAmount) || 0,
     donationCount: t._count.id || 0,
   };
