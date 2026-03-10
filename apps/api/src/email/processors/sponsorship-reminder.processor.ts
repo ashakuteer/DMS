@@ -30,7 +30,7 @@ export class SponsorshipReminderProcessor {
         getSponsorshipDueTemplate(
           donor.firstName,
           s.beneficiary?.fullName,
-          s.amount,
+          Number(s.amount)
           "Home",
           0,
           { name: "NGO" }
