@@ -201,10 +201,10 @@ export class DonorsController {
     res!.send(buffer);
   }
 
-  @Get("duplicates")
+   @Get("duplicates")
   @Roles(Role.ADMIN)
   async findDuplicates(@CurrentUser() user: UserContext) {
-    return this.donorDuplicatesService.findDuplicates(user as any);
+    return this.donorDuplicatesService.getDuplicates(user as any);
   }
 
   @Post("duplicates/merge")
@@ -213,7 +213,7 @@ export class DonorsController {
     @CurrentUser() user: UserContext,
     @Body() data: { primaryDonorId: string; mergeFromDonorIds: string[] },
   ) {
-    return this.donorDuplicatesService.mergeDonors(
+    return this.donorDuplicatesService.merge(
       data.primaryDonorId,
       data.mergeFromDonorIds,
       user as any,
