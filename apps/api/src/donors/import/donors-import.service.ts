@@ -18,7 +18,7 @@ export class DonorsImportService {
   }
 
   async detectDuplicates(rows: any[], mapping: Record<string, string>) {
-    return this.duplicates.detectDuplicatesInBatch(rows, mapping);
+    return this.duplicates.detectDuplicates(rows, mapping);
   }
 
   async executeBulkImport(
