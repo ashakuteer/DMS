@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditService } from "../audit/audit.service";
+import { StorageModule } from "../storage/storage.module";
 
 import { DonorsController } from "./donors.controller";
 import { DonorsService } from "./donors.service";
@@ -10,25 +11,27 @@ import { DonorsImportParserService } from "./import/donors-import-parser.service
 import { ImportNormalizerService } from "./import/import-normalizer.service";
 import { DuplicatesService } from "./import/duplicates.service";
 import { ExecutorService } from "./import/executor.service";
+import { DonorsExportService } from "./donors.export.service";
+import { DonorsCrudService } from "./donors.crud.service";
+import { DonorsTimelineService } from "./donors.timeline.service";
 
 @Module({
+  imports: [StorageModule],
   controllers: [DonorsController],
-
   providers: [
     PrismaService,
     AuditService,
     DonorsService,
+    DonorsExportService,
+    DonorsCrudService,
+    DonorsTimelineService,
 
-    // Import services
     DonorsImportService,
     DonorsImportParserService,
     ImportNormalizerService,
     DuplicatesService,
     ExecutorService,
   ],
-
-  exports: [
-    DonorsService,
-  ],
+  exports: [DonorsService],
 })
 export class DonorsModule {}
