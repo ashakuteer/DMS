@@ -3,12 +3,13 @@ import { PrismaService } from "../../prisma/prisma.service";
 
 @Injectable()
 export class AnalyticsChartsService {
-constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
-async getMonthlyDonationSeries() {
-const result = await this.prisma.$queryRaw<
-{ month: string; amount: number; count: number }[]
->`       SELECT 
+  async getMonthlyDonationSeries() {
+    const result = await this.prisma.$queryRaw<
+      { month: string; amount: number; count: number }[]
+    >`
+      SELECT
         TO_CHAR(DATE_TRUNC('month', "donationDate"), 'Mon YY') AS month,
         SUM("donationAmount") AS amount,
         COUNT(*) AS count
@@ -19,13 +20,10 @@ const result = await this.prisma.$queryRaw<
       ORDER BY DATE_TRUNC('month', "donationDate")
     `;
 
-```
-return result.map((r) => ({
-  month: r.month,
-  amount: Number(r.amount) || 0,
-  count: Number(r.count) || 0,
-}));
-```
-
-}
+    return result.map((r) => ({
+      month: r.month,
+      amount: Number(r.amount) || 0,
+      count: Number(r.count) || 0,
+    }));
+  }
 }
