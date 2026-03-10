@@ -14,6 +14,7 @@ import { ExecutorService } from "./import/executor.service";
 import { DonorsExportService } from "./donors.export.service";
 import { DonorsCrudService } from "./donors.crud.service";
 import { DonorsTimelineService } from "./donors.timeline.service";
+import { DonorsEngagementService } from "./donors-engagement.service";
 
 @Module({
   imports: [StorageModule],
@@ -25,6 +26,7 @@ import { DonorsTimelineService } from "./donors.timeline.service";
     DonorsExportService,
     DonorsCrudService,
     DonorsTimelineService,
+    DonorsEngagementService,
 
     DonorsImportService,
     DonorsImportParserService,
