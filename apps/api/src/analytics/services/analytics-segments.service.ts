@@ -6,21 +6,10 @@ import { getCurrentFY } from "../utils/analytics-date.utils";
 export class AnalyticsSegmentsService {
 constructor(private prisma: PrismaService) {}
 
-// simple memory cache
-private cache = new Map<string, { data: any; expires: number }>();
-
 async getTopDonorsSegment() {
-const cacheKey = "analytics_top_donors";
-
-```
-const cached = this.cache.get(cacheKey);
-
-if (cached && cached.expires > Date.now()) {
-  return cached.data;
-}
-
 const { fyStart, fyEnd } = getCurrentFY();
 
+```
 const top = await this.prisma.donation.groupBy({
   by: ["donorId"],
   _sum: { donationAmount: true },
@@ -37,10 +26,6 @@ const top = await this.prisma.donation.groupBy({
 
 const donorIds = top.map((d) => d.donorId);
 
-if (!donorIds.length) {
-  return [];
-}
-
 const donors = await this.prisma.donor.findMany({
   where: {
     id: { in: donorIds },
@@ -56,7 +41,7 @@ const donors = await this.prisma.donor.findMany({
 
 const donorMap = new Map(donors.map((d) => [d.id, d]));
 
-const result = top.map((t) => {
+return top.map((t) => {
   const donor = donorMap.get(t.donorId);
 
   return {
@@ -69,14 +54,6 @@ const result = top.map((t) => {
     donationCount: t._count.id || 0,
   };
 });
-
-// cache for 5 minutes
-this.cache.set(cacheKey, {
-  data: result,
-  expires: Date.now() + 5 * 60 * 1000,
-});
-
-return result;
 ```
 
 }
