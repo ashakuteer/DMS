@@ -249,19 +249,22 @@ if (assignedToUserId) {
     return donor;
   }
 
-  async create(
-    user: UserContext,
-    data: any,
-    ipAddress?: string,
-    userAgent?: string,
-  ) {
-    return this.prisma.donor.create({
-      data: {
-        ...data,
-        createdById: user.id,
-      },
-    });
-  }
+ async create(
+  user: UserContext,
+  data: any,
+  ipAddress?: string,
+  userAgent?: string,
+) {
+  const donorCode = `AKF-DNR-${Date.now()}`;
+
+  return this.prisma.donor.create({
+    data: {
+      ...data,
+      donorCode,
+      createdById: user.id,
+    },
+  });
+}
 
   async update(
     user: UserContext,
