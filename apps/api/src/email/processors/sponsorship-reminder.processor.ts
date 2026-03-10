@@ -21,16 +21,14 @@ export class SponsorshipReminderProcessor {
     for (const s of sponsorships) {
       const donor = s.donor;
       const email = donor?.personalEmail || donor?.officialEmail;
-
       if (!email) continue;
-
-      const home = "Home";
 
       const { subject, body } = getSponsorshipDueTemplate(
         donor.firstName,
-        s.beneficiary?.fullName,
-        String(s.amount),
-        home,
+        s.beneficiary?.fullName ?? "Beneficiary",
+        String(s.amount ?? 0),
+        "Home",
+        0,
         { name: "NGO" }
       );
 
