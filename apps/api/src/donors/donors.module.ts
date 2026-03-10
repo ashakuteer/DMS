@@ -1,7 +1,8 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditService } from "../audit/audit.service";
 import { StorageModule } from "../storage/storage.module";
+import { BeneficiariesModule } from "../beneficiaries/beneficiaries.module";
 
 import { DonorsController } from "./donors.controller";
 import { DonorsService } from "./donors.service";
@@ -18,7 +19,10 @@ import { DuplicatesService as ImportDuplicatesService } from "./import/duplicate
 import { ExecutorService } from "./import/executor.service";
 
 @Module({
-  imports: [StorageModule],
+  imports: [
+    StorageModule,
+    forwardRef(() => BeneficiariesModule),
+  ],
   controllers: [DonorsController],
   providers: [
     PrismaService,
