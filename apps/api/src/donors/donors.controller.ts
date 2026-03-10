@@ -201,22 +201,19 @@ export class DonorsController {
     res!.send(buffer);
   }
 
-   @Get("duplicates")
+     @Get("duplicates")
   @Roles(Role.ADMIN)
-  async findDuplicates(@CurrentUser() user: UserContext) {
-    return this.donorDuplicatesService.getDuplicates(user as any);
+  async findDuplicates() {
+    throw new BadRequestException(
+      "Duplicate donor listing is not implemented in DuplicatesService yet",
+    );
   }
 
   @Post("duplicates/merge")
   @Roles(Role.ADMIN)
-  async mergeDuplicates(
-    @CurrentUser() user: UserContext,
-    @Body() data: { primaryDonorId: string; mergeFromDonorIds: string[] },
-  ) {
-    return this.donorDuplicatesService.merge(
-      data.primaryDonorId,
-      data.mergeFromDonorIds,
-      user as any,
+  async mergeDuplicates() {
+    throw new BadRequestException(
+      "Duplicate donor merge is not implemented in DuplicatesService yet",
     );
   }
 
