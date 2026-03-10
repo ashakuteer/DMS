@@ -5,41 +5,39 @@ import { getSponsorshipDueTemplate } from "../templates/sponsorship.template";
 
 @Injectable()
 export class SponsorshipReminderProcessor {
-
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService
   ) {}
 
   async process() {
-
-    const result = { queued:0, sent:0, failed:0, errors:[] };
+    const result = { queued: 0, sent: 0, failed: 0, errors: [] as any[] };
 
     const sponsorships = await this.prisma.sponsorship.findMany({
       where: { isActive: true },
-      include: { donor: true, beneficiary: true }
+      include: { donor: true, beneficiary: true },
     });
 
     for (const s of sponsorships) {
-
       const donor = s.donor;
-      const email = donor.personalEmail || donor.officialEmail;
+      const email = donor?.personalEmail || donor?.officialEmail;
+
       if (!email) continue;
 
-      const { subject, body } =
-        getSponsorshipDueTemplate(
-          donor.firstName,
-          s.beneficiary?.fullName,
-          String(s.amount)
-         const home = "Home";
-          0,
-          { name: "NGO" }
-        );
+      const home = "Home";
+
+      const { subject, body } = getSponsorshipDueTemplate(
+        donor.firstName,
+        s.beneficiary?.fullName,
+        String(s.amount),
+        home,
+        { name: "NGO" }
+      );
 
       await this.emailService.sendEmail({
         to: email,
         subject,
-        html: body
+        html: body,
       });
 
       result.sent++;
