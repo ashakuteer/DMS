@@ -30,19 +30,15 @@ this.riskService.computeAtRiskDonors(),
 ```
 return {
   summary,
-
   charts: {
     monthlyDonations,
   },
-
   segments: {
     topDonors,
   },
-
   risks: {
     atRiskDonors,
   },
-
   generatedAt: new Date(),
 };
 ```
