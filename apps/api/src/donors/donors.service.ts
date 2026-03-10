@@ -103,11 +103,11 @@ export class DonorsService {
   }
 
   detectDuplicatesInBatch(
-    rows: any[],
-    columnMapping: Record<string, string>,
-  ) {
-    this.importService.detectDuplicates(rows, columnMapping);
-  }
+  rows: any[],
+  columnMapping: Record<string, string>,
+) {
+  return this.importService.detectDuplicates(rows, columnMapping);
+}
 
   executeBulkImport(
     user: UserContext,
