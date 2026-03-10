@@ -25,7 +25,7 @@ import { CurrentUser } from "../auth/decorators/current-user.decorator";
 import { RequirePermission } from "../auth/decorators/permissions.decorator";
 import { DonorsService } from "./donors.service";
 import { UserContext } from "./donors.types";
-import { DonorDuplicatesService } from "./donor-duplicates.service";
+import { DuplicatesService } from "./donor-duplicates.service";
 import { BeneficiariesService } from "../beneficiaries/beneficiaries.service";
 import { Role } from "@prisma/client";
 import { Request, Response } from "express";
