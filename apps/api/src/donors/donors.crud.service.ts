@@ -259,21 +259,10 @@ if (assignedToUserId) {
 
   return this.prisma.donor.create({
     data: {
-      donorCode,
-      firstName: data.firstName || "",
-      middleName: data.middleName || null,
-      lastName: data.lastName || "",
-      category: data.category || "INDIVIDUAL",
-      gender: data.gender || null,
-      approximateAge: data.approximateAge ? Number(data.approximateAge) : null,
-      profession: data.profession || null,
-      religion: data.religion || null,
-      incomeSpectrum: data.incomeSpectrum || null,
-      primaryPhone: data.primaryPhone || null,
-      whatsappPhone: data.whatsappPhone || null,
-      alternatePhone: data.alternatePhone || null,
-      personalEmail: data.personalEmail || null,
-      officialEmail: data.officialEmail || null,
+      donorCode: donorCode,   // IMPORTANT
+
+      ...data,
+
       createdById: user.id,
     },
   });
