@@ -109,7 +109,7 @@ export class DonorsService {
   return this.importService.detectDuplicates(rows, columnMapping);
 }
 
-  executeBulkImport(
+    executeBulkImport(
     user: UserContext,
     rows: any[],
     columnMapping: Record<string, string>,
@@ -122,13 +122,11 @@ export class DonorsService {
       rows,
       columnMapping,
       actions,
-      ipAddress,
-      userAgent,
     );
   }
 
-   generateBulkTemplate(): Promise<Buffer> {
-    return this.importService.generateTemplate();
+  generateBulkTemplate(): Promise<Buffer> {
+    throw new NotFoundException("Bulk template generation is not implemented yet");
   }
 
   bulkUpload(
@@ -138,7 +136,7 @@ export class DonorsService {
     ipAddress?: string,
     userAgent?: string,
   ) {
-    return this.importService.bulkUpload(file, user, mode);
+    return this.importService.bulkUpload(file, user);
   }
 
   exportDonors(
