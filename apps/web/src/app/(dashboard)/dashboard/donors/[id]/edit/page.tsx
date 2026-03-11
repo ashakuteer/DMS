@@ -150,8 +150,8 @@ export default function EditDonorPage() {
         const donor = await res.json();
         setDonorCode(donor.donorCode);
 
-       if (donor.profilePicUrl) {
-  setExistingPhotoUrl(donor.profilePicUrl);
+      if (donor.profilePicUrl) {
+  setExistingPhotoUrl(normalizeImageUrl(donor.profilePicUrl));
 } else {
   setExistingPhotoUrl(null);
 }
