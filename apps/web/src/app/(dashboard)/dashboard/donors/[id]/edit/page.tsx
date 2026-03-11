@@ -152,7 +152,7 @@ export default function EditDonorPage() {
         setDonorCode(donor.donorCode);
 
       if (donor.profilePicUrl) {
-  setExistingPhotoUrl(normalizeImageUrl(donor.profilePicUrl));
+  setExistingPhotoUrl(resolveImageUrl(donor.profilePicUrl));
 } else {
   setExistingPhotoUrl(null);
 }
