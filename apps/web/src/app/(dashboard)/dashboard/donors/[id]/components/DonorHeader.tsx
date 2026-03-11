@@ -36,6 +36,13 @@ export default function DonorHeader({
   getDonorName,
   getInitials,
 }: DonorHeaderProps) {
+  const profileImageUrl = donor.profilePicUrl
+    ? donor.profilePicUrl
+        .replace(/^\/?api(?=https?:\/\/)/, "")
+        .replace(/^\/(?=https?:\/\/)/, "")
+        .trim()
+    : "";
+
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
       <div className="flex items-center gap-4">
@@ -49,7 +56,7 @@ export default function DonorHeader({
         </Button>
 
         <Avatar className="h-16 w-16">
-          <AvatarImage src={donor.profilePicUrl || ""} />
+          <AvatarImage src={profileImageUrl} />
           <AvatarFallback className="text-xl">{getInitials()}</AvatarFallback>
         </Avatar>
 
