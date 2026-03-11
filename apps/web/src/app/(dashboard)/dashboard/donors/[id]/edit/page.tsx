@@ -83,7 +83,15 @@ export default function EditDonorPage() {
   const donorId = params.id as string;
   const { toast } = useToast();
   const user = authStorage.getUser();
-  
+
+  const normalizeImageUrl = (url?: string | null) => {
+    if (!url) return "";
+    return url
+      .replace(/^\/?api(?=https?:\/\/)/, "")
+      .replace(/^\/(?=https?:\/\/)/, "")
+      .trim();
+  };
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
@@ -143,9 +151,13 @@ export default function EditDonorPage() {
       if (res.ok) {
         const donor = await res.json();
         setDonorCode(donor.donorCode);
-       if (donor.profilePicUrl) {
-  setExistingPhotoUrl(donor.profilePicUrl);
-}
+
+        if (donor.profilePicUrl) {
+          setExistingPhotoUrl(normalizeImageUrl(donor.profilePicUrl));
+        } else {
+          setExistingPhotoUrl(null);
+        }
+
         setFormData({
           firstName: donor.firstName || "",
           middleName: donor.middleName || "",
@@ -276,7 +288,7 @@ export default function EditDonorPage() {
     setSaving(true);
     try {
       const payload: Record<string, any> = {};
-      
+
       payload.firstName = formData.firstName || undefined;
       payload.middleName = formData.middleName || undefined;
       payload.lastName = formData.lastName || undefined;
@@ -359,7 +371,7 @@ export default function EditDonorPage() {
     }
   };
 
-  if (user && !hasPermission(user?.role, 'donors', 'edit')) return <AccessDenied />;
+  if (user && !hasPermission(user?.role, "donors", "edit")) return <AccessDenied />;
 
   if (loading) {
     return (
@@ -398,7 +410,7 @@ export default function EditDonorPage() {
                 {photoPreview || existingPhotoUrl ? (
                   <div className="relative">
                     <img
-                      src={photoPreview || existingPhotoUrl || ""}
+                      src={photoPreview || normalizeImageUrl(existingPhotoUrl) || ""}
                       alt="Preview"
                       className="h-20 w-20 rounded-full object-cover border-2 border-border"
                     />
