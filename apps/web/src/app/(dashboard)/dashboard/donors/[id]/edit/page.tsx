@@ -84,13 +84,11 @@ export default function EditDonorPage() {
   const { toast } = useToast();
   const user = authStorage.getUser();
 
-  const normalizeImageUrl = (url?: string | null) => {
-    if (!url) return "";
-    return url
-      .replace(/^\/?api(?=https?:\/\/)/, "")
-      .replace(/^\/(?=https?:\/\/)/, "")
-      .trim();
-  };
+  if (donor.profilePicUrl) {
+  setExistingPhotoUrl(normalizeImageUrl(donor.profilePicUrl));
+} else {
+  setExistingPhotoUrl(null);
+}  
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -152,11 +150,11 @@ export default function EditDonorPage() {
         const donor = await res.json();
         setDonorCode(donor.donorCode);
 
-        if (donor.profilePicUrl) {
-          setExistingPhotoUrl(normalizeImageUrl(donor.profilePicUrl));
-        } else {
-          setExistingPhotoUrl(null);
-        }
+       if (donor.profilePicUrl) {
+  setExistingPhotoUrl(donor.profilePicUrl);
+} else {
+  setExistingPhotoUrl(null);
+}
 
         setFormData({
           firstName: donor.firstName || "",
@@ -410,7 +408,7 @@ export default function EditDonorPage() {
                 {photoPreview || existingPhotoUrl ? (
                   <div className="relative">
                     <img
-                      src={photoPreview || normalizeImageUrl(existingPhotoUrl) || ""}
+                      src={photoPreview || existingPhotoUrl || ""}
                       alt="Preview"
                       className="h-20 w-20 rounded-full object-cover border-2 border-border"
                     />
