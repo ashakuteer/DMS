@@ -85,10 +85,10 @@ export default function EditDonorPage() {
   const user = authStorage.getUser();
 
   if (donor.profilePicUrl) {
-  setExistingPhotoUrl(normalizeImageUrl(donor.profilePicUrl));
+  setExistingPhotoUrl(donor.profilePicUrl);
 } else {
   setExistingPhotoUrl(null);
-}  
+}
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
