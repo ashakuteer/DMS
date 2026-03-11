@@ -9,6 +9,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { resolveImageUrl } from "@/lib/image-url";
 import type { Donor } from "../types";
 import { getCategoryColor } from "../utils";
 
@@ -36,7 +37,7 @@ export default function DonorHeader({
   getDonorName,
   getInitials,
 }: DonorHeaderProps) {
-  const profileImageUrl = donor.profilePicUrl || "";
+  const profileImageUrl = resolveImageUrl(donor.profilePicUrl);
 
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
