@@ -36,12 +36,7 @@ export default function DonorHeader({
   getDonorName,
   getInitials,
 }: DonorHeaderProps) {
-  const profileImageUrl = donor.profilePicUrl
-    ? donor.profilePicUrl
-        .replace(/^\/?api(?=https?:\/\/)/, "")
-        .replace(/^\/(?=https?:\/\/)/, "")
-        .trim()
-    : "";
+  const profileImageUrl = donor.profilePicUrl || "";
 
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
