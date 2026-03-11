@@ -4,16 +4,17 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 @Injectable()
 export class StorageService {
   private supabase: SupabaseClient;
-  private bucketName = 'donors';
+  private donorBucketName = 'Donors';
+  private beneficiaryBucketName = 'beneficiary-photos';
 
   constructor() {
     this.supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_KEY
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_KEY!,
     );
   }
 
-  // Generic photo upload (used by beneficiaries) - 4 parameters
+  // Generic photo upload (used by beneficiaries)
   async uploadPhoto(
     id: string,
     buffer: Buffer,
@@ -21,11 +22,11 @@ export class StorageService {
     originalname: string,
   ) {
     const fileExt = originalname.split('.').pop();
-    const fileName = `beneficiaries/${id}.${fileExt}`;
+    const filePath = `beneficiaries/${id}.${fileExt}`;
 
-    const { data, error } = await this.supabase.storage
-      .from(this.bucketName)
-      .upload(fileName, buffer, {
+    const { error } = await this.supabase.storage
+      .from(this.beneficiaryBucketName)
+      .upload(filePath, buffer, {
         contentType: mimetype,
         upsert: true,
       });
@@ -35,25 +36,27 @@ export class StorageService {
     }
 
     const { data: urlData } = this.supabase.storage
-      .from(this.bucketName)
-      .getPublicUrl(fileName);
+      .from(this.beneficiaryBucketName)
+      .getPublicUrl(filePath);
 
-    return { 
-      path: fileName,
-      url: urlData.publicUrl 
+    return {
+      path: filePath,
+      url: urlData.publicUrl,
     };
   }
 
   // Generic photo delete
   async deletePhoto(filePath: string) {
     try {
-      await this.supabase.storage.from(this.bucketName).remove([filePath]);
+      await this.supabase.storage
+        .from(this.beneficiaryBucketName)
+        .remove([filePath]);
     } catch (error) {
       console.error('Error deleting photo:', error);
     }
   }
 
-  // Document upload (for reports, etc.) - 4 parameters
+  // Document upload
   async uploadDocument(
     id: string,
     buffer: Buffer,
@@ -62,11 +65,11 @@ export class StorageService {
   ) {
     const fileExt = originalname.split('.').pop();
     const timestamp = Date.now();
-    const fileName = `documents/${id}_${timestamp}.${fileExt}`;
+    const filePath = `documents/${id}_${timestamp}.${fileExt}`;
 
-    const { data, error } = await this.supabase.storage
-      .from(this.bucketName)
-      .upload(fileName, buffer, {
+    const { error } = await this.supabase.storage
+      .from(this.donorBucketName)
+      .upload(filePath, buffer, {
         contentType: mimetype,
         upsert: false,
       });
@@ -76,12 +79,12 @@ export class StorageService {
     }
 
     const { data: urlData } = this.supabase.storage
-      .from(this.bucketName)
-      .getPublicUrl(fileName);
+      .from(this.donorBucketName)
+      .getPublicUrl(filePath);
 
-    return { 
-      path: fileName,
-      url: urlData.publicUrl 
+    return {
+      path: filePath,
+      url: urlData.publicUrl,
     };
   }
 
@@ -93,30 +96,32 @@ export class StorageService {
     originalname: string,
   ) {
     const fileExt = originalname.split('.').pop();
-    const fileName = `donors/${donorId}.${fileExt}`;
+    const filePath = `donors/${donorId}.${fileExt}`;
 
-    const { data, error } = await this.supabase.storage
-      .from(this.bucketName)
-      .upload(fileName, buffer, {
+    const { error } = await this.supabase.storage
+      .from(this.donorBucketName)
+      .upload(filePath, buffer, {
         contentType: mimetype,
         upsert: true,
       });
 
     if (error) {
-      throw new Error(`Failed to upload photo: ${error.message}`);
+      throw new Error(`Failed to upload donor photo: ${error.message}`);
     }
 
     const { data: urlData } = this.supabase.storage
-      .from(this.bucketName)
-      .getPublicUrl(fileName);
+      .from(this.donorBucketName)
+      .getPublicUrl(filePath);
 
     return { url: urlData.publicUrl };
   }
 
   async deleteDonorPhoto(url: string) {
     try {
-      const fileName = url.split('/').slice(-2).join('/');
-      await this.supabase.storage.from(this.bucketName).remove([fileName]);
+      const filePath = url.split('/').slice(-2).join('/');
+      await this.supabase.storage
+        .from(this.donorBucketName)
+        .remove([filePath]);
     } catch (error) {
       console.error('Error deleting donor photo:', error);
     }
@@ -130,30 +135,32 @@ export class StorageService {
     originalname: string,
   ) {
     const fileExt = originalname.split('.').pop();
-    const fileName = `beneficiaries/${beneficiaryId}.${fileExt}`;
+    const filePath = `beneficiaries/${beneficiaryId}.${fileExt}`;
 
-    const { data, error } = await this.supabase.storage
-      .from(this.bucketName)
-      .upload(fileName, buffer, {
+    const { error } = await this.supabase.storage
+      .from(this.beneficiaryBucketName)
+      .upload(filePath, buffer, {
         contentType: mimetype,
         upsert: true,
       });
 
     if (error) {
-      throw new Error(`Failed to upload photo: ${error.message}`);
+      throw new Error(`Failed to upload beneficiary photo: ${error.message}`);
     }
 
     const { data: urlData } = this.supabase.storage
-      .from(this.bucketName)
-      .getPublicUrl(fileName);
+      .from(this.beneficiaryBucketName)
+      .getPublicUrl(filePath);
 
     return { url: urlData.publicUrl };
   }
 
   async deleteBeneficiaryPhoto(url: string) {
     try {
-      const fileName = url.split('/').slice(-2).join('/');
-      await this.supabase.storage.from(this.bucketName).remove([fileName]);
+      const filePath = url.split('/').slice(-2).join('/');
+      await this.supabase.storage
+        .from(this.beneficiaryBucketName)
+        .remove([filePath]);
     } catch (error) {
       console.error('Error deleting beneficiary photo:', error);
     }
