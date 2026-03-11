@@ -143,10 +143,9 @@ export default function EditDonorPage() {
       if (res.ok) {
         const donor = await res.json();
         setDonorCode(donor.donorCode);
-        if (donor.profilePicUrl) {
-          const apiBase = process.env.NEXT_PUBLIC_API_URL || "";
-          setExistingPhotoUrl(`${apiBase}${donor.profilePicUrl}`);
-        }
+       if (donor.profilePicUrl) {
+  setExistingPhotoUrl(donor.profilePicUrl);
+}
         setFormData({
           firstName: donor.firstName || "",
           middleName: donor.middleName || "",
