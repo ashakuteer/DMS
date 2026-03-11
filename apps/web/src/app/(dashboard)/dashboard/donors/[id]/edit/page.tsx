@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
+import { resolveImageUrl } from "@/lib/image-url";
 
 interface StaffMember {
   id: string;
@@ -85,7 +86,7 @@ export default function EditDonorPage() {
   const user = authStorage.getUser();
 
   if (donor.profilePicUrl) {
-  setExistingPhotoUrl(donor.profilePicUrl);
+  setExistingPhotoUrl(resolveImageUrl(donor.profilePicUrl));
 } else {
   setExistingPhotoUrl(null);
 }
