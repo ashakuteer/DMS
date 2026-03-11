@@ -49,7 +49,7 @@ export default function DonorHeader({
         </Button>
 
         <Avatar className="h-16 w-16">
-          <AvatarImage src={donor.profilePicUrl} />
+          <AvatarImage src={donor.profilePicUrl || ""} />
           <AvatarFallback className="text-xl">{getInitials()}</AvatarFallback>
         </Avatar>
 
