@@ -1,12 +1,36 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { formatHomeType, formatMode, getCurrentFY } from "./dashboard.helpers";
 
 @Injectable()
 export class DashboardInsightsService {
+  private readonly logger = new Logger(DashboardInsightsService.name);
+
+  // Simple in-memory TTL cache — drop-in ready for Redis
+  private readonly cache = new Map<string, { data: any; expiresAt: number }>();
+  private readonly CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
   constructor(private readonly prisma: PrismaService) {}
 
+  private getCached<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    if (entry && Date.now() < entry.expiresAt) return entry.data as T;
+    this.cache.delete(key);
+    return null;
+  }
+
+  private setCached(key: string, data: any): void {
+    this.cache.set(key, { data, expiresAt: Date.now() + this.CACHE_TTL_MS });
+  }
+
   async getAIInsights() {
+    const cached = this.getCached<any[]>("ai_insights");
+    if (cached) {
+      this.logger.debug("getAIInsights() served from cache");
+      return cached;
+    }
+
+    const start = Date.now();
     const { fyStart, fyEnd } = getCurrentFY();
     const now = new Date();
     const insights: { type: string; title: string; description: string }[] = [];
@@ -29,8 +53,10 @@ export class DashboardInsightsService {
       59,
       59,
     );
+    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-    const [thisMonth, lastMonth] = await Promise.all([
+    // FIX: Run all independent queries in parallel (was 4 sequential rounds)
+    const [thisMonth, lastMonth, regularDonors, donations, modeTrend] = await Promise.all([
       this.prisma.donation.aggregate({
         _sum: { donationAmount: true },
         _count: { id: true },
@@ -47,8 +73,35 @@ export class DashboardInsightsService {
           donationDate: { gte: lastMonthStart, lte: lastMonthEnd },
         },
       }),
+      this.prisma.donor.findMany({
+        where: {
+          deletedAt: null,
+          donationFrequency: { in: ["MONTHLY", "QUARTERLY"] },
+        },
+        select: { id: true },
+      }),
+      // FIX: Added take:500 — was fetching ALL FY donations for JS time-slot analysis
+      this.prisma.donation.findMany({
+        where: {
+          deletedAt: null,
+          donationDate: { gte: fyStart, lte: fyEnd },
+        },
+        select: { donationDate: true },
+        orderBy: { donationDate: "desc" },
+        take: 500,
+      }),
+      this.prisma.donation.groupBy({
+        by: ["donationMode"],
+        _count: { id: true },
+        where: {
+          deletedAt: null,
+          donationDate: { gte: fyStart, lte: fyEnd },
+        },
+        orderBy: { _count: { id: "desc" } },
+      }),
     ]);
 
+    // Month-over-month insight
     const thisMonthAmt = thisMonth._sum.donationAmount?.toNumber() || 0;
     const lastMonthAmt = lastMonth._sum.donationAmount?.toNumber() || 0;
 
@@ -62,16 +115,7 @@ export class DashboardInsightsService {
       });
     }
 
-    const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
-
-    const regularDonors = await this.prisma.donor.findMany({
-      where: {
-        deletedAt: null,
-        donationFrequency: { in: ["MONTHLY", "QUARTERLY"] },
-      },
-      select: { id: true },
-    });
-
+    // Inactive regular donors — activeDonorIds depends on regularDonors, so sequential here is correct
     const regularDonorIds = regularDonors.map((d) => d.id);
 
     if (regularDonorIds.length > 0) {
@@ -96,14 +140,7 @@ export class DashboardInsightsService {
       }
     }
 
-    const donations = await this.prisma.donation.findMany({
-      where: {
-        deletedAt: null,
-        donationDate: { gte: fyStart, lte: fyEnd },
-      },
-      select: { donationDate: true },
-    });
-
+    // FIX: Time-slot analysis now uses the limited `donations` fetched above (max 500)
     if (donations.length >= 5) {
       const hourCounts: Record<string, number> = {};
 
@@ -130,16 +167,7 @@ export class DashboardInsightsService {
       }
     }
 
-    const modeTrend = await this.prisma.donation.groupBy({
-      by: ["donationMode"],
-      _count: { id: true },
-      where: {
-        deletedAt: null,
-        donationDate: { gte: fyStart, lte: fyEnd },
-      },
-      orderBy: { _count: { id: "desc" } },
-    });
-
+    // FIX: modeTrend was fetched in parallel above, now just process it
     if (modeTrend.length > 1) {
       const topMode = modeTrend[0];
       const total = modeTrend.reduce((sum, m) => sum + m._count.id, 0);
@@ -156,6 +184,8 @@ export class DashboardInsightsService {
       }
     }
 
+    this.setCached("ai_insights", insights);
+    this.logger.log(`getAIInsights() completed in ${Date.now() - start}ms`);
     return insights;
   }
 
@@ -275,6 +305,13 @@ export class DashboardInsightsService {
   }
 
   async getAdminInsights() {
+    const cached = this.getCached<any[]>("admin_insights");
+    if (cached) {
+      this.logger.debug("getAdminInsights() served from cache");
+      return cached;
+    }
+
+    const start = Date.now();
     const { fyStart, fyEnd } = getCurrentFY();
     const now = new Date();
     const insights: { type: string; title: string; description: string }[] = [];
@@ -288,7 +325,7 @@ export class DashboardInsightsService {
       59,
       59,
     );
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getFullYear(), now.getMonth() - 1, 1);
     const lastMonthEnd = new Date(
       now.getFullYear(),
       now.getMonth(),
@@ -298,7 +335,8 @@ export class DashboardInsightsService {
       59,
     );
 
-    const [thisMonth, lastMonth] = await Promise.all([
+    // FIX: Run all independent queries in parallel (was 3 sequential rounds before regularDonors loop)
+    const [thisMonth, lastMonth, regularDonors, allDonationsFY, topDonorsSum] = await Promise.all([
       this.prisma.donation.aggregate({
         _sum: { donationAmount: true },
         _count: { id: true },
@@ -315,8 +353,34 @@ export class DashboardInsightsService {
           donationDate: { gte: lastMonthStart, lte: lastMonthEnd },
         },
       }),
+      this.prisma.donor.findMany({
+        where: {
+          deletedAt: null,
+          donationFrequency: { in: ["MONTHLY", "QUARTERLY"] },
+        },
+        select: { id: true, firstName: true, lastName: true, donationFrequency: true },
+      }),
+      // FIX: Moved allDonationsFY + topDonorsSum into this parallel round (was sequential after regularDonors)
+      this.prisma.donation.aggregate({
+        _sum: { donationAmount: true },
+        where: {
+          deletedAt: null,
+          donationDate: { gte: fyStart, lte: fyEnd },
+        },
+      }),
+      this.prisma.donation.groupBy({
+        by: ["donorId"],
+        _sum: { donationAmount: true },
+        where: {
+          deletedAt: null,
+          donationDate: { gte: fyStart, lte: fyEnd },
+        },
+        orderBy: { _sum: { donationAmount: "desc" } },
+        take: 5,
+      }),
     ]);
 
+    // Month-over-month insight
     const thisMonthAmt = thisMonth._sum.donationAmount?.toNumber() || 0;
     const lastMonthAmt = lastMonth._sum.donationAmount?.toNumber() || 0;
 
@@ -331,14 +395,7 @@ export class DashboardInsightsService {
       });
     }
 
-    const regularDonors = await this.prisma.donor.findMany({
-      where: {
-        deletedAt: null,
-        donationFrequency: { in: ["MONTHLY", "QUARTERLY"] },
-      },
-      select: { id: true, firstName: true, lastName: true, donationFrequency: true },
-    });
-
+    // Inactive regular donors — latestDonations depends on regularDonors, sequential is correct
     const regularDonorIds = regularDonors.map((d) => d.id);
 
     const latestDonations = regularDonorIds.length
@@ -393,25 +450,7 @@ export class DashboardInsightsService {
       });
     }
 
-    const allDonationsFY = await this.prisma.donation.aggregate({
-      _sum: { donationAmount: true },
-      where: {
-        deletedAt: null,
-        donationDate: { gte: fyStart, lte: fyEnd },
-      },
-    });
-
-    const topDonorsSum = await this.prisma.donation.groupBy({
-      by: ["donorId"],
-      _sum: { donationAmount: true },
-      where: {
-        deletedAt: null,
-        donationDate: { gte: fyStart, lte: fyEnd },
-      },
-      orderBy: { _sum: { donationAmount: "desc" } },
-      take: 5,
-    });
-
+    // Donation concentration insight (uses allDonationsFY + topDonorsSum fetched in round 1)
     const totalFY = allDonationsFY._sum.donationAmount?.toNumber() || 0;
     const top5Total = topDonorsSum.reduce(
       (sum, d) => sum + (d._sum.donationAmount?.toNumber() || 0),
@@ -434,7 +473,7 @@ export class DashboardInsightsService {
       });
     }
 
-    const quarterlyData: { q: string; amount: number }[] = [];
+    // FIX: Quarterly queries run in parallel instead of sequentially in a for loop
     const quarters = [
       {
         name: "Q1 (Apr-Jun)",
@@ -458,22 +497,24 @@ export class DashboardInsightsService {
       },
     ];
 
-    for (const quarter of quarters) {
-      if (quarter.end <= now) {
-        const result = await this.prisma.donation.aggregate({
+    const eligibleQuarters = quarters.filter((q) => q.end <= now);
+
+    const quarterResults = await Promise.all(
+      eligibleQuarters.map((q) =>
+        this.prisma.donation.aggregate({
           _sum: { donationAmount: true },
           where: {
             deletedAt: null,
-            donationDate: { gte: quarter.start, lte: quarter.end },
+            donationDate: { gte: q.start, lte: q.end },
           },
-        });
+        }),
+      ),
+    );
 
-        quarterlyData.push({
-          q: quarter.name,
-          amount: result._sum.donationAmount?.toNumber() || 0,
-        });
-      }
-    }
+    const quarterlyData = quarterResults.map((result, i) => ({
+      q: eligibleQuarters[i].name,
+      amount: result._sum.donationAmount?.toNumber() || 0,
+    }));
 
     const nonZeroQuarters = quarterlyData.filter((q) => q.amount > 0);
 
@@ -487,10 +528,19 @@ export class DashboardInsightsService {
       });
     }
 
+    this.setCached("admin_insights", insights);
+    this.logger.log(`getAdminInsights() completed in ${Date.now() - start}ms`);
     return insights;
   }
 
   async getInsightCards() {
+    const cached = this.getCached<any[]>("insight_cards");
+    if (cached) {
+      this.logger.debug("getInsightCards() served from cache");
+      return cached;
+    }
+
+    const start = Date.now();
     const now = new Date();
     const { fyStart, fyEnd } = getCurrentFY();
     const thirtyDaysAgo = new Date(now);
@@ -509,101 +559,139 @@ export class DashboardInsightsService {
       details?: { name: string; id: string; extra?: string }[];
     }[] = [];
 
-    const allDonors = await this.prisma.donor.findMany({
-      where: { deletedAt: null },
-      select: { id: true, firstName: true, lastName: true },
-    });
-
-    const donorIds = allDonors.map((d) => d.id);
-
-    const [allLogs, allMessages] = await Promise.all([
-      donorIds.length
-        ? this.prisma.communicationLog.findMany({
-            where: { donorId: { in: donorIds } },
-            orderBy: { createdAt: "desc" },
-            select: { donorId: true, createdAt: true },
-          })
-        : Promise.resolve([]),
-      donorIds.length
-        ? this.prisma.communicationMessage.findMany({
-            where: { donorId: { in: donorIds } },
-            orderBy: { createdAt: "desc" },
-            select: { donorId: true, createdAt: true },
-          })
-        : Promise.resolve([]),
+    // FIX: Was fetching ALL donors + ALL their logs + ALL messages (no limits, sequential).
+    // Now: fetch only recently-contacted donor IDs (last 30 days) + counts + other data — all in parallel.
+    const [
+      totalDonorCount,
+      recentLogDonorIds,
+      recentMsgDonorIds,
+      donationsByDonor,
+      donorsWithRecentDonation,
+      donorsWithOlderDonation,
+      pledgesDueThisWeek,
+    ] = await Promise.all([
+      this.prisma.donor.count({ where: { deletedAt: null } }),
+      // Only fetch donors contacted in last 30 days (not all logs)
+      this.prisma.communicationLog.findMany({
+        where: { createdAt: { gte: thirtyDaysAgo } },
+        select: { donorId: true },
+        distinct: ["donorId"],
+      }),
+      this.prisma.communicationMessage.findMany({
+        where: {
+          createdAt: { gte: thirtyDaysAgo },
+          donorId: { not: null },
+        },
+        select: { donorId: true },
+        distinct: ["donorId"],
+      }),
+      this.prisma.donation.groupBy({
+        by: ["donorId"],
+        _sum: { donationAmount: true },
+        where: {
+          deletedAt: null,
+          donationDate: { gte: fyStart, lte: fyEnd },
+        },
+        orderBy: { _sum: { donationAmount: "desc" } },
+      }),
+      // FIX: These two were sequential — now parallel
+      this.prisma.donation.findMany({
+        where: {
+          deletedAt: null,
+          donationDate: { gte: oneEightyDaysAgo },
+        },
+        select: { donorId: true },
+        distinct: ["donorId"],
+      }),
+      this.prisma.donation.findMany({
+        where: {
+          deletedAt: null,
+          donationDate: { lt: oneEightyDaysAgo },
+        },
+        select: { donorId: true },
+        distinct: ["donorId"],
+      }),
+      this.prisma.pledge.findMany({
+        where: {
+          status: "PENDING",
+          isDeleted: false,
+          expectedFulfillmentDate: {
+            gte: now,
+            lte: sevenDaysFromNow,
+          },
+        },
+        include: {
+          donor: {
+            select: { id: true, firstName: true, lastName: true },
+          },
+        },
+      }),
     ]);
 
-    const lastLogMap = new Map<string, Date>();
-    for (const log of allLogs) {
-      if (!lastLogMap.has(log.donorId)) {
-        lastLogMap.set(log.donorId, log.createdAt);
-      }
-    }
+    // Compute follow-up donors: total minus those recently contacted
+    const recentlyContactedIds = new Set([
+      ...recentLogDonorIds.map((l) => l.donorId),
+      ...recentMsgDonorIds.filter((m) => m.donorId).map((m) => m.donorId!),
+    ]);
 
-    const lastMessageMap = new Map<string, Date>();
-    for (const msg of allMessages) {
-      if (!lastMessageMap.has(msg.donorId)) {
-        lastMessageMap.set(msg.donorId, msg.createdAt);
-      }
-    }
+    const followUpCount = Math.max(0, totalDonorCount - recentlyContactedIds.size);
 
-    const followUpDonors: { name: string; id: string; extra?: string }[] = [];
-
-    for (const donor of allDonors) {
-      const lastLog = lastLogMap.get(donor.id);
-      const lastMsg = lastMessageMap.get(donor.id);
-
-      const lastContact =
-        [lastLog, lastMsg].filter(Boolean).sort((a, b) => b!.getTime() - a!.getTime())[0] ||
-        null;
-
-      if (!lastContact || lastContact < thirtyDaysAgo) {
-        const daysSince = lastContact
-          ? Math.floor((now.getTime() - lastContact.getTime()) / (1000 * 60 * 60 * 24))
-          : null;
-
-        followUpDonors.push({
-          name: `${donor.firstName} ${donor.lastName || ""}`.trim(),
-          id: donor.id,
-          extra: daysSince ? `Last contact ${daysSince} days ago` : "Never contacted",
-        });
-      }
-    }
-
-    cards.push({
-      key: "follow_up_needed",
-      title: "Donors Needing Follow-up",
-      count: followUpDonors.length,
-      description:
-        followUpDonors.length > 0
-          ? `${followUpDonors.length} donor(s) haven't been contacted in over 30 days or never contacted.`
-          : "All donors have been contacted recently.",
-      type: "warning",
-      details: followUpDonors.slice(0, 5),
-    });
-
-    const donationsByDonor = await this.prisma.donation.groupBy({
-      by: ["donorId"],
-      _sum: { donationAmount: true },
-      where: {
-        deletedAt: null,
-        donationDate: { gte: fyStart, lte: fyEnd },
-      },
-      orderBy: { _sum: { donationAmount: "desc" } },
-    });
-
+    // Compute high-value donors (top 10%)
     const top10PctCount = Math.max(1, Math.ceil(donationsByDonor.length * 0.1));
     const highValueDonorEntries = donationsByDonor.slice(0, top10PctCount);
     const highValueTotal = highValueDonorEntries.reduce(
       (sum, d) => sum + (d._sum.donationAmount?.toNumber() || 0),
       0,
     );
-
     const highValueDonorIds = highValueDonorEntries.map((d) => d.donorId);
 
-    const highValueDonorNames = await this.prisma.donor.findMany({
-      where: { id: { in: highValueDonorIds } },
-      select: { id: true, firstName: true, lastName: true },
+    // Compute dormant donors
+    const recentDonorIds = new Set(donorsWithRecentDonation.map((d) => d.donorId));
+    const dormantDonorIds = donorsWithOlderDonation
+      .map((d) => d.donorId)
+      .filter((id) => !recentDonorIds.has(id));
+
+    // FIX: Was 3 sequential queries for names — now 3 parallel queries
+    const [followUpDonorSample, dormantDonorDetails, highValueDonorNames] = await Promise.all([
+      followUpCount > 0
+        ? this.prisma.donor.findMany({
+            where: {
+              deletedAt: null,
+              id: { notIn: Array.from(recentlyContactedIds) },
+            },
+            select: { id: true, firstName: true, lastName: true },
+            take: 5,
+          })
+        : Promise.resolve([] as { id: string; firstName: string; lastName: string | null }[]),
+      dormantDonorIds.length > 0
+        ? this.prisma.donor.findMany({
+            where: { id: { in: dormantDonorIds.slice(0, 5) }, deletedAt: null },
+            select: { id: true, firstName: true, lastName: true },
+          })
+        : Promise.resolve([] as { id: string; firstName: string; lastName: string | null }[]),
+      highValueDonorIds.length > 0
+        ? this.prisma.donor.findMany({
+            where: { id: { in: highValueDonorIds } },
+            select: { id: true, firstName: true, lastName: true },
+          })
+        : Promise.resolve([] as { id: string; firstName: string; lastName: string | null }[]),
+    ]);
+
+    // Build insight cards
+    cards.push({
+      key: "follow_up_needed",
+      title: "Donors Needing Follow-up",
+      count: followUpCount,
+      description:
+        followUpCount > 0
+          ? `${followUpCount} donor(s) haven't been contacted in over 30 days or never contacted.`
+          : "All donors have been contacted recently.",
+      type: "warning",
+      details: followUpDonorSample.map((d) => ({
+        name: `${d.firstName} ${d.lastName || ""}`.trim(),
+        id: d.id,
+        extra: "No contact in 30+ days",
+      })),
     });
 
     cards.push({
@@ -616,35 +704,6 @@ export class DashboardInsightsService {
         name: `${d.firstName} ${d.lastName || ""}`.trim(),
         id: d.id,
       })),
-    });
-
-    const donorsWithRecentDonation = await this.prisma.donation.findMany({
-      where: {
-        deletedAt: null,
-        donationDate: { gte: oneEightyDaysAgo },
-      },
-      select: { donorId: true },
-      distinct: ["donorId"],
-    });
-
-    const recentDonorIds = new Set(donorsWithRecentDonation.map((d) => d.donorId));
-
-    const donorsWithOlderDonation = await this.prisma.donation.findMany({
-      where: {
-        deletedAt: null,
-        donationDate: { lt: oneEightyDaysAgo },
-      },
-      select: { donorId: true },
-      distinct: ["donorId"],
-    });
-
-    const dormantDonorIds = donorsWithOlderDonation
-      .map((d) => d.donorId)
-      .filter((id) => !recentDonorIds.has(id));
-
-    const dormantDonorDetails = await this.prisma.donor.findMany({
-      where: { id: { in: dormantDonorIds.slice(0, 5) }, deletedAt: null },
-      select: { id: true, firstName: true, lastName: true },
     });
 
     cards.push({
@@ -661,22 +720,6 @@ export class DashboardInsightsService {
         id: d.id,
         extra: "No donation in 180+ days",
       })),
-    });
-
-    const pledgesDueThisWeek = await this.prisma.pledge.findMany({
-      where: {
-        status: "PENDING",
-        isDeleted: false,
-        expectedFulfillmentDate: {
-          gte: now,
-          lte: sevenDaysFromNow,
-        },
-      },
-      include: {
-        donor: {
-          select: { id: true, firstName: true, lastName: true },
-        },
-      },
     });
 
     const pledgeTotalAmount = pledgesDueThisWeek.reduce(
@@ -700,6 +743,8 @@ export class DashboardInsightsService {
       })),
     });
 
+    this.setCached("insight_cards", cards);
+    this.logger.log(`getInsightCards() completed in ${Date.now() - start}ms`);
     return cards;
   }
 }

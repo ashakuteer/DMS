@@ -1,0 +1,163 @@
+I need you to help optimize dashboard performance in my NGO Donor Hub monorepo based on a performance review report.
+
+Project context:
+- Project: NGO Donor Hub
+- Frontend: Next.js
+- Backend: NestJS
+- Database: PostgreSQL (Supabase) with Prisma
+- Hosting: Frontend on Vercel, Backend on Railway
+- Monorepo structure:
+  - apps/web
+  - apps/api
+  - prisma
+
+The dashboard performance report identified critical issues in the backend dashboard services.
+
+Main reported issues:
+1. N+1 query problem in dashboard.actions.service.ts
+2. Sequential database calls in dashboard.insights.service.ts
+3. No caching strategy
+4. Missing pagination
+5. Inefficient time slot analysis
+6. Missing database indexes
+7. No performance monitoring
+
+Reported impact:
+- Dashboard load time: 15–22 seconds
+- Staff actions query: 10–15 seconds
+- AI insights query: 3–4 seconds
+- Cache hit rate: 0%
+- Database query count: 10+ per request
+
+Priority recommendations from the report:
+1. Fix N+1 query in getStaffActions()
+2. Parallelize getAllInsights() queries using Promise.all()
+3. Add pagination limits to all findMany() calls
+4. Implement Redis caching with 5-minute TTL
+5. Add database indexes for frequently queried columns
+6. Optimize time slot analysis
+7. Add performance monitoring/logging
+
+I want you to do a real code-level audit and then apply minimal safe fixes.
+
+Please inspect and fix the following carefully:
+
+A. dashboard.actions.service.ts
+- Review getStaffActions()
+- Find where all donors are being fetched and then processed in JS loops
+- Eliminate N+1 queries
+- Move filtering/calculation to database level wherever possible
+- Add pagination / take / skip limits
+- Avoid fetching unnecessary records or nested data
+- Optimize time slot analysis if it is currently done inefficiently in memory
+
+B. dashboard.insights.service.ts
+- Review getAllInsights()
+- Find all sequential independent Prisma queries
+- Convert independent awaits into Promise.all()
+- Keep logic correct while reducing total wait time
+- Add limits where full datasets are being fetched unnecessarily
+
+C. All dashboard services
+- Search for other findMany() calls without pagination
+- Add safe take limits where missing
+- Identify repeated expensive calculations that should be cached
+- Suggest where caching should be applied first
+
+D. Caching
+- Add a practical caching strategy for dashboard stats
+- Prefer NestJS cache-manager approach
+- If Redis setup is available, use Redis
+- If not, still structure code cleanly so Redis can be added easily
+- Use about 5-minute TTL for dashboard stats endpoints
+- Explain exactly what package changes and module changes are needed
+
+E. Database indexes
+Please inspect Prisma queries and identify the most useful indexes to add for dashboard performance, especially around fields like:
+- donationDate
+- donorId
+- deletedAt
+- donationFrequency
+- any other columns heavily used in WHERE, ORDER BY, JOIN, or aggregation
+
+Generate:
+- recommended Prisma migration SQL or Prisma schema index additions
+- brief reason for each index
+
+F. Monitoring / logging
+- Add simple performance logging around dashboard endpoints/services
+- Log execution time for critical dashboard methods
+- Help identify slow queries in production
+- Keep changes lightweight and safe
+
+G. Output format I want
+After reviewing the code, give me:
+
+1. Root cause summary
+- What exactly is making the dashboard slow
+- Rank issues by severity
+
+2. Files to change
+- Exact file paths
+
+3. Exact code fixes
+- Show corrected code file by file
+- Prefer minimal safe changes, not broad rewrites
+
+4. Query optimization explanation
+- What changed
+- Why it improves performance
+
+5. Pagination plan
+- Where limits were added
+- What default values were chosen
+
+6. Caching plan
+- What should be cached
+- TTL used
+- Any dependencies to install
+- Any NestJS module wiring required
+
+7. Index plan
+- Exact indexes to add
+- Migration code
+
+8. Validation plan
+- How to test improvements
+- How to measure before vs after
+
+Important instructions:
+- Do not give only general advice
+- Actually inspect the existing code structure
+- Keep existing business logic intact
+- Prefer minimal safe refactoring
+- If a recommended report item is not valid for my actual code, say so clearly
+- If there are risks, mention them briefly
+- Show exact corrected code, not only high-level suggestions
+
+Focus first on these files if they exist:
+- dashboard.actions.service.ts
+- dashboard.insights.service.ts
+- dashboard.stats.service.ts
+- dashboard.module.ts
+- relevant Prisma schema / migration files
+
+Specific priorities in order:
+1. Fix N+1 query in getStaffActions()
+2. Parallelize getAllInsights()
+3. Add pagination to findMany()
+4. Add dashboard caching
+5. Add DB indexes
+6. Add timing logs / monitoring
+7. Optimize time slot analysis
+
+The report estimates:
+- getStaffActions() may improve from ~15s to ~0.3s
+- getAllInsights() may improve from ~4s to ~0.8s
+Please verify these claims against actual code and implement the safest realistic improvements.
+
+Start by tracing:
+- dashboard.actions.service.ts -> getStaffActions()
+- dashboard.insights.service.ts -> getAllInsights()
+
+Then give me precise fixes.

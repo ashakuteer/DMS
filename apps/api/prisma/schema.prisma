@@ -167,6 +167,9 @@ model Donor {
   // ✅ Phase 1: Performance indexes
   @@index([isDeleted, donationFrequency])
   @@index([isDeleted, updatedAt])
+  // ✅ Phase 2: deletedAt indexes (services filter deletedAt: null, not isDeleted)
+  @@index([deletedAt])
+  @@index([deletedAt, donationFrequency])
   @@map("donors")
 }
 model DonorSpecialOccasion {
@@ -256,6 +259,10 @@ model Donation {
   @@index([donorId, isDeleted, donationDate])
   @@index([donationMode])
   @@index([donationType])
+  // ✅ Phase 2: deletedAt indexes (services filter deletedAt: null, not isDeleted)
+  @@index([deletedAt])
+  @@index([deletedAt, donationDate])
+  @@index([donorId, deletedAt, donationDate])
   @@map("donations")
 }
 
@@ -883,6 +890,7 @@ model ReminderTask {
   @@index([dueDate])
   @@index([status])
   @@index([type])
+  @@index([status, dueDate])
   @@map("reminder_tasks")
 }
 
@@ -1895,5 +1903,6 @@ model CommunicationMessage {
   @@index([providerMessageId])
   @@index([status])
   @@index([createdAt])
+  @@index([donorId, createdAt])
   @@map("communication_messages")
 }
