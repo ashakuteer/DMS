@@ -25,11 +25,10 @@ RUN npx prisma generate
 # Build the application
 RUN npm run build
 
-# Remove dev dependencies to reduce image size
-RUN npm prune --production
-
 # Expose port (Railway will override this)
 EXPOSE 3001
 
-# Start the application
-CMD ["node", "dist/src/main.js"]
+# Run DB migrations then start the application.
+# prisma CLI is available because we do not prune devDependencies —
+# this ensures `prisma migrate deploy` works at container startup.
+CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy --schema=prisma/schema.prisma && node dist/src/main.js"]

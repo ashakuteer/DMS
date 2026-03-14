@@ -238,6 +238,22 @@ export class DonorsController {
     return { count };
   }
 
+  @Get("archived")
+  @Roles(Role.ADMIN)
+  async findArchived(
+    @CurrentUser() user: UserContext,
+    @Query("search") search?: string,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+  ) {
+    return this.donorsService.findArchived(
+      user,
+      search,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
+  }
+
   @Get(":id")
   @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
   async findOne(@CurrentUser() user: UserContext, @Param("id") id: string) {
@@ -265,22 +281,6 @@ export class DonorsController {
   ) {
     const { ipAddress, userAgent } = this.getClientInfo(req);
     return this.donorsService.update(user, id, data, ipAddress, userAgent);
-  }
-
-  @Get("archived")
-  @Roles(Role.ADMIN)
-  async findArchived(
-    @CurrentUser() user: UserContext,
-    @Query("search") search?: string,
-    @Query("page") page?: string,
-    @Query("limit") limit?: string,
-  ) {
-    return this.donorsService.findArchived(
-      user,
-      search,
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 20,
-    );
   }
 
   @Delete(":id")

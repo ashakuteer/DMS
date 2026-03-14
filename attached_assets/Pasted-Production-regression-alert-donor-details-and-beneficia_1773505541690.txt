@@ -1,0 +1,64 @@
+Production regression alert: donor details and beneficiary details are now broken.
+
+Current symptoms:
+1. Donor detail pages show "Donor not found"
+2. Beneficiary detail pages are also missing / not found
+3. This started after recent archive / delete / beneficiary fixes
+4. I need a SAFE production fix, not broad rewrites
+
+Please do a real code audit and fix the exact regression.
+
+Tasks:
+
+1. Trace donor detail page end to end:
+   - frontend donor detail route
+   - frontend API call
+   - backend donor findById / detail endpoint
+   - any soft-delete filtering
+   - any recent archive/delete changes
+2. Trace beneficiary detail page end to end:
+   - frontend beneficiary detail route
+   - frontend API call
+   - backend beneficiary findById / detail endpoint
+   - any soft-delete filtering
+   - any recent archive/delete changes
+
+3. Identify exactly why normal existing records are now returning "not found"
+4. Check whether soft-delete logic is incorrectly excluding active records
+5. Check for queries like:
+   - where: { isDeleted: false }
+   If old records may have null instead of false, fix safely
+6. Ensure active donors and beneficiaries still load in normal detail pages
+7. Ensure only actually archived records are excluded from normal pages
+8. Do NOT break the archive management feature
+9. Keep archive/restore logic intact, but restore normal detail view behavior
+
+Please specifically inspect:
+- donor detail page frontend
+- beneficiary detail page frontend
+- donor core/crud/detail service
+- beneficiary core/crud/detail service
+- archive / soft delete filters
+- controller endpoints for detail fetch
+
+Expected safe behavior:
+- Active donor detail page opens
+- Active beneficiary detail page opens
+- Archived records are hidden from normal pages
+- Archived records remain visible in admin archive management
+- Restore still works
+
+Output required:
+1. Root cause summary
+2. Exact files changed
+3. Exact code fixes
+4. Why donor and beneficiary details disappeared
+5. How soft-delete filtering was corrected
+6. Confirmation that normal detail pages work again
+7. Commit and push after verifying build success
+
+Important:
+- Keep the fix minimal and safe
+- Do not rewrite unrelated modules
+- Do not remove archive management
+- Do not give only explanation — actually fix the regression

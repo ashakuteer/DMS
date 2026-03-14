@@ -122,6 +122,22 @@ async bulkUpload(
   throw new BadRequestException("Beneficiary bulk upload is disabled.");
 }
 
+  @Get("archived")
+  @Roles(Role.ADMIN)
+  async findArchived(
+    @CurrentUser() user: UserContext,
+    @Query("search") search?: string,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+  ) {
+    return this.beneficiariesService.findArchived(
+      user,
+      search,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
+  }
+
   @Get(':id')
   @Roles(Role.ADMIN, Role.STAFF)
   async findById(@Param('id') id: string) {
@@ -145,22 +161,6 @@ async bulkUpload(
     @Body() dto: UpdateBeneficiaryDto,
   ) {
     return this.beneficiariesService.update(user, id, dto);
-  }
-
-  @Get("archived")
-  @Roles(Role.ADMIN)
-  async findArchived(
-    @CurrentUser() user: UserContext,
-    @Query("search") search?: string,
-    @Query("page") page?: string,
-    @Query("limit") limit?: string,
-  ) {
-    return this.beneficiariesService.findArchived(
-      user,
-      search,
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 20,
-    );
   }
 
   @Delete(':id')
