@@ -303,12 +303,20 @@ export default function NewDonorPage() {
           try {
             const formDataUpload = new FormData();
             formDataUpload.append("photo", photoFile);
-            await fetchWithAuth(`/api/donors/${donor.id}/upload-photo`, {
+            const photoRes = await fetchWithAuth(`/api/donors/${donor.id}/upload-photo`, {
               method: "POST",
               body: formDataUpload,
             });
-          } catch {
-            toast({ title: "Warning", description: "Donor created but photo upload failed" });
+            if (!photoRes.ok) {
+              const errData = await photoRes.json().catch(() => ({ message: "Upload failed" }));
+              throw new Error(errData.message || "Photo upload failed");
+            }
+          } catch (err: any) {
+            toast({
+              title: "Photo Upload Failed",
+              description: err?.message || "Donor was created but the photo could not be saved. Try uploading the photo from the Edit Donor page.",
+              variant: "destructive",
+            });
           }
         }
 

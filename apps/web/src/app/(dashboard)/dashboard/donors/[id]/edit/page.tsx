@@ -332,12 +332,20 @@ export default function EditDonorPage() {
           try {
             const formDataUpload = new FormData();
             formDataUpload.append("photo", photoFile);
-            await fetchWithAuth(`/api/donors/${donorId}/upload-photo`, {
+            const photoRes = await fetchWithAuth(`/api/donors/${donorId}/upload-photo`, {
               method: "POST",
               body: formDataUpload,
             });
-          } catch {
-            toast({ title: "Warning", description: "Donor updated but photo upload failed" });
+            if (!photoRes.ok) {
+              const errData = await photoRes.json().catch(() => ({ message: "Upload failed" }));
+              throw new Error(errData.message || "Photo upload failed");
+            }
+          } catch (err: any) {
+            toast({
+              title: "Photo Upload Failed",
+              description: err?.message || "Profile was saved but the photo could not be uploaded.",
+              variant: "destructive",
+            });
           }
         }
         toast({

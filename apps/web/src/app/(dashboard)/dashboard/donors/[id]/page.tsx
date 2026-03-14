@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { authStorage, fetchWithAuth } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
+import { useToast } from "@/hooks/use-toast";
 
 import { useDonorData } from "./hooks/useDonorData";
 import { useDonorDonations } from "./hooks/useDonorDonations";
@@ -30,9 +31,11 @@ export default function DonorProfilePage() {
   const router = useRouter();
   const params = useParams();
   const donorId = params.id as string;
+  const { toast } = useToast();
 
   const user = authStorage.getUser();
   const canEdit = hasPermission(user?.role, "donors", "edit");
+  const canDelete = hasPermission(user?.role, "donors", "delete");
   const [requestingAccess, setRequestingAccess] = useState(false);
 
   const handleRequestAccess = async () => {
@@ -43,6 +46,24 @@ export default function DonorProfilePage() {
       console.error("Failed to request access");
     } finally {
       setRequestingAccess(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const res = await fetchWithAuth(`/api/donors/${donorId}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: "Delete failed" }));
+        throw new Error(err.message || "Could not delete donor");
+      }
+      toast({ title: "Donor Deleted", description: "The donor has been removed." });
+      router.push("/dashboard/donors");
+    } catch (err: any) {
+      toast({
+        title: "Delete Failed",
+        description: err?.message || "Could not delete this donor.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -67,11 +88,13 @@ export default function DonorProfilePage() {
         donorId={donorId}
         isDataMasked={false}
         canEdit={canEdit}
+        canDelete={canDelete}
         requestingAccess={requestingAccess}
         getDonorName={donorData.getDonorName}
         getInitials={donorData.getInitials}
         onBack={() => router.back()}
         onEdit={() => router.push(`/dashboard/donors/${donorId}/edit`)}
+        onDelete={handleDelete}
         onRequestAccess={handleRequestAccess}
       />
 
