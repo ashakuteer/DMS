@@ -66,10 +66,24 @@ export class DonorsService {
   softDelete(
     user: UserContext,
     id: string,
+    deleteReason?: string,
     ipAddress?: string,
     userAgent?: string,
   ) {
-    return this.crud.softDelete(user, id, ipAddress, userAgent);
+    return this.crud.softDelete(user, id, deleteReason, ipAddress, userAgent);
+  }
+
+  restore(user: UserContext, id: string) {
+    return this.crud.restore(user, id);
+  }
+
+  findArchived(
+    user: UserContext,
+    search?: string,
+    page?: number,
+    limit?: number,
+  ) {
+    return this.crud.findArchived(user, search, page, limit);
   }
 
   assignDonor(id: string, assignedToUserId: string | null) {

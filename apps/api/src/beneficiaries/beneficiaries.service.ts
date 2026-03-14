@@ -42,8 +42,16 @@ export class BeneficiariesService {
   return (this.core as any).update(user, id, dto);
 }
 
-  delete(user: any, id: string) {
-    return this.core.delete(user, id);
+  delete(user: any, id: string, deleteReason?: string) {
+    return this.core.delete(user, id, deleteReason);
+  }
+
+  restore(user: any, id: string) {
+    return this.core.restore(user, id);
+  }
+
+  findArchived(user: any, search?: string, page?: number, limit?: number) {
+    return this.core.findArchived(user, search, page, limit);
   }
 
   updatePhoto(id: string, url: string | null, path?: string | null) {

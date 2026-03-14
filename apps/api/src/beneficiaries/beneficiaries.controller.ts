@@ -147,13 +147,39 @@ async bulkUpload(
     return this.beneficiariesService.update(user, id, dto);
   }
 
+  @Get("archived")
+  @Roles(Role.ADMIN)
+  async findArchived(
+    @CurrentUser() user: UserContext,
+    @Query("search") search?: string,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+  ) {
+    return this.beneficiariesService.findArchived(
+      user,
+      search,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
+  }
+
   @Delete(':id')
   @Roles(Role.ADMIN)
   async delete(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
+    @Body('reason') reason?: string,
   ) {
-    return this.beneficiariesService.delete(user, id);
+    return this.beneficiariesService.delete(user, id, reason);
+  }
+
+  @Post(':id/restore')
+  @Roles(Role.ADMIN)
+  async restore(
+    @CurrentUser() user: UserContext,
+    @Param('id') id: string,
+  ) {
+    return this.beneficiariesService.restore(user, id);
   }
 
   @Post(':id/photo')

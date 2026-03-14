@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowLeft, Edit, Lock, Trash2 } from "lucide-react";
+import { ArrowLeft, Edit, Lock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,11 +18,9 @@ interface DonorHeaderProps {
   donorId: string;
   isDataMasked: boolean;
   canEdit: boolean;
-  canDelete?: boolean;
   requestingAccess: boolean;
   onBack: () => void;
   onEdit: () => void;
-  onDelete?: () => void;
   onRequestAccess: () => void;
   getDonorName: () => string;
   getInitials: () => string;
@@ -33,17 +30,14 @@ export default function DonorHeader({
   donor,
   isDataMasked,
   canEdit,
-  canDelete,
   requestingAccess,
   onBack,
   onEdit,
-  onDelete,
   onRequestAccess,
   getDonorName,
   getInitials,
 }: DonorHeaderProps) {
   const profileImageUrl = resolveImageUrl(donor.profilePicUrl);
-  const [confirmDelete, setConfirmDelete] = useState(false);
 
   return (
     <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -128,7 +122,7 @@ export default function DonorHeader({
         </div>
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2">
         {isDataMasked && (
           <Button
             variant="outline"
@@ -146,45 +140,6 @@ export default function DonorHeader({
             <Edit className="mr-2 h-4 w-4" />
             Edit Donor
           </Button>
-        )}
-
-        {canDelete && !confirmDelete && (
-          <Button
-            variant="outline"
-            className="text-destructive border-destructive/40 hover:bg-destructive/10"
-            onClick={() => setConfirmDelete(true)}
-            data-testid="button-delete-donor"
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete Donor
-          </Button>
-        )}
-
-        {canDelete && confirmDelete && (
-          <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2">
-            <p className="text-sm font-medium text-destructive">
-              Permanently delete this donor?
-            </p>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => {
-                setConfirmDelete(false);
-                onDelete?.();
-              }}
-              data-testid="button-confirm-delete"
-            >
-              Yes, Delete
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setConfirmDelete(false)}
-              data-testid="button-cancel-delete"
-            >
-              Cancel
-            </Button>
-          </div>
         )}
       </div>
     </div>

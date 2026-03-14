@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { AuditService } from "../../audit/audit.service";
 import { RolePermissionsService } from "../../role-permissions/role-permissions.service";
@@ -250,7 +250,7 @@ async addTimelineEvent(beneficiaryId: string, dto: any) {
   });
 }
 
-async delete(user: any, id: string) {
+async delete(user: any, id: string, deleteReason?: string) {
 
  const existing = await this.prisma.beneficiary.findFirst({
    where:{id,isDeleted:false}
@@ -260,12 +260,85 @@ async delete(user: any, id: string) {
 
  await this.prisma.beneficiary.update({
    where:{id},
-   data:{ isDeleted:true, deletedAt:new Date()}
+   data:{
+     isDeleted: true,
+     deletedAt: new Date(),
+     deletedBy: user.id,
+     deleteReason: deleteReason ?? null,
+   }
  })
 
  await this.auditService.logBeneficiaryDelete(user.id,id,existing as any)
 
  return { success:true }
+}
+
+async restore(user: any, id: string) {
+  if (user.role !== 'ADMIN') {
+    throw new ForbiddenException("Only administrators can restore beneficiaries");
+  }
+
+  const existing = await this.prisma.beneficiary.findFirst({
+    where: { id, isDeleted: true },
+  });
+
+  if (!existing) throw new NotFoundException("Archived beneficiary not found");
+
+  await this.prisma.beneficiary.update({
+    where: { id },
+    data: {
+      isDeleted: false,
+      deletedAt: null,
+      deletedBy: null,
+      deleteReason: null,
+    },
+  });
+
+  return { success: true };
+}
+
+async findArchived(
+  user: any,
+  search?: string,
+  page: number = 1,
+  limit: number = 20,
+) {
+  if (user.role !== 'ADMIN') {
+    throw new ForbiddenException("Only administrators can view archived records");
+  }
+
+  const where: any = { isDeleted: true };
+  if (search) {
+    where.OR = [
+      { fullName: { contains: search, mode: "insensitive" } },
+      { code: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  const [total, data] = await Promise.all([
+    this.prisma.beneficiary.count({ where }),
+    this.prisma.beneficiary.findMany({
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { deletedAt: "desc" },
+      select: {
+        id: true,
+        code: true,
+        fullName: true,
+        homeType: true,
+        status: true,
+        deletedAt: true,
+        deletedBy: true,
+        deleteReason: true,
+      },
+    }),
+  ]);
+
+  return {
+    data,
+    pagination: { total, page, limit, pages: Math.ceil(total / limit) },
+  };
 }
 
 }

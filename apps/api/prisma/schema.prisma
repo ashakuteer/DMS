@@ -112,6 +112,8 @@ model Donor {
   createdById        String
   isDeleted          Boolean                @default(false)
   deletedAt          DateTime?
+  deletedBy          String?
+  deleteReason       String?
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
   dobDay             Int?
@@ -408,6 +410,8 @@ model Beneficiary {
   createdById              String
   isDeleted                Boolean                    @default(false)
   deletedAt                DateTime?
+  deletedBy                String?
+  deleteReason             String?
   createdAt                DateTime                   @default(now())
   updatedAt                DateTime                   @updatedAt
   createdBy                User                       @relation(fields: [createdById], references: [id])

@@ -295,6 +295,7 @@ if (assignedToUserId) {
   async softDelete(
     user: UserContext,
     id: string,
+    deleteReason?: string,
     ipAddress?: string,
     userAgent?: string,
   ) {
@@ -306,8 +307,84 @@ if (assignedToUserId) {
 
     return this.prisma.donor.update({
       where: { id },
-      data: { isDeleted: true, deletedAt: new Date() },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+        deletedBy: user.id,
+        deleteReason: deleteReason ?? null,
+      },
     });
+  }
+
+  async restore(user: UserContext, id: string) {
+    if (user.role !== Role.ADMIN) {
+      throw new ForbiddenException("Only administrators can restore donors");
+    }
+
+    const donor = await this.prisma.donor.findFirst({
+      where: { id, isDeleted: true },
+    });
+
+    if (!donor) {
+      throw new NotFoundException("Archived donor not found");
+    }
+
+    return this.prisma.donor.update({
+      where: { id },
+      data: {
+        isDeleted: false,
+        deletedAt: null,
+        deletedBy: null,
+        deleteReason: null,
+      },
+    });
+  }
+
+  async findArchived(
+    user: UserContext,
+    search?: string,
+    page: number = 1,
+    limit: number = 20,
+  ) {
+    if (user.role !== Role.ADMIN) {
+      throw new ForbiddenException("Only administrators can view archived records");
+    }
+
+    const where: any = { isDeleted: true };
+    if (search) {
+      where.OR = [
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+        { donorCode: { contains: search, mode: "insensitive" } },
+        { primaryPhone: { contains: search } },
+      ];
+    }
+
+    const [total, data] = await Promise.all([
+      this.prisma.donor.count({ where }),
+      this.prisma.donor.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { deletedAt: "desc" },
+        select: {
+          id: true,
+          donorCode: true,
+          firstName: true,
+          lastName: true,
+          category: true,
+          primaryPhone: true,
+          deletedAt: true,
+          deletedBy: true,
+          deleteReason: true,
+        },
+      }),
+    ]);
+
+    return {
+      data,
+      pagination: { total, page, limit, pages: Math.ceil(total / limit) },
+    };
   }
 
   async lookupByPhone(phone: string): Promise<{ found: boolean; donor?: any }> {

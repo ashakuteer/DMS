@@ -267,15 +267,41 @@ export class DonorsController {
     return this.donorsService.update(user, id, data, ipAddress, userAgent);
   }
 
+  @Get("archived")
+  @Roles(Role.ADMIN)
+  async findArchived(
+    @CurrentUser() user: UserContext,
+    @Query("search") search?: string,
+    @Query("page") page?: string,
+    @Query("limit") limit?: string,
+  ) {
+    return this.donorsService.findArchived(
+      user,
+      search,
+      page ? parseInt(page) : 1,
+      limit ? parseInt(limit) : 20,
+    );
+  }
+
   @Delete(":id")
   @Roles(Role.ADMIN)
   async remove(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,
     @Req() req: Request,
+    @Body("reason") reason?: string,
   ) {
     const { ipAddress, userAgent } = this.getClientInfo(req);
-    return this.donorsService.softDelete(user, id, ipAddress, userAgent);
+    return this.donorsService.softDelete(user, id, reason, ipAddress, userAgent);
+  }
+
+  @Post(":id/restore")
+  @Roles(Role.ADMIN)
+  async restore(
+    @CurrentUser() user: UserContext,
+    @Param("id") id: string,
+  ) {
+    return this.donorsService.restore(user, id);
   }
 
   @Post(":id/request-access")

@@ -42,6 +42,7 @@ import {
   Milestone,
   ShieldCheck,
   DatabaseBackup,
+  ArchiveRestore,
   Cake,
   Send,
   FileBarChart,
@@ -232,6 +233,12 @@ const navItems: NavItem[] = [
     href: "/dashboard/backup",
     icon: DatabaseBackup,
     permissionModule: "backup",
+  },
+  {
+    title: "Archive Management",
+    href: "/dashboard/admin/archive",
+    icon: ArchiveRestore,
+    permissionModule: "archive",
   },
   {
     title: "Templates",

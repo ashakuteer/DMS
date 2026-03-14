@@ -85,6 +85,10 @@ export const DEFAULT_PERMISSIONS: Record<string, Record<string, Role[]>> = {
     create: ['ADMIN'],
     restore: ['ADMIN'],
   },
+  archive: {
+    view: ['ADMIN'],
+    manage: ['ADMIN'],
+  },
   birthdayWishes: {
     view: ['ADMIN', 'STAFF', 'MANAGER'],
     send: ['ADMIN', 'STAFF', 'MANAGER'],
