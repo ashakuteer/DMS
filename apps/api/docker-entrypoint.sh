@@ -2,7 +2,7 @@
 set -e
 
 echo "=== Running database migrations ==="
-./node_modules/.bin/prisma migrate deploy --schema=prisma/schema.prisma
+/app/node_modules/.bin/prisma migrate deploy --schema=/app/prisma/schema.prisma
 echo "=== Migrations complete. Starting application ==="
 
 exec "$@"

@@ -275,10 +275,23 @@ export class DashboardActionsService {
           dobMonth: { not: null },
           dobDay: { not: null },
         },
-        include: {
+        select: {
+          id: true,
+          code: true,
+          fullName: true,
+          homeType: true,
+          photoUrl: true,
+          dobMonth: true,
+          dobDay: true,
+          isDeleted: true,
+          status: true,
           sponsorships: {
             where: { isActive: true, status: "ACTIVE" },
-            include: {
+            select: {
+              id: true,
+              donorId: true,
+              isActive: true,
+              status: true,
               donor: { select: donorSelect },
             },
           },

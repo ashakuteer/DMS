@@ -16,9 +16,30 @@ export class BeneficiaryBirthdayProcessor {
     const result = { queued:0, sent:0, failed:0, errors:[] };
 
     const beneficiaries = await this.prisma.beneficiary.findMany({
-      include: {
-        sponsorships: { include: { donor: true } }
-      }
+      select: {
+        id: true,
+        fullName: true,
+        dobMonth: true,
+        dobDay: true,
+        homeType: true,
+        isDeleted: true,
+        status: true,
+        sponsorships: {
+          select: {
+            id: true,
+            isActive: true,
+            status: true,
+            donor: {
+              select: {
+                id: true,
+                firstName: true,
+                personalEmail: true,
+                officialEmail: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     for (const beneficiary of beneficiaries) {

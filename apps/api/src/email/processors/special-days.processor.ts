@@ -25,9 +25,14 @@ export class SpecialDaysProcessor {
         prefReminders:true,
         prefEmail:true
       },
-      include:{
-        specialOccasions:true
-      }
+      select:{
+        id: true,
+        firstName: true,
+        lastName: true,
+        personalEmail: true,
+        officialEmail: true,
+        specialOccasions: true,
+      },
     })
 
     for(const donor of donors){

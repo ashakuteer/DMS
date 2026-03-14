@@ -3,6 +3,6 @@ builder = "DOCKERFILE"
 dockerfilePath = "apps/api/Dockerfile"
 
 [deploy]
-startCommand = "node --max-old-space-size=512 dist/src/main.js"
+startCommand = "sh /app/docker-entrypoint.sh node --max-old-space-size=512 /app/dist/src/main.js"
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
