@@ -2,6 +2,8 @@
 
 A production-ready monorepo for managing NGO donors, donations, and beneficiaries.
 
+<!-- Last updated: 2026-03-14 -->
+
 ## Tech Stack
 
 - **Frontend**: Next.js 14 (App Router) + TypeScript + Tailwind CSS
