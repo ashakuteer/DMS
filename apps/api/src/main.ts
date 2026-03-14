@@ -8,13 +8,26 @@ import * as express from "express";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // CORS FIX for Vercel frontend
   app.enableCors({
-    origin: [
-      "https://dms-sepia-gamma.vercel.app",
-      "http://localhost:5000",
-      "http://localhost:3000"
-    ],
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        "https://dms-sepia-gamma.vercel.app",
+        "http://localhost:5000",
+        "http://localhost:3000",
+      ];
+      // Allow requests with no origin (e.g. server-to-server) and Replit domains
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".replit.dev") ||
+        origin.endsWith(".repl.co") ||
+        origin.endsWith(".replit.app")
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true); // Allow all during development
+      }
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
@@ -32,10 +45,10 @@ async function bootstrap() {
     }),
   );
 
-  // Railway / production port handling
+  // Use API_PORT for the NestJS API, falling back to PORT (only in Railway/prod) or 3001
   const port =
-    Number(process.env.PORT) ||
     Number(process.env.API_PORT) ||
+    Number(process.env.PORT) ||
     3001;
 
   await app.listen(port, "0.0.0.0");

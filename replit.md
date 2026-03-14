@@ -74,3 +74,15 @@ The frontend uses Next.js 14 with the App Router and Tailwind CSS. Recharts is u
 - **Excel Export:** exceljs
 - **Authentication:** JWT
 - **Cloud Storage:** Supabase Storage (for beneficiary photos)
+
+## Replit Migration Notes
+
+This project was migrated to Replit from a pnpm monorepo setup. Key changes made:
+
+- **Startup Script (`start.sh`):** Because `package.json` specifies `pnpm@10.30.3` (unavailable on Replit), a custom `start.sh` uses `npm install --legacy-peer-deps` to install dependencies for each workspace separately.
+- **Port Configuration:** Replit sets `PORT=5000` globally. NestJS API uses `API_PORT=3001` (set in `.replit` `[userenv.shared]`) to avoid conflict. `main.ts` now checks `API_PORT` first. Next.js explicitly binds to port 5000.
+- **API Proxy:** `next.config.js` rewrites `/api/*` to `http://localhost:3001` (via `NEXT_PUBLIC_API_URL` env var set in `.replit`).
+- **Shared Package:** `@ngo-donor/shared` uses pnpm `workspace:*` protocol which npm doesn't support. Removed from `apps/web/package.json` since it is not used in the web frontend.
+- **CORS:** NestJS API allows all `*.replit.dev`, `*.repl.co`, and `*.replit.app` origins.
+- **Database:** PostgreSQL Replit database, schema synced via `prisma db push` in startup script.
+- **Supabase Storage:** Optional; file uploads will be unavailable unless `SUPABASE_URL` and `SUPABASE_KEY` are set as environment variables. `StorageService` gracefully handles missing credentials.

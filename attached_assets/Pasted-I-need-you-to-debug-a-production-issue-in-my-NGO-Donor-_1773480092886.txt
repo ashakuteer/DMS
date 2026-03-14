@@ -1,0 +1,157 @@
+I need you to debug a production issue in my NGO Donor Hub monorepo.
+
+Project architecture:
+- Frontend: Next.js (apps/web)
+- Backend: NestJS (apps/api)
+- Database: Supabase Postgres with Prisma
+- Storage: Supabase Storage
+- Hosting: Frontend on Vercel, Backend on Railway
+- Monorepo structure:
+  - apps/web
+  - apps/api
+  - prisma
+
+Project purpose:
+This is an NGO Donor Management System for Asha Kuteer Foundation (India).
+It manages:
+- Donors
+- Donations
+- Beneficiaries
+- Sponsorships
+- Communication with donors
+- Reports and campaigns
+
+Backend modules include:
+- donors
+- donations
+- beneficiaries
+- sponsorships
+- reports
+- communications
+
+The Donor module includes services such as:
+- donors.service
+- donors.crud.service
+- donors.import.service
+- donors.export.service
+- donors.timeline.service
+- donors.engagement.service
+
+Current status:
+- Backend builds successfully
+- Donor module refactor recently completed
+- Import/export services separated
+- Prisma working
+- Deployment pipeline active
+
+Current issue:
+- Donor and beneficiary photos are successfully uploading to Supabase Storage buckets
+- Files are visible inside Supabase bucket
+- But the photos are NOT visible in the software UI
+- So upload seems successful, but display/render is failing
+
+I want you to do a full code-level audit for internal clashes or mismatches related to donor/beneficiary photo handling.
+
+Please check ALL of the following carefully:
+
+1. Storage upload flow
+- Where donor photos are uploaded
+- Where beneficiary photos are uploaded
+- Whether correct bucket names are used consistently
+- Whether file path/key is stored correctly in DB
+
+2. Database field mapping
+- Check whether donor photo field and beneficiary photo field names are consistent across:
+  - Prisma schema
+  - DTOs
+  - NestJS services
+  - API responses
+  - frontend types/interfaces
+- Look for clashes like:
+  - photoUrl vs imageUrl vs avatarUrl vs profilePhoto vs photoPath
+  - donorPhoto vs photo
+  - beneficiaryPhoto vs image
+
+3. Supabase public URL generation
+- Check whether frontend/backend is generating a valid public URL
+- Check whether code is storing:
+  - only file path
+  - full public URL
+  - signed URL
+- Identify if frontend expects full URL but backend stores only path
+- Or backend returns path while frontend tries to use it directly as image src
+
+4. Bucket name mismatch
+- Check for inconsistent bucket references such as:
+  - donor-photos vs donors
+  - beneficiary-photos vs beneficiaries
+  - uppercase/lowercase mismatches
+- Check env vars like:
+  - SUPABASE_DONOR_BUCKET
+  - SUPABASE_BENEFICIARY_BUCKET
+- Verify same names are used in:
+  - Railway env
+  - NestJS storage service
+  - frontend image rendering logic
+
+5. Old vs new logic clash
+- Search the whole project for all donor and beneficiary photo-related code
+- Detect duplicate or outdated logic
+- Especially check if:
+  - one service uploads correctly
+  - another service reads old DB field
+  - frontend still expects old API property
+- Identify dead code or conflicting implementations
+
+6. API response inspection
+- Check donor details API response
+- Check beneficiary details API response
+- Confirm whether returned object contains the exact usable image URL needed by frontend
+- If not, fix it
+
+7. Frontend rendering issue
+- Check Next.js components for donor and beneficiary avatars/photos
+- Verify what property is being passed into img/Image/AvatarImage src
+- Check fallback logic
+- Check whether null/undefined/empty string is being sent
+- Check whether Next.js image config blocks the Supabase domain
+
+8. Next.js image/domain config
+- Check next.config.js / next.config.mjs
+- Ensure Supabase storage domain is allowed for remote images
+- If using next/image, verify remotePatterns/images.domains configuration
+
+9. Auth / bucket access issue
+- Check whether bucket is public or private
+- If private, verify signed URL generation and expiry
+- If public, verify code is not incorrectly trying to use private flow
+
+10. Exact fix output
+After audit, give me:
+A. Root cause(s)
+B. Files that must be changed
+C. Exact corrected code
+D. Any old/conflicting code that should be removed
+E. Final end-to-end flow explanation:
+   upload -> DB save -> API return -> frontend render
+
+Important instructions:
+- Do not give general advice only
+- Actually inspect the code paths end to end
+- Search donor and beneficiary photo handling everywhere in frontend and backend
+- Identify internal clashes/mismatches
+- Show exact fixes file by file
+- Prefer minimal safe fixes, not large rewrites
+- If there are multiple possible causes, rank them by likelihood
+
+Focus especially on these likely causes in order:
+1. frontend using wrong property name
+2. backend returning path instead of public URL
+3. bucket/env mismatch
+4. Next.js remote image config missing
+5. old photo logic still present in one module
+
+Also do a project-wide search for:
+photo, photoUrl, imageUrl, avatar, profilePhoto, donorPhoto, beneficiaryPhoto, getPublicUrl, supabase.storage, bucket
+
+Please give me a precise diagnosis and exact code fixes, not just suggestions.
