@@ -35,6 +35,7 @@ export class ExecutorService {
             ...data,
             createdById: user.id,
           },
+          select: { id: true },
         });
       }
     }

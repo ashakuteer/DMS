@@ -91,6 +91,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         await this.$connect();
         this.isConnected = true;
         this.logger.log('Database connected successfully');
+        await this.applySchemaPatches();
         return;
       } catch (error) {
         const message =
@@ -107,6 +108,27 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
+  }
+
+  private async applySchemaPatches(): Promise<void> {
+    const patches = [
+      `ALTER TABLE "donors" ADD COLUMN IF NOT EXISTS "deletedBy" TEXT`,
+      `ALTER TABLE "donors" ADD COLUMN IF NOT EXISTS "deleteReason" TEXT`,
+      `ALTER TABLE "beneficiaries" ADD COLUMN IF NOT EXISTS "deletedBy" TEXT`,
+      `ALTER TABLE "beneficiaries" ADD COLUMN IF NOT EXISTS "deleteReason" TEXT`,
+    ];
+
+    for (const sql of patches) {
+      try {
+        await this.$executeRawUnsafe(sql);
+      } catch (err) {
+        this.logger.warn(
+          `Schema patch skipped: ${sql} — ${err instanceof Error ? err.message : err}`,
+        );
+      }
+    }
+
+    this.logger.log('Schema patches applied');
   }
 
   async onModuleDestroy(): Promise<void> {

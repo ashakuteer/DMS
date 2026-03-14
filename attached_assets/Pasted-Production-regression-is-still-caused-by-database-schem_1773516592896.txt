@@ -1,0 +1,58 @@
+Production regression is still caused by database schema mismatch, now affecting CREATE flows too.
+
+Current production evidence:
+1. Donor and beneficiary detail/list issues were related to archive field changes
+2. Now creating a new donor fails with "Internal server error"
+3. Railway logs show:
+   - Invalid this.prisma.donor.create() invocation
+   - The column donors.deletedBy does not exist in the current database
+4. So production code is still referencing deletedBy/deleteReason fields, but Railway production database does not actually have those columns yet
+
+I need a REAL fix, not another theory.
+
+Please do a full code + migration audit focused on create flows and archive fields.
+
+Tasks:
+
+1. Inspect prisma/schema.prisma and list all archive-related fields added recently for:
+   - Donor
+   - Beneficiary
+2. Inspect prisma/migrations and confirm whether the migration that adds:
+   - deletedBy
+   - deleteReason
+   - any related archive columns
+   actually exists in the repo
+3. If missing, create the correct migration
+4. If present, show the exact migration folder name and SQL
+5. Inspect all donor and beneficiary create/update/detail/archive code paths and find where code is already reading/writing deletedBy/deleteReason
+6. Confirm whether create() is explicitly sending deletedBy/deleteReason or Prisma model shape is requiring those columns in DB
+7. Verify whether Railway production is actually applying migrations before app start
+8. If Railway migration application is unreliable, implement the safest compatibility fix:
+   - do NOT reference archive columns in production queries/writes until migration is guaranteed applied
+   - OR ensure migration definitely runs before Nest starts
+
+Most important:
+I need one safe production outcome immediately:
+A. Railway production DB gets the required columns and code works
+OR
+B. Code temporarily stops referencing archive columns until DB is updated
+
+Please inspect specifically:
+- prisma/schema.prisma
+- prisma/migrations/*
+- railway.toml
+- Dockerfile
+- apps/api/src/donors/donors.crud.service.ts
+- donor detail / donor relations services
+- beneficiary create/detail services
+- any archive management services/controllers
+
+Output required:
+1. Exact root cause
+2. Whether migration file exists or not
+3. Exact migration path/name
+4. Exact SQL that should run
+5. Exact files changed
+6. Whether donor create and beneficiary create will work after the fix
+7. Whether donor detail and beneficiary detail will still work
+8. Commit and push only after verifying the fix is real
