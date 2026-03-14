@@ -38,8 +38,28 @@ export default function BeneficiaryProfilePage() {
     loading,
     activeTab,
     setActiveTab,
+    canEdit,
+    isAdmin,
+    photoUploading,
+    handlePhotoUpload,
+    handlePhotoRemove,
+    metrics,
+    metricsLoading,
+    healthEvents,
+    healthEventsLoading,
+    healthTimeline,
+    healthTimelineLoading,
+    progressCards,
+    progressCardsLoading,
+    educationTimeline,
+    educationTimelineLoading,
+    educationExporting,
+    documents,
+    documentsLoading,
+    growthChartData,
+    exportingPdf,
     dialogs,
-    actions
+    actions,
   } = useBeneficiary(beneficiaryId);
 
   if (loading) {
@@ -56,6 +76,7 @@ export default function BeneficiaryProfilePage() {
       <Button
         variant="ghost"
         onClick={() => router.push("/dashboard/beneficiaries")}
+        data-testid="button-back"
       >
         <ArrowLeft className="h-4 w-4 mr-2"/>
         Back to Beneficiaries
@@ -63,20 +84,24 @@ export default function BeneficiaryProfilePage() {
 
       <BeneficiaryHeader
         beneficiary={beneficiary}
-        actions={actions}
+        canEdit={canEdit}
+        isAdmin={isAdmin}
+        photoUploading={photoUploading}
+        onPhotoUpload={handlePhotoUpload}
+        onPhotoRemove={handlePhotoRemove}
+        onOpenLinkPhoto={actions.openLinkPhoto}
+        onOpenEdit={actions.openEdit}
       />
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="sponsors">Sponsors</TabsTrigger>
-          <TabsTrigger value="updates">Updates</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="health">Health</TabsTrigger>
-          <TabsTrigger value="academics">Academics</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-
+          <TabsTrigger value="overview" data-testid="tab-overview">Overview</TabsTrigger>
+          <TabsTrigger value="sponsors" data-testid="tab-sponsors">Sponsors</TabsTrigger>
+          <TabsTrigger value="updates" data-testid="tab-updates">Updates</TabsTrigger>
+          <TabsTrigger value="timeline" data-testid="tab-timeline">Timeline</TabsTrigger>
+          <TabsTrigger value="health" data-testid="tab-health">Health</TabsTrigger>
+          <TabsTrigger value="academics" data-testid="tab-academics">Academics</TabsTrigger>
+          <TabsTrigger value="documents" data-testid="tab-documents">Documents</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -84,27 +109,74 @@ export default function BeneficiaryProfilePage() {
         </TabsContent>
 
         <TabsContent value="sponsors">
-          <BeneficiarySponsorsTab beneficiary={beneficiary}/>
+          <BeneficiarySponsorsTab
+            beneficiary={beneficiary}
+            canEdit={canEdit}
+            onOpenAddSponsor={actions.openAddSponsor}
+            onOpenStatusChange={actions.openStatusChange}
+            onViewHistory={actions.viewHistory}
+            onDeleteSponsorship={actions.deleteSponsorship}
+            onCopyMessage={actions.copyMessage}
+            onViewDonorProfile={actions.viewDonorProfile}
+            onSendWhatsApp={actions.sendWhatsApp}
+          />
         </TabsContent>
 
         <TabsContent value="updates">
-          <BeneficiaryUpdatesTab beneficiary={beneficiary}/>
+          <BeneficiaryUpdatesTab
+            beneficiary={beneficiary}
+            onOpenAddUpdate={actions.openAddUpdate}
+            onOpenSendToSponsors={actions.openSendToSponsors}
+          />
         </TabsContent>
 
         <TabsContent value="timeline">
-          <BeneficiaryTimelineTab beneficiary={beneficiary}/>
+          <BeneficiaryTimelineTab
+            timelineEvents={beneficiary.timelineEvents || []}
+            loading={loading}
+          />
         </TabsContent>
 
         <TabsContent value="health">
-          <BeneficiaryHealthTab beneficiary={beneficiary}/>
+          <BeneficiaryHealthTab
+            metrics={metrics}
+            metricsLoading={metricsLoading}
+            healthEvents={healthEvents}
+            healthEventsLoading={healthEventsLoading}
+            healthTimeline={healthTimeline}
+            healthTimelineLoading={healthTimelineLoading}
+            growthChartData={growthChartData}
+            exportingPdf={exportingPdf}
+            beneficiaryName={beneficiary.fullName}
+            onOpenAddMetric={actions.openAddMetric}
+            onOpenAddHealthEvent={actions.openAddHealthEvent}
+            onExportHealthPdf={actions.exportHealthPdf}
+            onNotifySponsors={actions.notifySponsors}
+            onCopyHealthWhatsApp={actions.copyHealthWhatsApp}
+          />
         </TabsContent>
 
         <TabsContent value="academics">
-          <BeneficiaryAcademicsTab beneficiary={beneficiary}/>
+          <BeneficiaryAcademicsTab
+            progressCards={progressCards}
+            progressCardsLoading={progressCardsLoading}
+            educationTimeline={educationTimeline}
+            educationTimelineLoading={educationTimelineLoading}
+            educationExporting={educationExporting}
+            hasSponsors={(beneficiary.sponsorships || []).some((s: any) => s.isActive)}
+            onExportEducationPdf={actions.exportEducationPdf}
+            onOpenAddProgressCard={actions.openAddProgressCard}
+            onShareProgressCard={actions.shareProgressCard}
+          />
         </TabsContent>
 
         <TabsContent value="documents">
-          <BeneficiaryDocumentsTab beneficiary={beneficiary}/>
+          <BeneficiaryDocumentsTab
+            documents={documents}
+            documentsLoading={documentsLoading}
+            onOpenUploadDocument={actions.openUploadDocument}
+            onViewDocument={actions.viewDocument}
+          />
         </TabsContent>
 
       </Tabs>
