@@ -1,0 +1,76 @@
+I need help fixing a production database mismatch issue in my NGO Donor Management System.
+
+Architecture:
+Frontend: Next.js deployed on Vercel
+Backend: NestJS deployed on Railway
+Database: PostgreSQL (Supabase) using Prisma ORM
+
+Recent change:
+We added archive / soft-delete functionality for Donors and Beneficiaries.
+
+New fields added in Prisma schema:
+- deletedBy
+- deleteReason
+
+Problem in production:
+
+1. Donor list page loads correctly (shows 1100+ donors).
+2. When clicking any donor row, the donor detail page shows:
+   "Donor not found".
+
+3. Beneficiaries page now shows:
+   "No beneficiaries found" even though data exists.
+
+4. Browser console shows 404 / 500 errors when loading detail routes.
+
+5. Railway backend logs show this Prisma error:
+
+PrismaClientKnownRequestError:
+The column donors.deletedBy does not exist in the current database.
+
+Example failing code:
+this.prisma.donor.findFirst()
+
+This means the application code expects new columns
+(deletedBy / deleteReason) but the Railway production database
+schema does not have those columns yet.
+
+What likely happened:
+- Prisma schema was updated
+- Code was deployed
+- But Prisma migrations were not applied to the Railway database
+
+Current attempted fix:
+railway.toml start command was updated to:
+
+startCommand = "node_modules/.bin/prisma migrate deploy --schema=prisma/schema.prisma && node dist/src/main.js"
+
+But the problem still persists.
+
+What I need you to do:
+
+1. Inspect prisma/schema.prisma
+2. Inspect prisma/migrations folder
+3. Confirm whether a migration exists that adds:
+   - deletedBy
+   - deleteReason
+4. Verify that Railway will actually run `prisma migrate deploy`
+   before the NestJS app starts
+5. If migration is missing, generate the correct Prisma migration
+6. If migration exists but not applied, ensure production startup
+   applies it correctly
+7. Ensure donor detail and beneficiary queries do not crash
+   if those columns are missing
+
+Goal:
+Make production database schema match the code so:
+- Donor detail pages load
+- Beneficiary list loads
+- Archive functionality works
+- No Prisma column errors occur
+
+Please provide:
+- Root cause
+- Exact fix
+- Any files to modify
+- Deployment steps needed
