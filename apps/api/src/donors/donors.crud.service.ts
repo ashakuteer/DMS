@@ -37,7 +37,6 @@ export class DonorsCrudService {
   private async getActiveDonorOrThrow(id: string) {
     const donor = await this.prisma.donor.findFirst({
       where: { id, isDeleted: false },
-      omit: { deletedBy: true, deleteReason: true },
     });
 
     if (!donor) {
@@ -220,7 +219,6 @@ if (assignedToUserId) {
         isDeleted: false,
         ...this.getAccessFilter(user),
       },
-      omit: { deletedBy: true, deleteReason: true },
       include: {
         assignedToUser: { select: { id: true, name: true, email: true } },
         createdBy: { select: { id: true, name: true } },
@@ -325,7 +323,6 @@ if (assignedToUserId) {
 
     const donor = await this.prisma.donor.findFirst({
       where: { id, isDeleted: true },
-      omit: { deletedBy: true, deleteReason: true },
     });
 
     if (!donor) {

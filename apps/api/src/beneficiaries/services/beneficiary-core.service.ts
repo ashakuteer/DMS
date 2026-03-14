@@ -64,7 +64,6 @@ async findAll(options: any) {
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { createdAt: "desc" },
-      omit: { deletedBy: true, deleteReason: true },
       include: {
         _count: { select: { sponsorships: true } },
       },
@@ -91,7 +90,6 @@ async findAll(options: any) {
 async findById(id: string) {
   const beneficiary = await this.prisma.beneficiary.findFirst({
     where: { id, isDeleted: false },
-    omit: { deletedBy: true, deleteReason: true },
     include: {
       createdBy: { select: { id: true, name: true } },
       sponsorships: {
@@ -184,7 +182,6 @@ async create(user: any, dto: any) {
 async update(user: any, id: string, dto: any) {
   const existing = await this.prisma.beneficiary.findFirst({
     where: { id, isDeleted: false },
-    omit: { deletedBy: true, deleteReason: true },
   });
   if (!existing) throw new NotFoundException("Beneficiary not found");
 
@@ -221,7 +218,6 @@ async update(user: any, id: string, dto: any) {
 async updatePhoto(id: string, url: string | null, path: string | null) {
   const existing = await this.prisma.beneficiary.findFirst({
     where: { id, isDeleted: false },
-    omit: { deletedBy: true, deleteReason: true },
   });
   if (!existing) throw new NotFoundException("Beneficiary not found");
 
@@ -241,7 +237,6 @@ async getTimelineEvents(beneficiaryId: string) {
 async addTimelineEvent(beneficiaryId: string, dto: any) {
   const existing = await this.prisma.beneficiary.findFirst({
     where: { id: beneficiaryId, isDeleted: false },
-    omit: { deletedBy: true, deleteReason: true },
   });
   if (!existing) throw new NotFoundException("Beneficiary not found");
 
@@ -258,8 +253,7 @@ async addTimelineEvent(beneficiaryId: string, dto: any) {
 async delete(user: any, id: string, deleteReason?: string) {
 
  const existing = await this.prisma.beneficiary.findFirst({
-   where:{id,isDeleted:false},
-   omit: { deletedBy: true, deleteReason: true },
+   where:{id,isDeleted:false}
  })
 
  if(!existing) throw new NotFoundException("Beneficiary not found")
@@ -286,7 +280,6 @@ async restore(user: any, id: string) {
 
   const existing = await this.prisma.beneficiary.findFirst({
     where: { id, isDeleted: true },
-    omit: { deletedBy: true, deleteReason: true },
   });
 
   if (!existing) throw new NotFoundException("Archived beneficiary not found");

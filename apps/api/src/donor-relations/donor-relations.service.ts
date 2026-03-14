@@ -86,7 +86,6 @@ export class DonorRelationsService {
         id: donorId,
         isDeleted: false,
       },
-      omit: { deletedBy: true, deleteReason: true },
     });
 
     if (!donor) {
