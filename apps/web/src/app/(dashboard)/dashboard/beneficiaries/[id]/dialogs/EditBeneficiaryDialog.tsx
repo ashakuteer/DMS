@@ -1,6 +1,6 @@
 "use client";
 
-import { Edit, Loader2 } from "lucide-react";
+import { Camera, Edit, Loader2, X } from "lucide-react";
 
 import {
   Dialog,
@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface Props {
   open: boolean;
@@ -31,6 +32,10 @@ interface Props {
   editLoading: boolean;
   months: string[];
   onSubmit: () => void;
+  photoUrl?: string;
+  photoUploading?: boolean;
+  onPhotoUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onPhotoRemove?: () => void;
 }
 
 export default function EditBeneficiaryDialog({
@@ -41,6 +46,10 @@ export default function EditBeneficiaryDialog({
   editLoading,
   months,
   onSubmit,
+  photoUrl,
+  photoUploading,
+  onPhotoUpload,
+  onPhotoRemove,
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -54,6 +63,70 @@ export default function EditBeneficiaryDialog({
         </DialogHeader>
 
         <div className="space-y-6">
+
+          {onPhotoUpload && (
+            <div className="space-y-3">
+              <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                Photo
+              </h4>
+              <div className="flex items-center gap-4">
+                <div className="relative group flex-shrink-0">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={photoUrl || undefined} alt="Beneficiary photo" />
+                    <AvatarFallback className="text-xl">
+                      {editForm.fullName?.charAt(0)?.toUpperCase() || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  {photoUploading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                      <Loader2 className="h-5 w-5 text-white animate-spin" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="edit-dialog-photo-upload" className="cursor-pointer">
+                    <input
+                      id="edit-dialog-photo-upload"
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      className="hidden"
+                      onChange={onPhotoUpload}
+                      disabled={photoUploading}
+                      data-testid="input-edit-photo-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={photoUploading}
+                      className="pointer-events-none"
+                      data-testid="button-edit-upload-photo"
+                    >
+                      <Camera className="h-4 w-4 mr-2" />
+                      {photoUrl ? "Change Photo" : "Upload Photo"}
+                    </Button>
+                  </label>
+
+                  {photoUrl && onPhotoRemove && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={onPhotoRemove}
+                      disabled={photoUploading}
+                      className="text-destructive hover:text-destructive"
+                      data-testid="button-edit-remove-photo"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Remove Photo
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="space-y-4">
             <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
               Basic Information

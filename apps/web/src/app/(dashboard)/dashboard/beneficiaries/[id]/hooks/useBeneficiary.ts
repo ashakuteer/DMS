@@ -966,6 +966,10 @@ export function useBeneficiary(beneficiaryId: string) {
       editLoading,
       months: MONTHS,
       onSubmit: handleSaveEdit,
+      photoUrl: beneficiary?.photoUrl ?? undefined,
+      photoUploading,
+      onPhotoUpload: handlePhotoUpload,
+      onPhotoRemove: handlePhotoRemove,
     },
     history: {
       open: showHistoryDialog,
