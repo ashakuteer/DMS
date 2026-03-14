@@ -23,6 +23,7 @@ export class DonorsService {
   private async getActiveDonorOrThrow(id: string) {
     const donor = await this.prisma.donor.findFirst({
       where: { id, isDeleted: false },
+      select: { id: true, profilePicUrl: true, assignedToUserId: true },
     });
 
     if (!donor) {

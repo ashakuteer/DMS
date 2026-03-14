@@ -201,6 +201,7 @@ export class DonationsService {
     if (user.role === Role.TELECALLER) {
       const donor = await this.prisma.donor.findFirst({
         where: { id: data.donorId, isDeleted: false },
+        select: { id: true, assignedToUserId: true },
       });
       if (!donor || donor.assignedToUserId !== user.id) {
         throw new ForbiddenException(

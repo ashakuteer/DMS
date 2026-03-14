@@ -64,7 +64,43 @@ async findAll(options: any) {
       skip: (page - 1) * limit,
       take: limit,
       orderBy: { createdAt: "desc" },
-      include: {
+      select: {
+        id: true,
+        code: true,
+        fullName: true,
+        homeType: true,
+        category: true,
+        gender: true,
+        dobDay: true,
+        dobMonth: true,
+        dobYear: true,
+        approxAge: true,
+        joinDate: true,
+        heightCmAtJoin: true,
+        weightKgAtJoin: true,
+        educationClassOrRole: true,
+        schoolOrCollege: true,
+        healthNotes: true,
+        currentHealthStatus: true,
+        background: true,
+        hobbies: true,
+        dreamCareer: true,
+        favouriteSubject: true,
+        favouriteGame: true,
+        favouriteActivityAtHome: true,
+        bestFriend: true,
+        sourceOfPrideOrHappiness: true,
+        funFact: true,
+        additionalNotes: true,
+        protectPrivacy: true,
+        photoUrl: true,
+        photoPath: true,
+        status: true,
+        createdById: true,
+        isDeleted: true,
+        deletedAt: true,
+        createdAt: true,
+        updatedAt: true,
         _count: { select: { sponsorships: true } },
       },
     }),
@@ -90,10 +126,63 @@ async findAll(options: any) {
 async findById(id: string) {
   const beneficiary = await this.prisma.beneficiary.findFirst({
     where: { id, isDeleted: false },
-    include: {
+    select: {
+      id: true,
+      code: true,
+      fullName: true,
+      homeType: true,
+      category: true,
+      gender: true,
+      dobDay: true,
+      dobMonth: true,
+      dobYear: true,
+      approxAge: true,
+      joinDate: true,
+      heightCmAtJoin: true,
+      weightKgAtJoin: true,
+      educationClassOrRole: true,
+      schoolOrCollege: true,
+      healthNotes: true,
+      currentHealthStatus: true,
+      background: true,
+      hobbies: true,
+      dreamCareer: true,
+      favouriteSubject: true,
+      favouriteGame: true,
+      favouriteActivityAtHome: true,
+      bestFriend: true,
+      sourceOfPrideOrHappiness: true,
+      funFact: true,
+      additionalNotes: true,
+      protectPrivacy: true,
+      photoUrl: true,
+      photoPath: true,
+      status: true,
+      createdById: true,
+      isDeleted: true,
+      deletedAt: true,
+      createdAt: true,
+      updatedAt: true,
       createdBy: { select: { id: true, name: true } },
       sponsorships: {
-        include: {
+        select: {
+          id: true,
+          donorId: true,
+          beneficiaryId: true,
+          sponsorshipType: true,
+          amount: true,
+          currency: true,
+          inKindItem: true,
+          frequency: true,
+          startDate: true,
+          endDate: true,
+          dueDayOfMonth: true,
+          nextDueDate: true,
+          notes: true,
+          isActive: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
           donor: {
             select: {
               id: true,
@@ -108,10 +197,22 @@ async findById(id: string) {
         orderBy: { createdAt: "desc" },
       },
       updates: {
-        include: {
+        select: {
+          id: true,
+          beneficiaryId: true,
+          updateType: true,
+          title: true,
+          content: true,
+          mediaUrls: true,
+          isPrivate: true,
+          shareWithDonor: true,
+          createdById: true,
+          createdAt: true,
           createdBy: { select: { id: true, name: true } },
           attachments: {
-            include: {
+            select: {
+              id: true,
+              documentId: true,
               document: {
                 select: {
                   id: true,
@@ -126,6 +227,14 @@ async findById(id: string) {
         orderBy: { createdAt: "desc" },
       },
       timelineEvents: {
+        select: {
+          id: true,
+          beneficiaryId: true,
+          eventType: true,
+          eventDate: true,
+          description: true,
+          createdAt: true,
+        },
         orderBy: { eventDate: "desc" },
       },
     },
@@ -182,6 +291,7 @@ async create(user: any, dto: any) {
 async update(user: any, id: string, dto: any) {
   const existing = await this.prisma.beneficiary.findFirst({
     where: { id, isDeleted: false },
+    select: { id: true },
   });
   if (!existing) throw new NotFoundException("Beneficiary not found");
 
@@ -218,6 +328,7 @@ async update(user: any, id: string, dto: any) {
 async updatePhoto(id: string, url: string | null, path: string | null) {
   const existing = await this.prisma.beneficiary.findFirst({
     where: { id, isDeleted: false },
+    select: { id: true },
   });
   if (!existing) throw new NotFoundException("Beneficiary not found");
 
@@ -237,6 +348,7 @@ async getTimelineEvents(beneficiaryId: string) {
 async addTimelineEvent(beneficiaryId: string, dto: any) {
   const existing = await this.prisma.beneficiary.findFirst({
     where: { id: beneficiaryId, isDeleted: false },
+    select: { id: true },
   });
   if (!existing) throw new NotFoundException("Beneficiary not found");
 
@@ -253,7 +365,8 @@ async addTimelineEvent(beneficiaryId: string, dto: any) {
 async delete(user: any, id: string, deleteReason?: string) {
 
  const existing = await this.prisma.beneficiary.findFirst({
-   where:{id,isDeleted:false}
+   where:{id,isDeleted:false},
+   select: { id: true },
  })
 
  if(!existing) throw new NotFoundException("Beneficiary not found")
@@ -280,6 +393,7 @@ async restore(user: any, id: string) {
 
   const existing = await this.prisma.beneficiary.findFirst({
     where: { id, isDeleted: true },
+    select: { id: true },
   });
 
   if (!existing) throw new NotFoundException("Archived beneficiary not found");

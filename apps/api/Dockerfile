@@ -16,8 +16,10 @@ COPY prisma ./prisma
 # Install dependencies (postinstall will run prisma generate)
 RUN npm install --legacy-peer-deps
 
-# Copy source code
+# Copy source code and entrypoint
 COPY . .
+COPY docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x docker-entrypoint.sh
 
 # Generate Prisma Client (ensure types are available for build)
 RUN npx prisma generate
@@ -28,7 +30,8 @@ RUN npm run build
 # Expose port (Railway will override this)
 EXPOSE 3001
 
-# Run DB migrations then start the application.
-# prisma CLI is available because we do not prune devDependencies —
-# this ensures `prisma migrate deploy` works at container startup.
-CMD ["sh", "-c", "node_modules/.bin/prisma migrate deploy --schema=prisma/schema.prisma && node dist/src/main.js"]
+# Entrypoint always runs migrations before starting the app.
+# Railway's startCommand overrides CMD but not ENTRYPOINT,
+# so migrations are guaranteed to run regardless of Railway config.
+ENTRYPOINT ["sh", "docker-entrypoint.sh"]
+CMD ["node", "--max-old-space-size=512", "dist/src/main.js"]

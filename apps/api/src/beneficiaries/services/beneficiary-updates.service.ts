@@ -26,6 +26,7 @@ async getUpdates(beneficiaryId: string) {
 async addUpdate(user: any, beneficiaryId: string, dto: any) {
   const beneficiary = await this.prisma.beneficiary.findFirst({
     where: { id: beneficiaryId, isDeleted: false },
+    select: { id: true },
   });
   if (!beneficiary) throw new NotFoundException("Beneficiary not found");
 

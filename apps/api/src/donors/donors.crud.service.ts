@@ -37,6 +37,7 @@ export class DonorsCrudService {
   private async getActiveDonorOrThrow(id: string) {
     const donor = await this.prisma.donor.findFirst({
       where: { id, isDeleted: false },
+      select: { id: true, assignedToUserId: true },
     });
 
     if (!donor) {
@@ -219,7 +220,61 @@ if (assignedToUserId) {
         isDeleted: false,
         ...this.getAccessFilter(user),
       },
-      include: {
+      select: {
+        id: true,
+        donorCode: true,
+        firstName: true,
+        middleName: true,
+        lastName: true,
+        primaryPhone: true,
+        primaryPhoneCode: true,
+        alternatePhone: true,
+        alternatePhoneCode: true,
+        whatsappPhone: true,
+        whatsappPhoneCode: true,
+        personalEmail: true,
+        officialEmail: true,
+        address: true,
+        city: true,
+        state: true,
+        country: true,
+        pincode: true,
+        profession: true,
+        approximateAge: true,
+        gender: true,
+        incomeSpectrum: true,
+        religion: true,
+        donationMethods: true,
+        donationFrequency: true,
+        notes: true,
+        prefEmail: true,
+        prefWhatsapp: true,
+        prefSms: true,
+        prefReminders: true,
+        timezone: true,
+        category: true,
+        isUnder18Helper: true,
+        isSeniorCitizen: true,
+        isSingleParent: true,
+        isDisabled: true,
+        sourceOfDonor: true,
+        sourceDetails: true,
+        pan: true,
+        profilePicUrl: true,
+        supportPreferences: true,
+        engagementLevel: true,
+        referredByDonorId: true,
+        createdById: true,
+        isDeleted: true,
+        deletedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        dobDay: true,
+        dobMonth: true,
+        healthScore: true,
+        healthStatus: true,
+        lastHealthCheck: true,
+        assignedToUserId: true,
         assignedToUser: { select: { id: true, name: true, email: true } },
         createdBy: { select: { id: true, name: true } },
         specialOccasions: true,
@@ -323,6 +378,7 @@ if (assignedToUserId) {
 
     const donor = await this.prisma.donor.findFirst({
       where: { id, isDeleted: true },
+      select: { id: true },
     });
 
     if (!donor) {

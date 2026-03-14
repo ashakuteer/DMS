@@ -86,6 +86,7 @@ export class DonorRelationsService {
         id: donorId,
         isDeleted: false,
       },
+      select: { id: true, assignedToUserId: true },
     });
 
     if (!donor) {

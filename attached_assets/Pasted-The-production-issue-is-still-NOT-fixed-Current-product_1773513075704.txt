@@ -1,0 +1,50 @@
+The production issue is still NOT fixed.
+
+Current production evidence:
+1. Donor list loads, but donor detail page shows "Donor not found"
+2. Beneficiaries list/details are broken or empty
+3. Railway logs still show database schema errors like:
+   - The column donors.deletedBy does not exist in the current database
+4. So the real issue is that production code expects deletedBy/deleteReason columns, but the Railway production database does not actually have them yet
+
+I do NOT want another theory-only answer.
+Please do a real deployment-state audit and give me the exact fix.
+
+Tasks:
+
+1. Inspect Prisma schema and identify exactly which new columns were introduced for archive/soft delete
+   - donor deletedBy / deleteReason
+   - beneficiary deletedBy / deleteReason
+   - any related fields
+
+2. Inspect prisma/migrations and confirm whether a migration file for these columns actually exists
+3. If migration file is missing, create the correct migration
+4. If migration file exists, confirm its exact folder name and SQL contents
+5. Verify whether Railway is actually running `prisma migrate deploy` in production startup
+6. If Railway start command is not enough or not being picked up, provide the exact alternative production-safe fix
+7. Ensure the app does NOT query columns that are missing in production before migration is applied
+8. Confirm whether temporary compatibility guards are needed until migration is live
+
+Most important:
+I need one of these two safe solutions:
+A. Properly apply the migration to Railway production database
+OR
+B. Temporarily remove/archive-column-dependent queries until the migration is definitely applied
+
+Please do not stop at explanation.
+Actually inspect:
+- prisma/schema.prisma
+- prisma/migrations/*
+- railway.toml
+- Dockerfile
+- any donor/beneficiary services querying deletedBy/deleteReason
+
+Output required:
+1. Exact root cause
+2. Whether migration file exists or not
+3. Exact migration name/path
+4. Exact SQL that should run
+5. Exact files changed
+6. Exact command Railway must execute
+7. Whether production will work immediately after redeploy
+8. Commit and push only after verifying the fix is real

@@ -10,6 +10,7 @@ export class BeneficiarySponsorshipService {
 
     const beneficiary = await this.prisma.beneficiary.findFirst({
       where: { id: beneficiaryId, isDeleted: false },
+      select: { id: true },
     });
 
     if (!beneficiary) {

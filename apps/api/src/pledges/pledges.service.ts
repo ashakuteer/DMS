@@ -168,6 +168,7 @@ export class PledgesService {
 
     const donor = await this.prisma.donor.findFirst({
       where: { id: data.donorId, isDeleted: false },
+      select: { id: true },
     });
 
     if (!donor) {
