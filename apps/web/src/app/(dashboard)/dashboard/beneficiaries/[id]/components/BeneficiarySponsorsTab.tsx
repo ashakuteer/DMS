@@ -35,11 +35,13 @@ export default function BeneficiarySponsorsTab({
   onViewDonorProfile,
   onSendWhatsApp,
 }: BeneficiarySponsorsTabProps) {
+  const sponsorships = beneficiary.sponsorships ?? [];
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center flex-wrap gap-2">
         <h3 className="text-lg font-semibold" data-testid="text-sponsors-count">
-          Sponsors ({beneficiary.sponsorships.length})
+          Sponsors ({sponsorships.length})
         </h3>
 
         {canEdit && (
@@ -50,7 +52,7 @@ export default function BeneficiarySponsorsTab({
         )}
       </div>
 
-      {beneficiary.sponsorships.length === 0 ? (
+      {sponsorships.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-40">
             <Heart className="h-8 w-8 mb-2 opacity-50 text-muted-foreground" />
@@ -59,7 +61,7 @@ export default function BeneficiarySponsorsTab({
         </Card>
       ) : (
         <div className="space-y-4">
-          {beneficiary.sponsorships.map((sponsorship) => (
+          {sponsorships.map((sponsorship) => (
             <Card key={sponsorship.id} data-testid={`card-sponsorship-${sponsorship.id}`}>
               <CardContent className="pt-4">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">

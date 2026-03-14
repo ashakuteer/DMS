@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from "@nestjs/comm
 import { PrismaService } from "../../prisma/prisma.service";
 import { AuditService } from "../../audit/audit.service";
 import { RolePermissionsService } from "../../role-permissions/role-permissions.service";
-import { BeneficiaryEventType, HomeType } from "@prisma/client";
+import { BeneficiaryEventType, HomeType, BeneficiaryStatus } from "@prisma/client";
 
 @Injectable()
 export class BeneficiaryCoreService {
@@ -30,35 +30,121 @@ private async generateBeneficiaryCode(): Promise<string> {
   return `AKF-BEN-${String(nextNum).padStart(6,"0")}`;
 }
 
-async findAll(options:any){
+async findAll(options: any) {
+  const {
+    page = 1,
+    limit = 20,
+    search,
+    homeType,
+    status,
+    sponsored,
+    classGrade,
+    school,
+    academicYear,
+  } = options;
 
-  const { page = 1, limit = 20 } = options;
+  const where: any = { isDeleted: false };
 
-  const [beneficiaries,total] = await Promise.all([
+  if (search) {
+    where.OR = [
+      { fullName: { contains: search, mode: "insensitive" } },
+      { code: { contains: search, mode: "insensitive" } },
+    ];
+  }
+  if (homeType) where.homeType = homeType as HomeType;
+  if (status) where.status = status as BeneficiaryStatus;
+  if (classGrade) where.educationClassOrRole = { contains: classGrade, mode: "insensitive" };
+  if (school) where.schoolOrCollege = { contains: school, mode: "insensitive" };
+  if (sponsored === true) where.sponsorships = { some: { isActive: true } };
+  if (sponsored === false) where.sponsorships = { none: { isActive: true } };
+
+  const [beneficiaries, total] = await Promise.all([
     this.prisma.beneficiary.findMany({
-      where:{ isDeleted:false },
-      skip:(page-1)*limit,
-      take:limit,
-      orderBy:{ createdAt:"desc"}
+      where,
+      skip: (page - 1) * limit,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: {
+        _count: { select: { sponsorships: true } },
+      },
     }),
-    this.prisma.beneficiary.count({ where:{ isDeleted:false }})
-  ])
+    this.prisma.beneficiary.count({ where }),
+  ]);
 
-  return { data:beneficiaries,total }
+  const data = beneficiaries.map((b) => {
+    const { _count, ...rest } = b as any;
+    return { ...rest, activeSponsorsCount: _count?.sponsorships ?? 0 };
+  });
+
+  return {
+    data,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 }
 
-async findById(id:string){
-
+async findById(id: string) {
   const beneficiary = await this.prisma.beneficiary.findFirst({
-    where:{ id,isDeleted:false }
-  })
+    where: { id, isDeleted: false },
+    include: {
+      createdBy: { select: { id: true, name: true } },
+      sponsorships: {
+        include: {
+          donor: {
+            select: {
+              id: true,
+              donorCode: true,
+              firstName: true,
+              lastName: true,
+              primaryPhone: true,
+              personalEmail: true,
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      updates: {
+        include: {
+          createdBy: { select: { id: true, name: true } },
+          attachments: {
+            include: {
+              document: {
+                select: {
+                  id: true,
+                  title: true,
+                  storagePath: true,
+                  mimeType: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
+      timelineEvents: {
+        orderBy: { eventDate: "desc" },
+      },
+    },
+  });
 
-  if(!beneficiary) throw new NotFoundException("Beneficiary not found")
+  if (!beneficiary) throw new NotFoundException("Beneficiary not found");
 
-  return beneficiary
+  const activeSponsorsCount = beneficiary.sponsorships.filter(
+    (s) => s.isActive && s.status === "ACTIVE",
+  ).length;
+
+  return {
+    ...beneficiary,
+    activeSponsorsCount,
+    updatesCount: beneficiary.updates.length,
+  };
 }
 
-async create(user:any,dto:any){
+async create(user: any, dto: any) {
 
   if(!dto.fullName || !dto.homeType){
     throw new BadRequestException("Full name and home type required")
@@ -164,7 +250,7 @@ async addTimelineEvent(beneficiaryId: string, dto: any) {
   });
 }
 
-async delete(user:any,id:string){
+async delete(user: any, id: string) {
 
  const existing = await this.prisma.beneficiary.findFirst({
    where:{id,isDeleted:false}

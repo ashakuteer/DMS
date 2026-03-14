@@ -71,19 +71,20 @@ export class BeneficiariesService {
   // ----------------------------
 
   getUpdates(beneficiaryId: string) {
-  return (this.updates as any).getUpdates(beneficiaryId);
-}
+    return this.updates.getUpdates(beneficiaryId);
+  }
 
   addUpdate(user: any, beneficiaryId: string, dto: any) {
-  return (this.updates as any).addUpdate(user, beneficiaryId, dto);
-}
+    return this.updates.addUpdate(user, beneficiaryId, dto);
+  }
+
   deleteUpdate(updateId: string) {
     return this.updates.deleteUpdate(updateId);
   }
 
   markDispatchCopied(id: string) {
-  return (this.updates as any).markDispatchCopied(id);
-}
+    return this.updates.markDispatchCopied(id);
+  }
 
   // ----------------------------
   // TIMELINE
@@ -249,7 +250,7 @@ getSponsorshipHistory(id: string) {
 // ----------------------------
 
 getUpdateWithBeneficiary(id: string) {
-  return (this.updates as any).getUpdateWithBeneficiary(id);
+  return this.updates.getUpdateWithBeneficiary(id);
 }
 
 getSponsorsForUpdate(beneficiaryId: string) {
@@ -257,6 +258,6 @@ getSponsorsForUpdate(beneficiaryId: string) {
 }
 
 sendUpdateToSponsors(user: any, updateId: string) {
-  return (this.updates as any).sendUpdateToSponsors(user, updateId);
+  return this.updates.sendUpdateToSponsors(user, updateId);
 }
 }

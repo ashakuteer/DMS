@@ -1,0 +1,115 @@
+I need you to fix a frontend crash in the Beneficiaries module and also standardize API responses safely.
+
+Current production symptoms:
+- Beneficiary photos now upload successfully
+- But when opening Beneficiaries / Sponsors / Updates, the frontend sometimes crashes
+- Console errors show:
+  - TypeError: Cannot read properties of undefined (reading 'total')
+  - TypeError: Cannot read properties of undefined (reading 'length')
+- UI sometimes shows:
+  - Failed to load beneficiaries
+  - Application error: a client-side exception has occurred
+
+I want a safe, minimal fix.
+
+PART 1 — Fix beneficiary frontend crash
+
+Please inspect the beneficiary frontend pages/components/hooks and find where the code assumes response fields always exist.
+
+Likely areas:
+- beneficiaries list page
+- beneficiary detail page
+- sponsors tab
+- updates tab
+- beneficiary fetch hooks / api client helpers
+
+Tasks:
+1. Find all places where frontend reads:
+   - response.total
+   - response.length
+   - response.data
+   - array.length on possibly undefined values
+2. Add safe fallbacks such as:
+   - response?.data ?? []
+   - response?.total ?? 0
+   - items?.length ?? 0
+3. Ensure the pages do not crash if the backend returns partial data, empty data, or unexpected shape
+4. Keep the UI functional even when data is empty
+5. Specifically verify:
+   - Beneficiaries list page
+   - Sponsors tab
+   - Updates tab
+6. Do not remove existing functionality
+7. Keep changes minimal and production-safe
+
+PART 2 — Verify backend response shape
+
+Please inspect the beneficiary-related backend endpoints and compare what they return with what the frontend expects.
+
+Check endpoints/services/controllers for:
+- beneficiaries list
+- beneficiary detail
+- sponsors data
+- updates data
+
+Tasks:
+1. Identify the actual response shape currently returned by the backend
+2. Identify the response shape expected by the frontend
+3. If there is a mismatch, fix it in the safest place
+4. Prefer minimal compatibility fixes over broad rewrites
+
+PART 3 — Introduce a safe global API response pattern
+
+I want to move toward a consistent response structure across the backend, but without breaking current production behavior.
+
+Target standard format:
+
+{
+  "success": true,
+  "data": ...,
+  "total": 0,
+  "message": ""
+}
+
+Tasks:
+1. Audit the current backend response patterns for beneficiary-related endpoints
+2. Create a small reusable response helper / DTO / utility for standardized API responses
+3. Apply it first only where it is safe, starting with beneficiary-related endpoints
+4. Do NOT refactor the entire backend at once
+5. Preserve backward compatibility wherever possible
+6. If the frontend currently depends on old shapes, either:
+   - keep both fields temporarily, or
+   - update the frontend safely in the same change
+
+PART 4 — Output I want
+
+After fixing, give me:
+
+1. Root cause summary
+- why the frontend crashed
+- whether it was frontend null handling, backend response mismatch, or both
+
+2. Exact files changed
+
+3. Exact code changes
+
+4. Response format summary
+- old response shape
+- new response shape
+- compatibility notes
+
+5. Validation results
+Please verify:
+- Beneficiaries page opens
+- Sponsors tab opens
+- Updates tab opens
+- No client-side crash
+- No undefined total/length errors in console
+
+Important instructions:
+- Do not give only explanations
+- Actually inspect and fix the code
+- Keep the fix minimal and safe
+- Do not introduce broad breaking changes
+- If you standardize responses, do it in a staged way
+- Commit and push the fix after verifying build success

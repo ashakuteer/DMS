@@ -20,11 +20,14 @@ export default function BeneficiaryUpdatesTab({
   onOpenAddUpdate,
   onOpenSendToSponsors,
 }: BeneficiaryUpdatesTabProps) {
+  const updates = beneficiary.updates ?? [];
+  const sponsorships = beneficiary.sponsorships ?? [];
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">
-          Updates ({beneficiary.updates.length})
+          Updates ({updates.length})
         </h3>
 
         <Button onClick={onOpenAddUpdate} data-testid="button-add-update">
@@ -33,7 +36,7 @@ export default function BeneficiaryUpdatesTab({
         </Button>
       </div>
 
-      {beneficiary.updates.length === 0 ? (
+      {updates.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-40">
             <MessageSquare className="h-8 w-8 mb-2 opacity-50 text-muted-foreground" />
@@ -42,7 +45,7 @@ export default function BeneficiaryUpdatesTab({
         </Card>
       ) : (
         <div className="space-y-4">
-          {beneficiary.updates.map((update: any) => (
+          {updates.map((update: any) => (
             <Card key={update.id}>
               <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
@@ -72,7 +75,7 @@ export default function BeneficiaryUpdatesTab({
                     </div>
                   </div>
 
-                  {beneficiary.sponsorships.length > 0 && !update.isPrivate && (
+                  {sponsorships.length > 0 && !update.isPrivate && (
                     <Button
                       variant="outline"
                       size="sm"
