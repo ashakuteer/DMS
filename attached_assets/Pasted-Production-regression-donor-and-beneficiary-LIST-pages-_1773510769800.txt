@@ -1,0 +1,76 @@
+Production regression: donor and beneficiary LIST pages load, but DETAIL pages are broken.
+
+Current symptoms:
+1. Donors list loads correctly
+2. Beneficiaries list loads correctly
+3. But when clicking a donor row, donor detail page shows "Donor not found"
+4. Same issue for beneficiary detail pages
+5. Browser console shows:
+   - 404 on the donor detail resource
+   - 500 errors on related detail sub-requests (example family-members)
+6. This started after recent archive / soft-delete / admin archive changes
+
+I need a SAFE targeted fix.
+
+Please do a real end-to-end audit and fix the exact regression.
+
+PART 1 — Donor detail regression
+Trace the full donor detail flow:
+- frontend donor detail route
+- frontend API call for donor by id
+- related sub-requests from the detail page
+- backend donor detail endpoint / controller / service
+- any archive / soft-delete filtering
+- any route mismatch or broken nested endpoints
+
+Tasks:
+1. Identify exactly why active donors visible in the list are returning "Donor not found" in detail pages
+2. Check whether soft-delete logic is incorrectly filtering active donor records
+3. Check whether old records have isDeleted = null and are being excluded by where: { isDeleted: false }
+4. Check whether the detail endpoint and related endpoints use inconsistent filtering
+5. Check whether the frontend route is calling the wrong API path or wrong id format
+6. Fix the donor detail page and all required related detail API calls so active donors open correctly
+
+PART 2 — Beneficiary detail regression
+Trace the full beneficiary detail flow:
+- frontend beneficiary detail route
+- frontend API call for beneficiary by id
+- backend beneficiary detail endpoint / controller / service
+- any archive / soft-delete filtering
+- any route mismatch
+
+Tasks:
+1. Identify exactly why active beneficiaries visible in the list are returning not found in detail pages
+2. Check whether soft-delete logic is incorrectly excluding active records
+3. Fix beneficiary detail loading without breaking archive behavior
+
+PART 3 — Archive / soft delete compatibility
+Please verify:
+1. Active records still appear in normal lists and detail pages
+2. Archived records do NOT appear in normal lists/details
+3. Archived records DO appear in admin archive management
+4. Restore still works
+
+Important:
+- Do NOT remove archive management
+- Do NOT rewrite unrelated modules
+- Keep the fix minimal and safe
+- This is likely a query/filter/route mismatch regression, so please identify the exact root cause first
+
+Likely things to inspect:
+- donor detail page.tsx
+- beneficiary detail page.tsx
+- donor controller/service/core/crud findById logic
+- beneficiary controller/service/core/crud findById logic
+- any helper methods used by detail pages
+- related detail sub-endpoints such as family-members if used
+- any isDeleted / deletedAt filters introduced recently
+
+Output required:
+1. Root cause summary
+2. Exact files changed
+3. Exact code fixes
+4. Why list pages still work but detail pages fail
+5. How the soft-delete filtering was corrected
+6. Confirmation that donor and beneficiary detail pages now open again
+7. Commit and push after verifying build success
