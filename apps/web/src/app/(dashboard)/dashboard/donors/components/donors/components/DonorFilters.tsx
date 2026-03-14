@@ -11,7 +11,7 @@ interface Props {
 export default function DonorFilters({
   searchInput,
   setSearchInput,
-  handleSearch
+  handleSearch,
 }: Props) {
   return (
     <div className="flex items-center gap-2">
@@ -19,14 +19,16 @@ export default function DonorFilters({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
 
         <Input
-          placeholder="Search donors..."
+          placeholder="Search by name, code, phone, or email…"
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           className="pl-10"
+          data-testid="input-donor-search"
         />
       </div>
 
-      <Button onClick={handleSearch}>
+      <Button onClick={handleSearch} data-testid="button-search">
         Search
       </Button>
     </div>
