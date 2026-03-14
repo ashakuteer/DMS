@@ -1,4 +1,4 @@
-import { Donor } from "../types"
+import { Donor } from "../../../types"
 import {
   Table,
   TableBody,

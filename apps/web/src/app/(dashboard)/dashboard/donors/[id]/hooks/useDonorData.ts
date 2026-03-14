@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { fetchWithAuth } from "@/lib/auth";
 
 export function useDonorData(donorId: string) {
@@ -22,9 +22,28 @@ export function useDonorData(donorId: string) {
     }
   }, [donorId]);
 
+  useEffect(() => {
+    fetchDonor();
+  }, [fetchDonor]);
+
+  const getDonorName = useCallback(() => {
+    if (!donor) return "";
+    const parts = [donor.firstName, donor.middleName, donor.lastName].filter(Boolean);
+    return parts.join(" ") || donor.donorCode || "Unknown Donor";
+  }, [donor]);
+
+  const getInitials = useCallback(() => {
+    if (!donor) return "?";
+    const first = donor.firstName?.[0] ?? "";
+    const last = donor.lastName?.[0] ?? "";
+    return (first + last).toUpperCase() || "?";
+  }, [donor]);
+
   return {
     donor,
     loading,
     fetchDonor,
+    getDonorName,
+    getInitials,
   };
 }

@@ -85,12 +85,6 @@ export default function EditDonorPage() {
   const { toast } = useToast();
   const user = authStorage.getUser();
 
-  if (donor.profilePicUrl) {
-  setExistingPhotoUrl(resolveImageUrl(donor.profilePicUrl));
-} else {
-  setExistingPhotoUrl(null);
-}
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);

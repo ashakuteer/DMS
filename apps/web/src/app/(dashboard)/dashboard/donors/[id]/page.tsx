@@ -1,7 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { authStorage, fetchWithAuth } from "@/lib/auth";
+import { hasPermission } from "@/lib/permissions";
 
 import { useDonorData } from "./hooks/useDonorData";
 import { useDonorDonations } from "./hooks/useDonorDonations";
@@ -28,12 +31,27 @@ export default function DonorProfilePage() {
   const params = useParams();
   const donorId = params.id as string;
 
+  const user = authStorage.getUser();
+  const canEdit = hasPermission(user?.role, "donors", "edit");
+  const [requestingAccess, setRequestingAccess] = useState(false);
+
+  const handleRequestAccess = async () => {
+    setRequestingAccess(true);
+    try {
+      await fetchWithAuth(`/api/donors/${donorId}/request-access`, { method: "POST" });
+    } catch {
+      console.error("Failed to request access");
+    } finally {
+      setRequestingAccess(false);
+    }
+  };
+
   const donorData = useDonorData(donorId);
-  const donations = useDonorDonations(donorId);
+  const donations = useDonorDonations(donorId, donorData.donor);
   const family = useDonorFamily(donorId);
   const specialDays = useDonorSpecialDays(donorId);
   const pledges = useDonorPledges(donorId);
-  const communication = useDonorCommunication(donorId);
+  const communication = useDonorCommunication(donorId, donorData.donor, donations.donations);
   const timeline = useDonorTimeline(donorId);
 
   if (donorData.loading) return <div>Loading...</div>;
@@ -46,16 +64,23 @@ export default function DonorProfilePage() {
 
       <DonorHeader
         donor={donor}
-        donorName={donorData.getDonorName()}
-        initials={donorData.getInitials()}
+        donorId={donorId}
+        isDataMasked={false}
+        canEdit={canEdit}
+        requestingAccess={requestingAccess}
+        getDonorName={donorData.getDonorName}
+        getInitials={donorData.getInitials}
         onBack={() => router.back()}
+        onEdit={() => router.push(`/dashboard/donors/${donorId}/edit`)}
+        onRequestAccess={handleRequestAccess}
       />
 
       <DonorStatsCards
         totalDonations={donations.totalDonations}
-        donationCount={donations.donations.length}
+        donationsCount={donations.donations.length}
         pendingPledges={pledges.pendingCount}
-        specialDaysCount={specialDays.specialOccasions.length}
+        totalPledges={pledges.pledges.length}
+        specialOccasionsCount={specialDays.specialOccasions.length}
         familyMembersCount={family.familyMembers.length}
       />
 
@@ -72,7 +97,7 @@ export default function DonorProfilePage() {
         </TabsList>
 
         <TabsContent value="overview">
-          <DonorOverviewTab donor={donor} />
+          <DonorOverviewTab donor={donor} isDataMasked={false} />
         </TabsContent>
 
         <TabsContent value="timeline">
