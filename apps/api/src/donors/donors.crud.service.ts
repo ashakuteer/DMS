@@ -168,6 +168,7 @@ if (assignedToUserId) {
           healthStatus: true,
           profilePicUrl: true,
           assignedToUserId: true,
+          donorSince: true,
           createdAt: true,
           updatedAt: true,
           assignedToUser: {
@@ -267,6 +268,7 @@ if (assignedToUserId) {
         createdById: true,
         isDeleted: true,
         deletedAt: true,
+        donorSince: true,
         createdAt: true,
         updatedAt: true,
         dobDay: true,
@@ -315,6 +317,7 @@ if (assignedToUserId) {
   return this.prisma.donor.create({
     data: {
       donorCode: donorCode,   // IMPORTANT
+      donorSince: new Date(),
 
       ...data,
 

@@ -118,6 +118,7 @@ export default function NewDonorPage() {
     country: "India",
     pincode: "",
     profession: "",
+    donorSince: "",
     approximateAge: "",
     gender: "",
     incomeSpectrum: "",
@@ -266,6 +267,7 @@ export default function NewDonorPage() {
       if (formData.country) payload.country = formData.country;
       if (formData.pincode) payload.pincode = formData.pincode;
       if (formData.profession) payload.profession = formData.profession;
+      if (formData.donorSince) payload.donorSince = new Date(formData.donorSince).toISOString();
       if (formData.approximateAge) payload.approximateAge = parseInt(formData.approximateAge);
       if (formData.gender) payload.gender = formData.gender;
       if (formData.incomeSpectrum) payload.incomeSpectrum = formData.incomeSpectrum;
@@ -513,6 +515,16 @@ export default function NewDonorPage() {
                 onChange={(e) => handleChange("profession", e.target.value)}
                 placeholder="Enter profession"
                 data-testid="input-profession"
+              />
+            </div>
+            <div>
+              <Label htmlFor="donorSince">Donor Since</Label>
+              <Input
+                id="donorSince"
+                type="date"
+                value={formData.donorSince}
+                onChange={(e) => handleChange("donorSince", e.target.value)}
+                data-testid="input-donor-since"
               />
             </div>
             <div>

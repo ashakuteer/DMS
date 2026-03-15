@@ -114,6 +114,7 @@ model Donor {
   deletedAt          DateTime?
   deletedBy          String?
   deleteReason       String?
+  donorSince         DateTime?
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
   dobDay             Int?

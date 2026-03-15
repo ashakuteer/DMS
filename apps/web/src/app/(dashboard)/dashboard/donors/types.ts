@@ -14,6 +14,7 @@ export interface Donor {
 
   category: string
 
+  donorSince?: string
   healthScore?: number
   healthStatus?: "GREEN" | "YELLOW" | "RED"
   healthReasons?: string[]

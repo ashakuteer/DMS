@@ -61,6 +61,7 @@ export default function DonorTable({ donors, onOpen }: Props) {
             <TableHead>Contact</TableHead>
             <TableHead>Location</TableHead>
             <TableHead className="text-center">Donations</TableHead>
+            <TableHead>Donor Since</TableHead>
             <TableHead>Health</TableHead>
             <TableHead>Engagement</TableHead>
             <TableHead>Assigned To</TableHead>
@@ -114,6 +115,14 @@ export default function DonorTable({ donors, onOpen }: Props) {
               <TableCell className="text-center">
                 <span className="text-sm font-medium">
                   {d._count?.donations ?? 0}
+                </span>
+              </TableCell>
+
+              <TableCell>
+                <span className="text-sm text-muted-foreground">
+                  {d.donorSince
+                    ? new Date(d.donorSince).getFullYear()
+                    : "—"}
                 </span>
               </TableCell>
 

@@ -112,6 +112,7 @@ export default function EditDonorPage() {
     country: "India",
     pincode: "",
     profession: "",
+    donorSince: "",
     approximateAge: "",
     gender: "",
     incomeSpectrum: "",
@@ -169,6 +170,7 @@ export default function EditDonorPage() {
           country: donor.country || "India",
           pincode: donor.pincode || "",
           profession: donor.profession || "",
+          donorSince: donor.donorSince ? donor.donorSince.slice(0, 10) : "",
           approximateAge: donor.approximateAge?.toString() || "",
           gender: donor.gender || "",
           incomeSpectrum: donor.incomeSpectrum || "",
@@ -299,6 +301,7 @@ export default function EditDonorPage() {
       payload.country = formData.country || undefined;
       payload.pincode = formData.pincode || undefined;
       payload.profession = formData.profession || undefined;
+      payload.donorSince = formData.donorSince ? new Date(formData.donorSince).toISOString() : undefined;
       payload.approximateAge = formData.approximateAge ? parseInt(formData.approximateAge) : undefined;
       payload.gender = formData.gender || undefined;
       payload.incomeSpectrum = formData.incomeSpectrum || undefined;
@@ -516,6 +519,16 @@ export default function EditDonorPage() {
                 onChange={(e) => handleChange("profession", e.target.value)}
                 placeholder="Enter profession"
                 data-testid="input-profession"
+              />
+            </div>
+            <div>
+              <Label htmlFor="donorSince">Donor Since</Label>
+              <Input
+                id="donorSince"
+                type="date"
+                value={formData.donorSince}
+                onChange={(e) => handleChange("donorSince", e.target.value)}
+                data-testid="input-donor-since"
               />
             </div>
             <div>

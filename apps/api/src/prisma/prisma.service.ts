@@ -115,6 +115,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       // ── Archive columns (donors + beneficiaries) ──────────────────────────
       `ALTER TABLE "donors" ADD COLUMN IF NOT EXISTS "deletedBy" TEXT`,
       `ALTER TABLE "donors" ADD COLUMN IF NOT EXISTS "deleteReason" TEXT`,
+      `ALTER TABLE "donors" ADD COLUMN IF NOT EXISTS "donorSince" TIMESTAMP(3)`,
       `ALTER TABLE "beneficiaries" ADD COLUMN IF NOT EXISTS "deletedBy" TEXT`,
       `ALTER TABLE "beneficiaries" ADD COLUMN IF NOT EXISTS "deleteReason" TEXT`,
 

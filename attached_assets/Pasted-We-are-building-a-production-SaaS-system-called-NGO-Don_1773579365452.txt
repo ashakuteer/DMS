@@ -1,0 +1,208 @@
+We are building a production SaaS system called **NGO Donor Hub**.
+
+Stack:
+
+Frontend
+
+* Next.js (apps/web)
+* Hosted on Vercel
+
+Backend
+
+* NestJS (apps/api)
+* Hosted on Railway
+
+Database
+
+* PostgreSQL (Supabase)
+* ORM: Prisma
+
+---
+
+New Feature Request
+
+Add a **"Donor Since" feature** to show how long a donor has been supporting the organization.
+
+Example display:
+
+Donor Since: 2018
+Supporting for: 7 years
+
+---
+
+PART 1 — Database Changes
+
+Update the **Donor model** in Prisma.
+
+File:
+
+prisma/schema.prisma
+
+Add this field to the Donor model:
+
+```
+donorSince DateTime?
+```
+
+Example:
+
+```
+model Donor {
+  id            String   @id @default(uuid())
+  firstName     String?
+  lastName      String?
+  phone         String?
+  email         String?
+  donorSince    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+```
+
+Then run migration:
+
+```
+npx prisma migrate dev --name add_donor_since
+npx prisma generate
+```
+
+---
+
+PART 2 — Backend Logic
+
+Update the donor creation logic.
+
+File:
+
+apps/api/src/modules/donors/donors.service.ts
+
+When a donor is created, automatically set donorSince.
+
+Logic:
+
+If donorSince is not provided → set it to createdAt.
+
+Example:
+
+```
+const donor = await this.prisma.donor.create({
+  data: {
+    ...createDonorDto,
+    donorSince: createDonorDto.donorSince ?? new Date()
+  }
+});
+```
+
+---
+
+PART 3 — API Response
+
+Ensure donorSince is returned in donor APIs:
+
+GET /donors
+GET /donors/:id
+
+Example response:
+
+```
+{
+  id: "123",
+  firstName: "Rama",
+  donorSince: "2019-04-01T00:00:00Z"
+}
+```
+
+---
+
+PART 4 — Frontend Display
+
+File:
+
+apps/web/src/app/dashboard/donors/[id]/page.tsx
+
+Add a **Donor Since section** near the donor name or overview.
+
+Example UI:
+
+Donor Since: 2019
+Supporting for: 6 years
+
+Create helper function:
+
+```
+function getDonorYears(donorSince: string) {
+  const start = new Date(donorSince)
+  const now = new Date()
+  return now.getFullYear() - start.getFullYear()
+}
+```
+
+Display:
+
+```
+Donor Since: {new Date(donor.donorSince).getFullYear()}
+Supporting for: {getDonorYears(donor.donorSince)} years
+```
+
+---
+
+PART 5 — Optional Input Field
+
+In the **Add Donor form**, allow optional entry.
+
+File:
+
+apps/web/src/app/dashboard/donors/new/page.tsx
+
+Add:
+
+Donor Since (Year)
+
+Use a **date picker or year selector**.
+
+Example:
+
+```
+<input type="date" name="donorSince" />
+```
+
+If empty → backend sets automatically.
+
+---
+
+PART 6 — Donor List View
+
+In donor table add a column:
+
+Donor Since
+
+Example:
+
+| Name | Phone    | Donor Since | Years |
+| ---- | -------- | ----------- | ----- |
+| Rama | 9550xxxx | 2019        | 6 yrs |
+
+---
+
+PART 7 — Backfill Existing Donors
+
+For existing donors without donorSince:
+
+Set donorSince = createdAt
+
+Run script:
+
+```
+UPDATE "Donor"
+SET "donorSince" = "createdAt"
+WHERE "donorSince" IS NULL;
+```
+
+---
+
+Expected Result
+
+Each donor profile shows:
+
+Donor Since: 2020
+Supporting for: 4 years

@@ -36,6 +36,7 @@ export interface Donor {
   sourceDetails?: string;
   pan?: string;
   profilePicUrl?: string;
+  donorSince?: string;
   createdAt: string;
   updatedAt: string;
   healthScore?: number;

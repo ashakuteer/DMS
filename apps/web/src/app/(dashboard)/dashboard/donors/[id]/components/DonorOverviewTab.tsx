@@ -272,6 +272,11 @@ export default function DonorOverviewTab({
           </div>
 
           <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Donor Since</span>
+            <span>{formatDate(donor.donorSince ?? donor.createdAt)}</span>
+          </div>
+
+          <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Created On</span>
             <span>{formatDate(donor.createdAt)}</span>
           </div>

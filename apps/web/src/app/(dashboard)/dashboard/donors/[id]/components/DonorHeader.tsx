@@ -118,6 +118,7 @@ export default function DonorHeader({
             {donor.profession || "No profession specified"}
             {donor.city && ` • ${donor.city}`}
             {donor.state && `, ${donor.state}`}
+            {(donor.donorSince || donor.createdAt) && ` • Donor since ${new Date(donor.donorSince ?? donor.createdAt).getFullYear()}`}
           </p>
         </div>
       </div>
