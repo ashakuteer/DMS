@@ -1,0 +1,169 @@
+We are fixing API connection issues in the NGO Donor Hub system.
+
+Stack
+
+Frontend
+Next.js (apps/web)
+Hosted on Vercel
+
+Backend
+NestJS (apps/api)
+Hosted on Railway
+
+Database
+Supabase Postgres
+Prisma ORM
+
+---
+
+PROBLEM
+
+Buttons like:
+
+Add Donation
+Add Family Member
+Add Pledge
+Add Special Day
+
+open correctly but data is not saved.
+
+Browser console shows:
+
+ERR_NAME_NOT_RESOLVED
+
+This means the frontend API base URL is incorrect.
+
+---
+
+PART 1 — CREATE CENTRAL API CLIENT
+
+Create file:
+
+apps/web/src/lib/api.ts
+
+```ts
+const API_BASE_URL =
+ process.env.NEXT_PUBLIC_API_URL ||
+ "https://dms-production-598e.up.railway.app"
+
+export async function apiFetch(path: string, options?: RequestInit) {
+ const res = await fetch(`${API_BASE_URL}${path}`, {
+  headers: { "Content-Type": "application/json" },
+  ...options,
+ })
+
+ if (!res.ok) throw new Error("API error")
+
+ return res.json()
+}
+```
+
+---
+
+PART 2 — UPDATE ALL API CALLS
+
+Replace all fetch calls.
+
+Example before:
+
+```
+fetch("/api/donations")
+```
+
+Replace with:
+
+```
+apiFetch("/donations")
+```
+
+Example POST:
+
+```
+apiFetch("/donations",{
+ method:"POST",
+ body: JSON.stringify(data)
+})
+```
+
+---
+
+PART 3 — SET ENV VARIABLE
+
+In Vercel environment variables add:
+
+```
+NEXT_PUBLIC_API_URL
+```
+
+Value:
+
+```
+https://dms-production-598e.up.railway.app
+```
+
+---
+
+PART 4 — FIX DONATION SAVE
+
+Donation modal submit:
+
+```
+await apiFetch("/donations",{
+ method:"POST",
+ body: JSON.stringify({
+  donorId,
+  amount,
+  category
+ })
+})
+```
+
+---
+
+PART 5 — FIX FAMILY MEMBER SAVE
+
+```
+await apiFetch("/family",{
+ method:"POST",
+ body: JSON.stringify({
+  donorId,
+  name,
+  relation,
+  phone
+ })
+})
+```
+
+---
+
+PART 6 — FIX SPECIAL DAYS
+
+```
+await apiFetch("/special-days",{
+ method:"POST",
+ body: JSON.stringify({
+  donorId,
+  type,
+  date
+ })
+})
+```
+
+---
+
+PART 7 — REFRESH DATA
+
+After saving:
+
+```
+queryClient.invalidateQueries(["donor", donorId])
+```
+
+---
+
+EXPECTED RESULT
+
+Add Donation → saves record
+Add Pledge → saves record
+Add Family Member → saves record
+Add Special Day → saves record
