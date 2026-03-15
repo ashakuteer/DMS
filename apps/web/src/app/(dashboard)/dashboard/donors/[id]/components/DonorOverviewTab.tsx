@@ -8,8 +8,7 @@ import AssignDonorOwner from "./AssignDonorOwner";
 import type { Donor } from "../types";
 import { formatDate, getDonorLoyaltyTier } from "../utils";
 import { useQuery } from "@tanstack/react-query";
-import { fetchWithAuth } from "@/lib/auth";
-import { API_URL } from "@/lib/api-config";
+import { apiClient } from "@/lib/api-client";
 
 interface DonorOverviewTabProps {
   donor: Donor;
@@ -67,18 +66,14 @@ export default function DonorOverviewTab({
     useQuery<HealthScoreData>({
       queryKey: ["/api/donors", donor.id, "health-score"],
       queryFn: () =>
-        fetchWithAuth(`${API_URL}/api/donors/${donor.id}/health-score`).then(
-          (r) => r.json()
-        ),
+        apiClient<HealthScoreData>(`/api/donors/${donor.id}/health-score`),
     });
 
   const { data: prediction, isLoading: predLoading } =
     useQuery<PredictionData>({
       queryKey: ["/api/donors", donor.id, "prediction"],
       queryFn: () =>
-        fetchWithAuth(`${API_URL}/api/donors/${donor.id}/prediction`).then(
-          (r) => r.json()
-        ),
+        apiClient<PredictionData>(`/api/donors/${donor.id}/prediction`),
     });
 
   return (

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { authStorage } from "@/lib/auth"
-import { apiFetch } from "@/lib/api"
+import { apiClient } from "@/lib/api-client"
 import { hasPermission } from "@/lib/permissions"
 import type { SpecialOccasion, SpecialOccasionFormData } from "../types"
 
@@ -48,13 +48,13 @@ export function useDonorSpecialDays(donorId: string) {
   const fetchSpecialOccasions = useCallback(async () => {
     setSpecialOccasionsLoading(true)
     try {
-      const res = await apiFetch(`/api/donor-relations/donors/${donorId}/special-occasions`)
-      if (res.ok) {
-        const data = await res.json()
-        setSpecialOccasions(data || [])
-      }
+      const data = await apiClient<SpecialOccasion[]>(
+        `/api/donor-relations/donors/${donorId}/special-occasions`
+      )
+      setSpecialOccasions(Array.isArray(data) ? data : [])
     } catch {
       console.error("Failed to fetch special occasions")
+      setSpecialOccasions([])
     } finally {
       setSpecialOccasionsLoading(false)
     }
@@ -67,13 +67,11 @@ export function useDonorSpecialDays(donorId: string) {
   const onDelete = useCallback(async (occasionId: string) => {
     setDeletingSpecialOccasionId(occasionId)
     try {
-      const res = await apiFetch(
+      await apiClient(
         `/api/donor-relations/special-occasions/${occasionId}`,
         { method: "DELETE" }
       )
-      if (res.ok) {
-        setSpecialOccasions((prev) => prev.filter((o) => o.id !== occasionId))
-      }
+      setSpecialOccasions((prev) => prev.filter((o) => o.id !== occasionId))
     } catch {
       console.error("Failed to delete special occasion")
     } finally {
@@ -116,17 +114,11 @@ export function useDonorSpecialDays(donorId: string) {
         ? `/api/donor-relations/special-occasions/${editingSpecialOccasionId}`
         : `/api/donor-relations/donors/${donorId}/special-occasions`
       const method = editingSpecialOccasionId ? "PATCH" : "POST"
-      const res = await apiFetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      })
-      if (res.ok) {
-        setShowSpecialOccasionDialog(false)
-        setSpecialOccasionForm(EMPTY_OCCASION_FORM)
-        setEditingSpecialOccasionId(null)
-        await fetchSpecialOccasions()
-      }
+      await apiClient(url, { method, body: JSON.stringify(body) })
+      setShowSpecialOccasionDialog(false)
+      setSpecialOccasionForm(EMPTY_OCCASION_FORM)
+      setEditingSpecialOccasionId(null)
+      await fetchSpecialOccasions()
     } catch {
       console.error("Failed to save special occasion")
     } finally {

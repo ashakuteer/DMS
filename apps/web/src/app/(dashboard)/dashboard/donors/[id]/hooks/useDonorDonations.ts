@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { authStorage } from "@/lib/auth";
-import { apiFetch } from "@/lib/api";
+import { apiClient } from "@/lib/api-client";
 import { hasPermission } from "@/lib/permissions";
 import type { Donation, Donor, DonationFormData, Template } from "../types";
 
@@ -41,13 +41,13 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
   const fetchDonations = useCallback(async () => {
     setDonationsLoading(true);
     try {
-      const res = await apiFetch(`/api/donations?donorId=${donorId}&limit=100`);
-      if (res.ok) {
-        const data = await res.json();
-        setDonations(data.items || []);
-      }
+      const data = await apiClient<{ items?: Donation[] }>(
+        `/api/donations?donorId=${donorId}&limit=100`
+      );
+      setDonations(data?.items ?? []);
     } catch (error) {
       console.error("Error fetching donations:", error);
+      setDonations([]);
     } finally {
       setDonationsLoading(false);
     }
@@ -55,11 +55,8 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
 
   const fetchTemplates = useCallback(async () => {
     try {
-      const res = await apiFetch("/api/templates");
-      if (res.ok) {
-        const data = await res.json();
-        setTemplates(data || []);
-      }
+      const data = await apiClient<Template[]>("/api/templates");
+      setTemplates(Array.isArray(data) ? data : []);
     } catch {
       console.error("Failed to fetch templates");
     }
@@ -73,7 +70,7 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
   const onResendReceipt = useCallback(async (donationId: string) => {
     setResendingReceiptId(donationId);
     try {
-      await apiFetch(`/api/donations/${donationId}/resend-receipt`, { method: "POST" });
+      await apiClient(`/api/donations/${donationId}/resend-receipt`, { method: "POST" });
     } catch {
       console.error("Failed to resend receipt");
     } finally {
@@ -90,9 +87,8 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     e.preventDefault();
     setSubmittingDonation(true);
     try {
-      const res = await apiFetch("/api/donations", {
+      await apiClient("/api/donations", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           donorId,
           donationAmount: parseFloat(donationForm.donationAmount),
@@ -103,11 +99,9 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
           remarks: donationForm.remarks,
         }),
       });
-      if (res.ok) {
-        setShowDonationDialog(false);
-        setDonationForm(EMPTY_DONATION_FORM);
-        await fetchDonations();
-      }
+      setShowDonationDialog(false);
+      setDonationForm(EMPTY_DONATION_FORM);
+      await fetchDonations();
     } catch {
       console.error("Failed to add donation");
     } finally {

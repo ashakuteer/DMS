@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { apiClient } from "@/lib/api-client"
 
 import DonationStatsCard from "./components/donation-stats"
 import DonationFilters from "./components/donation-filters"
@@ -18,11 +19,9 @@ const [search,setSearch] = useState("")
 const [selected,setSelected] = useState<Donation | null>(null)
 
 useEffect(()=>{
-
-fetch("/api/donations")
-.then(res=>res.json())
-.then(data=>setDonations(data.items))
-
+  apiClient<{ items?: Donation[] }>("/api/donations")
+    .then(data => setDonations(data?.items ?? []))
+    .catch(() => setDonations([]))
 },[])
 
 return (

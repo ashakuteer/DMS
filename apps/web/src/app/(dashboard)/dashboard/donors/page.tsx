@@ -49,9 +49,9 @@ export default function DonorsPage() {
 
         const data = await res.json()
 
-        setDonors(data.items)
-        setTotalPages(data.totalPages)
-        setTotal(data.total)
+        setDonors(data.items ?? [])
+        setTotalPages(data.totalPages ?? 1)
+        setTotal(data.total ?? 0)
 
       }
 

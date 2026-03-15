@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { authStorage } from "@/lib/auth";
-import { apiFetch } from "@/lib/api";
+import { apiClient } from "@/lib/api-client";
 import { hasPermission } from "@/lib/permissions";
 import type { FamilyMember, FamilyMemberFormData } from "../types";
 
@@ -31,15 +31,13 @@ export function useDonorFamily(donorId: string) {
   const fetchFamilyMembers = useCallback(async () => {
     setFamilyMembersLoading(true);
     try {
-      const res = await apiFetch(
+      const data = await apiClient<FamilyMember[]>(
         `/api/donor-relations/donors/${donorId}/family-members`
       );
-      if (res.ok) {
-        const data = await res.json();
-        setFamilyMembers(data || []);
-      }
+      setFamilyMembers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching family members:", error);
+      setFamilyMembers([]);
     } finally {
       setFamilyMembersLoading(false);
     }
@@ -52,13 +50,11 @@ export function useDonorFamily(donorId: string) {
   const onDelete = useCallback(async (memberId: string) => {
     setDeletingFamilyMemberId(memberId);
     try {
-      const res = await apiFetch(
+      await apiClient(
         `/api/donor-relations/family-members/${memberId}`,
         { method: "DELETE" }
       );
-      if (res.ok) {
-        setFamilyMembers((prev) => prev.filter((m) => m.id !== memberId));
-      }
+      setFamilyMembers((prev) => prev.filter((m) => m.id !== memberId));
     } catch {
       console.error("Failed to delete family member");
     } finally {
@@ -111,17 +107,11 @@ export function useDonorFamily(donorId: string) {
         ? `/api/donor-relations/family-members/${editingFamilyMemberId}`
         : `/api/donor-relations/donors/${donorId}/family-members`;
       const method = editingFamilyMemberId ? "PATCH" : "POST";
-      const res = await apiFetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        setShowFamilyDialog(false);
-        setFamilyMemberForm(EMPTY_FAMILY_FORM);
-        setEditingFamilyMemberId(null);
-        await fetchFamilyMembers();
-      }
+      await apiClient(url, { method, body: JSON.stringify(body) });
+      setShowFamilyDialog(false);
+      setFamilyMemberForm(EMPTY_FAMILY_FORM);
+      setEditingFamilyMemberId(null);
+      await fetchFamilyMembers();
     } catch {
       console.error("Failed to save family member");
     } finally {

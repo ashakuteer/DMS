@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { authStorage } from "@/lib/auth";
-import { apiFetch } from "@/lib/api";
+import { apiClient } from "@/lib/api-client";
 import { hasPermission } from "@/lib/permissions";
 import type { Pledge, PledgeFormData } from "../types";
 
@@ -31,13 +31,13 @@ export function useDonorPledges(donorId: string) {
   const fetchPledges = useCallback(async () => {
     setPledgesLoading(true);
     try {
-      const res = await apiFetch(`/api/pledges?donorId=${donorId}`);
-      if (res.ok) {
-        const data = await res.json();
-        setPledges(data.items || []);
-      }
+      const data = await apiClient<{ items?: Pledge[] }>(
+        `/api/pledges?donorId=${donorId}`
+      );
+      setPledges(data?.items ?? []);
     } catch (error) {
       console.error("Error fetching pledges:", error);
+      setPledges([]);
     } finally {
       setPledgesLoading(false);
     }
@@ -50,7 +50,7 @@ export function useDonorPledges(donorId: string) {
   const runPledgeAction = useCallback(async (pledgeId: string, action: string) => {
     setPledgeActionLoading(pledgeId);
     try {
-      await apiFetch(`/api/pledges/${pledgeId}/${action}`, { method: "POST" });
+      await apiClient(`/api/pledges/${pledgeId}/${action}`, { method: "POST" });
       await fetchPledges();
     } catch {
       console.error(`Failed to ${action} pledge`);
@@ -95,17 +95,11 @@ export function useDonorPledges(donorId: string) {
       };
       const url = editingPledgeId ? `/api/pledges/${editingPledgeId}` : "/api/pledges";
       const method = editingPledgeId ? "PATCH" : "POST";
-      const res = await apiFetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) {
-        setShowPledgeDialog(false);
-        setPledgeForm(EMPTY_PLEDGE_FORM);
-        setEditingPledgeId(null);
-        await fetchPledges();
-      }
+      await apiClient(url, { method, body: JSON.stringify(body) });
+      setShowPledgeDialog(false);
+      setPledgeForm(EMPTY_PLEDGE_FORM);
+      setEditingPledgeId(null);
+      await fetchPledges();
     } catch {
       console.error("Failed to save pledge");
     } finally {

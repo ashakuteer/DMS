@@ -1,0 +1,116 @@
+We need to stop patching individual pages and instead fix the API layer globally.
+
+Currently these actions are broken:
+
+* Add Donation
+* Add Pledge
+* Add Family Member
+* Add Special Day
+* Donations page loading
+
+Console shows:
+
+401 Unauthorized
+TypeError: Cannot read properties of undefined (reading 'map')
+
+The root issue is inconsistent API handling across the app.
+
+Please perform the following structural fix.
+
+---
+
+STEP 1 — Create a single API client
+
+Create `src/lib/api-client.ts`
+
+const API_BASE =
+process.env.NEXT_PUBLIC_API_URL ||
+"https://dms-production-598e.up.railway.app";
+
+export async function apiClient(path: string, options: RequestInit = {}) {
+const token =
+typeof window !== "undefined"
+? localStorage.getItem("auth_token")
+: null;
+
+const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+
+const response = await fetch(url, {
+...options,
+headers: {
+"Content-Type": "application/json",
+...(token ? { Authorization: `Bearer ${token}` } : {}),
+...(options.headers || {})
+}
+});
+
+if (!response.ok) {
+throw new Error(`API error ${response.status}`);
+}
+
+return response.json();
+}
+
+---
+
+STEP 2 — Replace ALL fetchWithAuth and apiFetch usage
+
+Update the following hooks to use apiClient:
+
+useDonations.ts
+usePledges.ts
+useFamilyMembers.ts
+useSpecialDays.ts
+useDonors.ts
+
+Example:
+
+const data = await apiClient(`/api/donations`);
+
+---
+
+STEP 3 — Prevent frontend crashes
+
+Any list rendering must use safe fallback.
+
+Example:
+
+const donations = data?.donations ?? [];
+
+return donations.map(...)
+
+---
+
+STEP 4 — Verify these endpoints
+
+GET /api/donations
+POST /api/donations
+
+GET /api/pledges
+POST /api/pledges
+
+GET /api/family-members
+POST /api/family-members
+
+GET /api/special-days
+POST /api/special-days
+
+---
+
+STEP 5 — Test donor profile actions
+
+After fixing:
+
+Add Donation should create record
+
+Add Pledge should create record
+
+Add Family Member should create record
+
+Add Special Day should create record
+
+Donations page should load without console errors.
+
+---
+
+The goal is to standardize API calls and eliminate inconsistent authentication and URL generation.
