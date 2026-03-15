@@ -20,14 +20,7 @@ SelectTrigger,
 SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-
-interface SpecialOccasionFormData {
-type: string;
-day: string;
-month: string;
-relatedPersonName?: string;
-notes?: string;
-}
+import type { SpecialOccasionFormData } from "../types";
 
 interface SpecialOccasionDialogProps {
 open: boolean;

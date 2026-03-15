@@ -148,8 +148,8 @@ export interface SpecialOccasionFormData {
   type: string;
   month: string;
   day: string;
-  relatedPersonName: string;
-  notes: string;
+  relatedPersonName?: string;
+  notes?: string;
 }
 
 export interface UserProfile {
