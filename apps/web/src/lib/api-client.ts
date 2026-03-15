@@ -8,7 +8,7 @@ export async function apiClient<T = unknown>(
 ): Promise<T> {
   const token =
     typeof window !== "undefined"
-      ? localStorage.getItem("auth_token")
+      ? localStorage.getItem("accessToken")
       : null;
 
   const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
