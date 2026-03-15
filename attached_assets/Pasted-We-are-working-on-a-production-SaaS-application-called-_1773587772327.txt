@@ -1,0 +1,136 @@
+We are working on a production SaaS application called NGO Donor Hub.
+
+Stack:
+
+Frontend
+
+* Next.js (apps/web)
+* React Query
+* Hosted on Vercel
+
+Backend
+
+* NestJS (apps/api)
+* Hosted on Railway
+
+Database
+
+* PostgreSQL (Supabase)
+* Prisma ORM
+
+---
+
+CURRENT BUG
+
+The donor list page works, but clicking a donor profile causes a crash.
+
+Console errors show:
+
+404: /api/donors/special-occasions
+No QueryClient set, use QueryClientProvider
+
+We must fix this.
+
+---
+
+PART 1 — FIX MISSING API
+
+Frontend is calling:
+
+GET /api/donors/:id/special-occasions
+
+But backend does not implement this endpoint.
+
+Add controller:
+
+apps/api/src/modules/donors/donors.controller.ts
+
+```ts
+@Get(':id/special-occasions')
+async getSpecialOccasions(@Param('id') id: string) {
+  return {
+    birthdays: [],
+    anniversaries: []
+  };
+}
+```
+
+This prevents 404 errors.
+
+---
+
+PART 2 — FIX REACT QUERY PROVIDER
+
+Open:
+
+apps/web/src/app/layout.tsx
+
+Wrap application with QueryClientProvider.
+
+Install if missing:
+
+npm install @tanstack/react-query
+
+Add:
+
+```tsx
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+const queryClient = new QueryClient()
+
+export default function RootLayout({ children }) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  )
+}
+```
+
+This fixes:
+
+No QueryClient set error.
+
+---
+
+PART 3 — ADD SAFE FALLBACKS
+
+Open:
+
+apps/web/src/app/dashboard/donors/[id]/page.tsx
+
+Ensure APIs cannot crash UI.
+
+Example:
+
+```ts
+const { data } = useQuery({
+ queryKey: ['donor', donorId],
+ queryFn: fetchDonor,
+})
+
+const donor = data ?? {}
+```
+
+Never assume data exists.
+
+---
+
+PART 4 — ERROR HANDLING
+
+Add loading and error state:
+
+```tsx
+if (isLoading) return <div>Loading donor...</div>
+
+if (error) return <div>Unable to load donor</div>
+```
+
+---
+
+EXPECTED RESULT
+
+1. Clicking donor opens profile page
+2. No frontend crash
+3. Missing endpoints return empty data
+4. React Query works correctly
