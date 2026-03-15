@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/tooltip";
 import { resolveImageUrl } from "@/lib/image-url";
 import type { Donor } from "../types";
-import { getCategoryColor } from "../utils";
+import { getCategoryColor, getDonorLoyaltyTier } from "../utils";
 
 interface DonorHeaderProps {
   donor: Donor;
@@ -70,6 +70,15 @@ export default function DonorHeader({
             <Badge className={getCategoryColor(donor.category)}>
               {donor.category.replace(/_/g, " ")}
             </Badge>
+
+            {(() => {
+              const loyalty = getDonorLoyaltyTier(donor.donorSince ?? donor.createdAt);
+              return (
+                <Badge className={`text-xs ${loyalty.colorClass}`} data-testid="badge-loyalty-tier">
+                  {loyalty.label}
+                </Badge>
+              );
+            })()}
 
             <Tooltip>
               <TooltipTrigger asChild>

@@ -1,11 +1,11 @@
 "use client";
 
-import { Building, Lock, MapPin, MessageSquare, Phone, User } from "lucide-react";
+import { Building, Lock, MapPin, MessageSquare, Phone, Star, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import AssignDonorOwner from "./AssignDonorOwner";
 import type { Donor } from "../types";
-import { formatDate } from "../utils";
+import { formatDate, getDonorLoyaltyTier } from "../utils";
 
 interface DonorOverviewTabProps {
   donor: Donor;
@@ -271,10 +271,35 @@ export default function DonorOverviewTab({
             <span>{donor.createdBy?.name || "-"}</span>
           </div>
 
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Donor Since</span>
-            <span>{formatDate(donor.donorSince ?? donor.createdAt)}</span>
-          </div>
+          {(() => {
+            const loyalty = getDonorLoyaltyTier(donor.donorSince ?? donor.createdAt);
+            return (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Donor Since</span>
+                  <span data-testid="text-donor-since">
+                    {new Date(donor.donorSince ?? donor.createdAt).getFullYear()}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Supporting For</span>
+                  <span data-testid="text-supporting-years">
+                    {loyalty.years === 0
+                      ? "Less than a year"
+                      : `${loyalty.years} year${loyalty.years !== 1 ? "s" : ""}`}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Loyalty</span>
+                  <Badge className={`text-xs ${loyalty.colorClass}`} data-testid="badge-loyalty-overview">
+                    {loyalty.label}
+                  </Badge>
+                </div>
+              </>
+            );
+          })()}
 
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Created On</span>

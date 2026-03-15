@@ -1,0 +1,242 @@
+We are working on a production SaaS application called **NGO Donor Hub**.
+
+Architecture:
+
+Frontend
+
+* Next.js (apps/web)
+* Hosted on Vercel
+
+Backend
+
+* NestJS (apps/api)
+* Hosted on Railway
+
+Database
+
+* Supabase PostgreSQL
+* ORM: Prisma
+
+---
+
+CURRENT PROBLEM
+
+The **Donors page shows no donors** and the browser console shows:
+
+CORS error:
+
+Access to fetch at:
+https://dms-production-598e.up.railway.app/api/donors
+
+has been blocked by CORS policy.
+
+We must fix this first.
+
+---
+
+PART 1 — FIX CORS
+
+Open:
+
+apps/api/src/main.ts
+
+Update NestJS bootstrap:
+
+```ts
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.enableCors({
+    origin: [
+      "https://dms-sepia-gamma.vercel.app",
+      "http://localhost:3000"
+    ],
+    credentials: true,
+  });
+
+  await app.listen(8080);
+}
+bootstrap();
+```
+
+This allows Vercel frontend to access Railway backend.
+
+---
+
+PART 2 — FIX DONORS API RESPONSE
+
+Open:
+
+apps/api/src/modules/donors/donors.service.ts
+
+Ensure the list API always returns:
+
+```
+{
+  data: [],
+  total: number
+}
+```
+
+Example:
+
+```ts
+async findAll() {
+  const donors = await this.prisma.donor.findMany({
+    where: { isDeleted: false },
+    orderBy: { createdAt: "desc" }
+  });
+
+  return {
+    data: donors,
+    total: donors.length
+  };
+}
+```
+
+Never return undefined.
+
+---
+
+PART 3 — ADD DONOR SINCE
+
+Update Prisma schema.
+
+File:
+
+prisma/schema.prisma
+
+Add:
+
+```prisma
+donorSince DateTime?
+```
+
+Example:
+
+```prisma
+model Donor {
+  id         String   @id @default(uuid())
+  firstName  String?
+  lastName   String?
+  phone      String?
+  email      String?
+
+  donorSince DateTime?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+```
+
+Run migration:
+
+```
+npx prisma migrate dev --name donor_since
+npx prisma generate
+```
+
+Backfill existing donors:
+
+```
+UPDATE "Donor"
+SET "donorSince" = "createdAt"
+WHERE "donorSince" IS NULL;
+```
+
+---
+
+PART 4 — DONOR LOYALTY BADGE
+
+Calculate loyalty based on years.
+
+Logic:
+
+```
+0–1 years   → New Donor
+1–3 years   → Active Donor
+3–7 years   → Loyal Donor
+7+ years    → Champion Donor
+```
+
+Add helper function in frontend:
+
+```ts
+function getDonorLoyalty(donorSince: string) {
+  const years = new Date().getFullYear() - new Date(donorSince).getFullYear()
+
+  if (years >= 7) return "Champion Donor"
+  if (years >= 3) return "Loyal Donor"
+  if (years >= 1) return "Active Donor"
+  return "New Donor"
+}
+```
+
+Show badge near donor name.
+
+---
+
+PART 5 — DONOR LIFETIME VALUE (LTV)
+
+LTV = total donations made by donor.
+
+Backend update:
+
+```
+apps/api/src/modules/donations
+```
+
+Query:
+
+```ts
+const totalDonations = await prisma.donation.aggregate({
+  where: { donorId: donorId },
+  _sum: { amount: true },
+  _count: true
+})
+```
+
+Return:
+
+```
+{
+ totalAmount,
+ donationCount,
+ averageDonation
+}
+```
+
+Average:
+
+```
+average = totalAmount / donationCount
+```
+
+---
+
+PART 6 — FRONTEND DISPLAY
+
+On donor profile page show:
+
+Donor Since: 2020
+Supporting for: 6 years
+
+Badge:
+
+🏆 Loyal Donor
+
+Lifetime Value:
+
+Lifetime Donations: ₹45,000
+Total Donations: 8
+Average Donation: ₹5,625
+
+---
+
+EXPECTED RESULT
+
+1. Donors load again
+2. No CORS errors
+3. Donor Since visible
+4. Loyalty badge visible
+5. Lifetime donation value shown

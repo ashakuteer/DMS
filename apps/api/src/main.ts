@@ -10,27 +10,28 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
-      const allowedOrigins = [
-        "https://dms-sepia-gamma.vercel.app",
-        "http://localhost:5000",
-        "http://localhost:3000",
-      ];
-      // Allow requests with no origin (e.g. server-to-server) and Replit domains
+      // Allow: no origin (server-to-server, mobile apps), Vercel deployments,
+      // Replit dev domains, and localhost
       if (
         !origin ||
-        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app") ||
         origin.endsWith(".replit.dev") ||
         origin.endsWith(".repl.co") ||
-        origin.endsWith(".replit.app")
+        origin.endsWith(".replit.app") ||
+        origin === "http://localhost:3000" ||
+        origin === "http://localhost:5000"
       ) {
         callback(null, true);
       } else {
-        callback(null, true); // Allow all during development
+        // Still allow other origins for now — tighten after confirming production
+        callback(null, true);
       }
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   app.setGlobalPrefix("api");

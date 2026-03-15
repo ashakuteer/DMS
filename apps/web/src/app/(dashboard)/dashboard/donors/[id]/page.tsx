@@ -78,6 +78,11 @@ export default function DonorProfilePage() {
       <DonorStatsCards
         totalDonations={donations.totalDonations}
         donationsCount={donations.donations.length}
+        averageDonation={
+          donations.donations.length > 0
+            ? donations.totalDonations / donations.donations.length
+            : 0
+        }
         pendingPledges={pledges.pendingCount}
         totalPledges={pledges.pledges.length}
         specialOccasionsCount={specialDays.specialOccasions.length}

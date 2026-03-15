@@ -7,6 +7,7 @@ import { formatCurrency } from "../utils";
 interface DonorStatsCardsProps {
   totalDonations: number;
   donationsCount: number;
+  averageDonation?: number;
   pendingPledges: number;
   totalPledges: number;
   specialOccasionsCount: number;
@@ -16,6 +17,7 @@ interface DonorStatsCardsProps {
 export default function DonorStatsCards({
   totalDonations,
   donationsCount,
+  averageDonation,
   pendingPledges,
   totalPledges,
   specialOccasionsCount,
@@ -32,12 +34,17 @@ export default function DonorStatsCards({
         <CardContent>
           <div className="flex items-center gap-2">
             <IndianRupee className="h-5 w-5 text-green-600" />
-            <span className="text-2xl font-bold">
+            <span className="text-2xl font-bold" data-testid="text-total-donations">
               {formatCurrency(totalDonations.toString())}
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             {donationsCount} donation(s)
+            {averageDonation && averageDonation > 0 && (
+              <span className="ml-1 text-muted-foreground">
+                · avg {formatCurrency(averageDonation.toString())}
+              </span>
+            )}
           </p>
         </CardContent>
       </Card>
