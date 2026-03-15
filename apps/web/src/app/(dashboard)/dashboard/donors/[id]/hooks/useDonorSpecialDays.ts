@@ -33,7 +33,7 @@ export function useDonorSpecialDays(donorId: string) {
   const fetchSpecialOccasions = useCallback(async () => {
     setSpecialOccasionsLoading(true)
     try {
-      const res = await fetchWithAuth(`/api/donors/${donorId}/special-occasions`)
+      const res = await fetchWithAuth(`/api/donor-relations/donors/${donorId}/special-occasions`)
       if (res.ok) {
         const data = await res.json()
         setSpecialOccasions(data || [])
@@ -53,7 +53,7 @@ export function useDonorSpecialDays(donorId: string) {
     setDeletingSpecialOccasionId(occasionId)
     try {
       const res = await fetchWithAuth(
-        `/api/donors/${donorId}/special-occasions/${occasionId}`,
+        `/api/donor-relations/special-occasions/${occasionId}`,
         { method: "DELETE" }
       )
       if (res.ok) {
