@@ -15,6 +15,10 @@ import {
   Target,
   ArrowUpRight,
   ArrowDownRight,
+  Trophy,
+  Star,
+  Activity,
+  Zap,
 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/auth";
 import {
@@ -108,10 +112,19 @@ function GrowthIndicator({ value }: { value: number }) {
   );
 }
 
+interface SegmentationData {
+  championDonors: number;
+  majorDonors: number;
+  activeDonors: number;
+  smallDonors: number;
+  total: number;
+}
+
 export default function ImpactDashboardPage() {
   const [data, setData] = useState<ImpactData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [segmentation, setSegmentation] = useState<SegmentationData | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -126,6 +139,13 @@ export default function ImpactDashboardPage() {
       }
     };
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    fetchWithAuth("/api/analytics/donor-segmentation")
+      .then((r) => r.json())
+      .then(setSegmentation)
+      .catch(() => {});
   }, []);
 
   if (loading) {
@@ -467,6 +487,120 @@ export default function ImpactDashboardPage() {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      <div data-testid="section-donor-insights">
+        <div className="mb-4">
+          <h2 className="text-lg font-semibold">Donor Insights</h2>
+          <p className="text-sm text-muted-foreground">
+            Donor segmentation by lifetime contribution
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            {
+              label: "Champion Donors",
+              value: segmentation?.championDonors ?? "-",
+              description: "₹1L+ lifetime",
+              icon: Trophy,
+              color: "text-purple-600",
+              bg: "bg-purple-50 dark:bg-purple-950/50",
+              testId: "card-segment-champion",
+            },
+            {
+              label: "Major Donors",
+              value: segmentation?.majorDonors ?? "-",
+              description: "₹50K–1L lifetime",
+              icon: Star,
+              color: "text-amber-600",
+              bg: "bg-amber-50 dark:bg-amber-950/50",
+              testId: "card-segment-major",
+            },
+            {
+              label: "Active Donors",
+              value: segmentation?.activeDonors ?? "-",
+              description: "₹10K–50K lifetime",
+              icon: Activity,
+              color: "text-blue-600",
+              bg: "bg-blue-50 dark:bg-blue-950/50",
+              testId: "card-segment-active",
+            },
+            {
+              label: "Small Donors",
+              value: segmentation?.smallDonors ?? "-",
+              description: "Under ₹10K lifetime",
+              icon: Zap,
+              color: "text-green-600",
+              bg: "bg-green-50 dark:bg-green-950/50",
+              testId: "card-segment-small",
+            },
+          ].map((seg) => (
+            <Card key={seg.label} data-testid={seg.testId}>
+              <CardContent className="p-5">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {seg.label}
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {segmentation ? seg.value.toLocaleString("en-IN") : (
+                        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground inline" />
+                      )}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {seg.description}
+                    </p>
+                  </div>
+                  <div className={`p-3 rounded-xl ${seg.bg}`}>
+                    <seg.icon className={`h-6 w-6 ${seg.color}`} />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {segmentation && segmentation.total > 0 && (
+          <Card className="mt-4" data-testid="card-segment-distribution">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Users className="h-4 w-4" />
+                Donor Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  { label: "Champion", count: segmentation.championDonors, color: "bg-purple-500" },
+                  { label: "Major", count: segmentation.majorDonors, color: "bg-amber-500" },
+                  { label: "Active", count: segmentation.activeDonors, color: "bg-blue-500" },
+                  { label: "Small", count: segmentation.smallDonors, color: "bg-green-500" },
+                ].map((tier) => {
+                  const pct = segmentation.total > 0
+                    ? Math.round((tier.count / segmentation.total) * 100)
+                    : 0;
+                  return (
+                    <div key={tier.label} className="flex items-center gap-3">
+                      <span className="w-16 text-sm text-muted-foreground shrink-0">
+                        {tier.label}
+                      </span>
+                      <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${tier.color}`}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="w-16 text-sm text-right text-muted-foreground shrink-0">
+                        {tier.count.toLocaleString("en-IN")} ({pct}%)
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

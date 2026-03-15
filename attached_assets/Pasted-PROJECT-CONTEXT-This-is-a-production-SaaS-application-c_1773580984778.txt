@@ -1,0 +1,298 @@
+PROJECT CONTEXT
+
+This is a production SaaS application called **NGO Donor Hub** used by **Asha Kuteer Foundation (India)**.
+
+Stack
+
+Frontend
+
+* Next.js (apps/web)
+* Hosted on Vercel
+
+Backend
+
+* NestJS (apps/api)
+* Hosted on Railway
+
+Database
+
+* Supabase PostgreSQL
+* ORM: Prisma
+
+Existing modules
+
+donors
+donations
+beneficiaries
+communications
+reports
+
+We need to implement three **advanced fundraising intelligence features**:
+
+1. Donor Health Score
+2. Smart Donation Prediction
+3. Donor Segmentation Dashboard
+
+These features must **NOT break existing donor or donation APIs**.
+
+---
+
+PART 1 — DONOR HEALTH SCORE
+
+Goal
+
+Calculate a score from **0–100** that indicates donor engagement.
+
+Factors
+
+Last donation recency
+Donation frequency
+Lifetime donation value
+Years supporting NGO
+
+Score logic
+
+Last donation < 3 months → +30
+Last donation < 12 months → +20
+Last donation > 12 months → +5
+
+Donation count
+
+5+ donations → +25
+3–4 donations → +20
+1–2 donations → +10
+
+Lifetime donation value
+
+₹50,000+ → +20
+₹10,000–50,000 → +15
+₹1,000–10,000 → +10
+
+Years supporting NGO
+
+5+ years → +15
+2–5 years → +10
+<2 years → +5
+
+Maximum score = 100.
+
+Create service
+
+apps/api/src/modules/donors/donor-health.service.ts
+
+Example logic
+
+```
+calculateDonorHealth(donor) {
+ let score = 0
+
+ if (monthsSinceLastDonation < 3) score += 30
+ else if (monthsSinceLastDonation < 12) score += 20
+ else score += 5
+
+ if (donationCount >= 5) score += 25
+ else if (donationCount >= 3) score += 20
+ else score += 10
+
+ if (lifetimeValue >= 50000) score += 20
+ else if (lifetimeValue >= 10000) score += 15
+ else score += 10
+
+ if (yearsSupporting >= 5) score += 15
+ else if (yearsSupporting >= 2) score += 10
+ else score += 5
+
+ return Math.min(score,100)
+}
+```
+
+Return health category
+
+80+ → Healthy Donor
+50–79 → Active Donor
+30–49 → At Risk Donor
+<30 → Lost Donor
+
+Expose API
+
+GET /donors/:id/health-score
+
+Response example
+
+```
+{
+ score: 82,
+ status: "Healthy Donor"
+}
+```
+
+---
+
+PART 2 — SMART DONATION PREDICTION
+
+Goal
+
+Predict next donation amount and probability.
+
+Inputs
+
+lastDonationDate
+averageDonation
+donationFrequency
+donationCount
+
+Prediction logic
+
+Donation probability
+
+```
+if last donation < 3 months → 80%
+if last donation < 6 months → 60%
+if last donation < 12 months → 40%
+else → 20%
+```
+
+Expected donation amount
+
+```
+expectedAmount = averageDonation * 1.1
+```
+
+Create service
+
+apps/api/src/modules/donations/donation-prediction.service.ts
+
+API
+
+GET /donors/:id/prediction
+
+Example response
+
+```
+{
+ probability: 72,
+ expectedDonation: 3200,
+ averageDonation: 2900
+}
+```
+
+This allows telecallers to know **who to call first**.
+
+---
+
+PART 3 — DONOR SEGMENTATION DASHBOARD
+
+Goal
+
+Automatically group donors.
+
+Create analytics service
+
+apps/api/src/modules/analytics/donor-segmentation.service.ts
+
+Segments
+
+Champion Donors
+
+```
+lifetimeDonation >= 100000
+```
+
+Major Donors
+
+```
+50000 – 100000
+```
+
+Active Donors
+
+```
+10000 – 50000
+```
+
+Small Donors
+
+```
+<10000
+```
+
+Example query
+
+```
+const champion = await prisma.donor.count({
+ where:{ lifetimeDonation:{ gte:100000 }}
+})
+```
+
+API
+
+GET /analytics/donor-segmentation
+
+Example response
+
+```
+{
+ championDonors: 12,
+ majorDonors: 34,
+ activeDonors: 120,
+ smallDonors: 430
+}
+```
+
+---
+
+PART 4 — FRONTEND DISPLAY
+
+Donor Profile Page
+
+Show
+
+Donor Since
+Loyalty Badge
+Lifetime Donations
+Health Score
+Prediction
+
+Example UI
+
+Donor Since: 2019
+Loyalty Badge: Loyal Donor
+
+Lifetime Donations: ₹45,000
+Total Donations: 8
+
+Donor Health Score: 78 / 100
+Status: Active Donor
+
+Next Donation Probability: 65%
+Expected Donation: ₹3000
+
+---
+
+PART 5 — DASHBOARD
+
+Add section
+
+Impact Dashboard → Donor Insights
+
+Cards
+
+Champion Donors
+Major Donors
+Active Donors
+Small Donors
+
+Charts
+
+Donation distribution
+Donor health categories
+Predicted donation pipeline
+
+---
+
+IMPORTANT
+
+Do not modify existing donor or donation APIs.
+Add new services and endpoints only.
+
+All calculations should be **derived from donation data**, not stored permanently.

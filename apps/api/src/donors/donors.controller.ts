@@ -26,6 +26,7 @@ import { RequirePermission } from "../auth/decorators/permissions.decorator";
 import { DonorsService } from "./donors.service";
 import { UserContext } from "./donors.types";
 import { DuplicatesService } from "./donor-duplicates.service";
+import { DonorFundraisingService } from "./donor-fundraising.service";
 import { BeneficiariesService } from "../beneficiaries/beneficiaries.service";
 import { Role } from "@prisma/client";
 import { Request, Response } from "express";
@@ -36,6 +37,7 @@ export class DonorsController {
   constructor(
     private readonly donorsService: DonorsService,
     private readonly donorDuplicatesService: DuplicatesService,
+    private readonly donorFundraisingService: DonorFundraisingService,
     @Inject(forwardRef(() => BeneficiariesService))
     private readonly beneficiariesService: BeneficiariesService,
   ) {}
@@ -447,6 +449,18 @@ export class DonorsController {
     @Body() body: { assignedToUserId: string | null },
   ) {
     return this.donorsService.assignDonor(id, body.assignedToUserId);
+  }
+
+  @Get(":id/health-score")
+  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  async getHealthScore(@Param("id") id: string) {
+    return this.donorFundraisingService.getHealthScore(id);
+  }
+
+  @Get(":id/prediction")
+  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  async getPrediction(@Param("id") id: string) {
+    return this.donorFundraisingService.getPrediction(id);
   }
 
   @Post(":id/upload-photo")

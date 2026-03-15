@@ -11,6 +11,7 @@ import { DonorsCrudService } from "./donors.crud.service";
 import { DonorsTimelineService } from "./donors.timeline.service";
 import { DonorsEngagementService } from "./donors.engagement.service";
 import { DuplicatesService as DonorDuplicatesService } from "./donor-duplicates.service";
+import { DonorFundraisingService } from "./donor-fundraising.service";
 
 import { DonorsImportService } from "./import/donors-import.service";
 import { DonorsImportParserService } from "./import/donors-import-parser.service";
@@ -33,6 +34,7 @@ import { ExecutorService } from "./import/executor.service";
     DonorsTimelineService,
     DonorsEngagementService,
     DonorDuplicatesService,
+    DonorFundraisingService,
     DonorsImportService,
     DonorsImportParserService,
     ImportNormalizerService,

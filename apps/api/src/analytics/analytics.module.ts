@@ -10,6 +10,7 @@ import { AnalyticsSegmentsService } from "./services/analytics-segments.service"
 import { AnalyticsRiskService } from "./services/analytics-risk.service"
 import { AnalyticsExportService } from "./services/analytics-export.service"
 import { AnalyticsDashboardService } from "./services/analytics-dashboard.service"
+import { DonorSegmentationService } from "./services/donor-segmentation.service"
 
 @Module({
   controllers: [AnalyticsController],
@@ -25,6 +26,7 @@ import { AnalyticsDashboardService } from "./services/analytics-dashboard.servic
     AnalyticsRiskService,
     AnalyticsExportService,
     AnalyticsDashboardService,
+    DonorSegmentationService,
   ],
 
   exports: [

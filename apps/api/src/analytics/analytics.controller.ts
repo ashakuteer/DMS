@@ -73,6 +73,11 @@ const buffer = await this.analyticsService.exportSummaryPdf(summary);
     res.send(buffer);
   }
 
+  @Get('donor-segmentation')
+  async getDonorSegmentation() {
+    return this.analyticsService.getDonorSegmentation();
+  }
+
   @Get('management')
   async getManagementDashboard() {
     return this.analyticsService.getManagementDashboard();

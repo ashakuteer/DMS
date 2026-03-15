@@ -6,6 +6,7 @@ import { AnalyticsSegmentsService } from "./services/analytics-segments.service"
 import { AnalyticsRiskService } from "./services/analytics-risk.service";
 import { AnalyticsExportService } from "./services/analytics-export.service";
 import { AnalyticsDashboardService } from "./services/analytics-dashboard.service";
+import { DonorSegmentationService } from "./services/donor-segmentation.service";
 
 @Injectable()
 export class AnalyticsService {
@@ -16,6 +17,7 @@ export class AnalyticsService {
     private riskService: AnalyticsRiskService,
     private exportService: AnalyticsExportService,
     private dashboardService: AnalyticsDashboardService,
+    private donorSegmentationService: DonorSegmentationService,
   ) {}
 
   // -----------------------------
@@ -73,6 +75,13 @@ export class AnalyticsService {
 
   exportHomeTotalsXlsx() {
     return this.exportService.exportHomeTotalsXlsx();
+  }
+
+  // -----------------------------
+  // DONOR SEGMENTATION
+  // -----------------------------
+  getDonorSegmentation() {
+    return this.donorSegmentationService.getDonorSegmentation();
   }
 
   // -----------------------------
