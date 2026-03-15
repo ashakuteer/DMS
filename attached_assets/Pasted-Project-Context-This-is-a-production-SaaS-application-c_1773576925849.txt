@@ -1,0 +1,275 @@
+Project Context
+
+This is a production SaaS application called **NGO Donor Hub** used by **Asha Kuteer Foundation (India)** to manage donors, donations, beneficiaries, campaigns, and communications.
+
+Architecture
+
+Frontend
+
+* Next.js dashboard (apps/web)
+* Hosted on Vercel
+
+Backend
+
+* NestJS REST API (apps/api)
+* Hosted on Railway
+
+Database
+
+* PostgreSQL (Supabase)
+* ORM: Prisma
+
+Storage
+
+* Supabase Storage for donor and beneficiary photos
+
+Backend modules include:
+
+* donors
+* donations
+* beneficiaries
+* sponsorships
+* reports
+* communications
+
+Donor module services include:
+
+* donors.service
+* donors.crud.service
+* donors.import.service
+* donors.export.service
+* donors.timeline.service
+* donors.engagement.service
+
+---
+
+Feature Request: Soft Delete System for Donors and Beneficiaries
+
+I want to add a **safe soft-delete system** for both:
+
+* Donors
+* Beneficiaries
+
+This must follow **production SaaS standards**.
+
+Important Requirements
+
+1. SOFT DELETE (not hard delete)
+
+Records must NOT be permanently removed from database.
+
+Add fields in Prisma models:
+
+```
+isDeleted      Boolean   @default(false)
+deletedAt      DateTime?
+deletedBy      String?
+```
+
+Soft delete means:
+
+* isDeleted = true
+* deletedAt = current timestamp
+* deletedBy = admin user id
+
+All normal queries must automatically filter:
+
+```
+where: { isDeleted: false }
+```
+
+---
+
+2. ROLE BASED PERMISSION
+
+Only **ADMIN** can delete.
+
+Staff users can only:
+
+* deactivate donors
+* block donors
+* mark beneficiaries inactive
+
+But **cannot delete records**.
+
+Backend must check role before allowing deletion.
+
+---
+
+3. BACKEND API
+
+Create endpoints:
+
+```
+DELETE /donors/:id
+DELETE /beneficiaries/:id
+```
+
+These endpoints should:
+
+1. Check user role (must be ADMIN)
+2. Perform soft delete
+3. Return success message
+
+Example service logic:
+
+```
+await prisma.donor.update({
+ where: { id },
+ data: {
+   isDeleted: true,
+   deletedAt: new Date(),
+   deletedBy: adminId
+ }
+})
+```
+
+Do NOT allow deletion if:
+
+* donor has active sponsorship
+* donor has important financial records (optional safety)
+
+---
+
+4. DATABASE SAFETY
+
+Update Prisma models:
+
+Donor
+Beneficiary
+
+Add:
+
+```
+isDeleted Boolean @default(false)
+deletedAt DateTime?
+deletedBy String?
+```
+
+Then ensure all queries filter:
+
+```
+isDeleted: false
+```
+
+---
+
+5. FRONTEND UI (Next.js)
+
+Add a **Delete section in the LEFT SIDEBAR** under Management.
+
+Example menu:
+
+Management
+Staff & Tasks
+System Settings
+⚠ Delete Records
+
+Clicking this opens a page where admin can:
+
+* Search donor
+* Search beneficiary
+* Select record
+* Delete safely
+
+---
+
+6. DANGER ZONE UI
+
+Use **red colored danger UI** similar to GitHub Danger Zone.
+
+Show warning message:
+
+"⚠ Danger Zone – Deleting a record will hide it from the system but it will remain in the database for safety and audit purposes."
+
+Buttons should be:
+
+Red button:
+
+```
+Delete Donor
+Delete Beneficiary
+```
+
+---
+
+7. DOUBLE CONFIRMATION MODAL
+
+When admin clicks delete:
+
+Open confirmation modal:
+
+Title:
+⚠ Confirm Deletion
+
+Message:
+
+"Are you sure you want to delete this donor?
+This action will remove the donor from all active views but will keep the record stored for audit purposes."
+
+Buttons:
+
+Cancel
+Delete Permanently (Soft Delete)
+
+Require typing:
+
+```
+DELETE
+```
+
+before allowing confirmation.
+
+---
+
+8. UI SAFETY
+
+Delete buttons must:
+
+* be red
+* show warning icon
+* appear only for admin role
+* not visible for staff users
+
+---
+
+9. AUDIT TRAIL
+
+Record deletion in activity log:
+
+Example:
+
+```
+Admin Jeevan deleted donor John Smith on 2026-03-15
+```
+
+---
+
+10. OPTIONAL (GOOD PRACTICE)
+
+Add admin page:
+
+```
+Deleted Records
+```
+
+Where admin can:
+
+* view deleted donors
+* restore donors if needed
+
+---
+
+Implementation Steps
+
+1. Update Prisma schema
+2. Run prisma migration
+3. Update donor queries to exclude deleted records
+4. Create delete endpoints in NestJS
+5. Add role guard
+6. Create delete UI page
+7. Add confirmation modal
+8. Add danger styling
+9. Add audit log entry
+
+Please implement this safely without breaking existing donor or beneficiary modules.

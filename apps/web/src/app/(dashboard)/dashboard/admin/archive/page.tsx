@@ -162,7 +162,7 @@ function ArchivePage() {
       const res = await fetchWithAuth(`/api/donors?search=${encodeURIComponent(donorSearch)}&limit=10`);
       if (res.ok) {
         const json = await res.json();
-        setDonorActiveResults(json.data ?? json ?? []);
+        setDonorActiveResults(json.items ?? json.data ?? []);
       }
     } finally {
       setSearching(null);
