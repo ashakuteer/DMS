@@ -1,0 +1,213 @@
+We have a production SaaS application called **NGO Donor Hub**.
+
+Architecture:
+
+Frontend
+
+* Next.js (apps/web)
+* Hosted on Vercel
+
+Backend
+
+* NestJS (apps/api)
+* Hosted on Railway
+
+Database
+
+* PostgreSQL (Supabase)
+* ORM: Prisma
+
+---
+
+Problem
+
+The **Staff & Tasks page is crashing**.
+
+Frontend error:
+
+TypeError: Cannot read properties of undefined (reading 'total')
+
+Network error:
+
+GET /api/staff-tasks → 500 Internal Server Error
+
+This means the **backend endpoint is failing** and returning an invalid response.
+
+---
+
+Goal
+
+Fix the **staff-tasks API endpoint** so it always returns a valid response.
+
+---
+
+Step 1 — Inspect Staff Tasks Controller
+
+Find file:
+
+apps/api/src/modules/staff-tasks/staff-tasks.controller.ts
+
+Check endpoint:
+
+GET /staff-tasks
+
+Make sure it calls service correctly.
+
+Example:
+
+```
+@Get()
+async getStaffTasks() {
+  return this.staffTasksService.getStaffTasks();
+}
+```
+
+---
+
+Step 2 — Fix Service Return Format
+
+Open:
+
+apps/api/src/modules/staff-tasks/staff-tasks.service.ts
+
+Ensure response format is always:
+
+```
+{
+  data: [],
+  total: number
+}
+```
+
+Example implementation:
+
+```
+async getStaffTasks() {
+  const tasks = await this.prisma.staffTask.findMany({
+    where: { isDeleted: false },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  return {
+    data: tasks,
+    total: tasks.length
+  };
+}
+```
+
+Even if there are **no tasks**, return:
+
+```
+{
+  data: [],
+  total: 0
+}
+```
+
+Never return undefined.
+
+---
+
+Step 3 — Handle Server Errors
+
+Wrap logic with try/catch:
+
+```
+async getStaffTasks() {
+  try {
+    const tasks = await this.prisma.staffTask.findMany();
+
+    return {
+      data: tasks,
+      total: tasks.length
+    };
+  } catch (error) {
+    console.error("Staff Tasks API Error:", error);
+
+    return {
+      data: [],
+      total: 0
+    };
+  }
+}
+```
+
+---
+
+Step 4 — Fix Frontend Safety
+
+Open:
+
+apps/web/src/app/dashboard/staff-tasks/page.tsx
+
+Find code similar to:
+
+```
+data.total
+```
+
+Replace with safe fallback:
+
+```
+const total = data?.total ?? 0
+```
+
+Also:
+
+```
+const tasks = data?.data ?? []
+```
+
+This prevents crashes if backend returns null.
+
+---
+
+Step 5 — Verify Prisma Model
+
+Check Prisma schema for StaffTask:
+
+```
+model StaffTask {
+  id        String   @id @default(uuid())
+  title     String
+  status    String
+  createdAt DateTime @default(now())
+  isDeleted Boolean  @default(false)
+}
+```
+
+Run:
+
+```
+npx prisma generate
+```
+
+---
+
+Step 6 — Test Endpoint
+
+Test in browser:
+
+```
+https://your-backend-url/api/staff-tasks
+```
+
+Expected response:
+
+```
+{
+  "data": [],
+  "total": 0
+}
+```
+
+---
+
+Goal
+
+After fixing:
+
+* Staff & Tasks page loads correctly
+* API never returns undefined
+* No client-side crash
+* Console shows no errors

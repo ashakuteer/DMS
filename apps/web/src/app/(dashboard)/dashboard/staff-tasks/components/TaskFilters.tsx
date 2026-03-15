@@ -1,58 +1,70 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { ListChecks, Clock, Loader2, CheckCircle2 } from "lucide-react";
+"use client";
 
-export default function TaskStatsCards({ stats }: any) {
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Search } from "lucide-react";
+
+interface TaskFiltersProps {
+  status: string;
+  setStatus: (v: string) => void;
+  priority: string;
+  setPriority: (v: string) => void;
+  search: string;
+  setSearch: (v: string) => void;
+}
+
+export default function TaskFilters({
+  status,
+  setStatus,
+  priority,
+  setPriority,
+  search,
+  setSearch,
+}: TaskFiltersProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="flex flex-wrap gap-3 items-center">
+      <div className="relative flex-1 min-w-[200px]">
+        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search tasks..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-8"
+          data-testid="input-task-search"
+        />
+      </div>
 
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex items-center gap-3">
-            <ListChecks className="h-5 w-5 text-blue-500" />
-            <div>
-              <p className="text-2xl font-bold">{stats.total}</p>
-              <p className="text-xs text-muted-foreground">Total</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <Select value={status} onValueChange={setStatus}>
+        <SelectTrigger className="w-[160px]" data-testid="select-task-status">
+          <SelectValue placeholder="All Statuses" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="ALL">All Statuses</SelectItem>
+          <SelectItem value="PENDING">Pending</SelectItem>
+          <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+          <SelectItem value="COMPLETED">Completed</SelectItem>
+          <SelectItem value="OVERDUE">Overdue</SelectItem>
+        </SelectContent>
+      </Select>
 
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex items-center gap-3">
-            <Clock className="h-5 w-5 text-yellow-500" />
-            <div>
-              <p className="text-2xl font-bold">{stats.pending}</p>
-              <p className="text-xs text-muted-foreground">Pending</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex items-center gap-3">
-            <Loader2 className="h-5 w-5 text-blue-500" />
-            <div>
-              <p className="text-2xl font-bold">{stats.inProgress}</p>
-              <p className="text-xs text-muted-foreground">In Progress</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-4">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
-            <div>
-              <p className="text-2xl font-bold">{stats.completed}</p>
-              <p className="text-xs text-muted-foreground">Completed</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
+      <Select value={priority} onValueChange={setPriority}>
+        <SelectTrigger className="w-[160px]" data-testid="select-task-priority">
+          <SelectValue placeholder="All Priorities" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="ALL">All Priorities</SelectItem>
+          <SelectItem value="LOW">Low</SelectItem>
+          <SelectItem value="MEDIUM">Medium</SelectItem>
+          <SelectItem value="HIGH">High</SelectItem>
+          <SelectItem value="URGENT">Urgent</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
