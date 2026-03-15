@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { fetchWithAuth, authStorage } from "@/lib/auth";
+import { authStorage } from "@/lib/auth";
+import { apiFetch } from "@/lib/api";
 import { hasPermission } from "@/lib/permissions";
 import type { Donation, Donor, DonationFormData, Template } from "../types";
 
@@ -40,7 +41,7 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
   const fetchDonations = useCallback(async () => {
     setDonationsLoading(true);
     try {
-      const res = await fetchWithAuth(`/api/donations?donorId=${donorId}&limit=100`);
+      const res = await apiFetch(`/api/donations?donorId=${donorId}&limit=100`);
       if (res.ok) {
         const data = await res.json();
         setDonations(data.items || []);
@@ -54,7 +55,7 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
 
   const fetchTemplates = useCallback(async () => {
     try {
-      const res = await fetchWithAuth("/api/templates");
+      const res = await apiFetch("/api/templates");
       if (res.ok) {
         const data = await res.json();
         setTemplates(data || []);
@@ -72,7 +73,7 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
   const onResendReceipt = useCallback(async (donationId: string) => {
     setResendingReceiptId(donationId);
     try {
-      await fetchWithAuth(`/api/donations/${donationId}/resend-receipt`, { method: "POST" });
+      await apiFetch(`/api/donations/${donationId}/resend-receipt`, { method: "POST" });
     } catch {
       console.error("Failed to resend receipt");
     } finally {
@@ -89,7 +90,7 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     e.preventDefault();
     setSubmittingDonation(true);
     try {
-      const res = await fetchWithAuth("/api/donations", {
+      const res = await apiFetch("/api/donations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

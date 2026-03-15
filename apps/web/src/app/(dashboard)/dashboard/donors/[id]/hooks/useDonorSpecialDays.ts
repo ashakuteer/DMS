@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useCallback, useEffect } from "react"
-import { fetchWithAuth, authStorage } from "@/lib/auth"
+import { authStorage } from "@/lib/auth"
+import { apiFetch } from "@/lib/api"
 import { hasPermission } from "@/lib/permissions"
 import type { SpecialOccasion, SpecialOccasionFormData } from "../types"
 
@@ -47,7 +48,7 @@ export function useDonorSpecialDays(donorId: string) {
   const fetchSpecialOccasions = useCallback(async () => {
     setSpecialOccasionsLoading(true)
     try {
-      const res = await fetchWithAuth(`/api/donor-relations/donors/${donorId}/special-occasions`)
+      const res = await apiFetch(`/api/donor-relations/donors/${donorId}/special-occasions`)
       if (res.ok) {
         const data = await res.json()
         setSpecialOccasions(data || [])
@@ -66,7 +67,7 @@ export function useDonorSpecialDays(donorId: string) {
   const onDelete = useCallback(async (occasionId: string) => {
     setDeletingSpecialOccasionId(occasionId)
     try {
-      const res = await fetchWithAuth(
+      const res = await apiFetch(
         `/api/donor-relations/special-occasions/${occasionId}`,
         { method: "DELETE" }
       )
@@ -115,7 +116,7 @@ export function useDonorSpecialDays(donorId: string) {
         ? `/api/donor-relations/special-occasions/${editingSpecialOccasionId}`
         : `/api/donor-relations/donors/${donorId}/special-occasions`
       const method = editingSpecialOccasionId ? "PATCH" : "POST"
-      const res = await fetchWithAuth(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

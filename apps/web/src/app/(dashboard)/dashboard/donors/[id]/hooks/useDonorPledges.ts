@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { fetchWithAuth, authStorage } from "@/lib/auth";
+import { authStorage } from "@/lib/auth";
+import { apiFetch } from "@/lib/api";
 import { hasPermission } from "@/lib/permissions";
 import type { Pledge, PledgeFormData } from "../types";
 
@@ -30,7 +31,7 @@ export function useDonorPledges(donorId: string) {
   const fetchPledges = useCallback(async () => {
     setPledgesLoading(true);
     try {
-      const res = await fetchWithAuth(`/api/pledges?donorId=${donorId}`);
+      const res = await apiFetch(`/api/pledges?donorId=${donorId}`);
       if (res.ok) {
         const data = await res.json();
         setPledges(data.items || []);
@@ -49,7 +50,7 @@ export function useDonorPledges(donorId: string) {
   const runPledgeAction = useCallback(async (pledgeId: string, action: string) => {
     setPledgeActionLoading(pledgeId);
     try {
-      await fetchWithAuth(`/api/pledges/${pledgeId}/${action}`, { method: "POST" });
+      await apiFetch(`/api/pledges/${pledgeId}/${action}`, { method: "POST" });
       await fetchPledges();
     } catch {
       console.error(`Failed to ${action} pledge`);
@@ -94,7 +95,7 @@ export function useDonorPledges(donorId: string) {
       };
       const url = editingPledgeId ? `/api/pledges/${editingPledgeId}` : "/api/pledges";
       const method = editingPledgeId ? "PATCH" : "POST";
-      const res = await fetchWithAuth(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

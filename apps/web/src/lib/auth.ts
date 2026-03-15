@@ -165,7 +165,8 @@ export async function fetchWithAuth(
       headers['Authorization'] = `Bearer ${accessToken}`;
     }
     
-    return fetch(`${API_URL}${url}`, {
+    const fullUrl = url.startsWith('http') ? url : `${API_URL}${url}`;
+    return fetch(fullUrl, {
       ...options,
       headers,
     });

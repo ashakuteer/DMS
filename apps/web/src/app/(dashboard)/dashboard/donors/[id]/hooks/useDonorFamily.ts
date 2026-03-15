@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { fetchWithAuth, authStorage } from "@/lib/auth";
+import { authStorage } from "@/lib/auth";
+import { apiFetch } from "@/lib/api";
 import { hasPermission } from "@/lib/permissions";
 import type { FamilyMember, FamilyMemberFormData } from "../types";
 
@@ -30,7 +31,7 @@ export function useDonorFamily(donorId: string) {
   const fetchFamilyMembers = useCallback(async () => {
     setFamilyMembersLoading(true);
     try {
-      const res = await fetchWithAuth(
+      const res = await apiFetch(
         `/api/donor-relations/donors/${donorId}/family-members`
       );
       if (res.ok) {
@@ -51,7 +52,7 @@ export function useDonorFamily(donorId: string) {
   const onDelete = useCallback(async (memberId: string) => {
     setDeletingFamilyMemberId(memberId);
     try {
-      const res = await fetchWithAuth(
+      const res = await apiFetch(
         `/api/donor-relations/family-members/${memberId}`,
         { method: "DELETE" }
       );
@@ -110,7 +111,7 @@ export function useDonorFamily(donorId: string) {
         ? `/api/donor-relations/family-members/${editingFamilyMemberId}`
         : `/api/donor-relations/donors/${donorId}/family-members`;
       const method = editingFamilyMemberId ? "PATCH" : "POST";
-      const res = await fetchWithAuth(url, {
+      const res = await apiFetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

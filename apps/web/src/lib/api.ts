@@ -1,18 +1,18 @@
-const API_BASE_URL =
+import { fetchWithAuth } from './auth';
+
+export const API_BASE =
   process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === 'production'
-    ? 'https://dms-production-598e.up.railway.app'
-    : '');
+  'https://dms-production-598e.up.railway.app';
 
-export async function apiFetch(path: string, options?: RequestInit) {
-  const res = await fetch(`${API_BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  });
-
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-
-  return res.json();
+/**
+ * Authenticated fetch. Prepends API_BASE only when path is relative.
+ * Passes auth token and handles 401/refresh via fetchWithAuth.
+ * Returns the raw Response so callers can check res.ok and parse as needed.
+ */
+export async function apiFetch(
+  path: string,
+  options?: RequestInit,
+): Promise<Response> {
+  const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+  return fetchWithAuth(url, options);
 }
-
-export { API_BASE_URL };
