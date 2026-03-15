@@ -193,7 +193,10 @@ export class EmailService {
 
   async sendEmail(options: EmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
     if (this.emailRelayUrl) {
-      return this.sendViaRelay(options);
+      const relayResult = await this.sendViaRelay(options);
+      if (relayResult.success) return relayResult;
+      // Relay failed — fall through to direct SMTP if configured
+      this.logger.warn(`[${options.featureType || 'UNKNOWN'}] Relay failed (${relayResult.error}), falling back to direct SMTP`);
     }
 
     const org = await this.orgProfileService.getProfile();
@@ -538,7 +541,9 @@ This is an automated email. Please do not reply.`;
     inlineAttachments?: Array<{ filename: string; content: Buffer; cid: string; contentType: string }>;
   }): Promise<{ success: boolean; messageId?: string; error?: string }> {
     if (this.emailRelayUrl) {
-      return this.sendViaRelay(options);
+      const relayResult = await this.sendViaRelay(options);
+      if (relayResult.success) return relayResult;
+      this.logger.warn(`[${options.featureType || 'UNKNOWN'}] Relay failed (${relayResult.error}), falling back to direct SMTP`);
     }
 
     const org = await this.orgProfileService.getProfile();

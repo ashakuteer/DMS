@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { authStorage } from "@/lib/auth";
 import { apiClient } from "@/lib/api-client";
 import { hasPermission } from "@/lib/permissions";
+import { useToast } from "@/hooks/use-toast";
 import type { FamilyMember, FamilyMemberFormData } from "../types";
 
 const EMPTY_FAMILY_FORM: FamilyMemberFormData = {
@@ -15,6 +16,7 @@ const EMPTY_FAMILY_FORM: FamilyMemberFormData = {
 };
 
 export function useDonorFamily(donorId: string) {
+  const { toast } = useToast();
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [familyMembersLoading, setFamilyMembersLoading] = useState(false);
   const [deletingFamilyMemberId, setDeletingFamilyMemberId] = useState<string | null>(null);
@@ -112,8 +114,10 @@ export function useDonorFamily(donorId: string) {
       setFamilyMemberForm(EMPTY_FAMILY_FORM);
       setEditingFamilyMemberId(null);
       await fetchFamilyMembers();
+      toast({ title: editingFamilyMemberId ? "Family Member Updated" : "Family Member Added", description: "The family member has been saved successfully." });
     } catch {
       console.error("Failed to save family member");
+      toast({ title: "Failed to Save Family Member", description: "Please check the details and try again.", variant: "destructive" });
     } finally {
       setSavingFamilyMember(false);
     }

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { authStorage } from "@/lib/auth";
 import { apiClient } from "@/lib/api-client";
 import { hasPermission } from "@/lib/permissions";
+import { useToast } from "@/hooks/use-toast";
 import type { Donation, Donor, DonationFormData, Template } from "../types";
 
 const EMPTY_DONATION_FORM: DonationFormData = {
@@ -14,6 +15,7 @@ const EMPTY_DONATION_FORM: DonationFormData = {
 };
 
 export function useDonorDonations(donorId: string, donor?: Donor | null) {
+  const { toast } = useToast();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [donationsLoading, setDonationsLoading] = useState(false);
   const [resendingReceiptId, setResendingReceiptId] = useState<string | null>(null);
@@ -102,8 +104,10 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
       setShowDonationDialog(false);
       setDonationForm(EMPTY_DONATION_FORM);
       await fetchDonations();
+      toast({ title: "Donation Saved", description: "The donation has been recorded successfully." });
     } catch {
       console.error("Failed to add donation");
+      toast({ title: "Failed to Save Donation", description: "Please check the details and try again.", variant: "destructive" });
     } finally {
       setSubmittingDonation(false);
     }

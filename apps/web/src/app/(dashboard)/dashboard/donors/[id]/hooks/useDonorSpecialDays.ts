@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react"
 import { authStorage } from "@/lib/auth"
 import { apiClient } from "@/lib/api-client"
 import { hasPermission } from "@/lib/permissions"
+import { useToast } from "@/hooks/use-toast"
 import type { SpecialOccasion, SpecialOccasionFormData } from "../types"
 
 interface UpcomingOccasion extends SpecialOccasion {
@@ -19,6 +20,7 @@ const EMPTY_OCCASION_FORM: SpecialOccasionFormData = {
 }
 
 export function useDonorSpecialDays(donorId: string) {
+  const { toast } = useToast()
   const [specialOccasions, setSpecialOccasions] = useState<SpecialOccasion[]>([])
   const [specialOccasionsLoading, setSpecialOccasionsLoading] = useState(false)
   const [deletingSpecialOccasionId, setDeletingSpecialOccasionId] = useState<string | null>(null)
@@ -119,8 +121,10 @@ export function useDonorSpecialDays(donorId: string) {
       setSpecialOccasionForm(EMPTY_OCCASION_FORM)
       setEditingSpecialOccasionId(null)
       await fetchSpecialOccasions()
+      toast({ title: editingSpecialOccasionId ? "Special Day Updated" : "Special Day Added", description: "The special occasion has been saved successfully." })
     } catch {
       console.error("Failed to save special occasion")
+      toast({ title: "Failed to Save Special Day", description: "Please check the details and try again.", variant: "destructive" })
     } finally {
       setSavingSpecialOccasion(false)
     }

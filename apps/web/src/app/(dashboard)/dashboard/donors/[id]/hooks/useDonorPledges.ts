@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { authStorage } from "@/lib/auth";
 import { apiClient } from "@/lib/api-client";
 import { hasPermission } from "@/lib/permissions";
+import { useToast } from "@/hooks/use-toast";
 import type { Pledge, PledgeFormData } from "../types";
 
 const EMPTY_PLEDGE_FORM: PledgeFormData = {
@@ -13,6 +14,7 @@ const EMPTY_PLEDGE_FORM: PledgeFormData = {
 };
 
 export function useDonorPledges(donorId: string) {
+  const { toast } = useToast();
   const [pledges, setPledges] = useState<Pledge[]>([]);
   const [pledgesLoading, setPledgesLoading] = useState(false);
   const [pledgeActionLoading, setPledgeActionLoading] = useState<string | null>(null);
@@ -100,8 +102,10 @@ export function useDonorPledges(donorId: string) {
       setPledgeForm(EMPTY_PLEDGE_FORM);
       setEditingPledgeId(null);
       await fetchPledges();
+      toast({ title: editingPledgeId ? "Pledge Updated" : "Pledge Added", description: "The pledge has been saved successfully." });
     } catch {
       console.error("Failed to save pledge");
+      toast({ title: "Failed to Save Pledge", description: "Please check the details and try again.", variant: "destructive" });
     } finally {
       setSavingPledge(false);
     }
