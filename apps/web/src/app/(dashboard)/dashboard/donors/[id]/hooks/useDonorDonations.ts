@@ -1,13 +1,26 @@
 import { useState, useCallback, useEffect } from "react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
-import type { Donation, Donor, Template } from "../types";
+import type { Donation, Donor, DonationFormData, Template } from "../types";
+
+const EMPTY_DONATION_FORM: DonationFormData = {
+  donationAmount: "",
+  donationDate: new Date().toISOString().split("T")[0],
+  donationMode: "CASH",
+  donationType: "CASH",
+  designatedHome: "NONE",
+  remarks: "",
+};
 
 export function useDonorDonations(donorId: string, donor?: Donor | null) {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [donationsLoading, setDonationsLoading] = useState(false);
   const [resendingReceiptId, setResendingReceiptId] = useState<string | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
+
+  const [showDonationDialog, setShowDonationDialog] = useState(false);
+  const [donationForm, setDonationForm] = useState<DonationFormData>(EMPTY_DONATION_FORM);
+  const [submittingDonation, setSubmittingDonation] = useState(false);
 
   const user = authStorage.getUser();
   const isAdmin = user?.role === "ADMIN";
@@ -67,7 +80,40 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     }
   }, []);
 
-  const onAddDonation = useCallback(() => {}, []);
+  const onAddDonation = useCallback(() => {
+    setDonationForm(EMPTY_DONATION_FORM);
+    setShowDonationDialog(true);
+  }, []);
+
+  const handleDonationSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmittingDonation(true);
+    try {
+      const res = await fetchWithAuth("/api/donations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          donorId,
+          donationAmount: parseFloat(donationForm.donationAmount),
+          donationDate: donationForm.donationDate,
+          donationMode: donationForm.donationMode,
+          donationType: donationForm.donationType,
+          designatedHome: donationForm.designatedHome || "NONE",
+          remarks: donationForm.remarks,
+        }),
+      });
+      if (res.ok) {
+        setShowDonationDialog(false);
+        setDonationForm(EMPTY_DONATION_FORM);
+        await fetchDonations();
+      }
+    } catch {
+      console.error("Failed to add donation");
+    } finally {
+      setSubmittingDonation(false);
+    }
+  }, [donorId, donationForm, fetchDonations]);
+
   const onSendWhatsApp = useCallback((_donation: Donation) => {}, []);
   const onSendEmail = useCallback((_donation: Donation) => {}, []);
 
@@ -88,5 +134,11 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     onSendWhatsApp,
     onSendEmail,
     onResendReceipt,
+    showDonationDialog,
+    setShowDonationDialog,
+    donationForm,
+    setDonationForm,
+    submittingDonation,
+    handleDonationSubmit,
   };
 }

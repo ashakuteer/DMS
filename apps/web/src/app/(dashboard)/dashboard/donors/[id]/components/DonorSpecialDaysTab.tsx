@@ -4,8 +4,9 @@ import { Calendar, Heart, Loader2, Plus, Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import type { SpecialOccasion } from "../types";
+import type { SpecialOccasion, SpecialOccasionFormData } from "../types";
 import { formatMonthDay, getOccasionTypeLabel } from "../utils";
+import SpecialOccasionDialog from "../dialogs/SpecialOccasionDialog";
 
 interface UpcomingOccasion extends SpecialOccasion {
   daysUntil: number;
@@ -20,6 +21,13 @@ interface DonorSpecialDaysTabProps {
   onAdd: () => void;
   onEdit: (occasion: SpecialOccasion) => void;
   onDelete: (occasionId: string) => void;
+  showSpecialOccasionDialog: boolean;
+  setShowSpecialOccasionDialog: (open: boolean) => void;
+  editingSpecialOccasion: boolean;
+  specialOccasionForm: SpecialOccasionFormData;
+  setSpecialOccasionForm: (form: SpecialOccasionFormData) => void;
+  savingSpecialOccasion: boolean;
+  handleSpecialOccasionSubmit: (e: React.FormEvent) => void;
 }
 
 export default function DonorSpecialDaysTab({
@@ -31,6 +39,13 @@ export default function DonorSpecialDaysTab({
   onAdd,
   onEdit,
   onDelete,
+  showSpecialOccasionDialog,
+  setShowSpecialOccasionDialog,
+  editingSpecialOccasion,
+  specialOccasionForm,
+  setSpecialOccasionForm,
+  savingSpecialOccasion,
+  handleSpecialOccasionSubmit,
 }: DonorSpecialDaysTabProps) {
   return (
     <div className="space-y-4">
@@ -161,6 +176,16 @@ export default function DonorSpecialDaysTab({
           )}
         </CardContent>
       </Card>
+
+      <SpecialOccasionDialog
+        open={showSpecialOccasionDialog}
+        onOpenChange={setShowSpecialOccasionDialog}
+        editingSpecialOccasion={editingSpecialOccasion}
+        specialOccasionForm={specialOccasionForm}
+        setSpecialOccasionForm={setSpecialOccasionForm}
+        savingSpecialOccasion={savingSpecialOccasion}
+        onSubmit={handleSpecialOccasionSubmit}
+      />
     </div>
   );
 }

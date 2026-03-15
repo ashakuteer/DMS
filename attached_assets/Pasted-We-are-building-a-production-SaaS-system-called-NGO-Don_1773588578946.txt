@@ -1,0 +1,172 @@
+We are building a production SaaS system called NGO Donor Hub.
+
+Stack
+
+Frontend
+Next.js (apps/web)
+React Query
+Vercel
+
+Backend
+NestJS
+Prisma
+Supabase
+
+---
+
+CURRENT PROBLEM
+
+On the donor profile page the following buttons exist but clicking them does nothing:
+
+Add Donation
+Add Pledge
+Add Family Member
+Add Special Day
+
+The buttons are visible but **onClick handlers are not connected to modals or APIs**.
+
+We must fix this.
+
+---
+
+PART 1 — FIX BUTTON EVENT HANDLERS
+
+Open file:
+
+apps/web/src/app/dashboard/donors/[id]/page.tsx
+
+Find buttons like:
+
+```tsx
+<Button>Add Donation</Button>
+```
+
+Replace with:
+
+```tsx
+<Button onClick={() => setDonationModal(true)}>
+ Add Donation
+</Button>
+```
+
+Do this for all buttons:
+
+```
+setDonationModal(true)
+setPledgeModal(true)
+setFamilyModal(true)
+setSpecialDayModal(true)
+```
+
+---
+
+PART 2 — ADD MODAL STATE
+
+Add state at top of component:
+
+```tsx
+const [donationModal,setDonationModal] = useState(false)
+const [pledgeModal,setPledgeModal] = useState(false)
+const [familyModal,setFamilyModal] = useState(false)
+const [specialDayModal,setSpecialDayModal] = useState(false)
+```
+
+---
+
+PART 3 — ADD MODAL COMPONENTS
+
+Example Donation Modal
+
+```tsx
+{donationModal && (
+ <DonationModal
+  donorId={donorId}
+  onClose={() => setDonationModal(false)}
+ />
+)}
+```
+
+Do the same for:
+
+PledgeModal
+FamilyModal
+SpecialDayModal
+
+---
+
+PART 4 — DONATION API CALL
+
+Inside DonationModal:
+
+```tsx
+const handleSubmit = async () => {
+
+ await fetch(`${API_URL}/donations`,{
+  method:'POST',
+  headers:{'Content-Type':'application/json'},
+  body: JSON.stringify({
+   donorId,
+   amount,
+   category
+  })
+ })
+
+ onClose()
+}
+```
+
+---
+
+PART 5 — FAMILY MEMBER API
+
+```tsx
+POST /family
+{
+ donorId,
+ name,
+ relation,
+ phone
+}
+```
+
+---
+
+PART 6 — SPECIAL DAYS API
+
+```tsx
+POST /special-days
+{
+ donorId,
+ type,
+ date
+}
+```
+
+Types
+
+Birthday
+Anniversary
+
+---
+
+PART 7 — REFRESH DATA
+
+After successful creation run:
+
+```tsx
+queryClient.invalidateQueries(['donor',donorId])
+```
+
+This refreshes the page.
+
+---
+
+EXPECTED RESULT
+
+Click Add Donation → modal opens → save donation.
+
+Click Add Pledge → modal opens → save pledge.
+
+Click Add Family Member → modal opens → save family.
+
+Click Add Special Day → modal opens → save birthday/anniversary.
