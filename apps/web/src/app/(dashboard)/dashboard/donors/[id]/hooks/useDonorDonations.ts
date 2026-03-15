@@ -95,8 +95,8 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
           donationDate: donationForm.donationDate,
           donationMode: donationForm.donationMode,
           donationType: donationForm.donationType,
-          designatedHome: donationForm.designatedHome || "NONE",
-          remarks: donationForm.remarks,
+          donationHomeType: donationForm.designatedHome === "NONE" ? null : (donationForm.designatedHome || null),
+          remarks: donationForm.remarks || undefined,
         }),
       });
       setShowDonationDialog(false);
