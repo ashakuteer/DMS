@@ -121,6 +121,9 @@ export default function TimeMachinePage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
+  const [pendingPhotos, setPendingPhotos] = useState<File[]>([]);
+  const [pendingPhotoPreviewUrls, setPendingPhotoPreviewUrls] = useState<string[]>([]);
+
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [viewEntry, setViewEntry] = useState<TimeMachineEntry | null>(null);
   const [viewPhotoIndex, setViewPhotoIndex] = useState(0);
@@ -171,9 +174,16 @@ export default function TimeMachinePage() {
     fetchYears();
   }, [fetchYears]);
 
+  const clearPendingPhotos = () => {
+    pendingPhotoPreviewUrls.forEach((url) => URL.revokeObjectURL(url));
+    setPendingPhotos([]);
+    setPendingPhotoPreviewUrls([]);
+  };
+
   const openCreate = () => {
     setEditingEntry(null);
     setForm({ ...emptyForm });
+    clearPendingPhotos();
     setDialogOpen(true);
   };
 
@@ -187,7 +197,27 @@ export default function TimeMachinePage() {
       home: entry.home,
       isPublic: entry.isPublic,
     });
+    clearPendingPhotos();
     setDialogOpen(true);
+  };
+
+  const handlePendingPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter((f) => f.size <= 5 * 1024 * 1024);
+    if (validFiles.length < files.length) {
+      toast({ title: "Some files skipped", description: "Files over 5MB were skipped.", variant: "destructive" });
+    }
+    validFiles.forEach((file) => {
+      setPendingPhotos((prev) => [...prev, file]);
+      setPendingPhotoPreviewUrls((prev) => [...prev, URL.createObjectURL(file)]);
+    });
+    e.target.value = "";
+  };
+
+  const removePendingPhoto = (index: number) => {
+    URL.revokeObjectURL(pendingPhotoPreviewUrls[index]);
+    setPendingPhotos((prev) => prev.filter((_, i) => i !== index));
+    setPendingPhotoPreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSave = async () => {
@@ -217,7 +247,26 @@ export default function TimeMachinePage() {
           });
 
       if (res.ok) {
-        toast({ title: editingEntry ? "Entry Updated" : "Entry Created", description: "Time Machine entry saved successfully" });
+        const created = await res.json().catch(() => null);
+        const entryId = editingEntry ? editingEntry.id : created?.id;
+        const uploadedCount = pendingPhotos.length;
+        if (entryId && uploadedCount > 0) {
+          for (const photo of pendingPhotos) {
+            const fd = new FormData();
+            fd.append("photo", photo);
+            await fetchWithAuth(`/api/time-machine/${entryId}/photos`, {
+              method: "POST",
+              body: fd,
+            }).catch(() => {});
+          }
+          clearPendingPhotos();
+        }
+        toast({
+          title: editingEntry ? "Entry Updated" : "Entry Created",
+          description: uploadedCount > 0
+            ? `Entry saved with ${uploadedCount} photo(s)`
+            : "Time Machine entry saved successfully",
+        });
         setDialogOpen(false);
         fetchEntries();
         fetchYears();
@@ -481,7 +530,7 @@ export default function TimeMachinePage() {
         </>
       )}
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => { if (!open) clearPendingPhotos(); setDialogOpen(open); }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{editingEntry ? "Edit Entry" : "Add Time Machine Entry"}</DialogTitle>
@@ -555,6 +604,39 @@ export default function TimeMachinePage() {
               />
               <Label htmlFor="tm-public" className="cursor-pointer">Make public (visible in reports/donor-facing content)</Label>
             </div>
+            {canUploadPhoto && (
+              <div>
+                <Label className="mb-2 block">Photos (optional)</Label>
+                <Input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  multiple
+                  onChange={handlePendingPhotoChange}
+                  data-testid="input-pending-photos"
+                />
+                <p className="text-xs text-muted-foreground mt-1">JPG, PNG, or WebP · Max 5MB each · Multiple allowed</p>
+                {pendingPhotoPreviewUrls.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {pendingPhotoPreviewUrls.map((url, i) => (
+                      <div key={i} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Preview ${i + 1}`}
+                          className="h-16 w-16 object-cover rounded border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removePendingPhoto(i)}
+                          className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
