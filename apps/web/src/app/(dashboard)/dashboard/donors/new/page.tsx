@@ -227,7 +227,7 @@ export default function NewDonorPage() {
   }
 
   try {
-    const options = {
+   const options: any = {
       maxSizeMB: 0.2,
       maxWidthOrHeight: 800,
       useWebWorker: true,
