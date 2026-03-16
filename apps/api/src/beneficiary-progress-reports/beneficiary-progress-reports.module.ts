@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { BeneficiaryProgressReportsController } from './beneficiary-progress-reports.controller';
 import { BeneficiaryProgressReportsService } from './beneficiary-progress-reports.service';
-import { BeneficiaryProgressReportsPdfService } from './beneficiary-progress-reports.pdf.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { EmailJobsModule } from '../email-jobs/email-jobs.module';
 import { OrganizationProfileModule } from '../organization-profile/organization-profile.module';
@@ -9,6 +8,6 @@ import { OrganizationProfileModule } from '../organization-profile/organization-
 @Module({
   imports: [PrismaModule, EmailJobsModule, OrganizationProfileModule],
   controllers: [BeneficiaryProgressReportsController],
-  providers: [BeneficiaryProgressReportsService, BeneficiaryProgressReportsPdfService],
+  providers: [BeneficiaryProgressReportsService],
 })
 export class BeneficiaryProgressReportsModule {}

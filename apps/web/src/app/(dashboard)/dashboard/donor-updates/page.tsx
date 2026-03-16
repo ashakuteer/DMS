@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -21,6 +23,14 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -46,16 +56,84 @@ import {
   X,
   Search,
   ExternalLink,
+  ImagePlus,
 } from "lucide-react";
-import { authStorage, fetchWithAuth } from "@/lib/auth";
+import { SiWhatsapp } from "react-icons/si";
+import { authStorage } from "@/lib/auth";
 import { canAccessModule, hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { useToast } from "@/hooks/use-toast";
-import { DonorUpdate, DonorResult, BeneficiaryResult, DispatchItem, PreviewData } from "./_components/types";
-import { HOME_TYPES } from "./_components/helpers";
-import { ComposerDialog } from "./_components/ComposerDialog";
-import { SendDialog } from "./_components/SendDialog";
-import { PreviewDialog } from "./_components/PreviewDialog";
+
+const HOME_TYPES = [
+  { value: "ORPHAN_GIRLS", label: "Orphan Girls" },
+  { value: "BLIND_BOYS", label: "Blind Boys" },
+  { value: "OLD_AGE", label: "Old Age" },
+];
+
+interface DonorUpdate {
+  id: string;
+  title: string;
+  content: string;
+  photos: string[];
+  relatedBeneficiaryIds: string[];
+  relatedHomeTypes: string[];
+  isDraft: boolean;
+  createdById: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: { name: string };
+  beneficiaries: { id: string; fullName: string; homeType: string; code: string }[];
+  dispatchCount: number;
+}
+
+interface DonorResult {
+  id: string;
+  donorCode: string;
+  firstName: string;
+  lastName: string | null;
+  personalEmail: string | null;
+  officialEmail: string | null;
+  whatsappPhone: string | null;
+  primaryPhone: string | null;
+}
+
+interface BeneficiaryResult {
+  id: string;
+  fullName: string;
+  homeType: string;
+  code: string;
+}
+
+interface DispatchItem {
+  id: string;
+  updateTitle: string;
+  updateId: string;
+  donorName: string;
+  donorCode: string;
+  donorId: string;
+  channel: string;
+  status: string;
+  sentAt: string | null;
+  createdAt: string;
+}
+
+interface PreviewData {
+  update: DonorUpdate;
+  emailHtml: string;
+  whatsappText: string;
+  emailSubject: string;
+}
+
+async function fetchWithAuth(url: string, options: RequestInit = {}) {
+  const token = authStorage.getAccessToken();
+  return fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
 
 export default function DonorUpdatesPage() {
   const [updates, setUpdates] = useState<DonorUpdate[]>([]);
@@ -638,57 +716,336 @@ export default function DonorUpdatesPage() {
         </TabsContent>
       </Tabs>
 
-      <ComposerDialog
-        open={showComposer}
-        editingId={editingId}
-        composerTitle={composerTitle}
-        setComposerTitle={setComposerTitle}
-        composerContent={composerContent}
-        setComposerContent={setComposerContent}
-        composerPhotos={composerPhotos}
-        setComposerPhotos={setComposerPhotos}
-        composerPhotoUrl={composerPhotoUrl}
-        setComposerPhotoUrl={setComposerPhotoUrl}
-        addPhoto={addPhoto}
-        selectedHomeTypes={selectedHomeTypes}
-        toggleHomeType={toggleHomeType}
-        beneficiarySearch={beneficiarySearch}
-        setBeneficiarySearch={setBeneficiarySearch}
-        beneficiarySearchLoading={beneficiarySearchLoading}
-        beneficiaryResults={beneficiaryResults}
-        selectedBeneficiaries={selectedBeneficiaries}
-        setSelectedBeneficiaries={setSelectedBeneficiaries}
-        addBeneficiary={addBeneficiary}
-        actionLoading={actionLoading}
-        handleSave={handleSave}
-        resetComposer={resetComposer}
-      />
+      <Dialog open={showComposer} onOpenChange={(open) => { if (!open) resetComposer(); }}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingId ? "Edit Update" : "Create New Update"}</DialogTitle>
+            <DialogDescription>Compose an update to share with your donors</DialogDescription>
+          </DialogHeader>
 
-      <SendDialog
-        open={showSendDialog}
-        onOpenChange={setShowSendDialog}
-        sendChannel={sendChannel}
-        setSendChannel={setSendChannel}
-        updates={updates}
-        sendUpdateId={sendUpdateId}
-        handleAutoSelectDonors={handleAutoSelectDonors}
-        donorSearch={donorSearch}
-        setDonorSearch={setDonorSearch}
-        donorSearchLoading={donorSearchLoading}
-        donorResults={donorResults}
-        addDonor={addDonor}
-        selectedDonors={selectedDonors}
-        setSelectedDonors={setSelectedDonors}
-        actionLoading={actionLoading}
-        handleSend={handleSend}
-      />
+          <div className="space-y-4">
+            <div>
+              <Label>Title</Label>
+              <Input
+                value={composerTitle}
+                onChange={(e) => setComposerTitle(e.target.value)}
+                placeholder="Update title..."
+                data-testid="input-title"
+              />
+            </div>
 
-      <PreviewDialog
-        open={showPreview}
-        onOpenChange={setShowPreview}
-        previewLoading={previewLoading}
-        previewData={previewData}
-      />
+            <div>
+              <Label>Content</Label>
+              <Textarea
+                value={composerContent}
+                onChange={(e) => setComposerContent(e.target.value)}
+                placeholder="Write your update content here..."
+                rows={6}
+                data-testid="input-content"
+              />
+            </div>
+
+            <div>
+              <Label>Photos</Label>
+              <div className="flex gap-2 mt-1">
+                <Input
+                  value={composerPhotoUrl}
+                  onChange={(e) => setComposerPhotoUrl(e.target.value)}
+                  placeholder="Paste photo URL..."
+                  data-testid="input-photo-url"
+                />
+                <Button variant="outline" onClick={addPhoto} data-testid="button-add-photo">
+                  <ImagePlus className="mr-2 h-4 w-4" />
+                  Add
+                </Button>
+              </div>
+              {composerPhotos.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {composerPhotos.map((url, i) => (
+                    <div key={i} className="relative group">
+                      <img src={url} alt={`Photo ${i + 1}`} className="h-16 w-16 object-cover rounded-md border" />
+                      <button
+                        onClick={() => setComposerPhotos((prev) => prev.filter((_, j) => j !== i))}
+                        className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full h-4 w-4 flex items-center justify-center text-xs"
+                        data-testid={`button-remove-photo-${i}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <Label>Related Homes</Label>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {HOME_TYPES.map((ht) => (
+                  <label key={ht.value} className="flex items-center gap-2 cursor-pointer">
+                    <Checkbox
+                      checked={selectedHomeTypes.includes(ht.value)}
+                      onCheckedChange={() => toggleHomeType(ht.value)}
+                      data-testid={`checkbox-home-${ht.value}`}
+                    />
+                    <span className="text-sm">{ht.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Label>Related Beneficiaries</Label>
+              <div className="relative mt-1">
+                <Input
+                  value={beneficiarySearch}
+                  onChange={(e) => setBeneficiarySearch(e.target.value)}
+                  placeholder="Search beneficiaries..."
+                  data-testid="input-beneficiary-search"
+                />
+                {beneficiarySearchLoading && (
+                  <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+                {beneficiaryResults.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-40 overflow-y-auto">
+                    {beneficiaryResults.map((b) => (
+                      <button
+                        key={b.id}
+                        onClick={() => addBeneficiary(b)}
+                        className="w-full text-left px-3 py-2 text-sm hover-elevate"
+                        data-testid={`button-add-beneficiary-${b.id}`}
+                      >
+                        {b.fullName} ({b.code}) - {b.homeType?.replace(/_/g, " ")}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {selectedBeneficiaries.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {selectedBeneficiaries.map((b) => (
+                    <Badge key={b.id} variant="secondary" className="gap-1">
+                      {b.fullName}
+                      <button onClick={() => setSelectedBeneficiaries((prev) => prev.filter((sb) => sb.id !== b.id))}>
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="flex-wrap gap-2">
+            <Button variant="outline" onClick={resetComposer} data-testid="button-cancel-composer">
+              Cancel
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleSave(true)}
+              disabled={actionLoading === "save"}
+              data-testid="button-save-draft"
+            >
+              {actionLoading === "save" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Save Draft
+            </Button>
+            <Button
+              onClick={() => handleSave(false)}
+              disabled={actionLoading === "save"}
+              data-testid="button-publish"
+            >
+              {actionLoading === "save" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Publish
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showSendDialog} onOpenChange={setShowSendDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Send Update to Donors</DialogTitle>
+            <DialogDescription>Select donors and channel to send this update</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label>Channel</Label>
+              <Select value={sendChannel} onValueChange={(v) => setSendChannel(v as "EMAIL" | "WHATSAPP")}>
+                <SelectTrigger data-testid="select-channel">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="EMAIL">
+                    <span className="flex items-center gap-2"><Mail className="h-4 w-4" /> Email</span>
+                  </SelectItem>
+                  <SelectItem value="WHATSAPP">
+                    <span className="flex items-center gap-2"><SiWhatsapp className="h-4 w-4" /> WhatsApp</span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(() => {
+              const update = updates.find((u) => u.id === sendUpdateId);
+              if (!update) return null;
+              const hasHomes = update.relatedHomeTypes.length > 0;
+              const hasBens = update.relatedBeneficiaryIds.length > 0;
+              if (!hasHomes && !hasBens) return null;
+
+              return (
+                <div>
+                  <Label>Quick Add Sponsors</Label>
+                  <div className="flex flex-wrap gap-2 mt-1">
+                    {hasHomes && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAutoSelectDonors("home")}
+                        data-testid="button-auto-select-home"
+                      >
+                        <Users className="mr-2 h-4 w-4" />
+                        Add sponsors of related homes
+                      </Button>
+                    )}
+                    {hasBens && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleAutoSelectDonors("beneficiary")}
+                        data-testid="button-auto-select-beneficiary"
+                      >
+                        <Users className="mr-2 h-4 w-4" />
+                        Add sponsors of related beneficiaries
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            <div>
+              <Label>Search & Add Donors</Label>
+              <div className="relative mt-1">
+                <Input
+                  value={donorSearch}
+                  onChange={(e) => setDonorSearch(e.target.value)}
+                  placeholder="Search by name, code, email, phone..."
+                  data-testid="input-donor-search"
+                />
+                {donorSearchLoading && (
+                  <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+                {donorResults.length > 0 && (
+                  <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-48 overflow-y-auto">
+                    {donorResults.map((d) => (
+                      <button
+                        key={d.id}
+                        onClick={() => addDonor(d)}
+                        className="w-full text-left px-3 py-2 text-sm hover-elevate"
+                        data-testid={`button-add-donor-${d.id}`}
+                      >
+                        <div className="font-medium">{d.firstName} {d.lastName || ""} ({d.donorCode})</div>
+                        <div className="text-xs text-muted-foreground">
+                          {d.personalEmail || d.officialEmail || "No email"} | {d.whatsappPhone || d.primaryPhone || "No phone"}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {selectedDonors.length > 0 && (
+              <div>
+                <Label>Selected Donors ({selectedDonors.length})</Label>
+                <div className="flex flex-wrap gap-1 mt-1 max-h-40 overflow-y-auto">
+                  {selectedDonors.map((d) => (
+                    <Badge key={d.id} variant="secondary" className="gap-1">
+                      {d.firstName} {d.lastName || ""} ({d.donorCode})
+                      <button onClick={() => setSelectedDonors((prev) => prev.filter((sd) => sd.id !== d.id))}>
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSendDialog(false)} data-testid="button-cancel-send">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSend}
+              disabled={actionLoading === "send" || selectedDonors.length === 0}
+              data-testid="button-confirm-send"
+            >
+              {actionLoading === "send" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+              Send to {selectedDonors.length} Donor(s)
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPreview} onOpenChange={setShowPreview}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Message Preview</DialogTitle>
+            <DialogDescription>Preview how donors will see this update</DialogDescription>
+          </DialogHeader>
+
+          {previewLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : previewData ? (
+            <Tabs defaultValue="email" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="email">
+                  <Mail className="mr-2 h-4 w-4" />
+                  Email Preview
+                </TabsTrigger>
+                <TabsTrigger value="whatsapp">
+                  <SiWhatsapp className="mr-2 h-4 w-4" />
+                  WhatsApp Preview
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="email">
+                <div className="space-y-2">
+                  <div className="text-sm">
+                    <span className="font-medium text-muted-foreground">Subject: </span>
+                    {previewData.emailSubject}
+                  </div>
+                  <div
+                    className="border rounded-md p-4 bg-background"
+                    dangerouslySetInnerHTML={{ __html: previewData.emailHtml.replace(/\{\{donor_name\}\}/g, "John Doe") }}
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="whatsapp">
+                <div className="bg-muted/50 p-4 rounded-md whitespace-pre-wrap font-mono text-sm">
+                  {previewData.whatsappText.replace(/\{\{donor_name\}\}/g, "John Doe")}
+                </div>
+                <Button
+                  variant="outline"
+                  className="mt-2"
+                  onClick={() => {
+                    navigator.clipboard.writeText(previewData.whatsappText.replace(/\{\{donor_name\}\}/g, "Donor Name"));
+                    toast({ title: "Copied", description: "WhatsApp text copied" });
+                  }}
+                  data-testid="button-copy-whatsapp"
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  Copy Text
+                </Button>
+              </TabsContent>
+            </Tabs>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

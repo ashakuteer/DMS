@@ -32,7 +32,7 @@ export class ReminderTasksController {
     @CurrentUser() user: UserContext,
     @Query('filter') filter: 'today' | 'week' | 'month' | 'overdue' = 'today',
   ) {
-    return this.reminderTasksService.getReminders(user, { filter });
+    return this.reminderTasksService.getReminders(user, filter);
   }
 
   @Get('stats')

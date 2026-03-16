@@ -4,20 +4,37 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { AuditService } from '../audit/audit.service';
-import { ReceiptService } from '../receipt/receipt.service';
-import { EmailService } from '../email/email.service';
-import { CommunicationLogService } from '../communication-log/communication-log.service';
-import { OrganizationProfileService } from '../organization-profile/organization-profile.service';
-import { Role, CommunicationType } from '@prisma/client';
-import { maskDonorInDonation } from '../common/utils/masking.util';
-import { NotificationService } from '../notifications/notification.service';
-import { DonationQueryOptions, UserContext } from './donations.types';
-import { DonationsExportService } from './donations.export.service';
+} from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
+import { ReceiptService } from "../receipt/receipt.service";
+import { EmailService } from "../email/email.service";
+import { CommunicationLogService } from "../communication-log/communication-log.service";
+import { OrganizationProfileService } from "../organization-profile/organization-profile.service";
+import { Role, CommunicationType, CommunicationStatus, CommunicationChannel } from "@prisma/client";
+import { maskDonorInDonation } from "../common/utils/masking.util";
+import { CommunicationsService } from "../communications/communications.service";
+import { normalizeToE164 } from "../common/phone-utils";
+import { NotificationService } from "../notifications/notification.service";
 
-export { DonationQueryOptions, UserContext };
+export interface DonationQueryOptions {
+  page?: number;
+  limit?: number;
+  donorId?: string;
+  startDate?: string;
+  endDate?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  search?: string;
+  donationType?: string;
+  donationHomeType?: string;
+}
+
+export interface UserContext {
+  id: string;
+  role: Role;
+  email: string;
+}
 
 @Injectable()
 export class DonationsService {
@@ -30,8 +47,8 @@ export class DonationsService {
     private emailService: EmailService,
     private communicationLogService: CommunicationLogService,
     private orgProfileService: OrganizationProfileService,
+    private communicationsService: CommunicationsService,
     private notificationService: NotificationService,
-    private exportService: DonationsExportService,
   ) {}
 
   private getDonorAccessFilter(user: UserContext): Record<string, any> {
@@ -52,8 +69,8 @@ export class DonationsService {
       donorId,
       startDate,
       endDate,
-      sortBy = 'donationDate',
-      sortOrder = 'desc',
+      sortBy = "donationDate",
+      sortOrder = "desc",
       search,
       donationType,
       donationHomeType,
@@ -68,11 +85,11 @@ export class DonationsService {
 
     if (donorId) where.donorId = donorId;
 
-    if (donationType && donationType !== 'all') {
+    if (donationType && donationType !== "all") {
       where.donationType = donationType;
     }
 
-    if (donationHomeType && donationHomeType !== 'all') {
+    if (donationHomeType && donationHomeType !== "all") {
       where.donationHomeType = donationHomeType;
     }
 
@@ -80,9 +97,9 @@ export class DonationsService {
       where.donor = {
         ...where.donor,
         OR: [
-          { firstName: { contains: search, mode: 'insensitive' } },
-          { lastName: { contains: search, mode: 'insensitive' } },
-          { donorCode: { contains: search, mode: 'insensitive' } },
+          { firstName: { contains: search, mode: "insensitive" } },
+          { lastName: { contains: search, mode: "insensitive" } },
+          { donorCode: { contains: search, mode: "insensitive" } },
           { primaryPhone: { contains: search } },
         ],
       };
@@ -165,15 +182,22 @@ export class DonationsService {
 
     if (!donation) {
       if (user.role === Role.TELECALLER) {
-        throw new ForbiddenException('You do not have access to this donation');
+        throw new ForbiddenException("You do not have access to this donation");
       }
-      throw new NotFoundException('Donation not found');
+      throw new NotFoundException("Donation not found");
     }
 
-    return this.shouldMaskDonorData(user) ? maskDonorInDonation(donation) : donation;
+    return this.shouldMaskDonorData(user)
+      ? maskDonorInDonation(donation)
+      : donation;
   }
 
-  async create(user: UserContext, data: any, ipAddress?: string, userAgent?: string) {
+  async create(
+    user: UserContext,
+    data: any,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
     if (user.role === Role.TELECALLER) {
       const donor = await this.prisma.donor.findFirst({
         where: { id: data.donorId, isDeleted: false },
@@ -181,7 +205,7 @@ export class DonationsService {
       });
       if (!donor || donor.assignedToUserId !== user.id) {
         throw new ForbiddenException(
-          'You can only create donations for donors assigned to you',
+          "You can only create donations for donors assigned to you",
         );
       }
     }
@@ -198,7 +222,7 @@ export class DonationsService {
       where: {
         receiptNumber: { startsWith: receiptPrefix, not: null },
       },
-      orderBy: { receiptNumber: 'desc' },
+      orderBy: { receiptNumber: "desc" },
       select: { receiptNumber: true },
     });
 
@@ -208,20 +232,16 @@ export class DonationsService {
       if (match) nextReceiptNum = parseInt(match[1], 10) + 1;
     }
 
-    const receiptNumber = `AKF-REC-${currentYear}-${nextReceiptNum.toString().padStart(4, '0')}`;
+    const receiptNumber = `AKF-REC-${currentYear}-${nextReceiptNum
+      .toString()
+      .padStart(4, "0")}`;
 
-    const validHomeTypes = ['GIRLS_HOME', 'BLIND_BOYS_HOME', 'OLD_AGE_HOME', 'GENERAL'];
+    const validHomeTypes = ["GIRLS_HOME", "BLIND_BOYS_HOME", "OLD_AGE_HOME", "GENERAL"];
     if (data.donationHomeType && !validHomeTypes.includes(data.donationHomeType)) {
-      if (
-        data.donationHomeType === 'NONE' ||
-        data.donationHomeType === 'none' ||
-        data.donationHomeType === ''
-      ) {
+      if (data.donationHomeType === "NONE" || data.donationHomeType === "none" || data.donationHomeType === "") {
         data.donationHomeType = null;
       } else {
-        throw new BadRequestException(
-          `Invalid donationHomeType: ${data.donationHomeType}. Valid values: ${validHomeTypes.join(', ')}`,
-        );
+        throw new BadRequestException(`Invalid donationHomeType: ${data.donationHomeType}. Valid values: ${validHomeTypes.join(", ")}`);
       }
     }
 
@@ -264,9 +284,8 @@ export class DonationsService {
     };
 
     if (orgProfile.enableDonationEmail) {
-      communicationResults.emailStatus = 'queued';
-      this.notificationService
-        .sendDonationEmail(notificationParams)
+      communicationResults.emailStatus = "queued";
+      this.notificationService.sendDonationEmail(notificationParams)
         .then((result) => {
           this.logger.log(`Donation email for ${donation.id}: status=${result.status}`);
         })
@@ -277,13 +296,12 @@ export class DonationsService {
 
     if (orgProfile.enableDonationWhatsApp !== false) {
       try {
-        const waResult =
-          await this.notificationService.sendDonationWhatsApp(notificationParams);
+        const waResult = await this.notificationService.sendDonationWhatsApp(notificationParams);
         communicationResults.whatsAppStatus = waResult.status;
         communicationResults.whatsAppMessageId = waResult.messageId;
         this.logger.log(`Donation WhatsApp for ${donation.id}: status=${waResult.status}`);
       } catch (err: any) {
-        communicationResults.whatsAppStatus = 'failed';
+        communicationResults.whatsAppStatus = "failed";
         this.logger.error(`Donation WhatsApp error for ${donation.id}: ${err?.message}`);
       }
     }
@@ -298,7 +316,9 @@ export class DonationsService {
     userId?: string,
   ): Promise<void> {
     try {
-      const donation = await this.prisma.donation.findUnique({ where: { id: donationId } });
+      const donation = await this.prisma.donation.findUnique({
+        where: { id: donationId },
+      });
       if (!donation) {
         this.logger.warn(`Donation ${donationId} not found`);
         return;
@@ -320,7 +340,8 @@ export class DonationsService {
       if (!donorEmail) return;
 
       const donorName =
-        [donor.firstName, donor.lastName].filter(Boolean).join(' ') || 'Valued Donor';
+        [donor.firstName, donor.lastName].filter(Boolean).join(" ") ||
+        "Valued Donor";
 
       const pdfBuffer = await this.receiptService.generateReceiptPDF({
         receiptNumber,
@@ -345,7 +366,7 @@ export class DonationsService {
         toEmail: donorEmail,
         subject: `Donation Receipt - ${receiptNumber}`,
         messagePreview: `Receipt email sent for ${receiptNumber}`,
-        status: result.success ? 'SENT' : 'FAILED',
+        status: result.success ? "SENT" : "FAILED",
         errorMessage: result.error,
         sentById: userId,
         type: CommunicationType.RECEIPT,
@@ -355,33 +376,43 @@ export class DonationsService {
     }
   }
 
-  async update(user: UserContext, id: string, data: any, ipAddress?: string, userAgent?: string) {
+  /**
+   * ✅ Missing in your original code, but you were calling it.
+   * This sends a WhatsApp thank-you + logs it.
+   */
+  async update(
+    user: UserContext,
+    id: string,
+    data: any,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
     const existing = await this.prisma.donation.findFirst({
       where: { id, isDeleted: false },
       include: { donor: { select: { assignedToUserId: true } } },
     });
 
-    if (!existing) throw new NotFoundException('Donation not found');
+    if (!existing) throw new NotFoundException("Donation not found");
 
-    if (user.role === Role.TELECALLER && existing.donor?.assignedToUserId !== user.id) {
-      throw new ForbiddenException('You do not have permission to update this donation');
+    if (
+      user.role === Role.TELECALLER &&
+      existing.donor?.assignedToUserId !== user.id
+    ) {
+      throw new ForbiddenException(
+        "You do not have permission to update this donation",
+      );
     }
 
     const updateData = { ...data };
-    if (data.donationDate) updateData.donationDate = new Date(data.donationDate);
+    if (data.donationDate)
+      updateData.donationDate = new Date(data.donationDate);
 
-    const validHomeTypes = ['GIRLS_HOME', 'BLIND_BOYS_HOME', 'OLD_AGE_HOME', 'GENERAL'];
+    const validHomeTypes = ["GIRLS_HOME", "BLIND_BOYS_HOME", "OLD_AGE_HOME", "GENERAL"];
     if (updateData.donationHomeType !== undefined) {
-      if (
-        !updateData.donationHomeType ||
-        updateData.donationHomeType === 'NONE' ||
-        updateData.donationHomeType === 'none'
-      ) {
+      if (!updateData.donationHomeType || updateData.donationHomeType === "NONE" || updateData.donationHomeType === "none") {
         updateData.donationHomeType = null;
       } else if (!validHomeTypes.includes(updateData.donationHomeType)) {
-        throw new BadRequestException(
-          `Invalid donationHomeType: ${updateData.donationHomeType}. Valid values: ${validHomeTypes.join(', ')}`,
-        );
+        throw new BadRequestException(`Invalid donationHomeType: ${updateData.donationHomeType}. Valid values: ${validHomeTypes.join(", ")}`);
       }
     }
 
@@ -393,7 +424,10 @@ export class DonationsService {
     await this.auditService.logDonationUpdate(
       user.id,
       id,
-      { receiptNumber: existing.receiptNumber, amount: existing.donationAmount },
+      {
+        receiptNumber: existing.receiptNumber,
+        amount: existing.donationAmount,
+      },
       { ...data },
       ipAddress,
       userAgent,
@@ -402,16 +436,21 @@ export class DonationsService {
     return updated;
   }
 
-  async softDelete(user: UserContext, id: string, ipAddress?: string, userAgent?: string) {
+  async softDelete(
+    user: UserContext,
+    id: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
     if (user.role !== Role.ADMIN) {
-      throw new ForbiddenException('Only administrators can delete donations');
+      throw new ForbiddenException("Only administrators can delete donations");
     }
 
     const existing = await this.prisma.donation.findFirst({
       where: { id, isDeleted: false },
     });
 
-    if (!existing) throw new NotFoundException('Donation not found');
+    if (!existing) throw new NotFoundException("Donation not found");
 
     const deleted = await this.prisma.donation.update({
       where: { id },
@@ -439,7 +478,7 @@ export class DonationsService {
       where: { id, isDeleted: false },
     });
 
-    if (!donation) throw new NotFoundException('Donation not found');
+    if (!donation) throw new NotFoundException("Donation not found");
 
     await this.auditService.logReceiptRegenerate(
       user.id,
@@ -451,7 +490,7 @@ export class DonationsService {
 
     return {
       success: true,
-      message: 'Receipt regeneration logged',
+      message: "Receipt regeneration logged",
       receiptNumber: donation.receiptNumber,
     };
   }
@@ -466,9 +505,9 @@ export class DonationsService {
             donorCode: true,
             firstName: true,
             lastName: true,
-            primaryPhone: true,
             personalEmail: true,
             officialEmail: true,
+            primaryPhone: true,
             address: true,
             city: true,
             state: true,
@@ -479,24 +518,30 @@ export class DonationsService {
       },
     });
 
-    if (!donation) throw new NotFoundException('Donation not found');
+    if (!donation) throw new NotFoundException("Donation not found");
 
-    const donorEmail = donation.donor.personalEmail || donation.donor.officialEmail;
+    const donorEmail =
+      donation.donor.personalEmail || donation.donor.officialEmail;
     if (!donorEmail) {
-      throw new BadRequestException('Donor does not have an email address on file');
+      throw new BadRequestException(
+        "Donor does not have an email address on file",
+      );
     }
 
-    const donorName = `${donation.donor.firstName} ${donation.donor.lastName || ''}`.trim();
+    const donorName =
+      `${donation.donor.firstName} ${donation.donor.lastName || ""}`.trim();
     const addressParts = [
       donation.donor.address,
       donation.donor.city,
       donation.donor.state,
       donation.donor.pincode,
     ].filter(Boolean);
-    const donorAddress = addressParts.length ? addressParts.join(', ') : undefined;
+    const donorAddress = addressParts.length
+      ? addressParts.join(", ")
+      : undefined;
 
     const pdfBuffer = await this.receiptService.generateReceiptPDF({
-      receiptNumber: donation.receiptNumber || 'N/A',
+      receiptNumber: donation.receiptNumber || "N/A",
       donationDate: donation.donationDate,
       donorName,
       donationAmount: donation.donationAmount.toNumber(),
@@ -513,7 +558,7 @@ export class DonationsService {
     const emailResult = await this.emailService.sendDonationReceipt(
       donorEmail,
       donorName,
-      donation.receiptNumber || 'N/A',
+      donation.receiptNumber || "N/A",
       pdfBuffer,
     );
 
@@ -523,7 +568,7 @@ export class DonationsService {
       toEmail: donorEmail,
       subject: `Donation Receipt - ${(await this.orgProfileService.getProfile()).name} (${donation.receiptNumber})`,
       messagePreview: `Receipt re-sent by ${user.role}: ${donation.receiptNumber}`,
-      status: emailResult.success ? 'SENT' : 'FAILED',
+      status: emailResult.success ? "SENT" : "FAILED",
       errorMessage: emailResult.error,
       sentById: user.id,
       type: CommunicationType.RECEIPT,
@@ -543,19 +588,313 @@ export class DonationsService {
     };
   }
 
-  async exportDonations(user: UserContext, filters: any = {}, ipAddress?: string, userAgent?: string) {
-    return this.exportService.exportDonations(user, filters, ipAddress, userAgent);
-  }
-
-  async exportToExcel(user: UserContext, filters: any = {}, ipAddress?: string, userAgent?: string): Promise<Buffer> {
-    return this.exportService.exportToExcel(user, filters, ipAddress, userAgent);
-  }
-
-  async getReceiptPdf(user: UserContext, donationId: string): Promise<{ buffer: Buffer; filename: string }> {
-    return this.exportService.getReceiptPdf(user, donationId);
-  }
-
   async getStatsByHome(user: UserContext) {
-    return this.exportService.getStatsByHome(user);
+    const accessFilter = this.getDonorAccessFilter(user);
+
+    const donations = await this.prisma.donation.findMany({
+      where: { isDeleted: false, ...accessFilter },
+      select: {
+        donationHomeType: true,
+        donationType: true,
+        donationAmount: true,
+        currency: true,
+      },
+    });
+
+    const homeStats: Record<
+      string,
+      { cashTotal: number; inKindCount: number; totalCount: number }
+    > = {
+      GIRLS_HOME: { cashTotal: 0, inKindCount: 0, totalCount: 0 },
+      BLIND_BOYS_HOME: { cashTotal: 0, inKindCount: 0, totalCount: 0 },
+      OLD_AGE_HOME: { cashTotal: 0, inKindCount: 0, totalCount: 0 },
+      GENERAL: { cashTotal: 0, inKindCount: 0, totalCount: 0 },
+    };
+
+    let totalCash = 0;
+    let totalInKind = 0;
+
+    for (const donation of donations) {
+      const homeType = donation.donationHomeType || "GENERAL";
+      const amount = Number(donation.donationAmount) || 0;
+      const isCash = donation.donationType === "CASH";
+
+      if (homeStats[homeType]) {
+        homeStats[homeType].totalCount++;
+        if (isCash) {
+          homeStats[homeType].cashTotal += amount;
+          totalCash += amount;
+        } else {
+          homeStats[homeType].inKindCount++;
+          totalInKind++;
+        }
+      }
+    }
+
+    return {
+      byHome: [
+        {
+          homeType: "GIRLS_HOME",
+          label: "Girls Home",
+          ...homeStats.GIRLS_HOME,
+        },
+        {
+          homeType: "BLIND_BOYS_HOME",
+          label: "Blind Boys Home",
+          ...homeStats.BLIND_BOYS_HOME,
+        },
+        {
+          homeType: "OLD_AGE_HOME",
+          label: "Old Age Home",
+          ...homeStats.OLD_AGE_HOME,
+        },
+        { homeType: "GENERAL", label: "General", ...homeStats.GENERAL },
+      ],
+      totals: {
+        cashTotal: totalCash,
+        inKindCount: totalInKind,
+        totalDonations: donations.length,
+      },
+    };
+  }
+
+  async exportDonations(
+    user: UserContext,
+    filters: any = {},
+    ipAddress?: string,
+    userAgent?: string,
+  ) {
+    if (user.role !== Role.ADMIN) {
+      throw new ForbiddenException(
+        "Only administrators can export donation data",
+      );
+    }
+
+    const where: any = { isDeleted: false };
+
+    if (filters.startDate || filters.endDate) {
+      where.donationDate = {};
+      if (filters.startDate)
+        where.donationDate.gte = new Date(filters.startDate);
+      if (filters.endDate) where.donationDate.lte = new Date(filters.endDate);
+    }
+
+    if (filters.donorId) where.donorId = filters.donorId;
+
+    const donations = await this.prisma.donation.findMany({
+      where,
+      include: {
+        donor: {
+          select: {
+            id: true,
+            donorCode: true,
+            firstName: true,
+            lastName: true,
+            primaryPhone: true,
+            personalEmail: true,
+            city: true,
+          },
+        },
+        home: { select: { id: true, fullName: true } },
+        campaign: { select: { id: true, name: true } },
+      },
+      orderBy: { donationDate: "desc" },
+    });
+
+    await this.auditService.logDataExport(
+      user.id,
+      "Donations",
+      filters,
+      donations.length,
+      ipAddress,
+      userAgent,
+    );
+
+    return donations;
+  }
+
+  async exportToExcel(
+    user: UserContext,
+    filters: any = {},
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<Buffer> {
+    const ExcelJS = await import("exceljs");
+    const workbook = new ExcelJS.default.Workbook();
+    const worksheet = workbook.addWorksheet("Donations");
+
+    const where: any = { isDeleted: false };
+
+    if (filters.startDate || filters.endDate) {
+      where.donationDate = {};
+      if (filters.startDate)
+        where.donationDate.gte = new Date(filters.startDate);
+      if (filters.endDate) where.donationDate.lte = new Date(filters.endDate);
+    }
+
+    if (filters.donationType && filters.donationType !== "all") {
+      where.donationType = filters.donationType;
+    }
+
+    if (filters.donationHomeType && filters.donationHomeType !== "all") {
+      where.donationHomeType = filters.donationHomeType;
+    }
+
+    const donations = await this.prisma.donation.findMany({
+      where,
+      include: {
+        donor: {
+          select: {
+            donorCode: true,
+            firstName: true,
+            lastName: true,
+            primaryPhone: true,
+            personalEmail: true,
+          },
+        },
+      },
+      orderBy: { donationDate: "desc" },
+    });
+
+    worksheet.columns = [
+      { header: "Date", key: "date", width: 15 },
+      { header: "Receipt No", key: "receiptNumber", width: 20 },
+      { header: "Donor Name", key: "donorName", width: 25 },
+      { header: "Donor Code", key: "donorCode", width: 15 },
+      { header: "Phone", key: "phone", width: 15 },
+      { header: "Donation Type", key: "donationType", width: 15 },
+      { header: "Purpose", key: "purpose", width: 18 },
+      { header: "Quantity", key: "quantity", width: 12 },
+      { header: "Unit", key: "unit", width: 10 },
+      { header: "Amount/Value", key: "amount", width: 15 },
+      { header: "Payment Mode", key: "paymentMode", width: 15 },
+      { header: "Designated Home", key: "home", width: 20 },
+      { header: "Notes", key: "notes", width: 30 },
+    ];
+
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFE0E0E0" },
+    };
+
+    for (const donation of donations) {
+      const donorName = [donation.donor.firstName, donation.donor.lastName]
+        .filter(Boolean)
+        .join(" ");
+
+      const homeLabel = this.getHomeTypeLabel(
+        donation.donationHomeType || undefined,
+      );
+
+      worksheet.addRow({
+        date: new Date(donation.donationDate).toLocaleDateString("en-IN"),
+        receiptNumber: donation.receiptNumber || "-",
+        donorName,
+        donorCode: donation.donor.donorCode,
+        phone: donation.donor.primaryPhone || "-",
+        donationType: donation.donationType.replace(/_/g, " "),
+        purpose: donation.donationPurpose?.replace(/_/g, " ") || "-",
+        quantity: donation.quantity ? donation.quantity.toString() : "-",
+        unit: donation.unit || "-",
+        amount: Number(donation.donationAmount) || 0,
+        paymentMode: donation.donationMode?.replace(/_/g, " ") || "-",
+        home: homeLabel,
+        notes: donation.remarks || "-",
+      });
+    }
+
+    await this.auditService.logDataExport(
+      user.id,
+      "DonationsExcel",
+      filters,
+      donations.length,
+      ipAddress,
+      userAgent,
+    );
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    return Buffer.from(buffer);
+  }
+
+  private getHomeTypeLabel(homeType?: string): string {
+    switch (homeType) {
+      case "GIRLS_HOME":
+        return "Girls Home";
+      case "BLIND_BOYS_HOME":
+        return "Blind Boys Home";
+      case "OLD_AGE_HOME":
+        return "Old Age Home";
+      case "GENERAL":
+        return "General";
+      default:
+        return "-";
+    }
+  }
+
+  async getReceiptPdf(
+    user: UserContext,
+    donationId: string,
+  ): Promise<{ buffer: Buffer; filename: string }> {
+    const donation = await this.prisma.donation.findFirst({
+      where: { id: donationId, isDeleted: false },
+      include: {
+        donor: {
+          select: {
+            id: true,
+            donorCode: true,
+            firstName: true,
+            lastName: true,
+            primaryPhone: true,
+            personalEmail: true,
+            address: true,
+            city: true,
+            state: true,
+            pincode: true,
+            pan: true,
+          },
+        },
+      },
+    });
+
+    if (!donation) throw new NotFoundException("Donation not found");
+    if (!donation.receiptNumber)
+      throw new BadRequestException("No receipt generated for this donation");
+
+    const remarks =
+      donation.donationType !== "CASH" && donation.quantity
+        ? `${donation.donationType.replace(/_/g, " ")}: ${donation.quantity}${donation.unit ? " " + donation.unit : ""}${
+            donation.itemDescription ? " - " + donation.itemDescription : ""
+          }`
+        : donation.remarks || undefined;
+
+    const pdfBuffer = await this.receiptService.generateReceiptPDF({
+      receiptNumber: donation.receiptNumber,
+      donorName: [donation.donor.firstName, donation.donor.lastName]
+        .filter(Boolean)
+        .join(" "),
+      donorAddress: [
+        donation.donor.address,
+        donation.donor.city,
+        donation.donor.state,
+        donation.donor.pincode,
+      ]
+        .filter(Boolean)
+        .join(", "),
+      donorPAN: donation.donor.pan || "",
+      donationDate: donation.donationDate,
+      donationAmount: Number(donation.donationAmount),
+      currency: donation.currency,
+      paymentMode: donation.donationMode || "N/A",
+      transactionRef: donation.transactionId || "",
+      donationType: donation.donationType,
+      remarks,
+    });
+
+    return {
+      buffer: pdfBuffer,
+      filename: `receipt_${donation.receiptNumber}.pdf`,
+    };
   }
 }

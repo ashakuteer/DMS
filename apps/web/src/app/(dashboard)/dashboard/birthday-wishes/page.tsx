@@ -44,8 +44,88 @@ import { authStorage, fetchWithAuth } from "@/lib/auth";
 import { canAccessModule, hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { useToast } from "@/hooks/use-toast";
-import { DonorBirthday, BeneficiaryBirthday, SentLogEntry, SentLogResponse, TemplateItem } from "./_components/types";
-import { formatDate } from "./_components/helpers";
+
+interface DonorBirthday {
+  donorId: string;
+  donorCode: string;
+  donorName: string;
+  firstName: string;
+  lastName: string | null;
+  dobDay: number;
+  dobMonth: number;
+  daysUntil: number;
+  isToday: boolean;
+  hasEmail: boolean;
+  hasWhatsApp: boolean;
+  personalEmail: string | null;
+  officialEmail: string | null;
+  whatsappPhone: string | null;
+  beneficiaries: {
+    id: string;
+    name: string;
+    homeType: string;
+    privacyProtected: boolean;
+  }[];
+  whatsappText: string;
+  emailSubject: string;
+  emailHtml: string;
+  imageUrl: string | null;
+}
+
+interface BeneficiaryBirthday {
+  beneficiaryId: string;
+  beneficiaryCode: string;
+  beneficiaryName: string;
+  homeType: string;
+  dobDay: number;
+  dobMonth: number;
+  daysUntil: number;
+  isToday: boolean;
+  photoUrl: string | null;
+  latestUpdate: string | null;
+  sponsors: {
+    donorId: string;
+    donorCode: string;
+    donorName: string;
+    hasEmail: boolean;
+    hasWhatsApp: boolean;
+  }[];
+}
+
+interface SentLogEntry {
+  id: string;
+  type: string;
+  channel: string;
+  donorId: string;
+  donorName: string;
+  donorCode: string;
+  beneficiaryIds: string[] | null;
+  status: string;
+  createdAt: string;
+  createdBy: string;
+}
+
+interface SentLogResponse {
+  logs: SentLogEntry[];
+  total: number;
+  page: number;
+  totalPages: number;
+}
+
+interface TemplateItem {
+  id: string;
+  key: string;
+  name: string;
+  subject: string | null;
+  body: string;
+  channel: string;
+  variables: string[];
+}
+
+const formatDate = (month: number, day: number) => {
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${months[month - 1]} ${day}`;
+};
 
 export default function BirthdayWishesPage() {
   const [donorBirthdays, setDonorBirthdays] = useState<DonorBirthday[]>([]);
