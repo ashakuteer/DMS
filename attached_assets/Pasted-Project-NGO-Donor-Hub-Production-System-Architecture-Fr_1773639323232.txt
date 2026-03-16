@@ -1,0 +1,310 @@
+Project: NGO Donor Hub (Production System)
+
+Architecture
+
+Frontend
+Next.js (Vercel)
+
+Backend
+NestJS (Railway)
+
+Database
+PostgreSQL (Supabase) using Prisma ORM
+
+Storage
+Supabase Storage (used for donor and beneficiary photos)
+
+Monorepo structure
+
+DMS
+apps
+├ web (Next.js frontend)
+└ api (NestJS backend)
+prisma
+
+Existing backend modules include
+
+donors
+donations
+beneficiaries
+sponsorships
+reports
+communications
+
+---
+
+TASK 1 — FIX DONOR PHOTO UPLOAD
+
+Problem
+
+Beneficiary photos are uploading and saving correctly to Supabase Storage and their URL is stored in the database.
+
+Donor photos are currently NOT saving.
+
+Requirement
+
+Do NOT create a new photo upload architecture.
+
+Instead:
+
+1. Inspect the full beneficiary photo upload flow including:
+
+   * frontend upload logic
+   * API endpoint
+   * NestJS service handling upload
+   * Supabase storage upload code
+   * Prisma field storing the photo URL
+
+2. Replicate the EXACT SAME pattern for donor photos.
+
+Steps
+
+1. Identify how beneficiary photos are uploaded
+   Example areas to inspect:
+
+   * beneficiaries controller
+   * beneficiaries service
+   * storage helper
+   * upload endpoint
+   * Prisma Beneficiary model
+
+2. Locate where the beneficiary photo URL is saved in the database.
+
+3. Ensure the Donor Prisma model contains a field for photo.
+
+If missing, add something like:
+
+photoUrl String?
+
+Then run Prisma migration.
+
+4. Implement donor photo upload using the SAME approach used for beneficiaries.
+
+Requirements
+
+• Use the same Supabase bucket structure already used
+• Do not create a new bucket unless necessary
+• Store donor photo URL in the donor table
+• Ensure existing donor create/update API supports photo upload
+• Ensure frontend donor form can upload the image
+
+Frontend changes
+
+Update donor create/edit form to:
+
+• allow image upload
+• send multipart/form-data
+• call donor API endpoint
+• display preview after upload
+• display stored donor photo in donor profile page
+
+IMPORTANT
+
+Do NOT break the existing beneficiary photo upload.
+
+Reuse shared upload logic if possible.
+
+---
+
+TASK 2 — ADD “TIME MACHINE” MODULE
+
+Purpose
+
+Time Machine is a feature to store NGO updates that will later be used to send reports to donors such as:
+
+Monthly updates
+Quarterly reports
+Annual impact reports
+
+Examples
+
+• success stories
+• events in homes
+• donor support activities
+• recognition received
+• inspiring stories
+• challenges faced
+
+---
+
+BACKEND IMPLEMENTATION (NestJS)
+
+Create a new module
+
+timemachine
+
+Structure
+
+timemachine
+├ timemachine.controller.ts
+├ timemachine.service.ts
+├ timemachine.module.ts
+
+---
+
+DATABASE (PRISMA)
+
+Add a new model.
+
+Example structure:
+
+model TimeMachine {
+id           String   @id @default(uuid())
+title        String
+description  String
+category     String
+home         String
+eventDate    DateTime
+photos       String[]
+createdAt    DateTime @default(now())
+updatedAt    DateTime @updatedAt
+}
+
+---
+
+CATEGORIES
+
+Use these predefined categories
+
+Success Story
+Inspiring Story
+Recognition
+Donor Support
+Event by Kids
+Visitor Visit
+Challenge / Problem
+General Update
+
+---
+
+HOME OPTIONS
+
+Allow selection of
+
+All Homes
+Girls Home - Uppal
+Blind Home - Begumpet
+Old Age Home - Peerzadiguda
+
+---
+
+PHOTO STORAGE
+
+Photos must be stored in Supabase Storage.
+
+Use a folder like:
+
+timemachine/
+
+Multiple photos should be allowed.
+
+Save the public URLs inside the photos array in the database.
+
+---
+
+API ENDPOINTS
+
+Create endpoints such as:
+
+POST /timemachine
+Create update with photos
+
+GET /timemachine
+List all updates
+
+GET /timemachine/:id
+Get single update
+
+PATCH /timemachine/:id
+Edit update
+
+DELETE /timemachine/:id
+Delete update
+
+---
+
+FRONTEND IMPLEMENTATION (Next.js)
+
+Add new sidebar item:
+
+Time Machine
+
+Sidebar order
+
+Dashboard
+Donors
+Donations
+Beneficiaries
+Sponsorships
+Reports
+Communications
+Time Machine
+
+---
+
+Create pages
+
+/timemachine
+List all updates
+
+/timemachine/new
+Add new update
+
+/timemachine/[id]
+View update
+
+---
+
+ADD UPDATE FORM
+
+Fields
+
+Title
+Description
+Category (dropdown)
+Home (dropdown)
+Event Date
+Photo Upload (multiple images)
+
+---
+
+PHOTO UPLOAD
+
+Photos must:
+
+• upload to Supabase storage
+• store URLs in database
+• show preview before saving
+
+---
+
+UI
+
+Time Machine list page should show:
+
+Title
+Category
+Home
+Event Date
+Thumbnail image
+
+---
+
+IMPORTANT RULES
+
+1. Follow the existing coding style used in other modules.
+2. Reuse any shared upload utilities already used by beneficiaries.
+3. Do not break any existing modules.
+4. Ensure Prisma migrations run successfully.
+5. Ensure frontend builds successfully on Vercel.
+6. Ensure backend builds successfully on Railway.
+
+---
+
+After implementation, verify:
+
+• donor photos upload successfully
+• beneficiary photos still work
+• time machine entries save correctly
+• images store correctly in Supabase
+• pages load without errors
