@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
-  "packageManager": "pnpm@10.30.3",
   "scripts": {
     "dev": "NODE_ENV=development tsx server/index.ts",
     "build": "prisma generate && tsx script/build.ts",
