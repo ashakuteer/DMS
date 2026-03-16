@@ -7,7 +7,13 @@ const nextConfig = {
     },
   },
 
-  allowedDevOrigins: ["*.replit.dev", "*.repl.co", "*.replit.app"],
+  allowedDevOrigins: [
+    "*.replit.dev",
+    "*.repl.co",
+    "*.replit.app",
+    "*.kirk.replit.dev",
+    "*.repl.run",
+  ],
 
   images: {
     remotePatterns: [
