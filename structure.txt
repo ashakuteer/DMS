@@ -1,0 +1,610 @@
+.
+├── APPLY_INDEXES_NOW.md
+├── APPLY_OPTIMIZATIONS_NOW.md
+├── apps
+│   ├── api
+│   │   ├── DEPLOYMENT_GUIDE_PERFORMANCE.md
+│   │   ├── docker-entrypoint.sh
+│   │   ├── Dockerfile
+│   │   ├── nest-cli.json
+│   │   ├── nixpacks.toml
+│   │   ├── package.json
+│   │   ├── package.production.json
+│   │   ├── PERFORMANCE_OPTIMIZATIONS.md
+│   │   ├── prisma
+│   │   │   ├── fix-production-donationId.sql
+│   │   │   ├── migrations
+│   │   │   │   ├── 20260303_add_donationId_to_communicationMessage
+│   │   │   │   ├── 20260307_add_performance_indexes
+│   │   │   │   ├── 20260314_add_archive_fields
+│   │   │   │   ├── 20260314_add_deletedat_indexes
+│   │   │   │   ├── 20260315_add_donor_since
+│   │   │   │   ├── 20260315_create_staff_tables
+│   │   │   │   └── 20260316_add_time_machine
+│   │   │   ├── schema.prisma
+│   │   │   └── seed.ts
+│   │   ├── QUICK_DEPLOY_CHECKLIST.md
+│   │   ├── src
+│   │   │   ├── analytics
+│   │   │   │   ├── analytics.controller.ts
+│   │   │   │   ├── analytics.module.ts
+│   │   │   │   ├── analytics.service.ts
+│   │   │   │   ├── services
+│   │   │   │   └── utils
+│   │   │   ├── app.module.ts
+│   │   │   ├── audit
+│   │   │   │   ├── audit.controller.ts
+│   │   │   │   ├── audit.module.ts
+│   │   │   │   └── audit.service.ts
+│   │   │   ├── auth
+│   │   │   │   ├── auth.controller.ts
+│   │   │   │   ├── auth.module.ts
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   ├── decorators
+│   │   │   │   ├── dto
+│   │   │   │   ├── guards
+│   │   │   │   └── strategies
+│   │   │   ├── backup
+│   │   │   │   ├── backup.controller.ts
+│   │   │   │   ├── backup.module.ts
+│   │   │   │   └── backup.service.ts
+│   │   │   ├── beneficiaries
+│   │   │   │   ├── beneficiaries.controller.ts
+│   │   │   │   ├── beneficiaries.module.ts
+│   │   │   │   ├── beneficiaries.service.ts
+│   │   │   │   ├── services
+│   │   │   │   ├── sponsorship-reminder.scheduler.ts
+│   │   │   │   └── types.ts
+│   │   │   ├── beneficiary-progress-reports
+│   │   │   │   ├── beneficiary-progress-reports.controller.ts
+│   │   │   │   ├── beneficiary-progress-reports.module.ts
+│   │   │   │   └── beneficiary-progress-reports.service.ts
+│   │   │   ├── birthday-wishes
+│   │   │   │   ├── birthday-wishes.controller.ts
+│   │   │   │   ├── birthday-wishes.module.ts
+│   │   │   │   └── birthday-wishes.service.ts
+│   │   │   ├── broadcasting
+│   │   │   │   ├── broadcasting.controller.ts
+│   │   │   │   ├── broadcasting.module.ts
+│   │   │   │   └── broadcasting.service.ts
+│   │   │   ├── campaigns
+│   │   │   │   ├── campaigns.controller.ts
+│   │   │   │   ├── campaigns.module.ts
+│   │   │   │   └── campaigns.service.ts
+│   │   │   ├── common
+│   │   │   │   ├── pdf-branding.ts
+│   │   │   │   ├── phone-utils.ts
+│   │   │   │   └── utils
+│   │   │   ├── communication-log
+│   │   │   │   ├── communication-log.controller.ts
+│   │   │   │   ├── communication-log.module.ts
+│   │   │   │   └── communication-log.service.ts
+│   │   │   ├── communications
+│   │   │   │   ├── communications.controller.ts
+│   │   │   │   ├── communications.module.ts
+│   │   │   │   ├── communications.service.ts
+│   │   │   │   ├── twilio-webhook.controller.ts
+│   │   │   │   └── twilio-whatsapp.service.ts
+│   │   │   ├── dashboard
+│   │   │   │   ├── dashboard.actions.service.ts
+│   │   │   │   ├── dashboard.controller.ts
+│   │   │   │   ├── dashboard.helpers.ts
+│   │   │   │   ├── dashboard.impact.service.ts
+│   │   │   │   ├── dashboard.insights.service.ts
+│   │   │   │   ├── dashboard.module.ts
+│   │   │   │   ├── dashboard.retention.service.ts
+│   │   │   │   ├── dashboard.service.ts
+│   │   │   │   ├── dashboard.stats.service.ts
+│   │   │   │   └── dashboard.trends.service.ts
+│   │   │   ├── donations
+│   │   │   │   ├── donations.controller.ts
+│   │   │   │   ├── donations.module.ts
+│   │   │   │   └── donations.service.ts
+│   │   │   ├── donor-relations
+│   │   │   │   ├── donor-relations.controller.ts
+│   │   │   │   ├── donor-relations.module.ts
+│   │   │   │   └── donor-relations.service.ts
+│   │   │   ├── donor-reports
+│   │   │   │   ├── donor-reports.controller.ts
+│   │   │   │   ├── donor-reports.module.ts
+│   │   │   │   └── donor-reports.service.ts
+│   │   │   ├── donors
+│   │   │   │   ├── donor-duplicates.service.ts
+│   │   │   │   ├── donor-fundraising.service.ts
+│   │   │   │   ├── donors.assignee.service.ts
+│   │   │   │   ├── donors.controller.ts
+│   │   │   │   ├── donors.crud.service.ts
+│   │   │   │   ├── donors.engagement.service.ts
+│   │   │   │   ├── donors.export.service.ts
+│   │   │   │   ├── donors.module.ts
+│   │   │   │   ├── donors.photo.service.ts
+│   │   │   │   ├── donors.service.ts
+│   │   │   │   ├── donors.timeline.service.ts
+│   │   │   │   ├── donors.types.ts
+│   │   │   │   ├── import
+│   │   │   │   └── VERIFICATION_REPORT.md
+│   │   │   ├── donor-updates
+│   │   │   │   ├── donor-updates.controller.ts
+│   │   │   │   ├── donor-updates.module.ts
+│   │   │   │   └── donor-updates.service.ts
+│   │   │   ├── email
+│   │   │   │   ├── auto-email-reminder.service.ts
+│   │   │   │   ├── email.controller.ts
+│   │   │   │   ├── email-log.service.ts
+│   │   │   │   ├── email.module.ts
+│   │   │   │   ├── email-relay.controller.ts
+│   │   │   │   ├── email.service.ts
+│   │   │   │   ├── processors
+│   │   │   │   ├── templates
+│   │   │   │   └── utils
+│   │   │   ├── email-jobs
+│   │   │   │   ├── email-jobs.controller.ts
+│   │   │   │   ├── email-jobs.module.ts
+│   │   │   │   ├── email-jobs.service.ts
+│   │   │   │   └── email-sender.cron.ts
+│   │   │   ├── follow-ups
+│   │   │   │   ├── follow-ups.controller.ts
+│   │   │   │   ├── follow-ups.module.ts
+│   │   │   │   └── follow-ups.service.ts
+│   │   │   ├── health-score
+│   │   │   │   ├── health-score.module.ts
+│   │   │   │   ├── health-score.scheduler.ts
+│   │   │   │   └── health-score.service.ts
+│   │   │   ├── home-summary
+│   │   │   │   ├── home-summary.controller.ts
+│   │   │   │   ├── home-summary.module.ts
+│   │   │   │   └── home-summary.service.ts
+│   │   │   ├── main.ts
+│   │   │   ├── milestones
+│   │   │   │   ├── milestones.controller.ts
+│   │   │   │   ├── milestones.dto.ts
+│   │   │   │   ├── milestones.module.ts
+│   │   │   │   └── milestones.service.ts
+│   │   │   ├── ngo-documents
+│   │   │   │   ├── ngo-documents.controller.ts
+│   │   │   │   ├── ngo-documents.module.ts
+│   │   │   │   ├── ngo-documents.scheduler.ts
+│   │   │   │   └── ngo-documents.service.ts
+│   │   │   ├── notifications
+│   │   │   │   ├── notification.module.ts
+│   │   │   │   └── notification.service.ts
+│   │   │   ├── organization-profile
+│   │   │   │   ├── organization-profile.controller.ts
+│   │   │   │   ├── organization-profile.module.ts
+│   │   │   │   └── organization-profile.service.ts
+│   │   │   ├── pledges
+│   │   │   │   ├── pledges.controller.ts
+│   │   │   │   ├── pledges.module.ts
+│   │   │   │   └── pledges.service.ts
+│   │   │   ├── prisma
+│   │   │   │   ├── prisma.module.ts
+│   │   │   │   └── prisma.service.ts
+│   │   │   ├── receipt
+│   │   │   │   ├── receipt.module.ts
+│   │   │   │   └── receipt.service.ts
+│   │   │   ├── reminders
+│   │   │   │   ├── reminders.controller.ts
+│   │   │   │   ├── reminders.module.ts
+│   │   │   │   └── reminders.service.ts
+│   │   │   ├── reminder-tasks
+│   │   │   │   ├── reminder-tasks.controller.ts
+│   │   │   │   ├── reminder-tasks.module.ts
+│   │   │   │   ├── reminder-tasks.scheduler.ts
+│   │   │   │   └── reminder-tasks.service.ts
+│   │   │   ├── report-campaigns
+│   │   │   │   ├── report-campaigns.controller.ts
+│   │   │   │   ├── report-campaigns.module.ts
+│   │   │   │   └── report-campaigns.service.ts
+│   │   │   ├── reports
+│   │   │   │   ├── reports.controller.ts
+│   │   │   │   ├── reports.module.ts
+│   │   │   │   └── reports.service.ts
+│   │   │   ├── role-permissions
+│   │   │   │   ├── role-permissions.controller.ts
+│   │   │   │   ├── role-permissions.module.ts
+│   │   │   │   └── role-permissions.service.ts
+│   │   │   ├── search
+│   │   │   │   ├── search.controller.ts
+│   │   │   │   ├── search.module.ts
+│   │   │   │   └── search.service.ts
+│   │   │   ├── staff-tasks
+│   │   │   │   ├── staff-tasks.controller.ts
+│   │   │   │   ├── staff-tasks.module.ts
+│   │   │   │   └── staff-tasks.service.ts
+│   │   │   ├── storage
+│   │   │   │   ├── storage.module.ts
+│   │   │   │   └── storage.service.ts
+│   │   │   ├── templates
+│   │   │   │   ├── templates.controller.ts
+│   │   │   │   ├── templates.module.ts
+│   │   │   │   └── templates.service.ts
+│   │   │   ├── time-machine
+│   │   │   │   ├── time-machine.controller.ts
+│   │   │   │   ├── time-machine.dto.ts
+│   │   │   │   ├── time-machine.module.ts
+│   │   │   │   ├── time-machine.service.ts
+│   │   │   │   └── time-machine-startup.service.ts
+│   │   │   ├── users
+│   │   │   │   ├── users.controller.ts
+│   │   │   │   ├── users.module.ts
+│   │   │   │   └── users.service.ts
+│   │   │   └── whatsapp
+│   │   │       ├── whatsapp.module.ts
+│   │   │       └── whatsapp.service.ts
+│   │   ├── tsconfig.json
+│   │   └── uploads
+│   │       ├── donors
+│   │       │   ├── 5072be91-31e2-4ae0-8f82-d60970f7c4c3-1771828867343.jpg
+│   │       │   └── c2b998ec-eba4-403b-9cf7-a1cb5a68752b-1772254349976.jpeg
+│   │       └── ngo-documents
+│   │           └── 1770721583441-test-document.txt
+│   └── web
+│       ├── next.config.js
+│       ├── next-env.d.ts
+│       ├── package.json
+│       ├── postcss.config.js
+│       ├── public
+│       │   ├── asha-kuteer-logo.jpg
+│       │   └── brand
+│       │       └── logo.jpg
+│       ├── src
+│       │   ├── app
+│       │   │   ├── (dashboard)
+│       │   │   ├── globals.css
+│       │   │   ├── layout.tsx
+│       │   │   ├── login
+│       │   │   ├── org
+│       │   │   ├── organization
+│       │   │   └── page.tsx
+│       │   ├── components
+│       │   │   ├── access-denied.tsx
+│       │   │   ├── global-search.tsx
+│       │   │   ├── providers.tsx
+│       │   │   ├── sidebar.tsx
+│       │   │   ├── theme-provider.tsx
+│       │   │   └── ui
+│       │   ├── hooks
+│       │   │   └── use-toast.ts
+│       │   └── lib
+│       │       ├── api-client.ts
+│       │       ├── api-config.ts
+│       │       ├── api.ts
+│       │       ├── apps
+│       │       ├── auth.ts
+│       │       ├── image-url.ts
+│       │       ├── permission-provider.tsx
+│       │       ├── permissions.ts
+│       │       ├── utils.ts
+│       │       └── whatsapp.ts
+│       ├── tailwind.config.ts
+│       ├── tsconfig.json
+│       └── tsconfig.tsbuildinfo
+├── ARCHITECTURE.md
+├── artifacts
+│   ├── api-server
+│   │   └── node_modules
+│   │       ├── cookie-parser -> ../../../node_modules/.pnpm/cookie-parser@1.4.7/node_modules/cookie-parser
+│   │       ├── cors -> ../../../node_modules/.pnpm/cors@2.8.6/node_modules/cors
+│   │       ├── drizzle-orm -> ../../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm
+│   │       ├── esbuild -> ../../../node_modules/.pnpm/esbuild@0.27.3/node_modules/esbuild
+│   │       ├── express -> ../../../node_modules/.pnpm/express@5.2.1/node_modules/express
+│   │       ├── multer -> ../../../node_modules/.pnpm/multer@2.1.1/node_modules/multer
+│   │       ├── @supabase
+│   │       │   └── supabase-js -> ../../../../node_modules/.pnpm/@supabase+supabase-js@2.99.1/node_modules/@supabase/supabase-js
+│   │       ├── tsx -> ../../../node_modules/.pnpm/tsx@4.21.0/node_modules/tsx
+│   │       ├── @types
+│   │       │   ├── cookie-parser -> ../../../../node_modules/.pnpm/@types+cookie-parser@1.4.10_@types+express@5.0.6/node_modules/@types/cookie-parser
+│   │       │   ├── cors -> ../../../../node_modules/.pnpm/@types+cors@2.8.19/node_modules/@types/cors
+│   │       │   ├── express -> ../../../../node_modules/.pnpm/@types+express@5.0.6/node_modules/@types/express
+│   │       │   ├── multer -> ../../../../node_modules/.pnpm/@types+multer@2.1.0/node_modules/@types/multer
+│   │       │   └── node -> ../../../../node_modules/.pnpm/@types+node@25.3.5/node_modules/@types/node
+│   │       └── @workspace
+│   │           ├── api-zod -> ../../../../lib/api-zod
+│   │           └── db -> ../../../../lib/db
+│   ├── donor-hub
+│   │   └── node_modules
+│   │       ├── class-variance-authority -> ../../../node_modules/.pnpm/class-variance-authority@0.7.1/node_modules/class-variance-authority
+│   │       ├── clsx -> ../../../node_modules/.pnpm/clsx@2.1.1/node_modules/clsx
+│   │       ├── cmdk -> ../../../node_modules/.pnpm/cmdk@1.1.1_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react@19.2.14_react-dom_dd530bdfe39910342c9fdf9a876e79cc/node_modules/cmdk
+│   │       ├── date-fns -> ../../../node_modules/.pnpm/date-fns@3.6.0/node_modules/date-fns
+│   │       ├── embla-carousel-react -> ../../../node_modules/.pnpm/embla-carousel-react@8.6.0_react@19.1.0/node_modules/embla-carousel-react
+│   │       ├── framer-motion -> ../../../node_modules/.pnpm/framer-motion@12.35.1_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/framer-motion
+│   │       ├── @hookform
+│   │       │   └── resolvers -> ../../../../node_modules/.pnpm/@hookform+resolvers@3.10.0_react-hook-form@7.71.2_react@19.1.0_/node_modules/@hookform/resolvers
+│   │       ├── input-otp -> ../../../node_modules/.pnpm/input-otp@1.4.2_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/input-otp
+│   │       ├── lucide-react -> ../../../node_modules/.pnpm/lucide-react@0.545.0_react@19.1.0/node_modules/lucide-react
+│   │       ├── next-themes -> ../../../node_modules/.pnpm/next-themes@0.4.6_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next-themes
+│   │       ├── @radix-ui
+│   │       │   ├── react-accordion -> ../../../../node_modules/.pnpm/@radix-ui+react-accordion@1.2.12_@types+react-dom@19.2.3_@types+react@19.2.14__@types+r_5d739927d94d01dd2696ffe6af8edfd6/node_modules/@radix-ui/react-accordion
+│   │       │   ├── react-alert-dialog -> ../../../../node_modules/.pnpm/@radix-ui+react-alert-dialog@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@type_ed0209bc7e3a2050f497acd93cf2bc3d/node_modules/@radix-ui/react-alert-dialog
+│   │       │   ├── react-aspect-ratio -> ../../../../node_modules/.pnpm/@radix-ui+react-aspect-ratio@1.1.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types_e2fa11d5eabaa05111ea7a70f889b369/node_modules/@radix-ui/react-aspect-ratio
+│   │       │   ├── react-avatar -> ../../../../node_modules/.pnpm/@radix-ui+react-avatar@1.1.11_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_6ec17df92404235cee01ed10ac55b0e7/node_modules/@radix-ui/react-avatar
+│   │       │   ├── react-checkbox -> ../../../../node_modules/.pnpm/@radix-ui+react-checkbox@1.3.3_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_c210ac2611606080c3e6cc0805bb1395/node_modules/@radix-ui/react-checkbox
+│   │       │   ├── react-collapsible -> ../../../../node_modules/.pnpm/@radix-ui+react-collapsible@1.1.12_@types+react-dom@19.2.3_@types+react@19.2.14__@types_b2e9d08cba6e06f2f74dcd612a392d0b/node_modules/@radix-ui/react-collapsible
+│   │       │   ├── react-context-menu -> ../../../../node_modules/.pnpm/@radix-ui+react-context-menu@2.2.16_@types+react-dom@19.2.3_@types+react@19.2.14__@type_f49ce9faae5a2d0f954b43645dac3160/node_modules/@radix-ui/react-context-menu
+│   │       │   ├── react-dialog -> ../../../../node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_33da12bbe503c7690c070124d6e5c3e6/node_modules/@radix-ui/react-dialog
+│   │       │   ├── react-dropdown-menu -> ../../../../node_modules/.pnpm/@radix-ui+react-dropdown-menu@2.1.16_@types+react-dom@19.2.3_@types+react@19.2.14__@typ_a1a35e012af827b470f6bb0755523d98/node_modules/@radix-ui/react-dropdown-menu
+│   │       │   ├── react-hover-card -> ../../../../node_modules/.pnpm/@radix-ui+react-hover-card@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+_081338041582530572736f67d743d0d0/node_modules/@radix-ui/react-hover-card
+│   │       │   ├── react-label -> ../../../../node_modules/.pnpm/@radix-ui+react-label@2.1.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react@_7a02415076c489810640db721696f007/node_modules/@radix-ui/react-label
+│   │       │   ├── react-menubar -> ../../../../node_modules/.pnpm/@radix-ui+react-menubar@1.1.16_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_93d0f5708d043bcab2b93a2d92bb0422/node_modules/@radix-ui/react-menubar
+│   │       │   ├── react-navigation-menu -> ../../../../node_modules/.pnpm/@radix-ui+react-navigation-menu@1.2.14_@types+react-dom@19.2.3_@types+react@19.2.14__@t_10dc22f5840c6662658a8a2cd749ad7f/node_modules/@radix-ui/react-navigation-menu
+│   │       │   ├── react-popover -> ../../../../node_modules/.pnpm/@radix-ui+react-popover@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_ee0cd3efa3ab04a20b7d7f85f0f96920/node_modules/@radix-ui/react-popover
+│   │       │   ├── react-progress -> ../../../../node_modules/.pnpm/@radix-ui+react-progress@1.1.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_7903d5e635bd02e47af334e2382bdae0/node_modules/@radix-ui/react-progress
+│   │       │   ├── react-radio-group -> ../../../../node_modules/.pnpm/@radix-ui+react-radio-group@1.3.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+_38e42583e7e26f4d31f381baa4d9d8a1/node_modules/@radix-ui/react-radio-group
+│   │       │   ├── react-scroll-area -> ../../../../node_modules/.pnpm/@radix-ui+react-scroll-area@1.2.10_@types+react-dom@19.2.3_@types+react@19.2.14__@types_09f9b637bd6a4b10b94167c58c52d7bf/node_modules/@radix-ui/react-scroll-area
+│   │       │   ├── react-select -> ../../../../node_modules/.pnpm/@radix-ui+react-select@2.2.6_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_1efa2f1d2a9a98ca996d4eb7d69d540a/node_modules/@radix-ui/react-select
+│   │       │   ├── react-separator -> ../../../../node_modules/.pnpm/@radix-ui+react-separator@1.1.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+re_a2c196c34258294bb6ecfe721161e1be/node_modules/@radix-ui/react-separator
+│   │       │   ├── react-slider -> ../../../../node_modules/.pnpm/@radix-ui+react-slider@1.3.6_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_a594c5f18a300246d2ae10f8f48f00c3/node_modules/@radix-ui/react-slider
+│   │       │   ├── react-slot -> ../../../../node_modules/.pnpm/@radix-ui+react-slot@1.2.4_@types+react@19.2.14_react@19.1.0/node_modules/@radix-ui/react-slot
+│   │       │   ├── react-switch -> ../../../../node_modules/.pnpm/@radix-ui+react-switch@1.2.6_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_dba81b3e1544b6029c727b2cf8d015e1/node_modules/@radix-ui/react-switch
+│   │       │   ├── react-tabs -> ../../../../node_modules/.pnpm/@radix-ui+react-tabs@1.1.13_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react@_2c68d2459518dd69315c4ccdc1caf433/node_modules/@radix-ui/react-tabs
+│   │       │   ├── react-toast -> ../../../../node_modules/.pnpm/@radix-ui+react-toast@1.2.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_0687500628884f4aa08bba9824428f59/node_modules/@radix-ui/react-toast
+│   │       │   ├── react-toggle -> ../../../../node_modules/.pnpm/@radix-ui+react-toggle@1.1.10_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_90d1ac9845c0df5f7c4bdca6065023ff/node_modules/@radix-ui/react-toggle
+│   │       │   ├── react-toggle-group -> ../../../../node_modules/.pnpm/@radix-ui+react-toggle-group@1.1.11_@types+react-dom@19.2.3_@types+react@19.2.14__@type_78ac2b7e2597ad3f1fc3dca51c937fb9/node_modules/@radix-ui/react-toggle-group
+│   │       │   └── react-tooltip -> ../../../../node_modules/.pnpm/@radix-ui+react-tooltip@1.2.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_ab0d0da4ee6b1f28831a19c3e4e15a95/node_modules/@radix-ui/react-tooltip
+│   │       ├── react -> ../../../node_modules/.pnpm/react@19.1.0/node_modules/react
+│   │       ├── react-day-picker -> ../../../node_modules/.pnpm/react-day-picker@9.14.0_react@19.1.0/node_modules/react-day-picker
+│   │       ├── react-dom -> ../../../node_modules/.pnpm/react-dom@19.1.0_react@19.1.0/node_modules/react-dom
+│   │       ├── react-hook-form -> ../../../node_modules/.pnpm/react-hook-form@7.71.2_react@19.1.0/node_modules/react-hook-form
+│   │       ├── react-icons -> ../../../node_modules/.pnpm/react-icons@5.6.0_react@19.1.0/node_modules/react-icons
+│   │       ├── react-resizable-panels -> ../../../node_modules/.pnpm/react-resizable-panels@2.1.9_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/react-resizable-panels
+│   │       ├── recharts -> ../../../node_modules/.pnpm/recharts@2.15.4_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/recharts
+│   │       ├── @replit
+│   │       │   ├── vite-plugin-cartographer -> ../../../../node_modules/.pnpm/@replit+vite-plugin-cartographer@0.5.0/node_modules/@replit/vite-plugin-cartographer
+│   │       │   ├── vite-plugin-dev-banner -> ../../../../node_modules/.pnpm/@replit+vite-plugin-dev-banner@0.1.2/node_modules/@replit/vite-plugin-dev-banner
+│   │       │   └── vite-plugin-runtime-error-modal -> ../../../../node_modules/.pnpm/@replit+vite-plugin-runtime-error-modal@0.0.6/node_modules/@replit/vite-plugin-runtime-error-modal
+│   │       ├── sonner -> ../../../node_modules/.pnpm/sonner@2.0.7_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/sonner
+│   │       ├── @tailwindcss
+│   │       │   ├── typography -> ../../../../node_modules/.pnpm/@tailwindcss+typography@0.5.19_tailwindcss@4.2.1/node_modules/@tailwindcss/typography
+│   │       │   └── vite -> ../../../../node_modules/.pnpm/@tailwindcss+vite@4.2.1_vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_tsx@4.21.0_yaml@2.8.2_/node_modules/@tailwindcss/vite
+│   │       ├── tailwindcss -> ../../../node_modules/.pnpm/tailwindcss@4.2.1/node_modules/tailwindcss
+│   │       ├── tailwind-merge -> ../../../node_modules/.pnpm/tailwind-merge@3.5.0/node_modules/tailwind-merge
+│   │       ├── @tanstack
+│   │       │   └── react-query -> ../../../../node_modules/.pnpm/@tanstack+react-query@5.90.21_react@19.1.0/node_modules/@tanstack/react-query
+│   │       ├── tw-animate-css -> ../../../node_modules/.pnpm/tw-animate-css@1.4.0/node_modules/tw-animate-css
+│   │       ├── @types
+│   │       │   ├── node -> ../../../../node_modules/.pnpm/@types+node@25.3.5/node_modules/@types/node
+│   │       │   ├── react -> ../../../../node_modules/.pnpm/@types+react@19.2.14/node_modules/@types/react
+│   │       │   └── react-dom -> ../../../../node_modules/.pnpm/@types+react-dom@19.2.3_@types+react@19.2.14/node_modules/@types/react-dom
+│   │       ├── vaul -> ../../../node_modules/.pnpm/vaul@1.1.2_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react@19.2.14_react-dom_2e22e060654e8c27168982fa81f27caf/node_modules/vaul
+│   │       ├── vite -> ../../../node_modules/.pnpm/vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_tsx@4.21.0_yaml@2.8.2/node_modules/vite
+│   │       ├── @vitejs
+│   │       │   └── plugin-react -> ../../../../node_modules/.pnpm/@vitejs+plugin-react@5.1.4_vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_tsx@4.21.0_yaml@2.8.2_/node_modules/@vitejs/plugin-react
+│   │       ├── @workspace
+│   │       │   └── api-client-react -> ../../../../lib/api-client-react
+│   │       ├── wouter -> ../../../node_modules/.pnpm/wouter@3.9.0_react@19.1.0/node_modules/wouter
+│   │       └── zod -> ../../../node_modules/.pnpm/zod@3.25.76/node_modules/zod
+│   └── mockup-sandbox
+│       ├── node_modules
+│       │   ├── chokidar -> ../../../node_modules/.pnpm/chokidar@4.0.3/node_modules/chokidar
+│       │   ├── class-variance-authority -> ../../../node_modules/.pnpm/class-variance-authority@0.7.1/node_modules/class-variance-authority
+│       │   ├── clsx -> ../../../node_modules/.pnpm/clsx@2.1.1/node_modules/clsx
+│       │   ├── cmdk -> ../../../node_modules/.pnpm/cmdk@1.1.1_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react@19.2.14_react-dom_dd530bdfe39910342c9fdf9a876e79cc/node_modules/cmdk
+│       │   ├── date-fns -> ../../../node_modules/.pnpm/date-fns@3.6.0/node_modules/date-fns
+│       │   ├── embla-carousel-react -> ../../../node_modules/.pnpm/embla-carousel-react@8.6.0_react@19.1.0/node_modules/embla-carousel-react
+│       │   ├── fast-glob -> ../../../node_modules/.pnpm/fast-glob@3.3.3/node_modules/fast-glob
+│       │   ├── framer-motion -> ../../../node_modules/.pnpm/framer-motion@12.35.1_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/framer-motion
+│       │   ├── @hookform
+│       │   │   └── resolvers -> ../../../../node_modules/.pnpm/@hookform+resolvers@3.10.0_react-hook-form@7.71.2_react@19.1.0_/node_modules/@hookform/resolvers
+│       │   ├── input-otp -> ../../../node_modules/.pnpm/input-otp@1.4.2_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/input-otp
+│       │   ├── lucide-react -> ../../../node_modules/.pnpm/lucide-react@0.545.0_react@19.1.0/node_modules/lucide-react
+│       │   ├── next-themes -> ../../../node_modules/.pnpm/next-themes@0.4.6_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/next-themes
+│       │   ├── @radix-ui
+│       │   │   ├── react-accordion -> ../../../../node_modules/.pnpm/@radix-ui+react-accordion@1.2.12_@types+react-dom@19.2.3_@types+react@19.2.14__@types+r_5d739927d94d01dd2696ffe6af8edfd6/node_modules/@radix-ui/react-accordion
+│       │   │   ├── react-alert-dialog -> ../../../../node_modules/.pnpm/@radix-ui+react-alert-dialog@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@type_ed0209bc7e3a2050f497acd93cf2bc3d/node_modules/@radix-ui/react-alert-dialog
+│       │   │   ├── react-aspect-ratio -> ../../../../node_modules/.pnpm/@radix-ui+react-aspect-ratio@1.1.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types_e2fa11d5eabaa05111ea7a70f889b369/node_modules/@radix-ui/react-aspect-ratio
+│       │   │   ├── react-avatar -> ../../../../node_modules/.pnpm/@radix-ui+react-avatar@1.1.11_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_6ec17df92404235cee01ed10ac55b0e7/node_modules/@radix-ui/react-avatar
+│       │   │   ├── react-checkbox -> ../../../../node_modules/.pnpm/@radix-ui+react-checkbox@1.3.3_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_c210ac2611606080c3e6cc0805bb1395/node_modules/@radix-ui/react-checkbox
+│       │   │   ├── react-collapsible -> ../../../../node_modules/.pnpm/@radix-ui+react-collapsible@1.1.12_@types+react-dom@19.2.3_@types+react@19.2.14__@types_b2e9d08cba6e06f2f74dcd612a392d0b/node_modules/@radix-ui/react-collapsible
+│       │   │   ├── react-context-menu -> ../../../../node_modules/.pnpm/@radix-ui+react-context-menu@2.2.16_@types+react-dom@19.2.3_@types+react@19.2.14__@type_f49ce9faae5a2d0f954b43645dac3160/node_modules/@radix-ui/react-context-menu
+│       │   │   ├── react-dialog -> ../../../../node_modules/.pnpm/@radix-ui+react-dialog@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_33da12bbe503c7690c070124d6e5c3e6/node_modules/@radix-ui/react-dialog
+│       │   │   ├── react-dropdown-menu -> ../../../../node_modules/.pnpm/@radix-ui+react-dropdown-menu@2.1.16_@types+react-dom@19.2.3_@types+react@19.2.14__@typ_a1a35e012af827b470f6bb0755523d98/node_modules/@radix-ui/react-dropdown-menu
+│       │   │   ├── react-hover-card -> ../../../../node_modules/.pnpm/@radix-ui+react-hover-card@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+_081338041582530572736f67d743d0d0/node_modules/@radix-ui/react-hover-card
+│       │   │   ├── react-label -> ../../../../node_modules/.pnpm/@radix-ui+react-label@2.1.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react@_7a02415076c489810640db721696f007/node_modules/@radix-ui/react-label
+│       │   │   ├── react-menubar -> ../../../../node_modules/.pnpm/@radix-ui+react-menubar@1.1.16_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_93d0f5708d043bcab2b93a2d92bb0422/node_modules/@radix-ui/react-menubar
+│       │   │   ├── react-navigation-menu -> ../../../../node_modules/.pnpm/@radix-ui+react-navigation-menu@1.2.14_@types+react-dom@19.2.3_@types+react@19.2.14__@t_10dc22f5840c6662658a8a2cd749ad7f/node_modules/@radix-ui/react-navigation-menu
+│       │   │   ├── react-popover -> ../../../../node_modules/.pnpm/@radix-ui+react-popover@1.1.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_ee0cd3efa3ab04a20b7d7f85f0f96920/node_modules/@radix-ui/react-popover
+│       │   │   ├── react-progress -> ../../../../node_modules/.pnpm/@radix-ui+react-progress@1.1.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+rea_7903d5e635bd02e47af334e2382bdae0/node_modules/@radix-ui/react-progress
+│       │   │   ├── react-radio-group -> ../../../../node_modules/.pnpm/@radix-ui+react-radio-group@1.3.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+_38e42583e7e26f4d31f381baa4d9d8a1/node_modules/@radix-ui/react-radio-group
+│       │   │   ├── react-scroll-area -> ../../../../node_modules/.pnpm/@radix-ui+react-scroll-area@1.2.10_@types+react-dom@19.2.3_@types+react@19.2.14__@types_09f9b637bd6a4b10b94167c58c52d7bf/node_modules/@radix-ui/react-scroll-area
+│       │   │   ├── react-select -> ../../../../node_modules/.pnpm/@radix-ui+react-select@2.2.6_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_1efa2f1d2a9a98ca996d4eb7d69d540a/node_modules/@radix-ui/react-select
+│       │   │   ├── react-separator -> ../../../../node_modules/.pnpm/@radix-ui+react-separator@1.1.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+re_a2c196c34258294bb6ecfe721161e1be/node_modules/@radix-ui/react-separator
+│       │   │   ├── react-slider -> ../../../../node_modules/.pnpm/@radix-ui+react-slider@1.3.6_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_a594c5f18a300246d2ae10f8f48f00c3/node_modules/@radix-ui/react-slider
+│       │   │   ├── react-slot -> ../../../../node_modules/.pnpm/@radix-ui+react-slot@1.2.4_@types+react@19.2.14_react@19.1.0/node_modules/@radix-ui/react-slot
+│       │   │   ├── react-switch -> ../../../../node_modules/.pnpm/@radix-ui+react-switch@1.2.6_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_dba81b3e1544b6029c727b2cf8d015e1/node_modules/@radix-ui/react-switch
+│       │   │   ├── react-tabs -> ../../../../node_modules/.pnpm/@radix-ui+react-tabs@1.1.13_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react@_2c68d2459518dd69315c4ccdc1caf433/node_modules/@radix-ui/react-tabs
+│       │   │   ├── react-toast -> ../../../../node_modules/.pnpm/@radix-ui+react-toast@1.2.15_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react_0687500628884f4aa08bba9824428f59/node_modules/@radix-ui/react-toast
+│       │   │   ├── react-toggle -> ../../../../node_modules/.pnpm/@radix-ui+react-toggle@1.1.10_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_90d1ac9845c0df5f7c4bdca6065023ff/node_modules/@radix-ui/react-toggle
+│       │   │   ├── react-toggle-group -> ../../../../node_modules/.pnpm/@radix-ui+react-toggle-group@1.1.11_@types+react-dom@19.2.3_@types+react@19.2.14__@type_78ac2b7e2597ad3f1fc3dca51c937fb9/node_modules/@radix-ui/react-toggle-group
+│       │   │   └── react-tooltip -> ../../../../node_modules/.pnpm/@radix-ui+react-tooltip@1.2.8_@types+react-dom@19.2.3_@types+react@19.2.14__@types+reac_ab0d0da4ee6b1f28831a19c3e4e15a95/node_modules/@radix-ui/react-tooltip
+│       │   ├── react -> ../../../node_modules/.pnpm/react@19.1.0/node_modules/react
+│       │   ├── react-day-picker -> ../../../node_modules/.pnpm/react-day-picker@9.14.0_react@19.1.0/node_modules/react-day-picker
+│       │   ├── react-dom -> ../../../node_modules/.pnpm/react-dom@19.1.0_react@19.1.0/node_modules/react-dom
+│       │   ├── react-hook-form -> ../../../node_modules/.pnpm/react-hook-form@7.71.2_react@19.1.0/node_modules/react-hook-form
+│       │   ├── react-resizable-panels -> ../../../node_modules/.pnpm/react-resizable-panels@2.1.9_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/react-resizable-panels
+│       │   ├── recharts -> ../../../node_modules/.pnpm/recharts@2.15.4_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/recharts
+│       │   ├── @replit
+│       │   │   ├── vite-plugin-cartographer -> ../../../../node_modules/.pnpm/@replit+vite-plugin-cartographer@0.5.0/node_modules/@replit/vite-plugin-cartographer
+│       │   │   └── vite-plugin-runtime-error-modal -> ../../../../node_modules/.pnpm/@replit+vite-plugin-runtime-error-modal@0.0.6/node_modules/@replit/vite-plugin-runtime-error-modal
+│       │   ├── sonner -> ../../../node_modules/.pnpm/sonner@2.0.7_react-dom@19.1.0_react@19.1.0__react@19.1.0/node_modules/sonner
+│       │   ├── @tailwindcss
+│       │   │   └── vite -> ../../../../node_modules/.pnpm/@tailwindcss+vite@4.2.1_vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_tsx@4.21.0_yaml@2.8.2_/node_modules/@tailwindcss/vite
+│       │   ├── tailwindcss -> ../../../node_modules/.pnpm/tailwindcss@4.2.1/node_modules/tailwindcss
+│       │   ├── tailwindcss-animate -> ../../../node_modules/.pnpm/tailwindcss-animate@1.0.7_tailwindcss@4.2.1/node_modules/tailwindcss-animate
+│       │   ├── tailwind-merge -> ../../../node_modules/.pnpm/tailwind-merge@3.5.0/node_modules/tailwind-merge
+│       │   ├── tw-animate-css -> ../../../node_modules/.pnpm/tw-animate-css@1.4.0/node_modules/tw-animate-css
+│       │   ├── @types
+│       │   │   ├── node -> ../../../../node_modules/.pnpm/@types+node@25.3.5/node_modules/@types/node
+│       │   │   ├── react -> ../../../../node_modules/.pnpm/@types+react@19.2.14/node_modules/@types/react
+│       │   │   └── react-dom -> ../../../../node_modules/.pnpm/@types+react-dom@19.2.3_@types+react@19.2.14/node_modules/@types/react-dom
+│       │   ├── vaul -> ../../../node_modules/.pnpm/vaul@1.1.2_@types+react-dom@19.2.3_@types+react@19.2.14__@types+react@19.2.14_react-dom_2e22e060654e8c27168982fa81f27caf/node_modules/vaul
+│       │   ├── vite -> ../../../node_modules/.pnpm/vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_tsx@4.21.0_yaml@2.8.2/node_modules/vite
+│       │   ├── @vitejs
+│       │   │   └── plugin-react -> ../../../../node_modules/.pnpm/@vitejs+plugin-react@5.1.4_vite@7.3.1_@types+node@25.3.5_jiti@2.6.1_lightningcss@1.31.1_tsx@4.21.0_yaml@2.8.2_/node_modules/@vitejs/plugin-react
+│       │   └── zod -> ../../../node_modules/.pnpm/zod@3.25.76/node_modules/zod
+│       └── src
+│           └── components
+│               └── mockups
+├── attached_assets
+│   ├── image_1773506559682.png
+│   ├── image_1773512149386.png
+│   ├── image_1773512163811.png
+│   ├── image_1773514876088.png
+│   ├── image_1773515187831.png
+│   ├── image_1773598009409.png
+│   ├── image_1773598027431.png
+│   ├── image_1773598147615.png
+│   ├── image_1773598179228.png
+│   ├── image_1773598204224.png
+│   ├── image_1773598842661.png
+│   ├── image_1773598886772.png
+│   ├── image_1773599204403.png
+│   ├── image_1773599407891.png
+│   ├── image_1773599572832.png
+│   ├── image_1773599948845.png
+│   ├── image_1773600486070.png
+│   ├── image_1773600503442.png
+│   ├── image_1773600529767.png
+│   ├── Pasted-I-need-help-fixing-a-production-database-mismatch-issue_1773514702615.txt
+│   ├── Pasted-I-need-you-to-debug-a-production-issue-in-my-NGO-Donor-_1773480092886.txt
+│   ├── Pasted-I-need-you-to-fix-a-frontend-crash-in-the-Beneficiaries_1773497263652.txt
+│   ├── Pasted-I-need-you-to-help-optimize-dashboard-performance-in-my_1773481386180.txt
+│   ├── Pasted-Production-regression-alert-donor-details-and-beneficia_1773505541690.txt
+│   ├── Pasted-Production-regression-donor-and-beneficiary-LIST-pages-_1773510769800.txt
+│   ├── Pasted-Production-regression-is-still-caused-by-database-schem_1773516592896.txt
+│   ├── Pasted-Project-Context-This-is-a-production-SaaS-application-c_1773576925849.txt
+│   ├── Pasted-PROJECT-CONTEXT-This-is-a-production-SaaS-application-c_1773580984778.txt
+│   ├── Pasted-The-production-issue-is-still-NOT-fixed-Current-product_1773513075704.txt
+│   ├── Pasted-We-are-building-a-production-SaaS-system-called-NGO-Don_1773579365452.txt
+│   ├── Pasted-We-are-building-a-production-SaaS-system-called-NGO-Don_1773588578946.txt
+│   ├── Pasted-We-are-fixing-API-connection-issues-in-the-NGO-Donor-Hu_1773589874473.txt
+│   ├── Pasted-We-are-working-on-a-production-SaaS-application-called-_1773580375883.txt
+│   ├── Pasted-We-are-working-on-a-production-SaaS-application-called-_1773586187039.txt
+│   ├── Pasted-We-are-working-on-a-production-SaaS-application-called-_1773587772327.txt
+│   ├── Pasted-We-have-a-production-SaaS-application-called-NGO-Donor-_1773578067362.txt
+│   └── Pasted-We-need-to-stop-patching-individual-pages-and-instead-f_1773591969592.txt
+├── BUILD_FIX_APPLIED.md
+├── components.json
+├── DEPLOYMENT_CHECKLIST.md
+├── DEPLOYMENT_DIAGRAM.md
+├── DEPLOYMENT_FIXED.md
+├── DEPLOYMENT.md
+├── DEPLOYMENT_SUCCESS.md
+├── DEPLOYMENT_SUMMARY.md
+├── drizzle.config.ts
+├── email-relay-server.js
+├── force-redeploy.txt
+├── lib
+│   ├── api-client-react
+│   │   ├── dist
+│   │   │   ├── custom-fetch.d.ts
+│   │   │   ├── custom-fetch.d.ts.map
+│   │   │   ├── generated
+│   │   │   │   ├── api.d.ts
+│   │   │   │   ├── api.d.ts.map
+│   │   │   │   ├── api.schemas.d.ts
+│   │   │   │   └── api.schemas.d.ts.map
+│   │   │   ├── index.d.ts
+│   │   │   └── index.d.ts.map
+│   │   ├── node_modules
+│   │   │   └── @tanstack
+│   │   │       └── react-query -> ../../../../node_modules/.pnpm/@tanstack+react-query@5.90.21_react@19.1.0/node_modules/@tanstack/react-query
+│   │   └── tsconfig.tsbuildinfo
+│   ├── api-spec
+│   │   └── node_modules
+│   │       └── orval -> ../../../node_modules/.pnpm/orval@8.5.3_prettier@3.8.1_typescript@5.9.3/node_modules/orval
+│   ├── api-zod
+│   │   ├── dist
+│   │   │   ├── generated
+│   │   │   │   ├── api.d.ts
+│   │   │   │   ├── api.d.ts.map
+│   │   │   │   └── types
+│   │   │   ├── index.d.ts
+│   │   │   └── index.d.ts.map
+│   │   ├── node_modules
+│   │   │   └── zod -> ../../../node_modules/.pnpm/zod@3.25.76/node_modules/zod
+│   │   └── tsconfig.tsbuildinfo
+│   └── db
+│       ├── dist
+│       │   ├── index.d.ts
+│       │   ├── index.d.ts.map
+│       │   └── schema
+│       │       ├── index.d.ts
+│       │       └── index.d.ts.map
+│       ├── node_modules
+│       │   ├── drizzle-kit -> ../../../node_modules/.pnpm/drizzle-kit@0.31.9/node_modules/drizzle-kit
+│       │   ├── drizzle-orm -> ../../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm
+│       │   ├── drizzle-zod -> ../../../node_modules/.pnpm/drizzle-zod@0.8.3_drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0__zod@3.25.76/node_modules/drizzle-zod
+│       │   ├── pg -> ../../../node_modules/.pnpm/pg@8.20.0/node_modules/pg
+│       │   ├── @types
+│       │   │   ├── node -> ../../../../node_modules/.pnpm/@types+node@25.3.5/node_modules/@types/node
+│       │   │   └── pg -> ../../../../node_modules/.pnpm/@types+pg@8.18.0/node_modules/@types/pg
+│       │   └── zod -> ../../../node_modules/.pnpm/zod@3.25.76/node_modules/zod
+│       └── tsconfig.tsbuildinfo
+├── nixpacks.toml
+├── node_modules
+│   ├── prettier -> .pnpm/prettier@3.8.1/node_modules/prettier
+│   └── typescript -> .pnpm/typescript@5.9.3/node_modules/typescript
+├── OPTIMIZATION_COMPLETE.md
+├── OPTIMIZATION_PLAN_SAFE.md
+├── OPTIMIZATION_ROADMAP.md
+├── OPTIMIZATION_STATUS.md
+├── package.json
+├── packages
+│   └── shared
+│       ├── package.json
+│       ├── package-lock.json
+│       ├── src
+│       │   └── index.ts
+│       └── tsconfig.json
+├── PERFORMANCE_ANALYSIS_REAL.md
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml
+├── postcss.config.js
+├── prisma
+│   └── schema.prisma_31
+├── public
+│   └── asha-kuteer-logo.jpg
+├── QUICK_START.md
+├── RAILWAY_DEPLOYMENT.md
+├── railway.json
+├── RAILWAY_QUICK_REFERENCE.md
+├── railway.toml
+├── RAILWAY_TROUBLESHOOTING.md
+├── README.md
+├── README_ROLLBACK.md
+├── replit.md
+├── rest-express@1.0.0
+├── ROLLBACK_COMPLETE.md
+├── SAFE_ROLLBACK_GUIDE.md
+├── script
+│   └── build.ts
+├── scripts
+│   ├── generate-secrets.js
+│   ├── node_modules
+│   │   ├── tsx -> ../../node_modules/.pnpm/tsx@4.21.0/node_modules/tsx
+│   │   └── @types
+│   │       └── node -> ../../../node_modules/.pnpm/@types+node@25.3.5/node_modules/@types/node
+│   └── pre-deploy-check.sh
+├── server
+│   ├── index.ts
+│   ├── routes.ts
+│   ├── static.ts
+│   ├── storage.ts
+│   └── vite.ts
+├── shared
+│   └── schema.ts
+├── SPEED_UP_NOW.md
+├── start-dev.mjs
+├── START_HERE.md
+├── start.js
+├── START_OPTIMIZATION_HERE.md
+├── start.sh
+├── structure.txt
+├── tailwind.config.ts
+├── tsc
+├── tsconfig.json
+├── vercel.json
+└── vite.config.ts
+
+294 directories, 314 files
