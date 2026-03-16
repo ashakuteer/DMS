@@ -3,13 +3,29 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: NGO Donor Hub API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: donors
+    description: Donor management
+  - name: donations
+    description: Donation management
+  - name: beneficiaries
+    description: Beneficiary management
+  - name: sponsorships
+    description: Sponsorship management
+  - name: reports
+    description: Reports
+  - name: communications
+    description: Communications
+  - name: timemachine
+    description: Time Machine updates
+  - name: upload
+    description: File uploads
 paths:
   /healthz:
     get:
@@ -24,6 +40,669 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── DONORS ──────────────────────────────────────────────────────────────────
+  /donors:
+    get:
+      operationId: listDonors
+      tags: [donors]
+      summary: List all donors
+      responses:
+        "200":
+          description: List of donors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Donor"
+    post:
+      operationId: createDonor
+      tags: [donors]
+      summary: Create a donor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDonorBody"
+      responses:
+        "201":
+          description: Created donor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donor"
+
+  /donors/{id}:
+    get:
+      operationId: getDonor
+      tags: [donors]
+      summary: Get a donor by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Donor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donor"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateDonor
+      tags: [donors]
+      summary: Update a donor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDonorBody"
+      responses:
+        "200":
+          description: Updated donor
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donor"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteDonor
+      tags: [donors]
+      summary: Delete a donor
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /donors/{id}/photo:
+    post:
+      operationId: uploadDonorPhoto
+      tags: [donors]
+      summary: Upload donor photo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Photo uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadPhotoResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ─── DONATIONS ───────────────────────────────────────────────────────────────
+  /donations:
+    get:
+      operationId: listDonations
+      tags: [donations]
+      summary: List all donations
+      responses:
+        "200":
+          description: List of donations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Donation"
+    post:
+      operationId: createDonation
+      tags: [donations]
+      summary: Create a donation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDonationBody"
+      responses:
+        "201":
+          description: Created donation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donation"
+
+  /donations/{id}:
+    get:
+      operationId: getDonation
+      tags: [donations]
+      summary: Get a donation by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Donation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donation"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateDonation
+      tags: [donations]
+      summary: Update a donation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDonationBody"
+      responses:
+        "200":
+          description: Updated donation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Donation"
+    delete:
+      operationId: deleteDonation
+      tags: [donations]
+      summary: Delete a donation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── BENEFICIARIES ───────────────────────────────────────────────────────────
+  /beneficiaries:
+    get:
+      operationId: listBeneficiaries
+      tags: [beneficiaries]
+      summary: List all beneficiaries
+      responses:
+        "200":
+          description: List of beneficiaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Beneficiary"
+    post:
+      operationId: createBeneficiary
+      tags: [beneficiaries]
+      summary: Create a beneficiary
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBeneficiaryBody"
+      responses:
+        "201":
+          description: Created beneficiary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Beneficiary"
+
+  /beneficiaries/{id}:
+    get:
+      operationId: getBeneficiary
+      tags: [beneficiaries]
+      summary: Get a beneficiary by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Beneficiary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Beneficiary"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateBeneficiary
+      tags: [beneficiaries]
+      summary: Update a beneficiary
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBeneficiaryBody"
+      responses:
+        "200":
+          description: Updated beneficiary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Beneficiary"
+    delete:
+      operationId: deleteBeneficiary
+      tags: [beneficiaries]
+      summary: Delete a beneficiary
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /beneficiaries/{id}/photo:
+    post:
+      operationId: uploadBeneficiaryPhoto
+      tags: [beneficiaries]
+      summary: Upload beneficiary photo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photo:
+                  type: string
+                  format: binary
+      responses:
+        "200":
+          description: Photo uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadPhotoResponse"
+
+  # ─── SPONSORSHIPS ────────────────────────────────────────────────────────────
+  /sponsorships:
+    get:
+      operationId: listSponsorships
+      tags: [sponsorships]
+      summary: List all sponsorships
+      responses:
+        "200":
+          description: List of sponsorships
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Sponsorship"
+    post:
+      operationId: createSponsorship
+      tags: [sponsorships]
+      summary: Create a sponsorship
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSponsorshipBody"
+      responses:
+        "201":
+          description: Created sponsorship
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sponsorship"
+
+  /sponsorships/{id}:
+    get:
+      operationId: getSponsorship
+      tags: [sponsorships]
+      summary: Get sponsorship by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Sponsorship
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sponsorship"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateSponsorship
+      tags: [sponsorships]
+      summary: Update a sponsorship
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateSponsorshipBody"
+      responses:
+        "200":
+          description: Updated sponsorship
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sponsorship"
+    delete:
+      operationId: deleteSponsorship
+      tags: [sponsorships]
+      summary: Delete a sponsorship
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── REPORTS ─────────────────────────────────────────────────────────────────
+  /reports/summary:
+    get:
+      operationId: getReportSummary
+      tags: [reports]
+      summary: Get summary report
+      responses:
+        "200":
+          description: Summary report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportSummary"
+
+  # ─── COMMUNICATIONS ──────────────────────────────────────────────────────────
+  /communications:
+    get:
+      operationId: listCommunications
+      tags: [communications]
+      summary: List all communications
+      responses:
+        "200":
+          description: List of communications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Communication"
+    post:
+      operationId: createCommunication
+      tags: [communications]
+      summary: Create a communication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCommunicationBody"
+      responses:
+        "201":
+          description: Created communication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Communication"
+
+  /communications/{id}:
+    get:
+      operationId: getCommunication
+      tags: [communications]
+      summary: Get communication by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Communication
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Communication"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteCommunication
+      tags: [communications]
+      summary: Delete a communication
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── TIME MACHINE ─────────────────────────────────────────────────────────────
+  /timemachine:
+    get:
+      operationId: listTimeMachineEntries
+      tags: [timemachine]
+      summary: List all Time Machine entries
+      responses:
+        "200":
+          description: List of Time Machine entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimeMachineEntry"
+    post:
+      operationId: createTimeMachineEntry
+      tags: [timemachine]
+      summary: Create a Time Machine entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTimeMachineBody"
+      responses:
+        "201":
+          description: Created entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeMachineEntry"
+
+  /timemachine/{id}:
+    get:
+      operationId: getTimeMachineEntry
+      tags: [timemachine]
+      summary: Get a Time Machine entry by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Time Machine entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeMachineEntry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateTimeMachineEntry
+      tags: [timemachine]
+      summary: Update a Time Machine entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTimeMachineBody"
+      responses:
+        "200":
+          description: Updated entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TimeMachineEntry"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteTimeMachineEntry
+      tags: [timemachine]
+      summary: Delete a Time Machine entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /timemachine/{id}/photos:
+    post:
+      operationId: uploadTimeMachinePhotos
+      tags: [timemachine]
+      summary: Upload photos for a Time Machine entry
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                photos:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+      responses:
+        "200":
+          description: Photos uploaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadPhotosResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +713,573 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    UploadPhotoResponse:
+      type: object
+      properties:
+        photoUrl:
+          type: string
+      required:
+        - photoUrl
+
+    UploadPhotosResponse:
+      type: object
+      properties:
+        photoUrls:
+          type: array
+          items:
+            type: string
+      required:
+        - photoUrls
+
+    # ─── DONOR ──────────────────────────────────────────────────────────────────
+    Donor:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        donorType:
+          type: string
+        status:
+          type: string
+        photoUrl:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - donorType
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateDonorBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        donorType:
+          type: string
+          enum: [Individual, Organization, Corporate, Foundation]
+        status:
+          type: string
+          enum: [Active, Inactive, Prospect]
+        notes:
+          type: ["string", "null"]
+      required:
+        - name
+        - donorType
+        - status
+
+    UpdateDonorBody:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: ["string", "null"]
+        phone:
+          type: ["string", "null"]
+        address:
+          type: ["string", "null"]
+        city:
+          type: ["string", "null"]
+        country:
+          type: ["string", "null"]
+        donorType:
+          type: string
+          enum: [Individual, Organization, Corporate, Foundation]
+        status:
+          type: string
+          enum: [Active, Inactive, Prospect]
+        notes:
+          type: ["string", "null"]
+
+    # ─── DONATION ────────────────────────────────────────────────────────────────
+    Donation:
+      type: object
+      properties:
+        id:
+          type: string
+        donorId:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        donationDate:
+          type: string
+          format: date-time
+        paymentMethod:
+          type: ["string", "null"]
+        purpose:
+          type: ["string", "null"]
+        receiptNumber:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - donorId
+        - amount
+        - currency
+        - donationDate
+        - createdAt
+        - updatedAt
+
+    CreateDonationBody:
+      type: object
+      properties:
+        donorId:
+          type: string
+        amount:
+          type: number
+        currency:
+          type: string
+        donationDate:
+          type: string
+          format: date-time
+        paymentMethod:
+          type: ["string", "null"]
+        purpose:
+          type: ["string", "null"]
+        receiptNumber:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+      required:
+        - donorId
+        - amount
+        - currency
+        - donationDate
+
+    UpdateDonationBody:
+      type: object
+      properties:
+        amount:
+          type: number
+        currency:
+          type: string
+        donationDate:
+          type: string
+          format: date-time
+        paymentMethod:
+          type: ["string", "null"]
+        purpose:
+          type: ["string", "null"]
+        receiptNumber:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+
+    # ─── BENEFICIARY ─────────────────────────────────────────────────────────────
+    Beneficiary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        dateOfBirth:
+          type: ["string", "null"]
+          format: date-time
+        gender:
+          type: ["string", "null"]
+        home:
+          type: string
+        admissionDate:
+          type: ["string", "null"]
+          format: date-time
+        status:
+          type: string
+        photoUrl:
+          type: ["string", "null"]
+        medicalInfo:
+          type: ["string", "null"]
+        educationInfo:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - home
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateBeneficiaryBody:
+      type: object
+      properties:
+        name:
+          type: string
+        dateOfBirth:
+          type: ["string", "null"]
+          format: date-time
+        gender:
+          type: ["string", "null"]
+        home:
+          type: string
+          enum:
+            - Girls Home - Uppal
+            - Blind Home - Begumpet
+            - Old Age Home - Peerzadiguda
+        status:
+          type: string
+          enum: [Active, Graduated, Transferred, Deceased]
+        medicalInfo:
+          type: ["string", "null"]
+        educationInfo:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+      required:
+        - name
+        - home
+        - status
+
+    UpdateBeneficiaryBody:
+      type: object
+      properties:
+        name:
+          type: string
+        dateOfBirth:
+          type: ["string", "null"]
+          format: date-time
+        gender:
+          type: ["string", "null"]
+        home:
+          type: string
+          enum:
+            - Girls Home - Uppal
+            - Blind Home - Begumpet
+            - Old Age Home - Peerzadiguda
+        status:
+          type: string
+          enum: [Active, Graduated, Transferred, Deceased]
+        medicalInfo:
+          type: ["string", "null"]
+        educationInfo:
+          type: ["string", "null"]
+        notes:
+          type: ["string", "null"]
+
+    # ─── SPONSORSHIP ─────────────────────────────────────────────────────────────
+    Sponsorship:
+      type: object
+      properties:
+        id:
+          type: string
+        donorId:
+          type: string
+        beneficiaryId:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: ["string", "null"]
+          format: date-time
+        monthlyAmount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - donorId
+        - beneficiaryId
+        - startDate
+        - monthlyAmount
+        - currency
+        - status
+        - createdAt
+        - updatedAt
+
+    CreateSponsorshipBody:
+      type: object
+      properties:
+        donorId:
+          type: string
+        beneficiaryId:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: ["string", "null"]
+          format: date-time
+        monthlyAmount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [Active, Paused, Ended]
+        notes:
+          type: ["string", "null"]
+      required:
+        - donorId
+        - beneficiaryId
+        - startDate
+        - monthlyAmount
+        - currency
+        - status
+
+    UpdateSponsorshipBody:
+      type: object
+      properties:
+        endDate:
+          type: ["string", "null"]
+          format: date-time
+        monthlyAmount:
+          type: number
+        currency:
+          type: string
+        status:
+          type: string
+          enum: [Active, Paused, Ended]
+        notes:
+          type: ["string", "null"]
+
+    # ─── REPORTS ─────────────────────────────────────────────────────────────────
+    ReportSummary:
+      type: object
+      properties:
+        totalDonors:
+          type: integer
+        activeDonors:
+          type: integer
+        totalDonations:
+          type: number
+        totalBeneficiaries:
+          type: integer
+        activeBeneficiaries:
+          type: integer
+        activeSponsorships:
+          type: integer
+        totalCommunications:
+          type: integer
+        recentDonations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Donation"
+      required:
+        - totalDonors
+        - activeDonors
+        - totalDonations
+        - totalBeneficiaries
+        - activeBeneficiaries
+        - activeSponsorships
+        - totalCommunications
+        - recentDonations
+
+    # ─── COMMUNICATION ───────────────────────────────────────────────────────────
+    Communication:
+      type: object
+      properties:
+        id:
+          type: string
+        donorId:
+          type: ["string", "null"]
+        subject:
+          type: string
+        body:
+          type: string
+        type:
+          type: string
+        sentAt:
+          type: ["string", "null"]
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - subject
+        - body
+        - type
+        - createdAt
+        - updatedAt
+
+    CreateCommunicationBody:
+      type: object
+      properties:
+        donorId:
+          type: ["string", "null"]
+        subject:
+          type: string
+        body:
+          type: string
+        type:
+          type: string
+          enum: [Email, Letter, Phone, SMS, Meeting]
+        sentAt:
+          type: ["string", "null"]
+          format: date-time
+      required:
+        - subject
+        - body
+        - type
+
+    # ─── TIME MACHINE ────────────────────────────────────────────────────────────
+    TimeMachineEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        home:
+          type: string
+        eventDate:
+          type: string
+          format: date-time
+        photos:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - description
+        - category
+        - home
+        - eventDate
+        - photos
+        - createdAt
+        - updatedAt
+
+    CreateTimeMachineBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum:
+            - Success Story
+            - Inspiring Story
+            - Recognition
+            - Donor Support
+            - Event by Kids
+            - Visitor Visit
+            - Challenge / Problem
+            - General Update
+        home:
+          type: string
+          enum:
+            - All Homes
+            - Girls Home - Uppal
+            - Blind Home - Begumpet
+            - Old Age Home - Peerzadiguda
+        eventDate:
+          type: string
+          format: date-time
+      required:
+        - title
+        - description
+        - category
+        - home
+        - eventDate
+
+    UpdateTimeMachineBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum:
+            - Success Story
+            - Inspiring Story
+            - Recognition
+            - Donor Support
+            - Event by Kids
+            - Visitor Visit
+            - Challenge / Problem
+            - General Update
+        home:
+          type: string
+          enum:
+            - All Homes
+            - Girls Home - Uppal
+            - Blind Home - Begumpet
+            - Old Age Home - Peerzadiguda
+        eventDate:
+          type: string
+          format: date-time

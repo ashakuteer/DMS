@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "NGO Donor Hub"
+version = "1.0.0"
+id = "artifacts/donor-hub"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 24793
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/donor-hub run dev"
+
+[services.env]
+PORT = "24793"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/donor-hub", "run", "build"]
+publicDir = "artifacts/donor-hub/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
