@@ -6,20 +6,21 @@ export class StorageService {
   private supabase: SupabaseClient | null = null;
   private donorBucketName = 'Donors';
   private beneficiaryBucketName = 'beneficiary-photos';
+  private timeMachineBucketName = 'time-machine';
 
   constructor() {
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_KEY;
+    const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY;
     if (supabaseUrl && supabaseKey) {
       this.supabase = createClient(supabaseUrl, supabaseKey);
     } else {
-      console.warn('[StorageService] Supabase not configured — file uploads will be unavailable. Set SUPABASE_URL and SUPABASE_KEY environment variables.');
+      console.warn('[StorageService] Supabase not configured — file uploads will be unavailable. Set SUPABASE_URL and SUPABASE_KEY (or SUPABASE_ANON_KEY) environment variables.');
     }
   }
 
   private requireSupabase(): SupabaseClient {
     if (!this.supabase) {
-      throw new Error('Storage service is not configured. Please set SUPABASE_URL and SUPABASE_KEY environment variables.');
+      throw new Error('Storage service is not configured. Please set SUPABASE_URL and SUPABASE_KEY (or SUPABASE_ANON_KEY) environment variables.');
     }
     return this.supabase;
   }
@@ -180,6 +181,51 @@ export class StorageService {
         .remove([filePath]);
     } catch (error) {
       console.error('Error deleting beneficiary photo:', error);
+    }
+  }
+
+  // Time Machine-specific methods
+  async uploadTimeMachinePhoto(
+    entryId: string,
+    buffer: Buffer,
+    mimetype: string,
+    originalname: string,
+  ) {
+    const supabase = this.requireSupabase();
+    const fileExt = originalname.split('.').pop();
+    const timestamp = Date.now();
+    const filePath = `entries/${entryId}/${timestamp}.${fileExt}`;
+
+    const { error } = await supabase.storage
+      .from(this.timeMachineBucketName)
+      .upload(filePath, buffer, {
+        contentType: mimetype,
+        upsert: false,
+      });
+
+    if (error) {
+      throw new Error(`Failed to upload time machine photo: ${error.message}`);
+    }
+
+    const { data: urlData } = supabase.storage
+      .from(this.timeMachineBucketName)
+      .getPublicUrl(filePath);
+
+    return { url: urlData.publicUrl };
+  }
+
+  async deleteTimeMachinePhoto(url: string) {
+    try {
+      const supabase = this.requireSupabase();
+      const urlObj = new URL(url);
+      const pathParts = urlObj.pathname.split(`/object/public/${this.timeMachineBucketName}/`);
+      if (pathParts.length < 2) return;
+      const filePath = pathParts[1];
+      await supabase.storage
+        .from(this.timeMachineBucketName)
+        .remove([filePath]);
+    } catch (error) {
+      console.error('Error deleting time machine photo:', error);
     }
   }
 }

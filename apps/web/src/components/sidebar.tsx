@@ -54,6 +54,7 @@ import {
   Repeat,
   ListChecks,
   Phone,
+  Clock,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
@@ -197,6 +198,12 @@ const navItems: NavItem[] = [
     href: "/dashboard/ngo-documents",
     icon: FolderLock,
     permissionModule: "ngoDocuments",
+  },
+  {
+    title: "Time Machine",
+    href: "/dashboard/time-machine",
+    icon: Clock,
+    permissionModule: "timeMachine",
   },
   {
     title: "Milestones",

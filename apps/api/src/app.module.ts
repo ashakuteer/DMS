@@ -38,6 +38,7 @@ import { RolePermissionsModule } from "./role-permissions/role-permissions.modul
 import { StaffTasksModule } from "./staff-tasks/staff-tasks.module";
 import { CommunicationsModule } from "./communications/communications.module";
 import { BroadcastingModule } from "./broadcasting/broadcasting.module";
+import { TimeMachineModule } from "./time-machine/time-machine.module";
 
 @Module({
   imports: [
@@ -81,6 +82,7 @@ import { BroadcastingModule } from "./broadcasting/broadcasting.module";
 
     CommunicationsModule,
     BroadcastingModule,
+    TimeMachineModule,
   ],
 })
 export class AppModule {}

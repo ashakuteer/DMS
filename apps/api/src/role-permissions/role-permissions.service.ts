@@ -149,6 +149,13 @@ const DEFAULT_PERMISSIONS: Record<string, Record<string, Role[]>> = {
     delete: [Role.ADMIN],
     accessLog: [Role.ADMIN],
   },
+  timeMachine: {
+    view: [Role.ADMIN, Role.STAFF, Role.MANAGER, Role.CARETAKER],
+    create: [Role.ADMIN, Role.STAFF, Role.MANAGER],
+    edit: [Role.ADMIN, Role.STAFF, Role.MANAGER],
+    delete: [Role.ADMIN],
+    uploadPhoto: [Role.ADMIN, Role.STAFF, Role.MANAGER],
+  },
   permissions: {
     view: [Role.ADMIN],
     manage: [Role.ADMIN],

@@ -124,6 +124,13 @@ export const DEFAULT_PERMISSIONS: Record<string, Record<string, Role[]>> = {
     delete: ['ADMIN'],
     accessLog: ['ADMIN'],
   },
+  timeMachine: {
+    view: ['ADMIN', 'STAFF', 'MANAGER', 'CARETAKER'],
+    create: ['ADMIN', 'STAFF', 'MANAGER'],
+    edit: ['ADMIN', 'STAFF', 'MANAGER'],
+    delete: ['ADMIN'],
+    uploadPhoto: ['ADMIN', 'STAFF', 'MANAGER'],
+  },
   permissions: {
     view: ['ADMIN'],
     manage: ['ADMIN'],
