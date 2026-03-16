@@ -1,0 +1,193 @@
+I want to refactor my full-stack project to improve maintainability by splitting very large files into smaller modular files.
+
+IMPORTANT RULES:
+
+1. Do NOT change any existing functionality.
+2. Do NOT change database schema logic.
+3. Do NOT change API routes.
+4. Do NOT change request/response shapes.
+5. Only reorganize code into smaller files.
+6. All imports must be updated automatically.
+7. Ensure the project still compiles and runs.
+
+---
+
+BACKEND (NestJS)
+
+Many service files are too large and must be split into modular services.
+
+Current large services:
+
+reports.service.ts
+reminder-tasks.service.ts
+campaigns.service.ts
+donations.service.ts
+donor-reports.service.ts
+pledges.service.ts
+birthday-wishes.service.ts
+dashboard.insights.service.ts
+beneficiary-progress-reports.service.ts
+
+Refactor pattern:
+
+Create a folder for each module and split logic into:
+
+services/
+queries/
+commands/
+helpers/
+
+Example transformation:
+
+reports.service.ts
+→ reports-query.service.ts
+→ reports-export.service.ts
+→ reports-stats.service.ts
+
+Rules:
+
+Query services → database reads
+Command services → create/update/delete
+Helpers → shared calculations or formatting
+
+Update the original service file to act as a thin orchestrator that imports these modules.
+
+---
+
+CONTROLLERS
+
+Some controllers are too large.
+
+Example:
+
+beneficiaries.controller.ts
+donors.controller.ts
+
+Split controllers by feature.
+
+Example structure:
+
+donors/
+donors.controller.ts
+donors-communication.controller.ts
+donors-timeline.controller.ts
+
+Each controller should focus on a specific responsibility.
+
+Keep routes unchanged.
+
+---
+
+FRONTEND (Next.js App Router)
+
+Many pages are too large and must be split.
+
+Large pages include:
+
+analytics/page.tsx
+donors/new/page.tsx
+donor-updates/page.tsx
+birthday-wishes/page.tsx
+broadcasting/page.tsx
+beneficiaries/page.tsx
+donations/[id]/page.tsx
+home-summary/page.tsx
+ngo-documents/page.tsx
+
+Rule:
+
+page.tsx should be less than 300 lines.
+
+Refactor structure:
+
+page.tsx
+components/
+hooks/
+utils/
+
+Example:
+
+donors/new/
+
+page.tsx
+components/
+DonorForm.tsx
+ContactSection.tsx
+AddressSection.tsx
+PreferencesSection.tsx
+AssignmentSection.tsx
+
+page.tsx should only contain layout and component imports.
+
+---
+
+UI COMPONENT REFACTOR
+
+Large UI components must be split.
+
+Files to split:
+
+CreateTaskDialog.tsx
+global-search.tsx
+sidebar.tsx
+EditBeneficiaryDialog.tsx
+BeneficiaryHealthTab.tsx
+
+Split dialog components into:
+
+dialog/
+fields/
+sections/
+
+Example:
+
+CreateTaskDialog.tsx
+→ TaskForm.tsx
+→ TaskAssignments.tsx
+→ TaskSchedule.tsx
+
+---
+
+DATABASE ORGANIZATION
+
+Current files are too large:
+
+schema.prisma
+seed.ts
+
+Reorganize schema into modules.
+
+Structure:
+
+prisma/
+schema/
+donors.prisma
+beneficiaries.prisma
+donations.prisma
+communications.prisma
+campaigns.prisma
+reminders.prisma
+
+Ensure they are combined correctly for Prisma build.
+
+Split seed.ts into:
+
+seed/
+donors.seed.ts
+beneficiaries.seed.ts
+donations.seed.ts
+
+---
+
+AFTER REFACTOR
+
+Verify:
+
+* project compiles
+* TypeScript has no errors
+* NestJS server starts
+* Next.js frontend builds successfully
+
+Goal:
+
+Improve code maintainability and readability without changing functionality.

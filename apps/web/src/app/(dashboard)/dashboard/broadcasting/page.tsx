@@ -17,14 +17,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
   Select,
   SelectContent,
   SelectItem,
@@ -50,72 +42,9 @@ import { authStorage } from "@/lib/auth";
 import { canAccessModule } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { useToast } from "@/hooks/use-toast";
-
-interface BroadcastFilters {
-  gender?: string;
-  religion?: string;
-  city?: string;
-  country?: string;
-  category?: string;
-  donationFrequency?: string;
-  assignedToUserId?: string;
-  supportPreferences?: string[];
-  engagementLevel?: string;
-  healthStatus?: string;
-  ageMin?: number;
-  ageMax?: number;
-}
-
-interface PreviewResult {
-  total: number;
-  reachable: number;
-  unreachable: number;
-  sampleDonors: { id: string; name: string; contact: string }[];
-}
-
-interface SendResult {
-  total: number;
-  sent: number;
-  failed: number;
-  skipped: number;
-  details: { donorId: string; donorName: string; status: string; error?: string }[];
-}
-
-interface WhatsAppTemplate {
-  key: string;
-  contentSid: string;
-  name: string;
-  description: string;
-}
-
-interface EmailTemplate {
-  id: string;
-  type: string;
-  name: string;
-  description: string;
-  emailSubject: string;
-  emailBody: string;
-}
-
-interface StaffMember {
-  id: string;
-  name: string;
-  role: string;
-}
-
-const SUPPORT_PREFERENCES = [
-  "GROCERIES",
-  "EDUCATION",
-  "MEDICINES",
-  "TOILETRIES",
-  "SPONSORSHIP",
-  "GENERAL",
-];
-
-const DEFAULT_FILTERS: BroadcastFilters = {
-  country: "India",
-  supportPreferences: [],
-};
+import { BroadcastFilters, PreviewResult, SendResult, WhatsAppTemplate, EmailTemplate, StaffMember } from "./_components/types";
+import { SUPPORT_PREFERENCES, DEFAULT_FILTERS } from "./_components/helpers";
+import { ConfirmDialog } from "./_components/ConfirmDialog";
 
 export default function BroadcastingPage() {
   const [user, setUser] = useState<any>(null);
@@ -909,27 +838,13 @@ export default function BroadcastingPage() {
         </Card>
       )}
 
-      <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Broadcast</DialogTitle>
-            <DialogDescription>
-              You are about to send a {channel === "WHATSAPP" ? "WhatsApp" : "Email"} broadcast to{" "}
-              <span className="font-semibold">{previewResult?.reachable || 0}</span> reachable donor(s).
-              This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setShowConfirmDialog(false)} data-testid="button-cancel-send">
-              Cancel
-            </Button>
-            <Button onClick={handleSend} data-testid="button-confirm-send">
-              <Send className="mr-2 h-4 w-4" />
-              Confirm & Send
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        channel={channel}
+        reachable={previewResult?.reachable || 0}
+        onConfirm={handleSend}
+      />
     </div>
   );
 }
