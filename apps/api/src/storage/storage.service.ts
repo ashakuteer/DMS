@@ -10,11 +10,15 @@ export class StorageService {
 
   constructor() {
     const supabaseUrl = process.env.SUPABASE_URL;
-    const supabaseKey = process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY;
+    const supabaseKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.SUPABASE_KEY ||
+      process.env.SUPABASE_ANON_KEY;
     if (supabaseUrl && supabaseKey) {
       this.supabase = createClient(supabaseUrl, supabaseKey);
+      console.log('[StorageService] Initialized with', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'service role key' : 'anon key');
     } else {
-      console.warn('[StorageService] Supabase not configured — file uploads will be unavailable. Set SUPABASE_URL and SUPABASE_KEY (or SUPABASE_ANON_KEY) environment variables.');
+      console.warn('[StorageService] Supabase not configured — file uploads will be unavailable.');
     }
   }
 
