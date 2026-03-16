@@ -16,6 +16,7 @@ import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import Image from "next/image";
+import imageCompression from "browser-image-compression";
 
 interface DuplicateDonor {
   id: string;
@@ -203,22 +204,46 @@ export default function NewDonorPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 3 * 1024 * 1024) {
-      toast({ title: "Error", description: "Photo must be under 3MB", variant: "destructive" });
-      return;
-    }
-    if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/)) {
-      toast({ title: "Error", description: "Only jpg, png, webp files are allowed", variant: "destructive" });
-      return;
-    }
-    setPhotoFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setPhotoPreview(reader.result as string);
-    reader.readAsDataURL(file);
-  };
+  const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  if (file.size > 3 * 1024 * 1024) {
+    toast({
+      title: "Error",
+      description: "Photo must be under 3MB",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/)) {
+    toast({
+      title: "Error",
+      description: "Only jpg, png, webp files are allowed",
+      variant: "destructive",
+    });
+    return;
+  }
+
+  try {
+    const options = {
+      maxSizeMB: 0.2,
+      maxWidthOrHeight: 800,
+      useWebWorker: true,
+    };
+
+    const compressedFile = await imageCompression(file, options);
+
+    setPhotoFile(compressedFile);
+
+    const preview = URL.createObjectURL(compressedFile);
+    setPhotoPreview(preview);
+
+  } catch (error) {
+    console.error("Compression error:", error);
+  }
+};
 
   const removePhoto = () => {
     setPhotoFile(null);
