@@ -1,7 +1,14 @@
 const RAILWAY_URL = 'https://dms-production-598e.up.railway.app';
+
+// In the browser, always use relative URLs so Next.js rewrites proxy the
+// request server-side to the correct backend (avoids "Failed to fetch" when
+// NEXT_PUBLIC_API_URL points to localhost, which is unreachable from the browser).
+// On the server side (SSR), use the configured absolute URL.
 const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  (process.env.NODE_ENV === 'production' ? RAILWAY_URL : '');
+  typeof window === 'undefined'
+    ? process.env.NEXT_PUBLIC_API_URL ||
+      (process.env.NODE_ENV === 'production' ? RAILWAY_URL : 'http://localhost:3001')
+    : '';
 
 export interface User {
   id: string;
