@@ -1,0 +1,154 @@
+You are working on a production NGO donor management system built with:
+
+* Next.js frontend (apps/web)
+* NestJS backend (apps/api)
+* Prisma + PostgreSQL
+* TailwindCSS
+
+The backend is fully working and must NOT be modified.
+
+Your task is ONLY to redesign the frontend UI to make it modern, clean, and professional while keeping all existing functionality.
+
+IMPORTANT RULES:
+
+* Do NOT modify backend code
+* Do NOT modify Prisma schema
+* Do NOT change API endpoints
+* Do NOT change authentication logic
+* Only improve UI/UX in apps/web
+
+UI DESIGN REQUIREMENTS:
+
+1. Global Theme
+   Create a modern NGO dashboard style using TailwindCSS.
+
+Primary accent color:
+Orange (#f97316 or similar)
+
+Use orange mainly for:
+
+* Hero section background
+* Call-to-action buttons
+* Highlight cards
+* Active navigation
+
+Keep the rest neutral:
+
+* White
+* Light gray backgrounds
+* Soft shadows
+* Rounded cards
+
+2. Login Page Redesign
+
+Create a hero-style login page.
+
+Layout:
+Left side:
+Large orange gradient hero background.
+
+Hero text example:
+
+"Empowering Compassion Through Smart Donor Management"
+
+Subtext:
+"Manage donors, campaigns, and impact — all in one place."
+
+Right side:
+Clean login card with:
+Email
+Password
+Login button
+
+Use:
+rounded-xl
+shadow-lg
+modern spacing
+
+3. Dashboard Redesign
+
+Improve the dashboard layout with modern cards.
+
+Top section:
+4 summary cards:
+
+Total Donations
+New Donors
+Active Sponsors
+Monthly Revenue
+
+Cards should include:
+icon
+large number
+small description
+
+4. Charts Section
+
+Use modern charts for:
+
+Donation trends
+Donation mode split
+Top donors
+
+Charts should be placed inside rounded cards with soft shadows.
+
+5. Sidebar Navigation
+
+Improve the sidebar UI.
+
+Features:
+
+* Icons for each menu
+* Active menu highlight with orange background
+* Collapsible sidebar support
+
+Menu items include:
+
+Dashboard
+Donors
+Donations
+Beneficiaries
+Campaigns
+Reports
+Staff Tasks
+Broadcasting
+Settings
+
+6. Tables
+
+Improve tables for:
+
+Donors
+Donations
+Beneficiaries
+
+Use:
+striped rows
+hover highlight
+rounded container
+
+7. Dark Mode Support
+
+Add dark mode toggle.
+
+Dark mode colors:
+
+background: gray-900
+cards: gray-800
+text: gray-100
+
+Orange accent should remain.
+
+8. Component Structure
+
+Create reusable components if needed:
+
+components/ui/Card
+components/ui/StatCard
+components/ui/ChartCard
+components/ui/DataTable
+
+But DO NOT break existing pages.
+
+Goal:
+A modern, clean NGO CRM interface with an orange hero theme and professional dashboard layout.

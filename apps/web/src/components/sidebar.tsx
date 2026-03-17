@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -55,6 +54,7 @@ import {
   ListChecks,
   Phone,
   Clock,
+  ChevronRight,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
@@ -67,198 +67,38 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    permissionModule: "dashboard",
-  },
-  {
-    title: "Daily Actions",
-    href: "/dashboard/daily-actions",
-    icon: Inbox,
-    permissionModule: "dailyActions",
-  },
-  {
-    title: "Donors",
-    href: "/dashboard/donors",
-    icon: Users,
-    permissionModule: "donors",
-  },
-  {
-    title: "Donations",
-    href: "/dashboard/donations",
-    icon: IndianRupee,
-    permissionModule: "donations",
-  },
-  {
-    title: "Beneficiaries",
-    href: "/dashboard/beneficiaries",
-    icon: HandHeart,
-    permissionModule: "beneficiaries",
-  },
-  {
-    title: "Campaigns",
-    href: "/dashboard/campaigns",
-    icon: Target,
-    permissionModule: "campaigns",
-  },
-  {
-    title: "Birthday Wishes",
-    href: "/dashboard/birthday-wishes",
-    icon: Cake,
-    permissionModule: "birthdayWishes",
-  },
-  {
-    title: "Donor Updates",
-    href: "/dashboard/donor-updates",
-    icon: Send,
-    permissionModule: "donorUpdates",
-  },
-  {
-    title: "Broadcasting",
-    href: "/dashboard/broadcasting",
-    icon: Radio,
-    permissionModule: "broadcasting",
-  },
-  {
-    title: "Reminders",
-    href: "/dashboard/reminders",
-    icon: Bell,
-    permissionModule: "reminders",
-  },
-  {
-    title: "Follow-ups",
-    href: "/dashboard/follow-ups",
-    icon: ArrowUpRight,
-    permissionModule: "followUps",
-  },
-  {
-    title: "Impact Dashboard",
-    href: "/dashboard/impact",
-    icon: TrendingUp,
-    permissionModule: "impact",
-  },
-  {
-    title: "Retention Analytics",
-    href: "/dashboard/retention",
-    icon: Repeat,
-    permissionModule: "retention",
-  },
-  {
-    title: "Staff & Tasks",
-    href: "/dashboard/staff-tasks",
-    icon: ListChecks,
-    permissionModule: "staffTasks",
-  },
-  {
-    title: "Management",
-    href: "/dashboard/management",
-    icon: PresentationIcon,
-    permissionModule: "management",
-  },
-  {
-    title: "Analytics",
-    href: "/dashboard/analytics",
-    icon: BarChart3,
-    permissionModule: "analytics",
-  },
-  {
-    title: "Reports",
-    href: "/dashboard/reports",
-    icon: FileText,
-    permissionModule: "reports",
-  },
-  {
-    title: "Report Campaigns",
-    href: "/dashboard/report-campaigns",
-    icon: Megaphone,
-    permissionModule: "reportCampaigns",
-  },
-  {
-    title: "Donor Reports",
-    href: "/dashboard/donor-reports",
-    icon: FileBarChart,
-    permissionModule: "donorReports",
-  },
-  {
-    title: "Progress Reports",
-    href: "/dashboard/progress-reports",
-    icon: ClipboardList,
-    permissionModule: "progressReports",
-  },
-  {
-    title: "Home Summary",
-    href: "/dashboard/home-summary",
-    icon: Building2,
-    permissionModule: "homeSummary",
-  },
-  {
-    title: "Document Vault",
-    href: "/dashboard/ngo-documents",
-    icon: FolderLock,
-    permissionModule: "ngoDocuments",
-  },
-  {
-    title: "Time Machine",
-    href: "/dashboard/time-machine",
-    icon: Clock,
-    permissionModule: "timeMachine",
-  },
-  {
-    title: "Milestones",
-    href: "/dashboard/milestones",
-    icon: Milestone,
-    permissionModule: "milestones",
-  },
-  {
-    title: "Users",
-    href: "/dashboard/users",
-    icon: UserCog,
-    permissionModule: "users",
-  },
-  {
-    title: "Staff Contacts",
-    href: "/dashboard/staff-management",
-    icon: Phone,
-    permissionModule: "users",
-  },
-  {
-    title: "Permissions",
-    href: "/dashboard/permissions",
-    icon: Lock,
-    permissionModule: "permissions",
-  },
-  {
-    title: "Audit Log",
-    href: "/dashboard/audit-log",
-    icon: ShieldCheck,
-    permissionModule: "auditLog",
-  },
-  {
-    title: "Backup & Restore",
-    href: "/dashboard/backup",
-    icon: DatabaseBackup,
-    permissionModule: "backup",
-  },
-  {
-    title: "Archive Management",
-    href: "/dashboard/admin/archive",
-    icon: ArchiveRestore,
-    permissionModule: "archive",
-  },
-  {
-    title: "Templates",
-    href: "/dashboard/settings/templates",
-    icon: MessageSquareText,
-    permissionModule: "templates",
-  },
-  {
-    title: "Settings",
-    href: "/dashboard/settings",
-    icon: Settings,
-    permissionModule: "settings",
-  },
+  { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permissionModule: "dashboard" },
+  { title: "Daily Actions", href: "/dashboard/daily-actions", icon: Inbox, permissionModule: "dailyActions" },
+  { title: "Donors", href: "/dashboard/donors", icon: Users, permissionModule: "donors" },
+  { title: "Donations", href: "/dashboard/donations", icon: IndianRupee, permissionModule: "donations" },
+  { title: "Beneficiaries", href: "/dashboard/beneficiaries", icon: HandHeart, permissionModule: "beneficiaries" },
+  { title: "Campaigns", href: "/dashboard/campaigns", icon: Target, permissionModule: "campaigns" },
+  { title: "Birthday Wishes", href: "/dashboard/birthday-wishes", icon: Cake, permissionModule: "birthdayWishes" },
+  { title: "Donor Updates", href: "/dashboard/donor-updates", icon: Send, permissionModule: "donorUpdates" },
+  { title: "Broadcasting", href: "/dashboard/broadcasting", icon: Radio, permissionModule: "broadcasting" },
+  { title: "Reminders", href: "/dashboard/reminders", icon: Bell, permissionModule: "reminders" },
+  { title: "Follow-ups", href: "/dashboard/follow-ups", icon: ArrowUpRight, permissionModule: "followUps" },
+  { title: "Impact Dashboard", href: "/dashboard/impact", icon: TrendingUp, permissionModule: "impact" },
+  { title: "Retention Analytics", href: "/dashboard/retention", icon: Repeat, permissionModule: "retention" },
+  { title: "Staff & Tasks", href: "/dashboard/staff-tasks", icon: ListChecks, permissionModule: "staffTasks" },
+  { title: "Management", href: "/dashboard/management", icon: PresentationIcon, permissionModule: "management" },
+  { title: "Analytics", href: "/dashboard/analytics", icon: BarChart3, permissionModule: "analytics" },
+  { title: "Reports", href: "/dashboard/reports", icon: FileText, permissionModule: "reports" },
+  { title: "Report Campaigns", href: "/dashboard/report-campaigns", icon: Megaphone, permissionModule: "reportCampaigns" },
+  { title: "Donor Reports", href: "/dashboard/donor-reports", icon: FileBarChart, permissionModule: "donorReports" },
+  { title: "Progress Reports", href: "/dashboard/progress-reports", icon: ClipboardList, permissionModule: "progressReports" },
+  { title: "Home Summary", href: "/dashboard/home-summary", icon: Building2, permissionModule: "homeSummary" },
+  { title: "Document Vault", href: "/dashboard/ngo-documents", icon: FolderLock, permissionModule: "ngoDocuments" },
+  { title: "Time Machine", href: "/dashboard/time-machine", icon: Clock, permissionModule: "timeMachine" },
+  { title: "Milestones", href: "/dashboard/milestones", icon: Milestone, permissionModule: "milestones" },
+  { title: "Users", href: "/dashboard/users", icon: UserCog, permissionModule: "users" },
+  { title: "Staff Contacts", href: "/dashboard/staff-management", icon: Phone, permissionModule: "users" },
+  { title: "Permissions", href: "/dashboard/permissions", icon: Lock, permissionModule: "permissions" },
+  { title: "Audit Log", href: "/dashboard/audit-log", icon: ShieldCheck, permissionModule: "auditLog" },
+  { title: "Backup & Restore", href: "/dashboard/backup", icon: DatabaseBackup, permissionModule: "backup" },
+  { title: "Archive Management", href: "/dashboard/admin/archive", icon: ArchiveRestore, permissionModule: "archive" },
+  { title: "Templates", href: "/dashboard/settings/templates", icon: MessageSquareText, permissionModule: "templates" },
+  { title: "Settings", href: "/dashboard/settings", icon: Settings, permissionModule: "settings" },
 ];
 
 interface SidebarProps {
@@ -303,108 +143,135 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col h-full bg-sidebar border-r border-sidebar-border transition-all duration-300",
+        "flex flex-col h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out",
         collapsed ? "w-16" : "w-64"
       )}
     >
-      <div className="flex items-center justify-between p-4 border-b border-sidebar-border">
-        {!collapsed ? (
-          <div className="flex items-center gap-2">
+      <div className={cn(
+        "flex items-center border-b border-sidebar-border h-14",
+        collapsed ? "justify-center px-3" : "justify-between px-4"
+      )}>
+        {!collapsed && (
+          <div className="flex items-center gap-2.5 min-w-0">
             <img
               src="/brand/logo.jpg"
               alt="Asha Kuteer"
-              className="h-8 w-8 rounded object-cover"
+              className="h-7 w-7 rounded-lg object-cover flex-shrink-0"
               data-testid="img-sidebar-logo"
             />
-            <span className="font-bold text-sidebar-foreground">Asha Kuteer</span>
+            <span className="font-bold text-white text-sm truncate">Asha Kuteer</span>
           </div>
-        ) : (
+        )}
+        {collapsed && (
           <img
             src="/brand/logo.jpg"
             alt="Asha Kuteer"
-            className="h-8 w-8 rounded object-cover"
+            className="h-7 w-7 rounded-lg object-cover"
             data-testid="img-sidebar-logo-collapsed"
           />
         )}
-        <Button
-          variant="ghost"
-          size="icon"
+        <button
           onClick={() => setCollapsed(!collapsed)}
-          className="text-sidebar-foreground hover:bg-sidebar-accent"
+          className={cn(
+            "flex-shrink-0 h-7 w-7 rounded-lg flex items-center justify-center text-sidebar-foreground/60 hover:text-white hover:bg-white/10 transition-colors",
+            collapsed && "hidden"
+          )}
           data-testid="button-toggle-sidebar"
         >
-          {collapsed ? <Menu className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
-        </Button>
+          <ChevronLeft className="h-4 w-4" />
+        </button>
       </div>
 
-      <ScrollArea className="flex-1 py-4">
-        <nav className="space-y-1 px-2">
+      {collapsed && (
+        <div className="flex justify-center py-2 border-b border-sidebar-border">
+          <button
+            onClick={() => setCollapsed(false)}
+            className="h-7 w-7 rounded-lg flex items-center justify-center text-sidebar-foreground/60 hover:text-white hover:bg-white/10 transition-colors"
+            data-testid="button-expand-sidebar"
+          >
+            <Menu className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      <ScrollArea className="flex-1 py-3">
+        <nav className={cn("space-y-0.5", collapsed ? "px-2" : "px-3")}>
           {filteredNavItems.map((item) => {
-            const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            const isActive =
+              pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(item.href));
             return (
               <Link key={item.href} href={item.href}>
-                <Button
-                  variant="ghost"
+                <div
                   className={cn(
-                    "w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-                    isActive && "bg-sidebar-accent text-sidebar-accent-foreground",
+                    "flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition-all cursor-pointer select-none",
+                    isActive
+                      ? "bg-orange-500 text-white font-medium shadow-sm shadow-orange-900/30"
+                      : "text-sidebar-foreground/70 hover:text-white hover:bg-white/8",
                     collapsed && "justify-center px-2"
                   )}
-                  data-testid={`nav-${item.title.toLowerCase()}`}
+                  data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                 >
-                  <item.icon className="h-5 w-5 shrink-0" />
-                  {!collapsed && <span>{item.title}</span>}
-                </Button>
+                  <item.icon className={cn("h-4 w-4 flex-shrink-0", isActive ? "text-white" : "")} />
+                  {!collapsed && <span className="truncate">{item.title}</span>}
+                  {!collapsed && isActive && (
+                    <ChevronRight className="ml-auto h-3 w-3 flex-shrink-0 opacity-70" />
+                  )}
+                </div>
               </Link>
             );
           })}
         </nav>
       </ScrollArea>
 
-      <div className="p-2 border-t border-sidebar-border">
-        <Button
-          variant="ghost"
-          size="icon"
+      <div className={cn("border-t border-sidebar-border p-2 space-y-1", collapsed && "flex flex-col items-center")}>
+        <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className={cn(
-            "text-sidebar-foreground hover:bg-sidebar-accent mb-2",
-            collapsed ? "w-full" : "ml-2"
+            "flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-sidebar-foreground/60 hover:text-white hover:bg-white/8 transition-colors cursor-pointer w-full",
+            collapsed && "justify-center w-10"
           )}
           data-testid="button-theme-toggle"
         >
-          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </Button>
+          {theme === "dark" ? (
+            <Sun className="h-4 w-4 flex-shrink-0" />
+          ) : (
+            <Moon className="h-4 w-4 flex-shrink-0" />
+          )}
+          {!collapsed && <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>}
+        </button>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
+            <button
               className={cn(
-                "w-full justify-start gap-3 text-sidebar-foreground hover:bg-sidebar-accent",
-                collapsed && "justify-center px-2"
+                "flex items-center gap-2.5 rounded-lg px-2 py-2 w-full text-sidebar-foreground/70 hover:text-white hover:bg-white/8 transition-colors cursor-pointer",
+                collapsed && "justify-center"
               )}
               data-testid="button-user-menu"
             >
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+              <Avatar className="h-7 w-7 flex-shrink-0">
+                <AvatarFallback className="bg-orange-500 text-white text-xs font-semibold">
                   {user ? getInitials(user.name) : "??"}
                 </AvatarFallback>
               </Avatar>
               {!collapsed && (
-                <div className="flex flex-col items-start text-left">
-                  <span className="text-sm font-medium truncate max-w-[140px]">
+                <div className="flex flex-col items-start text-left min-w-0 flex-1">
+                  <span className="text-xs font-medium text-white truncate max-w-[130px]">
                     {user?.name || "User"}
                   </span>
-                  <span className="text-xs text-muted-foreground">{user?.role || "Role"}</span>
+                  <span className="text-xs text-sidebar-foreground/50 truncate max-w-[130px]">
+                    {user?.role || "Role"}
+                  </span>
                 </div>
               )}
-            </Button>
+            </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-56" side="top">
             <DropdownMenuLabel>
               <div className="flex flex-col">
-                <span>{user?.name}</span>
-                <span className="text-xs text-muted-foreground">{user?.email}</span>
+                <span className="font-medium">{user?.name}</span>
+                <span className="text-xs text-muted-foreground font-normal">{user?.email}</span>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

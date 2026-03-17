@@ -31,7 +31,10 @@ export default function DashboardLayout({
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
@@ -42,8 +45,8 @@ export default function DashboardLayout({
         <div className="flex h-screen bg-background">
           <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
           <div className="flex-1 flex flex-col overflow-hidden">
-            <header className="shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30">
-              <div className="flex items-center gap-4 px-4 py-2 sm:px-6">
+            <header className="shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30 h-14">
+              <div className="flex items-center gap-4 px-4 h-full sm:px-6">
                 <div className="flex-1 max-w-md">
                   <GlobalSearchTrigger />
                 </div>

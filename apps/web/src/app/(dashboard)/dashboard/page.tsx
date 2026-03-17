@@ -126,7 +126,7 @@ interface DueReminder {
   };
 }
 
-const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
+const COLORS = ["#f97316", "#10b981", "#3b82f6", "#ef4444", "#8b5cf6", "#ec4899"];
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat("en-IN", {
@@ -357,8 +357,9 @@ export default function DashboardPage() {
       value: stats ? formatCurrency(stats.totalDonationsFY) : "—",
       description: "Current financial year",
       icon: IndianRupee,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-50 dark:bg-emerald-950/50",
+      color: "text-orange-600",
+      bgColor: "bg-orange-50 dark:bg-orange-950/50",
+      highlight: true,
     },
     {
       title: "This Month",
@@ -367,6 +368,7 @@ export default function DashboardPage() {
       icon: TrendingUp,
       color: "text-blue-600",
       bgColor: "bg-blue-50 dark:bg-blue-950/50",
+      highlight: false,
     },
     {
       title: "Active Donors",
@@ -375,6 +377,7 @@ export default function DashboardPage() {
       icon: Users,
       color: "text-violet-600",
       bgColor: "bg-violet-50 dark:bg-violet-950/50",
+      highlight: false,
     },
     {
       title: "Beneficiaries",
@@ -383,6 +386,7 @@ export default function DashboardPage() {
       icon: HandHeart,
       color: "text-rose-600",
       bgColor: "bg-rose-50 dark:bg-rose-950/50",
+      highlight: false,
     },
   ];
 
@@ -504,16 +508,29 @@ export default function DashboardPage() {
       {canSeeFinancialStats && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {statCards.map((stat) => (
-            <Card key={stat.title} className="border-0 shadow-sm" data-testid={`card-stat-${stat.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}>
+            <Card
+              key={stat.title}
+              className={stat.highlight
+                ? "border-0 shadow-md bg-gradient-to-br from-orange-500 to-orange-600 text-white"
+                : "border-0 shadow-sm"
+              }
+              data-testid={`card-stat-${stat.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+            >
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                    <p className="text-2xl font-bold mt-1">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
+                    <p className={`text-sm font-medium ${stat.highlight ? "text-orange-100" : "text-muted-foreground"}`}>
+                      {stat.title}
+                    </p>
+                    <p className={`text-2xl font-bold mt-1 ${stat.highlight ? "text-white" : ""}`}>
+                      {stat.value}
+                    </p>
+                    <p className={`text-xs mt-1 ${stat.highlight ? "text-orange-100" : "text-muted-foreground"}`}>
+                      {stat.description}
+                    </p>
                   </div>
-                  <div className={`p-3 rounded-xl ${stat.bgColor}`}>
-                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                  <div className={`p-3 rounded-xl ${stat.highlight ? "bg-white/20" : stat.bgColor}`}>
+                    <stat.icon className={`h-6 w-6 ${stat.highlight ? "text-white" : stat.color}`} />
                   </div>
                 </div>
               </CardContent>
@@ -632,10 +649,10 @@ export default function DashboardPage() {
       )}
 
       {isAdmin && adminInsights.length > 0 && (
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/20 dark:to-purple-950/20" data-testid="card-admin-strategy">
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50/50 to-amber-50/50 dark:from-orange-950/20 dark:to-amber-950/20" data-testid="card-admin-strategy">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-indigo-600" />
+              <Shield className="h-5 w-5 text-orange-600" />
               <CardTitle className="text-lg">Admin Strategy Panel</CardTitle>
               <Badge variant="secondary" className="text-xs">Admin Only</Badge>
             </div>
@@ -901,10 +918,10 @@ export default function DashboardPage() {
                       <Line
                         type="monotone"
                         dataKey="amount"
-                        stroke="#3b82f6"
-                        strokeWidth={2}
-                        dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
-                        activeDot={{ r: 6 }}
+                        stroke="#f97316"
+                        strokeWidth={2.5}
+                        dot={{ fill: "#f97316", strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, fill: "#ea580c" }}
                       />
                     </LineChart>
                   </ResponsiveContainer>

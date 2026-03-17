@@ -15,6 +15,14 @@ The project is structured as a monorepo with a Next.js 14 frontend and a NestJS 
 **UI/UX Decisions:**
 The frontend uses Next.js 14 with the App Router and Tailwind CSS. Recharts is used for data visualization. Donation receipts are generated as professional PDF documents. Email and PDF templates are text-based.
 
+**UI Theme (Orange NGO Design):**
+- Primary accent color: Orange (`#f97316` / `hsl(25 95% 53%)`) — used for CTA buttons, active nav, highlight cards, hero backgrounds
+- Sidebar: Dark navy (`hsl(222 47% 11%)`) with orange active nav items and chevron indicator
+- Login page: Two-column hero layout — left side orange gradient with brand text + feature list, right side clean white login card
+- Dashboard: Total Donations FY card uses orange gradient, line chart uses orange, admin strategy panel uses orange gradient background
+- Dark mode: Dark backgrounds (`gray-900/gray-800`) with same orange accent maintained
+- CSS variables in `globals.css` — all shadcn components (buttons, badges, rings) inherit orange automatically
+
 **Technical Implementations:**
 - **Monorepo:** Organizes frontend, backend, and shared code.
 - **API Proxy:** Next.js rewrites proxy requests to the NestJS backend to prevent CORS issues.
