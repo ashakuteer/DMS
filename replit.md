@@ -17,9 +17,9 @@ The frontend uses Next.js 14 with the App Router and Tailwind CSS. Recharts is u
 
 **UI Theme (Orange NGO Design):**
 - Primary accent color: Orange (`#f97316` / `hsl(25 95% 53%)`) — used for CTA buttons, active nav, highlight cards, hero backgrounds
-- Sidebar: Dark navy (`hsl(222 47% 11%)`) with orange active nav items and chevron indicator
+- Sidebar: Light white/off-white (`hsl(210 40% 98%)`) with dark text, orange active pills (shadow-sm), collapsible labeled groups, orange group headings when a child is active
 - Login page: Two-column hero layout — left side orange gradient with brand text + feature list, right side clean white login card
-- Dashboard: Total Donations FY card uses orange gradient, line chart uses orange, admin strategy panel uses orange gradient background
+- Dashboard: Dark blue gradient hero (no action buttons), 8 KPI cards in 2 rows, Quick Actions row (4 cards below KPI), Donation Analytics (line + pie), Home-wise Performance cards, Donor Intelligence + Smart Insights, Follow-ups Due, Next Best Actions, Recent Activity. Data fetched unconditionally via `safeFetch` — no role gating at fetch level, backend enforces 403.
 - Dark mode: Dark backgrounds (`gray-900/gray-800`) with same orange accent maintained
 - CSS variables in `globals.css` — all shadcn components (buttons, badges, rings) inherit orange automatically
 

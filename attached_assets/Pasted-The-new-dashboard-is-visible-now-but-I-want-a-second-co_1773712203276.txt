@@ -1,0 +1,77 @@
+The new dashboard is visible now, but I want a second correction round.
+
+Please fix these issues carefully:
+
+1. Sidebar background color
+- The current left sidebar background is too dark/heavy
+- It feels harsh and old-style
+- Change it to a cleaner, lighter, more premium tone
+- Prefer:
+  - white / off-white / light blue-gray sidebar
+  - orange only as active accent
+- Keep it modern, soft, and professional
+- Improve contrast and readability of group headings and menu items
+
+2. Remove hero action buttons
+Please remove these buttons from the hero section:
+- Add Donor
+- Add Donation
+- Beneficiaries
+- Reports
+
+The hero should only contain:
+- System Active badge
+- “Making a Difference, Together.” heading
+- short descriptive subtext
+
+Do not let the hero feel crowded.
+
+3. Move actions to a separate section
+Create a separate “Quick Actions” row below KPI cards or below hero.
+Place those actions there in a cleaner format:
+- Add Donor
+- Add Donation
+- Add Beneficiary
+- View Reports
+
+Use compact premium action cards or buttons.
+
+4. Fix dashboard data not loading
+Right now donors, donations, and beneficiaries details are not loading properly, and the page below hero looks empty.
+
+Please check and fix:
+- KPI data loading
+- donor summary loading
+- donation summary loading
+- beneficiary summary loading
+- charts loading
+- home-wise data loading
+
+Verify the frontend is calling the correct endpoints and the UI is mapped to the returned data correctly.
+
+5. Prevent empty dashboard state
+If real data is still loading, show:
+- loading skeleton cards
+- chart placeholders
+- clean loading states
+Do not leave a large blank area.
+
+6. Final layout target
+Please make dashboard structure like this:
+- Hero banner only
+- KPI cards
+- Quick Actions row
+- Charts / analytics
+- Home-wise performance
+- Sponsorship / retention / recent activity
+
+Important:
+- Do not break routing
+- Do not break backend logic
+- Do not remove the redesigned dashboard style
+- Just refine it and make the real dashboard content load correctly
+
+After fixing, tell me:
+1. what files you changed
+2. why the donors/donations/beneficiaries data was not loading
+3. what exact UI changes you made to sidebar and hero
