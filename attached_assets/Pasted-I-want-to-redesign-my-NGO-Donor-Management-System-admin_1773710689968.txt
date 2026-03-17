@@ -1,0 +1,300 @@
+I want to redesign my NGO Donor Management System admin dashboard.
+
+Important:
+The earlier UI direction you designed was closer to what I want — especially the clean modern style like the login page you created:
+- bold hero section
+- premium spacing
+- modern cards
+- cleaner visual hierarchy
+- less clutter
+- more intentional design
+
+Please move away from the current crowded admin-panel style and redesign the Admin Dashboard in that earlier modern style.
+
+PROJECT CONTEXT
+This is for Asha Kuteer Foundation.
+This is not a generic school/admin template.
+It should feel like an NGO command center: warm, professional, modern, trustworthy, and impact-focused.
+
+MAIN GOAL
+Redesign ONLY the Admin Dashboard UI first.
+Do not break backend logic.
+Do not remove existing working data connections.
+Focus on frontend/dashboard structure, styling, layout, grouping, and visual presentation.
+
+DESIGN DIRECTION
+Use a polished modern dashboard style:
+- clean layout
+- fewer visible borders
+- soft shadows
+- rounded cards
+- more breathing space
+- strong typography
+- premium card spacing
+- better color hierarchy
+- visually rich but not overcrowded
+
+STYLE REFERENCE
+Use the same quality and visual confidence as the earlier login page you designed:
+- strong hero area
+- bold heading
+- modern buttons
+- soft decorative background shapes if suitable
+- professional gradients if subtle
+- clean icon usage
+- clear section separation
+
+PLEASE REMOVE / REDUCE FROM CURRENT DASHBOARD
+- Too many side menu items visible at once
+- Overcrowded left navigation
+- Generic looking AI insight boxes
+- Too many equally weighted sections
+- Plain admin-template feeling
+- Weak hero section
+- Charts that feel dropped in rather than designed into the dashboard
+
+LEFT SIDEBAR REDESIGN
+Make sidebar cleaner and more premium.
+Keep top-priority items visible first.
+Group the remaining items into collapsible sections.
+
+Suggested sidebar structure:
+- Dashboard
+- Donors
+- Donations
+- Beneficiaries
+- Campaigns
+- Reports
+- Analytics
+- Staff & Tasks
+- Settings
+
+Secondary items can go under expandable groups like:
+- Communication
+- Admin Tools
+- Archives
+- System
+
+Do NOT show the full long ungrouped list by default.
+
+ADMIN DASHBOARD LAYOUT I WANT
+
+1) HERO SECTION AT TOP
+Create a beautiful top hero banner like a modern SaaS/NGO dashboard.
+
+Heading:
+“Making a Difference, Together.”
+
+Subtext:
+“Welcome to the Asha Kuteer Foundation Donor Management System. Track donations, donors, sponsorships, homes, and impact from one place.”
+
+Hero quick action buttons:
+- Add Donor
+- Add Donation
+- Add Beneficiary
+- View Reports
+
+Optional:
+- subtle gradient background
+- soft abstract shapes
+- a small “System Active” or “This Month Overview” badge
+
+2) TOP KPI CARDS
+Create a premium KPI row with strong card design.
+
+Show these cards:
+- Total Donations This FY
+- Total Donations This Month
+- Total Donors
+- Active Donors
+- Total Beneficiaries
+- Sponsored Beneficiaries
+- Retention Rate
+- Pending Follow-ups
+
+Each KPI card should include:
+- icon
+- large number
+- small label
+- optional trend/change text
+- consistent height and spacing
+
+3) TARGET PROGRESS SECTION
+Add a beautiful goals/progress row.
+
+Include:
+A. Monthly Donations Target
+Display like:
+₹3,00,000 raised of ₹15,00,000 goal
+with attractive progress bar
+
+B. Monthly Donors Target
+Example:
+48 donors reached of 120 target
+
+C. Financial Year Goal Progress
+Show FY progress in a clean card
+
+D. Home-wise Goal Progress
+Separate progress bars/cards for:
+- Children Home
+- Visually Challenged Boys Home
+- Old Age Home
+
+4) MAIN CHARTS SECTION
+Create well-designed chart cards, not plain inserted charts.
+
+Include:
+- Monthly Donation Trend (line chart)
+- Home-wise Donations (bar chart)
+- Home-wise Donors (bar chart or comparison cards)
+- This Financial Year Donation Flow / monthly pattern
+
+Use a modern chart card style:
+- good padding
+- clear title/subtitle
+- clean legends
+- no clutter
+
+5) SPONSORSHIP ANALYTICS
+Create a separate section for sponsorship insights.
+
+Include:
+- Sponsored in Cash
+- Sponsored in Kind
+- Total Sponsored Beneficiaries
+- Unsponsored Beneficiaries
+- Sponsorship Renewal Due
+
+Charts:
+- donut chart for Cash vs Kind sponsorship
+- stacked bar or comparison chart for Sponsored vs Unsponsored by home
+
+6) RETENTION + DONOR HEALTH
+Create a donor intelligence section.
+
+Include:
+- Retention Rate
+- New Donors vs Returning Donors
+- Dormant Donors
+- Donors Needing Follow-up
+
+Visuals can include:
+- donut chart
+- stat cards
+- mini trend chart
+- action-focused list
+
+7) HOME-WISE PERFORMANCE
+This is very important and should be visually strong.
+
+Create a section called:
+“Home-wise Performance”
+
+For each home show:
+- total donations
+- total donors
+- total beneficiaries
+- sponsored beneficiaries
+- cash sponsorships
+- kind sponsorships
+- goal progress
+
+Could be shown as:
+- premium comparison cards
+OR
+- a clean table with mini progress bars
+OR
+- card + chart hybrid
+
+Homes:
+- Children Home
+- Visually Challenged Boys Home
+- Old Age Home
+
+8) SMART INSIGHTS / ACTION CENTER
+Rename “AI Insights” to something better like:
+- Smart Insights
+OR
+- Admin Action Center
+
+Make it useful and elegant, not generic.
+
+Show only meaningful insights such as:
+- donors not contacted in 60+ days
+- home below target
+- sponsorship renewals due
+- retention drop
+- best donation time/day
+- payment mode trends
+
+Use better design:
+- icon + title + one-line explanation
+- colored priority badges
+- clean cards, not plain warning boxes
+
+9) RECENT ACTIVITY
+At the bottom create a useful activity section:
+- Recent Donations
+- Recent Sponsorships
+- Recent Staff Actions / Updates
+
+Make these compact and premium-looking.
+
+VISUAL STYLE
+Use:
+- white / very light background
+- deep blue as main brand/dashboard color
+- soft green for success and impact
+- amber/orange for attention areas
+- red only for urgent items
+- rounded corners
+- subtle shadows
+- elegant typography
+- more whitespace
+- modern icons
+
+Avoid:
+- boxy old admin panel look
+- overly thin crowded text
+- too many identical cards
+- harsh borders everywhere
+- too much visual noise
+
+TECHNICAL INSTRUCTIONS
+- Keep existing data fetching and backend integration intact
+- Reuse current data wherever possible
+- If some metrics are not yet available, create polished placeholder UI blocks that can be connected later
+- Do not remove existing functionality
+- Do not break routing
+- Maintain responsive layout
+- Use existing component system if available
+- Improve dashboard page structure and reusable dashboard card/chart components if needed
+
+DELIVERABLES I WANT
+1. Redesigned Admin Dashboard page
+2. Cleaner grouped sidebar
+3. Hero section
+4. KPI cards
+5. Target progress cards
+6. Donation charts
+7. Sponsorship analytics
+8. Retention analytics
+9. Home-wise performance section
+10. Smart Insights / Action Center
+11. Recent activity section
+
+IMPORTANT
+Please first analyze the current dashboard structure and existing components, then refactor the dashboard into this new design without damaging the rest of the system.
+
+If necessary:
+- create new reusable dashboard components
+- improve spacing and visual hierarchy
+- reorganize sections
+- enhance chart card styling
+- simplify sidebar navigation
+
+Please proceed carefully and show me:
+1. which files you will update
+2. what new components you will create
+3. then implement the redesigned Admin Dashboard
