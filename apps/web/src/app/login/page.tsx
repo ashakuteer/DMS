@@ -62,11 +62,14 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       <div className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #ea580c 0%, #f97316 40%, #fb923c 100%)" }}>
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-96 h-96 rounded-full bg-white -translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-white translate-x-1/3 translate-y-1/3" />
-          <div className="absolute top-1/2 right-1/4 w-48 h-48 rounded-full bg-white" />
+        style={{ background: "linear-gradient(135deg, #0f2847 0%, #1a4480 45%, #1d4ed8 100%)" }}>
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-white opacity-[0.03]" />
+          <div className="absolute top-1/2 -translate-y-1/2 left-1/3 w-[500px] h-[500px] rounded-full bg-blue-400 opacity-[0.04]" />
+          <div className="absolute -bottom-16 right-0 w-72 h-72 rounded-full bg-white opacity-[0.03] translate-x-1/4 translate-y-1/4" />
+          <div className="absolute top-8 right-24 w-2 h-2 rounded-full bg-orange-400 opacity-40" />
+          <div className="absolute bottom-12 left-20 w-1.5 h-1.5 rounded-full bg-orange-300 opacity-30" />
+          <div className="absolute top-1/3 left-3/4 w-1 h-1 rounded-full bg-white opacity-25" />
         </div>
 
         <div className="relative z-10">
@@ -78,7 +81,7 @@ export default function LoginPage() {
             />
             <div>
               <h2 className="text-white font-bold text-xl leading-tight">Asha Kuteer</h2>
-              <p className="text-orange-100 text-sm">Foundation</p>
+              <p className="text-blue-200 text-sm">Foundation</p>
             </div>
           </div>
         </div>
@@ -88,7 +91,7 @@ export default function LoginPage() {
             <h1 className="text-4xl font-bold text-white leading-tight">
               Empowering Compassion Through Smart Donor Management
             </h1>
-            <p className="text-orange-100 mt-4 text-lg leading-relaxed">
+            <p className="text-blue-100 mt-4 text-lg leading-relaxed">
               Manage donors, campaigns, and impact — all in one place.
             </p>
           </div>
@@ -96,17 +99,17 @@ export default function LoginPage() {
           <div className="space-y-3">
             {features.map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
                   <Icon className="h-4 w-4 text-white" />
                 </div>
-                <p className="text-orange-50 text-sm">{text}</p>
+                <p className="text-blue-50 text-sm">{text}</p>
               </div>
             ))}
           </div>
         </div>
 
         <div className="relative z-10">
-          <p className="text-orange-200 text-xs">
+          <p className="text-blue-300 text-xs">
             © {new Date().getFullYear()} Asha Kuteer Foundation. All rights reserved.
           </p>
         </div>
