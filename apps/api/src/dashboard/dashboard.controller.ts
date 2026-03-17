@@ -11,6 +11,20 @@ import { DashboardService } from './dashboard.service';
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
+  /**
+   * Single unified endpoint — replaces 13+ individual dashboard fetches.
+   * Returns all sections in one parallel server-side batch.
+   * Sections are null when the user's role lacks access to them.
+   */
+  @Get('summary')
+  @Roles(
+    Role.ADMIN, Role.STAFF, Role.TELECALLER,
+    Role.ACCOUNTANT, Role.MANAGER, Role.CARETAKER, Role.VIEWER,
+  )
+  async getSummary(@CurrentUser() user: any) {
+    return this.dashboardService.getSummary(user);
+  }
+
   @Get('stats')
   @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT)
   async getStats() {

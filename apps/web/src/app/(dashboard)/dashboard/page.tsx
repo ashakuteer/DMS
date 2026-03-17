@@ -283,68 +283,52 @@ export default function DashboardPage() {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      setSlowLoading(true);
       setLoadError(false);
       try {
-        const profileData = await safeFetch<UserProfile>("/api/auth/profile");
-        if (profileData) setUserProfile(profileData);
-        const r = profileData?.role ?? "";
-
-        // Phase 1: fast core queries — these unblock the spinner quickly
-        const [
-          statsData, targetData, trendsData, modeData, topData, recentData,
-          insightsData, insightCardsData,
-        ] = await Promise.all([
-          safeFetch<Stats>("/api/dashboard/stats"),
-          safeFetch<MonthlyTarget>("/api/dashboard/monthly-target"),
-          safeFetch<MonthlyTrend[]>("/api/dashboard/trends"),
-          safeFetch<ModeSplit[]>("/api/dashboard/mode-split"),
-          safeFetch<TopDonor[]>("/api/dashboard/top-donors"),
-          safeFetch<RecentDonation[]>("/api/dashboard/recent-donations"),
-          safeFetch<Insight[]>("/api/dashboard/insights"),
-          safeFetch<InsightCard[]>("/api/dashboard/insight-cards"),
+        // Single request — backend runs all sections in parallel
+        const [profileData, summaryData] = await Promise.all([
+          safeFetch<UserProfile>("/api/auth/profile"),
+          safeFetch<{
+            stats: Stats | null;
+            monthlyTarget: MonthlyTarget | null;
+            trends: MonthlyTrend[] | null;
+            modeSplit: ModeSplit[] | null;
+            topDonors: TopDonor[] | null;
+            recentDonations: RecentDonation[] | null;
+            insights: Insight[] | null;
+            insightCards: InsightCard[] | null;
+            impact: ImpactData | null;
+            retention: RetentionData | null;
+            staffActions: StaffActionsData | null;
+            adminInsights: AdminInsight[] | null;
+            reminders: DueReminder[] | null;
+          }>("/api/dashboard/summary"),
         ]);
 
-        if (statsData) setStats(statsData);
-        if (targetData) setMonthlyTarget(targetData);
-        if (trendsData) setTrends(trendsData);
-        if (modeData) setModeSplit(modeData);
-        if (topData) setTopDonors(topData);
-        if (recentData) setRecentDonations(recentData);
-        if (insightsData) setInsights(insightsData);
-        if (insightCardsData) setInsightCards(insightCardsData);
+        if (profileData) setUserProfile(profileData);
 
-        // Remove spinner after fast data is ready; heavy sections load in background
-        setLoading(false);
-
-        // Phase 2: heavier analytics — run in parallel without blocking UI
-        const heavyFetches: Promise<void>[] = [
-          safeFetch<ImpactData>("/api/dashboard/impact").then((d) => { if (d) setImpactData(d); }),
-          safeFetch<RetentionData>("/api/dashboard/retention").then((d) => { if (d) setRetentionData(d); }),
-        ];
-
-        if (["ADMIN", "STAFF", "TELECALLER"].includes(r)) {
-          heavyFetches.push(
-            safeFetch<StaffActionsData>("/api/dashboard/staff-actions").then((d) => { if (d) setStaffActions(d); }),
-          );
+        if (summaryData) {
+          if (summaryData.stats) setStats(summaryData.stats);
+          if (summaryData.monthlyTarget) setMonthlyTarget(summaryData.monthlyTarget);
+          if (summaryData.trends) setTrends(summaryData.trends);
+          if (summaryData.modeSplit) setModeSplit(summaryData.modeSplit);
+          if (summaryData.topDonors) setTopDonors(summaryData.topDonors);
+          if (summaryData.recentDonations) setRecentDonations(summaryData.recentDonations);
+          if (summaryData.insights) setInsights(summaryData.insights);
+          if (summaryData.insightCards) setInsightCards(summaryData.insightCards);
+          if (summaryData.impact) setImpactData(summaryData.impact);
+          if (summaryData.retention) setRetentionData(summaryData.retention);
+          if (summaryData.staffActions) setStaffActions(summaryData.staffActions);
+          if (summaryData.adminInsights) setAdminInsights(summaryData.adminInsights);
+          if (summaryData.reminders) setDueReminders(summaryData.reminders);
         }
-        if (["ADMIN", "STAFF"].includes(r)) {
-          heavyFetches.push(
-            safeFetch<DueReminder[]>("/api/reminders/due").then((d) => { if (d) setDueReminders(d); }),
-          );
-        }
-        if (r === "ADMIN") {
-          heavyFetches.push(
-            safeFetch<AdminInsight[]>("/api/dashboard/admin-insights").then((d) => { if (d) setAdminInsights(d); }),
-          );
-        }
-
-        await Promise.all(heavyFetches);
-        setSlowLoading(false);
       } catch {
         setLoadError(true);
+        toast({ title: "Dashboard load failed", description: "Could not connect to the server.", variant: "destructive" });
+      } finally {
         setLoading(false);
         setSlowLoading(false);
-        toast({ title: "Dashboard load failed", description: "Could not connect to the server.", variant: "destructive" });
       }
     };
     load();
