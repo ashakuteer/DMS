@@ -1,8 +1,12 @@
 import { fetchWithAuth } from './auth';
 
 export const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  'https://dms-production-598e.up.railway.app';
+  typeof window === 'undefined'
+    ? process.env.NEXT_PUBLIC_API_URL ||
+      (process.env.NODE_ENV === 'production'
+        ? 'https://dms-production-598e.up.railway.app'
+        : 'http://localhost:3001')
+    : '';
 
 /**
  * Authenticated fetch. Prepends API_BASE only when path is relative.

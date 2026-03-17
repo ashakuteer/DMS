@@ -72,13 +72,26 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
   const onResendReceipt = useCallback(async (donationId: string) => {
     setResendingReceiptId(donationId);
     try {
-      await apiClient(`/api/donations/${donationId}/resend-receipt`, { method: "POST" });
-    } catch {
-      console.error("Failed to resend receipt");
+      const result = await apiClient<{ success: boolean; message?: string }>(
+        `/api/donations/${donationId}/resend-receipt`,
+        { method: "POST" },
+      );
+      toast({
+        title: result?.success ? "Receipt Sent" : "Send Failed",
+        description: result?.message || (result?.success ? "Receipt email has been sent." : "Could not send receipt."),
+        variant: result?.success ? "default" : "destructive",
+      });
+    } catch (err: any) {
+      console.error("Failed to resend receipt:", err?.message);
+      toast({
+        title: "Failed to Send Receipt",
+        description: err?.message || "An error occurred while sending the receipt.",
+        variant: "destructive",
+      });
     } finally {
       setResendingReceiptId(null);
     }
-  }, []);
+  }, [toast]);
 
   const onAddDonation = useCallback(() => {
     setDonationForm(EMPTY_DONATION_FORM);
@@ -105,9 +118,13 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
       setDonationForm(EMPTY_DONATION_FORM);
       await fetchDonations();
       toast({ title: "Donation Saved", description: "The donation has been recorded successfully." });
-    } catch {
-      console.error("Failed to add donation");
-      toast({ title: "Failed to Save Donation", description: "Please check the details and try again.", variant: "destructive" });
+    } catch (err: any) {
+      console.error("Failed to add donation:", err?.message);
+      toast({
+        title: "Failed to Save Donation",
+        description: err?.message || "Please check the details and try again.",
+        variant: "destructive",
+      });
     } finally {
       setSubmittingDonation(false);
     }

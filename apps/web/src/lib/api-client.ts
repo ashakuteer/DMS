@@ -1,6 +1,10 @@
 const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://dms-production-598e.up.railway.app";
+  typeof window === "undefined"
+    ? process.env.NEXT_PUBLIC_API_URL ||
+      (process.env.NODE_ENV === "production"
+        ? "https://dms-production-598e.up.railway.app"
+        : "http://localhost:3001")
+    : "";
 
 export async function apiClient<T = unknown>(
   path: string,
@@ -23,7 +27,19 @@ export async function apiClient<T = unknown>(
   });
 
   if (!response.ok) {
-    throw new Error(`API error ${response.status}`);
+    let errorMessage = `API error ${response.status}`;
+    try {
+      const errorBody = await response.json();
+      if (errorBody?.message) {
+        errorMessage = Array.isArray(errorBody.message)
+          ? errorBody.message.join(", ")
+          : String(errorBody.message);
+      }
+    } catch {
+    }
+    const err = new Error(errorMessage) as Error & { status: number };
+    err.status = response.status;
+    throw err;
   }
 
   if (

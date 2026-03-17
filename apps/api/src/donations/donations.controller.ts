@@ -189,4 +189,13 @@ export class DonationsController {
       userAgent,
     );
   }
+
+  @Post(":id/resend-receipt")
+  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT)
+  async resendReceipt(
+    @CurrentUser() user: UserContext,
+    @Param("id") id: string,
+  ) {
+    return this.donationsService.resendReceipt(user, id);
+  }
 }

@@ -1,0 +1,101 @@
+I need you to stop giving partial fixes and do a proper root-cause diagnosis and repair for my DMS production issues.
+
+Current situation:
+- SMTP was not working
+- We found EMAIL_RELAY_URL was forcing relay mode
+- Relay was failing with “Bad Request”
+- Then fallback went into mock mode because transporter was never initialized
+- I removed/disabled EMAIL_RELAY_URL so SMTP can be used directly
+- Now donation save is failing
+- Frontend shows “Failed to Save Donation”
+- Browser console shows multiple 401 errors and failed donation requests
+- Railway logs show Prisma / schema patch related issues like:
+  - Invalid prisma.$executeRawUnsafe() invocation
+  - relation "staff_performance_userId_month_year_key" already exists
+  - schema patch skipped / patches applied
+- I am tired of debugging this one small step at a time
+
+I want you to do a full structured diagnosis and fix, carefully, without breaking working parts.
+
+YOUR TASK
+Please investigate and fix these issues in this order:
+
+1. EMAIL SYSTEM
+- Confirm the app is now using direct SMTP only
+- Ensure EMAIL_RELAY_URL no longer hijacks sending
+- Ensure mock mode is not used when SMTP env vars exist
+- Verify transporter initializes correctly from:
+  SMTP_HOST
+  SMTP_PORT
+  SMTP_USER
+  SMTP_PASS
+  SMTP_FROM
+- Add a proper transporter verify step on startup or first use
+- Log clearly whether SMTP is active, relay is active, or mock mode is active
+- Fix manual donor email sending and donation receipt email sending so they both use the same correct email pipeline and do not clash
+
+2. DONATION SAVE FAILURE
+- Diagnose why “Save Donation” is failing in production
+- Check frontend request, backend endpoint, auth, payload validation, Prisma write, and response
+- Fix the root cause instead of generic toast errors
+- Ensure the donation create flow works from donor profile page
+- Verify donation save, receipt generation, and post-save email/WhatsApp logic do not break each other
+
+3. AUTH / 401 ISSUES
+- Browser console shows multiple 401 errors on related donor communication/profile endpoints
+- Investigate whether auth token handling is broken, expired, missing, or not being passed
+- Fix API calls that are incorrectly unauthorized in production
+- Make donor profile tabs and related requests work correctly
+
+4. PRISMA / SCHEMA PATCH PROBLEM
+- Railway logs show:
+  - relation already exists
+  - prisma.$executeRawUnsafe invocation errors
+  - migration/patch confusion
+- Audit startup patch logic and migrations
+- Remove or harden any unsafe “patch on startup” logic that repeatedly tries to create existing constraints/indexes
+- Make startup idempotent and production-safe
+- Ensure production DB schema matches current Prisma schema
+- Do NOT damage existing data
+
+5. PRODUCTION STABILITY
+- Verify Railway production backend and Vercel frontend are aligned
+- Check env variables actually used in production
+- Check API base URLs
+- Check JWT/auth configuration
+- Check cron/email queue behavior
+- Check whether any old code path, fallback path, or duplicate logic is still interfering
+
+IMPORTANT WAY OF WORKING
+Do not give me broad summaries first.
+Do not assume things are fixed.
+Do the actual investigation in code.
+
+Please proceed like this:
+A. First identify root causes with evidence from code/logs
+B. Then list exact files to change
+C. Then make the fixes
+D. Then verify each flow end-to-end:
+   - manual donor email send
+   - donation save
+   - receipt email
+   - donor profile related API calls
+E. Then give me a final report
+
+FINAL REPORT FORMAT I WANT
+1. Root causes found
+2. Files changed
+3. Exact fixes applied
+4. What was wrong with SMTP
+5. What was wrong with donation save
+6. What was wrong with 401 errors
+7. What was wrong with Prisma/schema patching
+8. What still needs follow-up, if anything
+9. Confirm which production flows are now working
+
+VERY IMPORTANT
+- Do not remove working features
+- Do not make random redesign changes
+- Focus on production bug fixing and stabilization
+- Prefer one correct email path, one correct donation save path, and one correct auth path
+- If there are duplicate or clashing implementations, simplify them safely
