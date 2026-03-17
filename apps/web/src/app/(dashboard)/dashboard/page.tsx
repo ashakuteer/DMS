@@ -365,43 +365,68 @@ export default function DashboardPage() {
 
         {/* ── HERO ──────────────────────────────────────────────────────────── */}
         <div
-          className="relative rounded-2xl overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #1a4480 55%, #1e40af 100%)" }}
+          className="relative rounded-3xl overflow-hidden"
+          style={{ background: "linear-gradient(135deg, #0f2847 0%, #1a4480 45%, #1d4ed8 100%)" }}
         >
-          {/* Subtle background pattern */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.05]">
-            <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-white" />
-            <div className="absolute bottom-0 left-1/4 w-64 h-64 rounded-full bg-white" />
+          {/* Background depth circles */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-white opacity-[0.03]" />
+            <div className="absolute top-1/2 -translate-y-1/2 left-1/3 w-[500px] h-[500px] rounded-full bg-blue-400 opacity-[0.04]" />
+            <div className="absolute -bottom-16 right-1/4 w-64 h-64 rounded-full bg-white opacity-[0.03]" />
+            <div className="absolute top-6 right-56 w-2 h-2 rounded-full bg-orange-400 opacity-40" />
+            <div className="absolute bottom-8 left-16 w-1.5 h-1.5 rounded-full bg-orange-300 opacity-30" />
+            <div className="absolute top-16 left-1/2 w-1 h-1 rounded-full bg-white opacity-25" />
           </div>
 
-          <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 px-8 py-10 md:py-12">
+          <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 md:gap-10 px-8 md:px-12 py-12 md:py-16">
             {/* Left: Text */}
             <div className="flex-1 min-w-0">
-              <h1 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tight">
+              <h1
+                className="font-black text-white tracking-tight"
+                style={{ fontSize: "clamp(2.4rem, 4.5vw, 3.5rem)", lineHeight: 1.12 }}
+              >
                 Making a<br />
-                <span className="text-orange-400">Difference,</span><br />
+                <span style={{ color: "#fb923c" }}>Difference,</span><br />
                 Together.
               </h1>
-              <p className="text-blue-100 mt-4 text-base md:text-lg leading-relaxed max-w-xl">
-                Welcome to <strong className="text-white">Asha Kuteer Foundation</strong> Donor Management System. Track donors, donations, sponsorships, homes, and impact — all in one place.
+              <p className="mt-5 max-w-lg" style={{ color: "rgba(219,234,254,0.9)", fontSize: "1.05rem", lineHeight: 1.8 }}>
+                Welcome to{" "}
+                <strong className="text-white font-semibold">Asha Kuteer Foundation</strong>{" "}
+                Donor Management System.{" "}
+                <span style={{ color: "rgba(191,219,254,0.85)" }}>
+                  Track donors, donations, sponsorships, homes, and impact — all in one place.
+                </span>
               </p>
-              <div className="flex flex-wrap gap-3 mt-6">
+              <div className="flex flex-wrap gap-3 mt-7">
                 <Link href="/dashboard/donors/new">
-                  <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition-colors">
+                  <button
+                    className="inline-flex items-center gap-2 text-white font-semibold transition-all duration-200 hover:scale-[1.03] active:scale-[0.98]"
+                    style={{ background: "linear-gradient(135deg, #f97316, #ea580c)", padding: "0.6rem 1.4rem", borderRadius: "0.75rem", fontSize: "0.9rem", boxShadow: "0 4px 14px rgba(249,115,22,0.4)" }}
+                  >
                     <UserPlus className="h-4 w-4" /> Add Donor
                   </button>
                 </Link>
                 <Link href="/dashboard/donors?frequency=MONTHLY">
-                  <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors border border-white/20">
+                  <button
+                    className="inline-flex items-center gap-2 text-white font-medium transition-all duration-200 hover:bg-white/20 active:scale-[0.98]"
+                    style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.22)", padding: "0.6rem 1.4rem", borderRadius: "0.75rem", fontSize: "0.9rem" }}
+                  >
                     <Repeat className="h-4 w-4" /> Monthly Donors
                   </button>
                 </Link>
               </div>
             </div>
 
-            {/* Right: NGO Illustration */}
-            <div className="w-full md:w-[340px] lg:w-[400px] h-[220px] md:h-[260px] flex-shrink-0 opacity-90">
-              <HeroIllustration />
+            {/* Right: Photo with soft glow */}
+            <div className="relative w-full md:w-[380px] lg:w-[440px] flex-shrink-0">
+              {/* Warm glow halo behind image */}
+              <div
+                className="absolute inset-0 rounded-3xl pointer-events-none"
+                style={{ margin: "-12px", background: "radial-gradient(ellipse at center, rgba(251,146,60,0.18) 0%, transparent 70%)", filter: "blur(16px)" }}
+              />
+              <div className="relative h-[240px] md:h-[290px]">
+                <HeroIllustration />
+              </div>
             </div>
           </div>
         </div>

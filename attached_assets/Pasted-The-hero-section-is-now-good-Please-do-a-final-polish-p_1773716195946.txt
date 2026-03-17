@@ -1,0 +1,105 @@
+The hero section is now good. Please do a final polish pass to make it feel more premium, emotional, and NGO-focused.
+
+Do NOT change the layout structure. Only improve the visual quality.
+
+1. Improve the hero heading
+Keep the text:
+"Making a Difference, Together."
+
+But enhance it:
+- slightly larger font size
+- stronger typography
+- more breathing space between lines
+- keep the word "Difference" highlighted in orange
+
+The heading should feel powerful and inspirational.
+
+2. Improve the welcome text
+
+Current text:
+"Welcome to Asha Kuteer Foundation Donor Management System. Track donors, donations, sponsorships, homes, and impact — all in one place."
+
+Please:
+- increase readability
+- slightly increase font size
+- increase line spacing
+- make it easier to scan
+
+3. Improve the hero image presentation
+
+The hands-together image is good, but make it more premium:
+
+- slightly increase the image size
+- keep rounded corners
+- add a soft shadow around the image
+- ensure image is not washed out
+- use proper object-fit so it does not stretch
+
+Optional:
+add a subtle soft glow or blur circle behind the image so it blends nicely with the hero background.
+
+4. Balance text and image
+
+Ensure the layout feels balanced:
+
+Left side:
+Heading + description + buttons
+
+Right side:
+Image
+
+Spacing should feel natural and not cramped.
+
+5. Improve hero background design
+
+Keep the blue gradient but make it more elegant:
+
+- smooth gradient
+- subtle abstract shapes or soft circles
+- very light transparency
+- nothing distracting
+
+The hero should feel warm, optimistic, and inspiring.
+
+6. Improve action buttons
+
+Keep the two buttons:
+
+- Add Donor
+- Monthly Donors
+
+Make sure they look premium:
+
+- slightly larger padding
+- rounded corners
+- subtle hover effect
+- clean icon spacing
+
+7. Maintain NGO tone
+
+This dashboard represents a charity organization.
+The hero section should feel:
+
+- hopeful
+- human
+- impact-driven
+- modern but warm
+
+Avoid:
+- harsh tech admin style
+- heavy borders
+- overly corporate look
+
+8. Do NOT change anything else
+
+Do not modify:
+- sidebar
+- dashboard data
+- charts
+- KPI cards
+
+Only refine the hero section visually.
+
+After updating, confirm:
+1. what CSS or component changes were made
+2. what improvements were applied to the hero design
