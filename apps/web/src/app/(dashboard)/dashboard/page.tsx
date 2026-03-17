@@ -65,66 +65,51 @@ async function safeFetch<T>(url: string): Promise<T | null> {
 // ─── NGO Hero Illustration ────────────────────────────────────────────────────
 function HeroIllustration() {
   return (
-    <svg viewBox="0 0 440 340" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" aria-hidden="true">
-      {/* Background glow circles */}
-      <circle cx="220" cy="170" r="130" fill="white" fillOpacity="0.04" />
-      <circle cx="220" cy="170" r="90" fill="white" fillOpacity="0.05" />
+    <div className="relative w-full h-full flex items-center justify-center">
+      {/* Main photo */}
+      <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-2xl">
+        <img
+          src="/brand/hands-together.jpg"
+          alt="Community hands joined together — unity and support"
+          className="w-full h-full object-cover object-center"
+          style={{ filter: "brightness(0.92) saturate(1.1)" }}
+        />
+        {/* Subtle blue overlay to blend with hero background */}
+        <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-[#1a4480]/30 rounded-2xl" />
+      </div>
 
-      {/* Heart at center */}
-      <path d="M220 200 C180 165 145 140 145 110 C145 90 160 76 180 76 C195 76 210 85 220 95 C230 85 245 76 260 76 C280 76 295 90 295 110 C295 140 260 165 220 200Z" fill="#f97316" fillOpacity="0.85" />
-      <path d="M220 200 C185 168 155 145 155 115 C155 98 167 85 182 85 C197 85 210 93 220 103 C230 93 243 85 258 85 C273 85 285 98 285 115 C285 145 255 168 220 200Z" fill="white" fillOpacity="0.15" />
+      {/* Floating heart badge — top-right of image */}
+      <div
+        className="absolute -top-3 -right-3 flex items-center justify-center rounded-full shadow-lg"
+        style={{ width: 52, height: 52, background: "linear-gradient(135deg, #f97316, #ea580c)" }}
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 text-white" aria-hidden="true">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+        </svg>
+      </div>
 
-      {/* Left hand */}
-      <g transform="translate(60, 155)">
-        <ellipse cx="40" cy="75" rx="28" ry="38" fill="#fdba74" fillOpacity="0.9" transform="rotate(-20 40 75)" />
-        <rect x="24" y="55" width="10" height="40" rx="5" fill="#fed7aa" fillOpacity="0.8" transform="rotate(-25 29 75)" />
-        <rect x="36" y="45" width="10" height="50" rx="5" fill="#fed7aa" fillOpacity="0.85" transform="rotate(-15 41 70)" />
-        <rect x="48" y="50" width="10" height="46" rx="5" fill="#fed7aa" fillOpacity="0.8" transform="rotate(-5 53 73)" />
-        <rect x="58" y="58" width="10" height="38" rx="5" fill="#fed7aa" fillOpacity="0.75" transform="rotate(8 63 77)" />
-        <rect x="16" y="68" width="14" height="32" rx="7" fill="#fdba74" fillOpacity="0.75" transform="rotate(-35 23 84)" />
-        <path d="M18 95 Q40 85 66 97" stroke="white" strokeOpacity="0.3" strokeWidth="1.5" fill="none" />
-      </g>
+      {/* Small floating hearts */}
+      <div className="absolute top-4 left-4 flex flex-col gap-1.5 opacity-80">
+        <svg viewBox="0 0 24 24" fill="#f97316" className="w-3.5 h-3.5 opacity-70" aria-hidden="true">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+        </svg>
+        <svg viewBox="0 0 24 24" fill="#fb923c" className="w-2.5 h-2.5 opacity-50 ml-2" aria-hidden="true">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+        </svg>
+      </div>
 
-      {/* Right hand */}
-      <g transform="translate(320, 155) scale(-1,1) translate(-80,0)">
-        <ellipse cx="40" cy="75" rx="28" ry="38" fill="#fdba74" fillOpacity="0.9" transform="rotate(-20 40 75)" />
-        <rect x="24" y="55" width="10" height="40" rx="5" fill="#fed7aa" fillOpacity="0.8" transform="rotate(-25 29 75)" />
-        <rect x="36" y="45" width="10" height="50" rx="5" fill="#fed7aa" fillOpacity="0.85" transform="rotate(-15 41 70)" />
-        <rect x="48" y="50" width="10" height="46" rx="5" fill="#fed7aa" fillOpacity="0.8" transform="rotate(-5 53 73)" />
-        <rect x="58" y="58" width="10" height="38" rx="5" fill="#fed7aa" fillOpacity="0.75" transform="rotate(8 63 77)" />
-        <rect x="16" y="68" width="14" height="32" rx="7" fill="#fdba74" fillOpacity="0.75" transform="rotate(-35 23 84)" />
-      </g>
-
-      {/* Sparkle dots */}
-      <circle cx="120" cy="100" r="4" fill="#fb923c" fillOpacity="0.7" />
-      <circle cx="320" cy="95" r="5" fill="#fb923c" fillOpacity="0.7" />
-      <circle cx="165" cy="60" r="3" fill="white" fillOpacity="0.4" />
-      <circle cx="280" cy="58" r="3" fill="white" fillOpacity="0.4" />
-      <circle cx="100" cy="190" r="3" fill="#fb923c" fillOpacity="0.5" />
-      <circle cx="340" cy="185" r="3" fill="#fb923c" fillOpacity="0.5" />
-      <circle cx="220" cy="40" r="5" fill="white" fillOpacity="0.3" />
-
-      {/* Small hearts orbiting */}
-      <path d="M145 72 C140 64 130 60 130 70 C130 80 145 88 145 88 C145 88 160 80 160 70 C160 60 150 64 145 72Z" fill="#f97316" fillOpacity="0.5" />
-      <path d="M295 68 C290 60 280 56 280 66 C280 76 295 84 295 84 C295 84 310 76 310 66 C310 56 300 60 295 68Z" fill="#f97316" fillOpacity="0.5" />
-
-      {/* Radiating arcs */}
-      <path d="M220 165 C185 130 175 90 220 65 C265 90 255 130 220 165Z" stroke="white" strokeOpacity="0.08" strokeWidth="1" fill="none" />
-      <path d="M175 200 C150 175 135 145 140 110" stroke="white" strokeOpacity="0.06" strokeWidth="1" fill="none" strokeLinecap="round" />
-      <path d="M265 200 C290 175 305 145 300 110" stroke="white" strokeOpacity="0.06" strokeWidth="1" fill="none" strokeLinecap="round" />
-
-      {/* Stats bubbles */}
-      <g transform="translate(60, 250)">
-        <rect x="0" y="0" width="90" height="40" rx="20" fill="white" fillOpacity="0.12" />
-        <text x="45" y="15" textAnchor="middle" fill="white" fontSize="9" fillOpacity="0.7" fontFamily="sans-serif">Donors Served</text>
-        <text x="45" y="30" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="sans-serif">500+</text>
-      </g>
-      <g transform="translate(290, 250)">
-        <rect x="0" y="0" width="90" height="40" rx="20" fill="white" fillOpacity="0.12" />
-        <text x="45" y="15" textAnchor="middle" fill="white" fontSize="9" fillOpacity="0.7" fontFamily="sans-serif">Homes Supported</text>
-        <text x="45" y="30" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="sans-serif">3 Homes</text>
-      </g>
-    </svg>
+      {/* Bottom stats strip */}
+      <div className="absolute bottom-3 left-3 right-3 flex gap-2">
+        <div className="flex-1 rounded-xl px-3 py-2 text-center" style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)" }}>
+          <p className="text-white font-bold text-sm leading-tight">500+</p>
+          <p className="text-white/80 text-xs">Donors Served</p>
+        </div>
+        <div className="flex-1 rounded-xl px-3 py-2 text-center" style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(8px)" }}>
+          <p className="text-white font-bold text-sm leading-tight">3 Homes</p>
+          <p className="text-white/80 text-xs">Supported</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
