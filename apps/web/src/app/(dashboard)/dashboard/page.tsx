@@ -65,24 +65,13 @@ async function safeFetch<T>(url: string): Promise<T | null> {
 // ─── NGO Hero Illustration ────────────────────────────────────────────────────
 function HeroIllustration() {
   return (
-    <div className="relative w-full h-full overflow-hidden">
-      {/* Photo — no border, no rounded corners, bleeds to edges */}
+    <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-xl">
+      {/* Photo — natural colors, no overlays */}
       <img
         src="/brand/hands-together.jpg"
         alt="Community hands joined together — unity and support"
         className="w-full h-full object-cover object-center"
-        style={{ filter: "brightness(0.85) saturate(1.1)" }}
       />
-
-      {/* Edge-fade gradients — dissolve all 4 sides into the dark-blue hero */}
-      <div className="absolute inset-0 pointer-events-none" style={{
-        background: [
-          "linear-gradient(to right,  #1a4480 0%, transparent 40%)",
-          "linear-gradient(to left,   #1e40af 0%, transparent 35%)",
-          "linear-gradient(to bottom, #1e3a5f 0%, transparent 40%)",
-          "linear-gradient(to top,    #1a4480 0%, transparent 35%)",
-        ].join(", ")
-      }} />
 
       {/* Floating heart badge */}
       <div
