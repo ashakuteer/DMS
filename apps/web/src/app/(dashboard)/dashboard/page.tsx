@@ -65,33 +65,31 @@ async function safeFetch<T>(url: string): Promise<T | null> {
 // ─── NGO Hero Illustration ────────────────────────────────────────────────────
 function HeroIllustration() {
   return (
-    <div className="relative w-full h-full">
-      {/* Main photo — no card, no background */}
+    <div className="relative w-full h-full overflow-hidden">
+      {/* Photo — no border, no rounded corners, bleeds to edges */}
       <img
         src="/brand/hands-together.jpg"
         alt="Community hands joined together — unity and support"
-        className="w-full h-full object-cover object-center rounded-2xl"
-        style={{ filter: "brightness(0.92) saturate(1.1)" }}
+        className="w-full h-full object-cover object-center"
+        style={{ filter: "brightness(0.85) saturate(1.1)" }}
       />
-      {/* Subtle left-edge blend into hero background */}
-      <div className="absolute inset-0 bg-gradient-to-l from-transparent via-transparent to-[#1a4480]/40 rounded-2xl pointer-events-none" />
 
-      {/* Floating heart badge — top-right */}
+      {/* Edge-fade gradients — dissolve all 4 sides into the dark-blue hero */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        background: [
+          "linear-gradient(to right,  #1a4480 0%, transparent 40%)",
+          "linear-gradient(to left,   #1e40af 0%, transparent 35%)",
+          "linear-gradient(to bottom, #1e3a5f 0%, transparent 40%)",
+          "linear-gradient(to top,    #1a4480 0%, transparent 35%)",
+        ].join(", ")
+      }} />
+
+      {/* Floating heart badge */}
       <div
-        className="absolute -top-3 -right-3 flex items-center justify-center rounded-full shadow-lg"
-        style={{ width: 52, height: 52, background: "linear-gradient(135deg, #f97316, #ea580c)" }}
+        className="absolute top-3 right-3 flex items-center justify-center rounded-full shadow-lg z-10"
+        style={{ width: 44, height: 44, background: "linear-gradient(135deg, #f97316, #ea580c)" }}
       >
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 text-white" aria-hidden="true">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-        </svg>
-      </div>
-
-      {/* Small floating hearts */}
-      <div className="absolute top-4 left-4 flex flex-col gap-1.5">
-        <svg viewBox="0 0 24 24" fill="#f97316" className="w-3.5 h-3.5 opacity-70" aria-hidden="true">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-        </svg>
-        <svg viewBox="0 0 24 24" fill="#fb923c" className="w-2.5 h-2.5 opacity-50 ml-2" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white" aria-hidden="true">
           <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
         </svg>
       </div>
