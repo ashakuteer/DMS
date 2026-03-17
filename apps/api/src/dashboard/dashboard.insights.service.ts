@@ -325,7 +325,7 @@ export class DashboardInsightsService {
       59,
       59,
     );
-    const lastMonthStart = new Date(now.getFullYear(), now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastMonthEnd = new Date(
       now.getFullYear(),
       now.getMonth(),

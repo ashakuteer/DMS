@@ -1,0 +1,166 @@
+I want a proper performance audit and optimization plan for my DMS, especially for slow dashboard loading.
+
+Main problem areas:
+- Dashboard loading
+- Donors module
+- Donations module
+- Beneficiaries module
+- Dashboard insights
+- Dashboard graphs/charts
+
+I specifically want you to investigate:
+- N+1 query problems
+- Prisma query inefficiency
+- duplicate/serial API calls
+- frontend over-fetching
+- dashboard aggregation slowness
+- monorepo optimization opportunities
+- runtime and bundle inefficiencies
+
+Please do a structured diagnosis first, then optimize safely.
+
+1. DASHBOARD PERFORMANCE AUDIT
+Check exactly why dashboard is slow:
+- how many API calls happen on dashboard load
+- which endpoints are called
+- which calls are slowest
+- whether calls are sequential instead of parallel
+- whether dashboard waits for too much data before rendering
+- whether charts/insights trigger extra heavy loading
+- whether some sections should load later instead of blocking first paint
+
+2. N+1 QUERY AUDIT
+This is important.
+Please inspect dashboard, donor, donation, and beneficiary related backend code for N+1 query patterns.
+
+Check for cases like:
+- looping over donors and querying donations one by one
+- looping over beneficiaries and querying sponsorships one by one
+- repeated counts/lookups inside loops
+- repeated Prisma calls for each row/card/home/chart item
+- per-record extra queries that should be aggregated or joined
+
+Please identify exact files/functions where N+1 happens, if any.
+
+3. DATABASE / PRISMA AUDIT
+Inspect backend queries related to:
+- dashboard
+- donors
+- donations
+- beneficiaries
+- impact / retention / insights / analytics
+
+Check for:
+- too many includes
+- loading full records when only summary fields are needed
+- repeated count queries
+- expensive aggregate queries on every request
+- missing select optimization
+- missing pagination
+- unnecessary sorting/filtering in memory instead of database
+- missing indexes for common filters/sorts/grouping
+
+4. FRONTEND FETCH / RENDER AUDIT
+Check whether frontend is adding slowness through:
+- duplicate fetches
+- repeated fetching on rerender
+- lack of memoization
+- too many client-side components
+- charts rendering too early
+- loading too much data in one page
+- one page waiting for all sections before rendering anything
+- expensive transforms in React instead of backend summaries
+
+5. MONOREPO OPTIMIZATION AUDIT
+Please review monorepo structure and identify optimization opportunities.
+
+Check for:
+- unnecessarily heavy shared imports
+- oversized dependencies used by dashboard pages
+- too many modules imported into client components
+- poor code splitting
+- large chart libraries or utility bundles increasing load
+- repeated logic across apps/packages
+- build/startup/runtime overhead from monorepo structure
+- opportunities to move heavy code server-side or lazy-load features
+
+I want both:
+- runtime optimization
+- monorepo/package structure optimization where relevant
+
+6. FILES TO REVIEW
+Please inspect the real files/code paths related to:
+- dashboard page
+- dashboard services/controllers
+- donor services/controllers/pages
+- donation services/controllers/pages
+- beneficiary services/controllers/pages
+- insights / retention / impact / analytics services
+- Prisma queries used by these pages
+- any shared packages imported into these flows
+
+7. WHAT I WANT YOU TO FIND
+Please identify clearly:
+- exact slow endpoints
+- exact slow query patterns
+- exact N+1 issues
+- duplicate frontend requests
+- chart/insight bottlenecks
+- monorepo inefficiencies affecting performance
+- which sections should be lazy-loaded
+- whether caching should be added
+- whether indexes are missing
+
+8. OPTIMIZATION GOALS
+Optimize for:
+- faster dashboard first load
+- faster KPI loading
+- faster donor/donation/beneficiary load
+- reduced DB load
+- fewer API calls
+- reduced repeated queries
+- better perceived speed
+- lighter client bundle
+- safer production performance
+
+9. SAFE IMPLEMENTATION RULES
+Important:
+- do not break working features
+- do not redesign UI unnecessarily
+- do not remove useful dashboard sections unless clearly justified
+- prefer safe optimizations first
+- explain tradeoffs before major structural changes
+
+10. RESPONSE FORMAT I WANT
+Please reply in this exact structure:
+
+A. Findings
+- slow endpoints
+- slow queries
+- N+1 issues
+- duplicate requests
+- heavy frontend rendering areas
+- monorepo/runtime inefficiencies
+
+B. Root causes
+- exact reasons for lag
+
+C. Files involved
+- which files are responsible or related
+
+D. Recommended fixes
+- quick wins
+- medium fixes
+- deeper optional optimizations
+
+E. Implemented fixes
+- what you actually changed
+
+F. Measured improvement
+- before vs after, if possible
+- which pages/endpoints became faster
+
+IMPORTANT
+Please do not just guess.
+Actually inspect the code, query paths, frontend fetch flow, and monorepo imports first.
+Then optimize carefully.

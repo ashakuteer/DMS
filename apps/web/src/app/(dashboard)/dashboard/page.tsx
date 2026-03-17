@@ -241,6 +241,7 @@ export default function DashboardPage() {
   const [retentionData, setRetentionData] = useState<RetentionData | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [slowLoading, setSlowLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const { toast } = useToast();
 
@@ -288,9 +289,10 @@ export default function DashboardPage() {
         if (profileData) setUserProfile(profileData);
         const r = profileData?.role ?? "";
 
+        // Phase 1: fast core queries — these unblock the spinner quickly
         const [
           statsData, targetData, trendsData, modeData, topData, recentData,
-          insightsData, insightCardsData, impactD, retentionD,
+          insightsData, insightCardsData,
         ] = await Promise.all([
           safeFetch<Stats>("/api/dashboard/stats"),
           safeFetch<MonthlyTarget>("/api/dashboard/monthly-target"),
@@ -300,8 +302,6 @@ export default function DashboardPage() {
           safeFetch<RecentDonation[]>("/api/dashboard/recent-donations"),
           safeFetch<Insight[]>("/api/dashboard/insights"),
           safeFetch<InsightCard[]>("/api/dashboard/insight-cards"),
-          safeFetch<ImpactData>("/api/dashboard/impact"),
-          safeFetch<RetentionData>("/api/dashboard/retention"),
         ]);
 
         if (statsData) setStats(statsData);
@@ -312,26 +312,39 @@ export default function DashboardPage() {
         if (recentData) setRecentDonations(recentData);
         if (insightsData) setInsights(insightsData);
         if (insightCardsData) setInsightCards(insightCardsData);
-        if (impactD) setImpactData(impactD);
-        if (retentionD) setRetentionData(retentionD);
+
+        // Remove spinner after fast data is ready; heavy sections load in background
+        setLoading(false);
+
+        // Phase 2: heavier analytics — run in parallel without blocking UI
+        const heavyFetches: Promise<void>[] = [
+          safeFetch<ImpactData>("/api/dashboard/impact").then((d) => { if (d) setImpactData(d); }),
+          safeFetch<RetentionData>("/api/dashboard/retention").then((d) => { if (d) setRetentionData(d); }),
+        ];
 
         if (["ADMIN", "STAFF", "TELECALLER"].includes(r)) {
-          const actionsData = await safeFetch<StaffActionsData>("/api/dashboard/staff-actions");
-          if (actionsData) setStaffActions(actionsData);
+          heavyFetches.push(
+            safeFetch<StaffActionsData>("/api/dashboard/staff-actions").then((d) => { if (d) setStaffActions(d); }),
+          );
         }
         if (["ADMIN", "STAFF"].includes(r)) {
-          const remindersData = await safeFetch<DueReminder[]>("/api/reminders/due");
-          if (remindersData) setDueReminders(remindersData);
+          heavyFetches.push(
+            safeFetch<DueReminder[]>("/api/reminders/due").then((d) => { if (d) setDueReminders(d); }),
+          );
         }
         if (r === "ADMIN") {
-          const adminData = await safeFetch<AdminInsight[]>("/api/dashboard/admin-insights");
-          if (adminData) setAdminInsights(adminData);
+          heavyFetches.push(
+            safeFetch<AdminInsight[]>("/api/dashboard/admin-insights").then((d) => { if (d) setAdminInsights(d); }),
+          );
         }
+
+        await Promise.all(heavyFetches);
+        setSlowLoading(false);
       } catch {
         setLoadError(true);
-        toast({ title: "Dashboard load failed", description: "Could not connect to the server.", variant: "destructive" });
-      } finally {
         setLoading(false);
+        setSlowLoading(false);
+        toast({ title: "Dashboard load failed", description: "Could not connect to the server.", variant: "destructive" });
       }
     };
     load();
@@ -551,7 +564,7 @@ export default function DashboardPage() {
         )}
 
         {/* ── HOME-WISE PERFORMANCE ─────────────────────────────────────────── */}
-        {loading ? (
+        {loading || slowLoading ? (
           <section>
             <SectionHeader title="Home-wise Performance" subtitle="Impact across all homes" icon={Building2} />
             <div className="grid gap-4 md:grid-cols-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-44 rounded-xl" />)}</div>
@@ -611,12 +624,12 @@ export default function DashboardPage() {
         ) : null}
 
         {/* ── DONOR INTELLIGENCE + SMART INSIGHTS ──────────────────────────── */}
-        {(loading || insights.length > 0 || insightCards.length > 0 || retentionData !== null || adminInsights.length > 0) && (
+        {(loading || slowLoading || insights.length > 0 || insightCards.length > 0 || retentionData !== null || adminInsights.length > 0) && (
           <section>
             <div className="grid gap-5 lg:grid-cols-2">
               <div>
                 <SectionHeader title="Donor Intelligence" subtitle="Retention and engagement" icon={Repeat} />
-                {loading ? (
+                {loading || slowLoading ? (
                   <div className="space-y-3">{[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>
                 ) : (
                   <div className="space-y-3">

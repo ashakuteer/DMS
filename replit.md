@@ -43,7 +43,7 @@ The frontend uses Next.js 14 with the App Router and Tailwind CSS. Recharts is u
     - **Health & Growth Tracking:** Quarterly height/weight metrics and health event logging.
     - **Academic Progress Cards:** Term-wise academic tracking.
     - **Documents Vault:** Secure document storage with RBAC and donor sharing controls.
-- **Dashboard:** Displays key statistics, trends, payment distribution, top donors, and recent donations.
+- **Dashboard:** Displays key statistics, trends, payment distribution, top donors, and recent donations. Two-phase loading: fast core queries (stats, trends, insights) unblock the spinner first; heavy analytics (impact, retention) load in the background and populate sections without re-triggering the loading spinner. All dashboard services have 5-minute in-memory TTL caches (trends, impact, retention, insights, actions). Dashboard query performance: trends uses 12 parallel queries (was sequential); impact uses a fully parallel batch (was 12 sequential rounds of 4 queries each = 48 serial round-trips); retention uses DB-level `groupBy` aggregation instead of loading all donors+donations into Node.js memory.
 - **Communication Features:** WhatsApp quick-send, email composer with templates, and a communication log.
 - **Auto Reminders Engine:** Automated generation of reminders for special days and pledges via daily cron jobs.
 - **Daily Actions Inbox:** Centralized dashboard for upcoming special days, follow-ups, pledges, and sponsorships due.
