@@ -188,6 +188,16 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       // ── staff_performance indexes ─────────────────────────────────────────
       `CREATE INDEX IF NOT EXISTS "staff_performance_userId_idx" ON "staff_performance"("userId")`,
       `CREATE INDEX IF NOT EXISTS "staff_performance_year_month_idx" ON "staff_performance"("year","month")`,
+
+      // ── Performance indexes for dashboard queries ─────────────────────────
+      // beneficiaries: needed for GROUP BY createdAt and deletedAt filters
+      `CREATE INDEX IF NOT EXISTS "beneficiaries_createdAt_idx" ON "beneficiaries"("createdAt")`,
+      `CREATE INDEX IF NOT EXISTS "beneficiaries_deletedAt_createdAt_idx" ON "beneficiaries"("deletedAt","createdAt")`,
+      // sponsorships: needed for GROUP BY createdAt and status+createdAt queries
+      `CREATE INDEX IF NOT EXISTS "sponsorships_createdAt_idx" ON "sponsorships"("createdAt")`,
+      `CREATE INDEX IF NOT EXISTS "sponsorships_status_createdAt_idx" ON "sponsorships"("status","createdAt")`,
+      // donors: compound index for deletedAt + createdAt (impact monthly queries)
+      `CREATE INDEX IF NOT EXISTS "donors_deletedAt_createdAt_idx" ON "donors"("deletedAt","createdAt")`,
     ];
 
     for (const sql of patches) {

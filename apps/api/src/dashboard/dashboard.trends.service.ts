@@ -31,31 +31,50 @@ export class DashboardTrendsService {
     const start = Date.now();
     const now = new Date();
 
+    // Build the 12-month label/range array (for ordering & labels)
     const monthRanges = Array.from({ length: 12 }, (_, idx) => {
       const i = 11 - idx;
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       return {
         label: date.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }),
+        key: date.toISOString().slice(0, 7), // "YYYY-MM"
         start: new Date(date.getFullYear(), date.getMonth(), 1),
-        end: new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59),
       };
     });
 
-    const results = await Promise.all(
-      monthRanges.map(({ start: s, end: e }) =>
-        this.prisma.donation.aggregate({
-          _sum: { donationAmount: true },
-          _count: { id: true },
-          where: { deletedAt: null, donationDate: { gte: s, lte: e } },
-        }),
-      ),
+    const windowStart = monthRanges[0].start;
+
+    // KEY OPTIMIZATION: was 12 separate aggregate queries (one per month).
+    // Now 1 raw SQL GROUP BY query covers all 12 months in a single round-trip.
+    const rawRows = await this.prisma.$queryRaw<{
+      month: Date;
+      amount: string | null;
+      count: bigint;
+    }[]>`
+      SELECT
+        DATE_TRUNC('month', "donationDate") AS month,
+        SUM("donationAmount")               AS amount,
+        COUNT(*)                            AS count
+      FROM donations
+      WHERE "deletedAt" IS NULL
+        AND "donationDate" >= ${windowStart}
+      GROUP BY DATE_TRUNC('month', "donationDate")
+      ORDER BY month ASC
+    `;
+
+    // Build lookup: "YYYY-MM" → { amount, count }
+    const dataByKey = new Map(
+      rawRows.map((r) => [
+        new Date(r.month).toISOString().slice(0, 7),
+        { amount: r.amount ? Number(r.amount) : 0, count: Number(r.count) },
+      ]),
     );
 
-    const months = monthRanges.map(({ label }, i) => ({
-      month: label,
-      amount: results[i]._sum.donationAmount?.toNumber() || 0,
-      count: results[i]._count.id || 0,
-    }));
+    // Fill all 12 months (include months with zero donations)
+    const months = monthRanges.map(({ label, key }) => {
+      const d = dataByKey.get(key) ?? { amount: 0, count: 0 };
+      return { month: label, amount: d.amount, count: d.count };
+    });
 
     this.setCached("monthly_trends", months);
     this.logger.log(`getMonthlyTrends() completed in ${Date.now() - start}ms`);

@@ -278,15 +278,52 @@ export class RolePermissionsService implements OnModuleInit {
   }
 
   async getMyPermissions(role: Role): Promise<Record<string, string[]>> {
-    const permissions = await this.prisma.rolePermission.findMany({
-      where: { role, allowed: true },
-      orderBy: [{ module: "asc" }, { action: "asc" }],
-    });
+    // KEY OPTIMIZATION: serve from the in-memory permissionCache (populated on startup
+    // and refreshed after every permission change) instead of a DB round-trip.
+    // This eliminates the 12-second wait that was causing the 500 error under load.
+    if (this.cacheInitialized) {
+      return this.getMyPermissionsFromCache(role);
+    }
+
+    // Fallback to DB if cache hasn't warmed up yet (first few milliseconds only)
+    try {
+      const permissions = await this.prisma.rolePermission.findMany({
+        where: { role, allowed: true },
+        orderBy: [{ module: "asc" }, { action: "asc" }],
+      });
+
+      const result: Record<string, string[]> = {};
+      for (const perm of permissions) {
+        if (!result[perm.module]) result[perm.module] = [];
+        result[perm.module].push(perm.action);
+      }
+      return result;
+    } catch {
+      // If DB is unavailable, return empty permissions rather than crashing
+      return {};
+    }
+  }
+
+  private getMyPermissionsFromCache(role: Role): Record<string, string[]> {
+    if (role === Role.ADMIN) {
+      // ADMIN has all permissions — reconstruct from DEFAULT_PERMISSIONS
+      const result: Record<string, string[]> = {};
+      for (const [module, actions] of Object.entries(DEFAULT_PERMISSIONS)) {
+        result[module] = Object.keys(actions);
+      }
+      return result;
+    }
 
     const result: Record<string, string[]> = {};
-    for (const perm of permissions) {
-      if (!result[perm.module]) result[perm.module] = [];
-      result[perm.module].push(perm.action);
+    const prefix = `${role}:`;
+    for (const key of this.permissionCache.keys()) {
+      if (!key.startsWith(prefix)) continue;
+      const parts = key.split(":");
+      if (parts.length < 3) continue;
+      const module = parts[1];
+      const action = parts[2];
+      if (!result[module]) result[module] = [];
+      result[module].push(action);
     }
     return result;
   }

@@ -37,79 +37,28 @@ export class DashboardImpactService {
     const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
+    // Last 12 months window for the growth chart
     const monthRanges = Array.from({ length: 12 }, (_, idx) => {
       const i = 11 - idx;
       const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59);
       return {
         label: date.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }),
+        key: date.toISOString().slice(0, 7),
         monthStart: new Date(date.getFullYear(), date.getMonth(), 1),
         monthEnd,
       };
     });
 
-    const [
-      summaryResults,
-      monthlyResults,
-    ] = await Promise.all([
-      Promise.all([
-        this.prisma.beneficiary.count({ where: { deletedAt: null } }),
-        this.prisma.beneficiary.groupBy({
-          by: ["homeType"],
-          _count: { id: true },
-          where: { deletedAt: null },
-        }),
-        this.prisma.donor.count({ where: { deletedAt: null } }),
-        this.prisma.sponsorship.findMany({
-          where: { status: "ACTIVE" },
-          select: { donorId: true },
-          distinct: ["donorId"],
-        }),
-        this.prisma.sponsorship.count({ where: { status: "ACTIVE" } }),
-        this.prisma.donation.aggregate({
-          _sum: { donationAmount: true },
-          where: { deletedAt: null, donationDate: { gte: fyStart, lte: fyEnd } },
-        }),
-        this.prisma.campaign.count({ where: { isDeleted: false } }),
-        this.prisma.beneficiary.count({
-          where: { deletedAt: null, createdAt: { gte: thisMonthStart } },
-        }),
-        this.prisma.donor.count({
-          where: { deletedAt: null, createdAt: { gte: thisMonthStart } },
-        }),
-        this.prisma.beneficiary.count({
-          where: { deletedAt: null, createdAt: { gte: prevMonthStart, lte: prevMonthEnd } },
-        }),
-        this.prisma.donor.count({
-          where: { deletedAt: null, createdAt: { gte: prevMonthStart, lte: prevMonthEnd } },
-        }),
-      ]),
-      Promise.all(
-        monthRanges.map(({ monthStart, monthEnd }) =>
-          Promise.all([
-            this.prisma.beneficiary.count({
-              where: { deletedAt: null, createdAt: { lte: monthEnd } },
-            }),
-            this.prisma.donor.count({
-              where: { deletedAt: null, createdAt: { lte: monthEnd } },
-            }),
-            this.prisma.sponsorship.count({
-              where: { status: "ACTIVE", createdAt: { lte: monthEnd } },
-            }),
-            this.prisma.donation.aggregate({
-              _sum: { donationAmount: true },
-              _count: { id: true },
-              where: {
-                deletedAt: null,
-                donationDate: { gte: monthStart, lte: monthEnd },
-              },
-            }),
-          ]),
-        ),
-      ),
-    ]);
+    const maxMonthEnd = monthRanges[monthRanges.length - 1].monthEnd;
+    const windowStart = monthRanges[0].monthStart;
 
+    // ─── All queries in ONE parallel batch ───────────────────────────────────────
+    //
+    // KEY OPTIMIZATION: was 48 queries (12 months × 4 counts/aggregates).
+    // Now replaced with 4 raw SQL GROUP BY queries + summary queries = 1 round-trip.
     const [
+      // Summary data
       totalBeneficiaries,
       beneficiariesByHome,
       totalDonors,
@@ -121,57 +70,209 @@ export class DashboardImpactService {
       newDonorsThisMonth,
       newBeneficiariesLastMonth,
       newDonorsLastMonth,
-    ] = summaryResults;
 
-    const monthlyGrowth = monthRanges.map(({ label }, i) => {
-      const [bCount, dCount, sCount, donationAgg] = monthlyResults[i];
-      return {
-        month: label,
-        beneficiaries: bCount,
-        donors: dCount,
-        sponsorships: sCount,
-        donations: (donationAgg as any)._sum.donationAmount?.toNumber() || 0,
-      };
-    });
+      // Per-month NEW counts (raw SQL GROUP BY — 4 queries replace 48)
+      beneficiaryNewByMonth,
+      donorNewByMonth,
+      sponsorshipNewByMonth,
+      donationByMonth,
 
-    const homeTypeToDonation: Record<string, string> = {
+      // Home-level metrics
+      sponsorshipsByHome,
+      donationsByHomeType,
+    ] = await Promise.all([
+      this.prisma.beneficiary.count({ where: { deletedAt: null } }),
+
+      this.prisma.beneficiary.groupBy({
+        by: ["homeType"],
+        _count: { id: true },
+        where: { deletedAt: null },
+      }),
+
+      this.prisma.donor.count({ where: { deletedAt: null } }),
+
+      // Count of distinct donors with active sponsorships
+      this.prisma.sponsorship.groupBy({
+        by: ["donorId"],
+        where: { status: "ACTIVE" },
+      }),
+
+      this.prisma.sponsorship.count({ where: { status: "ACTIVE" } }),
+
+      this.prisma.donation.aggregate({
+        _sum: { donationAmount: true },
+        where: { deletedAt: null, donationDate: { gte: fyStart, lte: fyEnd } },
+      }),
+
+      this.prisma.campaign.count({ where: { isDeleted: false } }),
+
+      this.prisma.beneficiary.count({
+        where: { deletedAt: null, createdAt: { gte: thisMonthStart } },
+      }),
+
+      this.prisma.donor.count({
+        where: { deletedAt: null, createdAt: { gte: thisMonthStart } },
+      }),
+
+      this.prisma.beneficiary.count({
+        where: { deletedAt: null, createdAt: { gte: prevMonthStart, lte: prevMonthEnd } },
+      }),
+
+      this.prisma.donor.count({
+        where: { deletedAt: null, createdAt: { gte: prevMonthStart, lte: prevMonthEnd } },
+      }),
+
+      // New beneficiaries created per month (replaces 12 × count queries)
+      this.prisma.$queryRaw<{ month: Date; count: bigint }[]>`
+        SELECT DATE_TRUNC('month', "createdAt") AS month, COUNT(*) AS count
+        FROM beneficiaries
+        WHERE "deletedAt" IS NULL AND "createdAt" <= ${maxMonthEnd}
+        GROUP BY DATE_TRUNC('month', "createdAt")
+      `,
+
+      // New donors created per month (replaces 12 × count queries)
+      this.prisma.$queryRaw<{ month: Date; count: bigint }[]>`
+        SELECT DATE_TRUNC('month', "createdAt") AS month, COUNT(*) AS count
+        FROM donors
+        WHERE "deletedAt" IS NULL AND "createdAt" <= ${maxMonthEnd}
+        GROUP BY DATE_TRUNC('month', "createdAt")
+      `,
+
+      // New active sponsorships created per month (replaces 12 × count queries)
+      this.prisma.$queryRaw<{ month: Date; count: bigint }[]>`
+        SELECT DATE_TRUNC('month', "createdAt") AS month, COUNT(*) AS count
+        FROM sponsorships
+        WHERE "status" = 'ACTIVE' AND "createdAt" <= ${maxMonthEnd}
+        GROUP BY DATE_TRUNC('month', "createdAt")
+      `,
+
+      // Donations amount + count per month (replaces 12 × aggregate queries)
+      this.prisma.$queryRaw<{ month: Date; amount: string | null; count: bigint }[]>`
+        SELECT
+          DATE_TRUNC('month', "donationDate") AS month,
+          SUM("donationAmount")               AS amount,
+          COUNT(*)                            AS count
+        FROM donations
+        WHERE "deletedAt" IS NULL
+          AND "donationDate" >= ${windowStart}
+          AND "donationDate" <= ${maxMonthEnd}
+        GROUP BY DATE_TRUNC('month', "donationDate")
+      `,
+
+      // Sponsorships count per homeType (replaces per-home loop queries)
+      this.prisma.$queryRaw<{ homeType: string; count: bigint }[]>`
+        SELECT b."homeType", COUNT(s.id) AS count
+        FROM sponsorships s
+        JOIN beneficiaries b ON b.id = s."beneficiaryId"
+        WHERE s.status = 'ACTIVE'
+          AND b."deletedAt" IS NULL
+        GROUP BY b."homeType"
+      `,
+
+      // Donations sum per home type for FY (replaces per-home loop queries)
+      this.prisma.$queryRaw<{ homeType: string; amount: string | null }[]>`
+        SELECT "donationHomeType" AS "homeType", SUM("donationAmount") AS amount
+        FROM donations
+        WHERE "deletedAt" IS NULL
+          AND "donationDate" >= ${fyStart}
+          AND "donationDate" <= ${fyEnd}
+          AND "donationHomeType" IS NOT NULL
+        GROUP BY "donationHomeType"
+      `,
+    ]);
+
+    // ─── Build cumulative monthly growth from per-month new counts ───────────────
+    //
+    // The original code counted "createdAt <= monthEnd" (cumulative).
+    // We compute this by sorting all per-month new counts and accumulating.
+
+    const buildCumulative = (
+      rows: { month: Date; count: bigint }[],
+    ): Map<string, number> => {
+      // Sort ascending
+      const sorted = [...rows].sort(
+        (a, b) => new Date(a.month).getTime() - new Date(b.month).getTime(),
+      );
+      let running = 0;
+      const cumMap = new Map<string, number>();
+      // We need a running total up to each month in our window.
+      // First, sum up everything before our window start.
+      for (const r of sorted) {
+        const m = new Date(r.month);
+        if (m < windowStart) {
+          running += Number(r.count);
+        }
+      }
+      // Now walk through each target month
+      for (const { key, monthEnd } of monthRanges) {
+        // Add any months <= monthEnd and >= windowStart that we haven't added yet
+        for (const r of sorted) {
+          const m = new Date(r.month);
+          if (m >= windowStart && m <= monthEnd) {
+            // Only add if this month hasn't been counted yet in our window walk
+            if (!cumMap.has(new Date(r.month).toISOString().slice(0, 7))) {
+              running += Number(r.count);
+              cumMap.set(new Date(r.month).toISOString().slice(0, 7), running);
+            }
+          }
+        }
+        // If no entry for this month (no new records that month), use running total
+        if (!cumMap.has(key)) {
+          cumMap.set(key, running);
+        }
+      }
+      return cumMap;
+    };
+
+    const beneficiaryCumulative = buildCumulative(beneficiaryNewByMonth);
+    const donorCumulative = buildCumulative(donorNewByMonth);
+
+    // Sponsorship cumulative
+    const sponsorshipCumulative = buildCumulative(sponsorshipNewByMonth);
+
+    // Donations per month (not cumulative — just totals per month)
+    const donationByMonthKey = new Map(
+      donationByMonth.map((r) => [
+        new Date(r.month).toISOString().slice(0, 7),
+        Number(r.amount ?? 0),
+      ]),
+    );
+
+    const monthlyGrowth = monthRanges.map(({ label, key }) => ({
+      month: label,
+      beneficiaries: beneficiaryCumulative.get(key) ?? 0,
+      donors: donorCumulative.get(key) ?? 0,
+      sponsorships: sponsorshipCumulative.get(key) ?? 0,
+      donations: donationByMonthKey.get(key) ?? 0,
+    }));
+
+    // ─── Build homeMetrics from pre-fetched grouped data ─────────────────────────
+    const homeTypeToDonationHomeType: Record<string, string> = {
       ORPHAN_GIRLS: "GIRLS_HOME",
       BLIND_BOYS: "BLIND_BOYS_HOME",
       OLD_AGE: "OLD_AGE_HOME",
     };
 
-    const homeMetrics = await Promise.all(
-      (beneficiariesByHome as any[]).map(async (h: any) => {
-        const donationHomeType = homeTypeToDonation[h.homeType] || null;
-
-        const [sponsorshipCount, donationTotal] = await Promise.all([
-          this.prisma.sponsorship.count({
-            where: {
-              status: "ACTIVE",
-              beneficiary: { homeType: h.homeType, deletedAt: null },
-            },
-          }),
-          donationHomeType
-            ? this.prisma.donation.aggregate({
-                _sum: { donationAmount: true },
-                where: {
-                  deletedAt: null,
-                  donationHomeType: donationHomeType as any,
-                  donationDate: { gte: fyStart, lte: fyEnd },
-                },
-              })
-            : Promise.resolve({ _sum: { donationAmount: null } }),
-        ]);
-
-        return {
-          homeType: h.homeType,
-          homeLabel: formatHomeType(h.homeType),
-          beneficiaryCount: h._count.id,
-          activeSponsorships: sponsorshipCount,
-          donationsReceived: (donationTotal as any)._sum.donationAmount?.toNumber() || 0,
-        };
-      }),
+    const sponsorshipCountByHome = new Map(
+      sponsorshipsByHome.map((r) => [r.homeType, Number(r.count)]),
     );
+
+    const donationAmountByHomeType = new Map(
+      donationsByHomeType.map((r) => [r.homeType, Number(r.amount ?? 0)]),
+    );
+
+    const homeMetrics = (beneficiariesByHome as any[]).map((h: any) => {
+      const donationHomeType = homeTypeToDonationHomeType[h.homeType] || null;
+      return {
+        homeType: h.homeType,
+        homeLabel: formatHomeType(h.homeType),
+        beneficiaryCount: h._count.id,
+        activeSponsorships: sponsorshipCountByHome.get(h.homeType) ?? 0,
+        donationsReceived: donationHomeType
+          ? donationAmountByHomeType.get(donationHomeType) ?? 0
+          : 0,
+      };
+    });
 
     const result = {
       summary: {

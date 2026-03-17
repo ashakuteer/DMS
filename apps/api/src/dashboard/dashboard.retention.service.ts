@@ -33,10 +33,12 @@ export class DashboardRetentionService {
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
     const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 12, 1);
 
-    // Step 1: Get per-donor donation stats from DB (aggregated, not raw rows)
+    // ─── Step 1: Parallel batch — all heavy DB work in one round-trip ────────────
     const [totalDonorCount, donorDonationStats, activeLast6Count, activeLast12Count] =
       await Promise.all([
         this.prisma.donor.count({ where: { deletedAt: null } }),
+
+        // Per-donor aggregated stats (1 query replaces loading all rows)
         this.prisma.donation.groupBy({
           by: ["donorId"],
           where: { deletedAt: null },
@@ -45,11 +47,13 @@ export class DashboardRetentionService {
           _min: { donationDate: true },
           _max: { donationDate: true },
         }),
+
         this.prisma.donation.groupBy({
           by: ["donorId"],
           where: { deletedAt: null, donationDate: { gte: sixMonthsAgo } },
           _count: { id: true },
         }),
+
         this.prisma.donation.groupBy({
           by: ["donorId"],
           where: { deletedAt: null, donationDate: { gte: twelveMonthsAgo } },
@@ -70,8 +74,6 @@ export class DashboardRetentionService {
       .filter((d) => d._count.id === 1)
       .map((d) => d.donorId);
 
-    const sixMonthsAgoMs = sixMonthsAgo.getTime();
-
     const lapsedDonorIds = donorDonationStats
       .filter((d) => {
         const lastDate = d._max.donationDate ? new Date(d._max.donationDate).getTime() : 0;
@@ -79,25 +81,98 @@ export class DashboardRetentionService {
       })
       .map((d) => d.donorId);
 
-    // Step 2: Fetch donor info only for those we need in the lists (limited)
-    const [repeatDonorDetails, lapsedDonorDetails] = await Promise.all([
+    // ─── Step 2: Fetch donor details + active-per-month in parallel ───────────────
+    //
+    // KEY OPTIMIZATION: retentionOverTime used to fire 12 sequential nested awaits
+    // (one findMany("donors before monthStart") per month = 12 sequential full-table scans).
+    // Now we replace all 36 monthly queries with ONE raw SQL GROUP BY query,
+    // and compute "new donors" and "total registered" in JS from the already-fetched
+    // donorDonationStats (which has _min.donationDate per donor).
+
+    const [repeatDonorDetails, lapsedDonorDetails, monthlyActiveRows] = await Promise.all([
       donorIdsWithMultiple.length > 0
         ? this.prisma.donor.findMany({
             where: { id: { in: donorIdsWithMultiple.slice(0, 100) }, deletedAt: null },
             select: { id: true, firstName: true, lastName: true, donorCode: true },
           })
         : Promise.resolve([]),
+
       lapsedDonorIds.length > 0
         ? this.prisma.donor.findMany({
             where: { id: { in: lapsedDonorIds.slice(0, 100) }, deletedAt: null },
             select: { id: true, firstName: true, lastName: true, donorCode: true },
           })
         : Promise.resolve([]),
+
+      // Single raw SQL query replaces 12 × 3 separate Prisma calls
+      this.prisma.$queryRaw<{ month: Date; activeDonors: bigint }[]>`
+        SELECT
+          DATE_TRUNC('month', "donationDate") AS month,
+          COUNT(DISTINCT "donorId")            AS "activeDonors"
+        FROM donations
+        WHERE "deletedAt" IS NULL
+          AND "donationDate" >= ${twelveMonthsAgo}
+        GROUP BY DATE_TRUNC('month', "donationDate")
+        ORDER BY month ASC
+      `,
     ]);
 
-    // Build stat lookup map
+    // ─── Build lookup structures ─────────────────────────────────────────────────
     const statsByDonorId = new Map(donorDonationStats.map((s) => [s.donorId, s]));
 
+    // Active donors per month: key = "YYYY-MM"
+    const activeDonorsByMonthKey = new Map<string, number>(
+      monthlyActiveRows.map((r) => [
+        new Date(r.month).toISOString().slice(0, 7),
+        Number(r.activeDonors),
+      ]),
+    );
+
+    // First donation date per donor — used to compute new/total in JS
+    const firstDonationByDonor: Date[] = donorDonationStats
+      .filter((d) => d._min.donationDate != null)
+      .map((d) => new Date(d._min.donationDate!));
+
+    // ─── Build retentionOverTime (12 months) — no DB queries ─────────────────────
+    const monthRanges = Array.from({ length: 12 }, (_, idx) => {
+      const i = 11 - idx;
+      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+      return {
+        label: monthStart.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }),
+        monthStart,
+        monthEnd,
+        key: monthStart.toISOString().slice(0, 7),
+      };
+    });
+
+    const retentionOverTime = monthRanges.map(({ label, monthStart, monthEnd, key }) => {
+      const activeDonorCount = activeDonorsByMonthKey.get(key) ?? 0;
+
+      // "new" = first donation ever fell in this month
+      const newDonorCount = firstDonationByDonor.filter(
+        (d) => d >= monthStart && d <= monthEnd,
+      ).length;
+
+      // "total" = donors whose first donation was on or before end of this month
+      const totalDonors = firstDonationByDonor.filter((d) => d <= monthEnd).length;
+
+      const retentionPct =
+        totalDonors > 0
+          ? Math.round((activeDonorCount / totalDonors) * 1000) / 10
+          : 0;
+
+      return {
+        month: label,
+        totalDonors,
+        activeDonors: activeDonorCount,
+        retentionPct,
+        newDonors: newDonorCount,
+        returningDonors: Math.max(0, activeDonorCount - newDonorCount),
+      };
+    });
+
+    // ─── Build repeat/lapsed donor lists ────────────────────────────────────────
     const repeatDonors = repeatDonorDetails
       .map((donor) => {
         const stats = statsByDonorId.get(donor.id)!;
@@ -144,74 +219,6 @@ export class DashboardRetentionService {
       .sort((a, b) => b.daysSinceLastDonation - a.daysSinceLastDonation)
       .slice(0, 50);
 
-    // Step 3: Build retentionOverTime using parallel DB queries (no in-memory loops over all donors)
-    const monthRanges = Array.from({ length: 12 }, (_, idx) => {
-      const i = 11 - idx;
-      const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
-      return {
-        label: monthStart.toLocaleDateString("en-IN", { month: "short", year: "2-digit" }),
-        monthStart,
-        monthEnd,
-      };
-    });
-
-    const retentionRows = await Promise.all(
-      monthRanges.map(async ({ label, monthStart, monthEnd }) => {
-        // Active donors: donated in this month
-        const [activeDonorsInMonth, newDonorsInMonth, totalRegistered] = await Promise.all([
-          this.prisma.donation.groupBy({
-            by: ["donorId"],
-            where: { deletedAt: null, donationDate: { gte: monthStart, lte: monthEnd } },
-            _count: { id: true },
-          }),
-          // New: first donation ever was in this month (no prior donations)
-          this.prisma.donation.groupBy({
-            by: ["donorId"],
-            where: {
-              deletedAt: null,
-              donorId: {
-                notIn: await this.prisma.donation
-                  .findMany({
-                    where: { deletedAt: null, donationDate: { lt: monthStart } },
-                    select: { donorId: true },
-                    distinct: ["donorId"],
-                  })
-                  .then((rows) => rows.map((r) => r.donorId)),
-              },
-              donationDate: { gte: monthStart, lte: monthEnd },
-            },
-            _count: { id: true },
-          }),
-          // Total donors registered by end of this month who ever donated
-          this.prisma.donation.groupBy({
-            by: ["donorId"],
-            where: { deletedAt: null },
-            _min: { donationDate: true },
-            having: { donationDate: { _min: { lte: monthEnd } } },
-          }),
-        ]);
-
-        const activeDonorCount = activeDonorsInMonth.length;
-        const newDonorCount = newDonorsInMonth.length;
-        const returningDonorCount = activeDonorCount - newDonorCount;
-        const totalDonors = totalRegistered.length;
-        const retentionPct =
-          totalDonors > 0
-            ? Math.round((activeDonorCount / totalDonors) * 1000) / 10
-            : 0;
-
-        return {
-          month: label,
-          totalDonors,
-          activeDonors: activeDonorCount,
-          retentionPct,
-          newDonors: newDonorCount,
-          returningDonors: Math.max(0, returningDonorCount),
-        };
-      }),
-    );
-
     const result = {
       summary: {
         totalDonors: totalDonorCount,
@@ -227,7 +234,7 @@ export class DashboardRetentionService {
             ? Math.round((donorIdsWithMultiple.length / donorsWhoEverDonated) * 1000) / 10
             : 0,
       },
-      retentionOverTime: retentionRows,
+      retentionOverTime,
       repeatDonors,
       lapsedDonors,
     };
