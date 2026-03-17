@@ -5,7 +5,6 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth } from "@/lib/auth";
@@ -13,8 +12,8 @@ import {
   Users, IndianRupee, HandHeart, TrendingUp, AlertTriangle, Info,
   ArrowUpRight, Clock, Target, CalendarCheck, CheckCircle2, Bell,
   Mail, MessageCircle, Check, BarChart3, RefreshCcw, WifiOff,
-  UserPlus, PlusCircle, FileText, Heart, Lightbulb, ArrowDownRight,
-  Phone, Building2, Repeat, Zap, Star, ChevronRight, Activity,
+  UserPlus, PlusCircle, FileText, Heart, Lightbulb, ChevronRight,
+  Activity, Phone, Building2, Repeat, Zap, Star, Sparkles,
 } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -23,6 +22,7 @@ import {
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Stats { totalDonationsFY: number; donationsThisMonth: number; activeDonors: number; totalBeneficiaries: number; }
+interface MonthlyTarget { raised: number; count: number; totalMonthlyDonors: number; target: number; remaining: number; progressPct: number; achieved: boolean; }
 interface MonthlyTrend { month: string; amount: number; count: number; }
 interface ModeSplit { mode: string; amount: number; count: number; }
 interface TopDonor { donorId: string; donorCode: string; name: string; category: string; totalAmount: number; donationCount: number; }
@@ -36,7 +36,7 @@ interface UserProfile { id: string; name: string; email: string; role: string; }
 interface DueReminder { id: string; donorId: string; donationId: string | null; type: string; title: string; description: string | null; dueDate: string; status: string; donor: { id: string; donorCode: string; firstName: string; lastName: string | null; primaryPhone: string | null; }; donation: { id: string; donationAmount: number; receiptNumber: string | null; donationDate: string; } | null; createdBy: { id: string; name: string; }; }
 interface HomeMetric { homeType: string; homeLabel: string; beneficiaryCount: number; activeSponsorships: number; donationsReceived: number; }
 interface ImpactData { summary: { totalBeneficiaries: number; totalDonors: number; activeSponsors: number; activeSponsorships: number; totalDonationsFY: number; totalCampaigns: number; }; homeMetrics: HomeMetric[]; }
-interface RetentionData { summary: { totalDonors: number; repeatDonorCount: number; oneTimeDonorCount: number; lapsedDonorCount: number; overallRetentionPct: number; activeLast6Months: number; }; }
+interface RetentionData { summary: { totalDonors: number; repeatDonorCount: number; oneTimeDonorCount: number; lapsedDonorCount: number; overallRetentionPct: number; activeLast6Months: number }; }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const CHART_COLORS = ["#f97316", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b"];
@@ -59,9 +59,73 @@ async function safeFetch<T>(url: string): Promise<T | null> {
     const res = await fetchWithAuth(url);
     if (res.ok) return res.json() as Promise<T>;
     return null;
-  } catch {
-    return null;
-  }
+  } catch { return null; }
+}
+
+// ─── NGO Hero Illustration ────────────────────────────────────────────────────
+function HeroIllustration() {
+  return (
+    <svg viewBox="0 0 440 340" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full" aria-hidden="true">
+      {/* Background glow circles */}
+      <circle cx="220" cy="170" r="130" fill="white" fillOpacity="0.04" />
+      <circle cx="220" cy="170" r="90" fill="white" fillOpacity="0.05" />
+
+      {/* Heart at center */}
+      <path d="M220 200 C180 165 145 140 145 110 C145 90 160 76 180 76 C195 76 210 85 220 95 C230 85 245 76 260 76 C280 76 295 90 295 110 C295 140 260 165 220 200Z" fill="#f97316" fillOpacity="0.85" />
+      <path d="M220 200 C185 168 155 145 155 115 C155 98 167 85 182 85 C197 85 210 93 220 103 C230 93 243 85 258 85 C273 85 285 98 285 115 C285 145 255 168 220 200Z" fill="white" fillOpacity="0.15" />
+
+      {/* Left hand */}
+      <g transform="translate(60, 155)">
+        <ellipse cx="40" cy="75" rx="28" ry="38" fill="#fdba74" fillOpacity="0.9" transform="rotate(-20 40 75)" />
+        <rect x="24" y="55" width="10" height="40" rx="5" fill="#fed7aa" fillOpacity="0.8" transform="rotate(-25 29 75)" />
+        <rect x="36" y="45" width="10" height="50" rx="5" fill="#fed7aa" fillOpacity="0.85" transform="rotate(-15 41 70)" />
+        <rect x="48" y="50" width="10" height="46" rx="5" fill="#fed7aa" fillOpacity="0.8" transform="rotate(-5 53 73)" />
+        <rect x="58" y="58" width="10" height="38" rx="5" fill="#fed7aa" fillOpacity="0.75" transform="rotate(8 63 77)" />
+        <rect x="16" y="68" width="14" height="32" rx="7" fill="#fdba74" fillOpacity="0.75" transform="rotate(-35 23 84)" />
+        <path d="M18 95 Q40 85 66 97" stroke="white" strokeOpacity="0.3" strokeWidth="1.5" fill="none" />
+      </g>
+
+      {/* Right hand */}
+      <g transform="translate(320, 155) scale(-1,1) translate(-80,0)">
+        <ellipse cx="40" cy="75" rx="28" ry="38" fill="#fdba74" fillOpacity="0.9" transform="rotate(-20 40 75)" />
+        <rect x="24" y="55" width="10" height="40" rx="5" fill="#fed7aa" fillOpacity="0.8" transform="rotate(-25 29 75)" />
+        <rect x="36" y="45" width="10" height="50" rx="5" fill="#fed7aa" fillOpacity="0.85" transform="rotate(-15 41 70)" />
+        <rect x="48" y="50" width="10" height="46" rx="5" fill="#fed7aa" fillOpacity="0.8" transform="rotate(-5 53 73)" />
+        <rect x="58" y="58" width="10" height="38" rx="5" fill="#fed7aa" fillOpacity="0.75" transform="rotate(8 63 77)" />
+        <rect x="16" y="68" width="14" height="32" rx="7" fill="#fdba74" fillOpacity="0.75" transform="rotate(-35 23 84)" />
+      </g>
+
+      {/* Sparkle dots */}
+      <circle cx="120" cy="100" r="4" fill="#fb923c" fillOpacity="0.7" />
+      <circle cx="320" cy="95" r="5" fill="#fb923c" fillOpacity="0.7" />
+      <circle cx="165" cy="60" r="3" fill="white" fillOpacity="0.4" />
+      <circle cx="280" cy="58" r="3" fill="white" fillOpacity="0.4" />
+      <circle cx="100" cy="190" r="3" fill="#fb923c" fillOpacity="0.5" />
+      <circle cx="340" cy="185" r="3" fill="#fb923c" fillOpacity="0.5" />
+      <circle cx="220" cy="40" r="5" fill="white" fillOpacity="0.3" />
+
+      {/* Small hearts orbiting */}
+      <path d="M145 72 C140 64 130 60 130 70 C130 80 145 88 145 88 C145 88 160 80 160 70 C160 60 150 64 145 72Z" fill="#f97316" fillOpacity="0.5" />
+      <path d="M295 68 C290 60 280 56 280 66 C280 76 295 84 295 84 C295 84 310 76 310 66 C310 56 300 60 295 68Z" fill="#f97316" fillOpacity="0.5" />
+
+      {/* Radiating arcs */}
+      <path d="M220 165 C185 130 175 90 220 65 C265 90 255 130 220 165Z" stroke="white" strokeOpacity="0.08" strokeWidth="1" fill="none" />
+      <path d="M175 200 C150 175 135 145 140 110" stroke="white" strokeOpacity="0.06" strokeWidth="1" fill="none" strokeLinecap="round" />
+      <path d="M265 200 C290 175 305 145 300 110" stroke="white" strokeOpacity="0.06" strokeWidth="1" fill="none" strokeLinecap="round" />
+
+      {/* Stats bubbles */}
+      <g transform="translate(60, 250)">
+        <rect x="0" y="0" width="90" height="40" rx="20" fill="white" fillOpacity="0.12" />
+        <text x="45" y="15" textAnchor="middle" fill="white" fontSize="9" fillOpacity="0.7" fontFamily="sans-serif">Donors Served</text>
+        <text x="45" y="30" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="sans-serif">500+</text>
+      </g>
+      <g transform="translate(290, 250)">
+        <rect x="0" y="0" width="90" height="40" rx="20" fill="white" fillOpacity="0.12" />
+        <text x="45" y="15" textAnchor="middle" fill="white" fontSize="9" fillOpacity="0.7" fontFamily="sans-serif">Homes Supported</text>
+        <text x="45" y="30" textAnchor="middle" fill="white" fontSize="13" fontWeight="bold" fontFamily="sans-serif">3 Homes</text>
+      </g>
+    </svg>
+  );
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -114,17 +178,98 @@ function insightStyle(type: string) {
   }
 }
 
-function KpiSkeleton() {
+// ─── Monthly Target Card ──────────────────────────────────────────────────────
+function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; loading: boolean }) {
+  const now = new Date();
+  const monthName = now.toLocaleString("en-IN", { month: "long" });
+
+  if (loading) return <Skeleton className="h-44 rounded-2xl" />;
+  if (!data) return null;
+
+  const { raised, count, totalMonthlyDonors, target, remaining, progressPct, achieved } = data;
+  const pendingDonors = totalMonthlyDonors - count;
+
   return (
-    <div className="grid gap-4 grid-cols-2 sm:grid-cols-4 lg:grid-cols-4">
-      {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
-    </div>
+    <Card className="border-0 shadow-md overflow-hidden" data-testid="monthly-target-card">
+      <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-transparent pointer-events-none" />
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between gap-4 mb-5">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-950/40">
+                <Target className="h-4 w-4 text-orange-600" />
+              </div>
+              <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Monthly Donor Target</span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">{monthName} — From monthly recurring donors</p>
+          </div>
+          {achieved ? (
+            <Badge className="bg-emerald-500 text-white border-0 gap-1 flex-shrink-0">
+              <CheckCircle2 className="h-3 w-3" /> Target Achieved!
+            </Badge>
+          ) : (
+            <Badge variant="outline" className="text-orange-600 border-orange-300 bg-orange-50 flex-shrink-0">
+              {progressPct}% of goal
+            </Badge>
+          )}
+        </div>
+
+        {/* Big numbers row */}
+        <div className="grid grid-cols-3 gap-4 mb-5">
+          <div>
+            <p className="text-2xl font-black text-orange-600">{fmt(raised)}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Raised this month</p>
+          </div>
+          <div>
+            <p className="text-2xl font-black text-foreground">{fmt(target)}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Monthly goal</p>
+          </div>
+          <div>
+            <p className={`text-2xl font-black ${achieved ? "text-emerald-600" : "text-rose-500"}`}>{achieved ? "✓ Done" : fmt(remaining)}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{achieved ? "Goal reached" : "Still needed"}</p>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        <div className="mb-4">
+          <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
+            <span>{progressPct}% complete</span>
+            <span>{fmt(raised)} / {fmt(target)}</span>
+          </div>
+          <div className="h-3 rounded-full bg-muted overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-700 ${achieved ? "bg-emerald-500" : "bg-gradient-to-r from-orange-400 to-orange-600"}`}
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Donor stats row */}
+        <div className="flex items-center gap-4 pt-3 border-t border-border/60">
+          <div className="flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="text-xs text-muted-foreground"><strong className="text-foreground">{count}</strong> of <strong className="text-foreground">{totalMonthlyDonors}</strong> monthly donors paid</span>
+          </div>
+          {pendingDonors > 0 && (
+            <Link href="/dashboard/donors?frequency=MONTHLY" className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 font-medium ml-auto">
+              {pendingDonors} still pending <ChevronRight className="h-3 w-3" />
+            </Link>
+          )}
+          {achieved && (
+            <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium ml-auto">
+              <Sparkles className="h-3 w-3" /> Congratulations!
+            </span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [monthlyTarget, setMonthlyTarget] = useState<MonthlyTarget | null>(null);
   const [trends, setTrends] = useState<MonthlyTrend[]>([]);
   const [modeSplit, setModeSplit] = useState<ModeSplit[]>([]);
   const [topDonors, setTopDonors] = useState<TopDonor[]>([]);
@@ -142,8 +287,6 @@ export default function DashboardPage() {
   const { toast } = useToast();
 
   const role = userProfile?.role ?? "";
-  const isFinancialRole = ["ADMIN", "ACCOUNTANT", "MANAGER"].includes(role);
-  const isAdminRole = role === "ADMIN";
   const isActionRole = ["ADMIN", "STAFF", "TELECALLER"].includes(role);
 
   const handleMarkDone = async (r: DueReminder) => {
@@ -183,18 +326,16 @@ export default function DashboardPage() {
       setLoading(true);
       setLoadError(false);
       try {
-        // Always fetch profile first
         const profileData = await safeFetch<UserProfile>("/api/auth/profile");
         if (profileData) setUserProfile(profileData);
-
         const r = profileData?.role ?? "";
 
-        // Fetch data in parallel — backend enforces access control
         const [
-          statsData, trendsData, modeData, topData, recentData,
+          statsData, targetData, trendsData, modeData, topData, recentData,
           insightsData, insightCardsData, impactD, retentionD,
         ] = await Promise.all([
           safeFetch<Stats>("/api/dashboard/stats"),
+          safeFetch<MonthlyTarget>("/api/dashboard/monthly-target"),
           safeFetch<MonthlyTrend[]>("/api/dashboard/trends"),
           safeFetch<ModeSplit[]>("/api/dashboard/mode-split"),
           safeFetch<TopDonor[]>("/api/dashboard/top-donors"),
@@ -206,6 +347,7 @@ export default function DashboardPage() {
         ]);
 
         if (statsData) setStats(statsData);
+        if (targetData) setMonthlyTarget(targetData);
         if (trendsData) setTrends(trendsData);
         if (modeData) setModeSplit(modeData);
         if (topData) setTopDonors(topData);
@@ -215,17 +357,14 @@ export default function DashboardPage() {
         if (impactD) setImpactData(impactD);
         if (retentionD) setRetentionData(retentionD);
 
-        // Role-specific fetches
         if (["ADMIN", "STAFF", "TELECALLER"].includes(r)) {
           const actionsData = await safeFetch<StaffActionsData>("/api/dashboard/staff-actions");
           if (actionsData) setStaffActions(actionsData);
         }
-
         if (["ADMIN", "STAFF"].includes(r)) {
           const remindersData = await safeFetch<DueReminder[]>("/api/reminders/due");
           if (remindersData) setDueReminders(remindersData);
         }
-
         if (r === "ADMIN") {
           const adminData = await safeFetch<AdminInsight[]>("/api/dashboard/admin-insights");
           if (adminData) setAdminInsights(adminData);
@@ -240,7 +379,6 @@ export default function DashboardPage() {
     load();
   }, []);
 
-  // ── Error UI ────────────────────────────────────────────────────────────────
   if (loadError) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -258,72 +396,87 @@ export default function DashboardPage() {
     );
   }
 
-  // ── Derived values ────────────────────────────────────────────────────────────
   const retentionPct = retentionData?.summary.overallRetentionPct ?? 0;
   const sponsoredCount = impactData?.summary.activeSponsorships ?? 0;
   const followUpCount = insightCards.find(c => c.key === "follow_up_needed")?.count ?? staffActions?.summary.total ?? 0;
   const totalDonors = impactData?.summary.totalDonors ?? stats?.activeDonors ?? 0;
-
-  const hasFinancialData = stats !== null;
-  const hasImpactData = impactData !== null;
 
   return (
     <div className="min-h-screen bg-gray-50/60 dark:bg-background">
       <div className="max-w-7xl mx-auto p-6 space-y-8">
 
         {/* ── HERO ──────────────────────────────────────────────────────────── */}
-        <div className="relative rounded-2xl overflow-hidden" style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #1a4480 55%, #1e40af 100%)" }}>
-          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.06]">
-            <div className="absolute -top-16 -right-16 w-80 h-80 rounded-full bg-white" />
-            <div className="absolute bottom-0 left-1/3 w-56 h-56 rounded-full bg-white" />
-            <div className="absolute top-1/2 right-1/3 w-36 h-36 rounded-full bg-white" />
+        <div
+          className="relative rounded-2xl overflow-hidden"
+          style={{ background: "linear-gradient(135deg, #1e3a5f 0%, #1a4480 55%, #1e40af 100%)" }}
+        >
+          {/* Subtle background pattern */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-[0.05]">
+            <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-white" />
+            <div className="absolute bottom-0 left-1/4 w-64 h-64 rounded-full bg-white" />
           </div>
-          <div className="relative z-10 px-8 py-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-400/30 mb-5">
-              <Activity className="h-3 w-3 text-orange-400" />
-              <span className="text-xs font-medium text-orange-300">System Active</span>
-            </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white leading-tight">
-              Making a Difference,<br className="hidden sm:block" /> Together.
-            </h1>
-            <p className="text-blue-200 mt-3 text-sm md:text-base leading-relaxed max-w-2xl">
-              Welcome to the Asha Kuteer Foundation Donor Management System. Track donations, donors, sponsorships, homes, and impact from one place.
-            </p>
-            {hasFinancialData && (
-              <div className="flex flex-wrap gap-5 mt-6 pt-6 border-t border-white/10">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-blue-200 text-xs">FY Total: <strong className="text-white">{fmt(stats!.totalDonationsFY)}</strong></span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-orange-400" />
-                  <span className="text-blue-200 text-xs">This Month: <strong className="text-white">{fmt(stats!.donationsThisMonth)}</strong></span>
-                </div>
-                {retentionPct > 0 && (
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-blue-300" />
-                    <span className="text-blue-200 text-xs">Retention: <strong className="text-white">{retentionPct.toFixed(1)}%</strong></span>
-                  </div>
-                )}
+
+          <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 px-8 py-10 md:py-12">
+            {/* Left: Text */}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-4xl md:text-5xl font-black text-white leading-tight tracking-tight">
+                Making a<br />
+                <span className="text-orange-400">Difference,</span><br />
+                Together.
+              </h1>
+              <p className="text-blue-100 mt-4 text-base md:text-lg leading-relaxed max-w-xl">
+                Welcome to <strong className="text-white">Asha Kuteer Foundation</strong> Donor Management System. Track donors, donations, sponsorships, homes, and impact — all in one place.
+              </p>
+              <div className="flex flex-wrap gap-3 mt-6">
+                <Link href="/dashboard/donors/new">
+                  <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold transition-colors">
+                    <UserPlus className="h-4 w-4" /> Add Donor
+                  </button>
+                </Link>
+                <Link href="/dashboard/donors?frequency=MONTHLY">
+                  <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-colors border border-white/20">
+                    <Repeat className="h-4 w-4" /> Monthly Donors
+                  </button>
+                </Link>
               </div>
-            )}
+            </div>
+
+            {/* Right: NGO Illustration */}
+            <div className="w-full md:w-[340px] lg:w-[400px] h-[220px] md:h-[260px] flex-shrink-0 opacity-90">
+              <HeroIllustration />
+            </div>
           </div>
         </div>
 
+        {/* ── MONTHLY DONOR TARGET ──────────────────────────────────────────── */}
+        <section>
+          <SectionHeader
+            title="Monthly Donor Target"
+            subtitle={`₹3,00,000 / month from recurring monthly donors — ${new Date().toLocaleString("en-IN", { month: "long", year: "numeric" })}`}
+            icon={Target}
+          />
+          <MonthlyTargetCard data={monthlyTarget} loading={loading} />
+        </section>
+
         {/* ── KPI CARDS ─────────────────────────────────────────────────────── */}
         <section>
-          {loading ? <KpiSkeleton /> : (
+          <SectionHeader title="Key Metrics" subtitle="Financial year and current month overview" icon={BarChart3} />
+          {loading ? (
+            <div className="space-y-4">
+              <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}</div>
+            </div>
+          ) : (
             <div className="space-y-4">
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
                 <KpiCard title="Total FY Donations" value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} color="text-orange-500" highlight />
                 <KpiCard title="This Month" value={stats ? fmt(stats.donationsThisMonth) : "—"} icon={TrendingUp} color="text-blue-600" />
                 <KpiCard title="Total Donors" value={totalDonors > 0 ? totalDonors.toString() : (stats?.activeDonors?.toString() ?? "—")} icon={Users} color="text-violet-600" />
-                <KpiCard title="Active Donors" value={stats?.activeDonors?.toString() ?? "—"} icon={UserPlus} color="text-emerald-600" />
+                <KpiCard title="Monthly Donors" value={monthlyTarget ? monthlyTarget.totalMonthlyDonors.toString() : "—"} icon={Repeat} color="text-teal-600" />
               </div>
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
                 <KpiCard title="Beneficiaries" value={stats?.totalBeneficiaries?.toString() ?? "—"} icon={HandHeart} color="text-rose-600" />
-                <KpiCard title="Sponsored" value={sponsoredCount > 0 ? sponsoredCount.toString() : "—"} icon={Heart} color="text-pink-600" />
-                <KpiCard title="Retention Rate" value={retentionPct > 0 ? `${retentionPct.toFixed(1)}%` : "—"} icon={Repeat} color="text-teal-600" />
+                <KpiCard title="Active Sponsors" value={sponsoredCount > 0 ? sponsoredCount.toString() : "—"} icon={Heart} color="text-pink-600" />
+                <KpiCard title="Retention Rate" value={retentionPct > 0 ? `${retentionPct.toFixed(1)}%` : "—"} icon={Repeat} color="text-emerald-600" />
                 <KpiCard title="Pending Follow-ups" value={followUpCount > 0 ? followUpCount.toString() : "—"} icon={Bell} color="text-amber-600" />
               </div>
             </div>
@@ -418,15 +571,13 @@ export default function DashboardPage() {
         {loading ? (
           <section>
             <SectionHeader title="Home-wise Performance" subtitle="Impact across all homes" icon={Building2} />
-            <div className="grid gap-4 md:grid-cols-3">
-              {[1, 2, 3].map(i => <Skeleton key={i} className="h-44 rounded-xl" />)}
-            </div>
+            <div className="grid gap-4 md:grid-cols-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-44 rounded-xl" />)}</div>
           </section>
-        ) : hasImpactData && impactData!.homeMetrics.length > 0 ? (
+        ) : impactData && impactData.homeMetrics.length > 0 ? (
           <section data-testid="section-home-performance">
             <SectionHeader title="Home-wise Performance" subtitle="Impact and donations across all Asha Kuteer homes this FY" icon={Building2} />
             <div className="grid gap-4 md:grid-cols-3">
-              {impactData!.homeMetrics.map((home) => {
+              {impactData.homeMetrics.map((home) => {
                 const color = HOME_COLORS[home.homeType] ?? "#6366f1";
                 const pct = home.beneficiaryCount > 0 ? Math.round((home.activeSponsorships / home.beneficiaryCount) * 100) : 0;
                 const unsponsored = Math.max(0, home.beneficiaryCount - home.activeSponsorships);
@@ -480,7 +631,6 @@ export default function DashboardPage() {
         {(loading || insights.length > 0 || insightCards.length > 0 || retentionData !== null || adminInsights.length > 0) && (
           <section>
             <div className="grid gap-5 lg:grid-cols-2">
-              {/* Donor Intelligence */}
               <div>
                 <SectionHeader title="Donor Intelligence" subtitle="Retention and engagement" icon={Repeat} />
                 {loading ? (
@@ -523,7 +673,6 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Smart Insights */}
               <div>
                 <SectionHeader title="Smart Insights" subtitle="AI-powered observations for action" icon={Lightbulb} />
                 {loading ? (
@@ -555,7 +704,7 @@ export default function DashboardPage() {
           </section>
         )}
 
-        {/* ── FOLLOW-UPS DUE ─────────────────────────────────────────────────── */}
+        {/* ── FOLLOW-UPS DUE ────────────────────────────────────────────────── */}
         {dueReminders.length > 0 && (
           <section data-testid="section-followups">
             <SectionHeader title="Follow-ups Due" subtitle={`${dueReminders.length} scheduled follow-ups need action`} icon={Bell} />

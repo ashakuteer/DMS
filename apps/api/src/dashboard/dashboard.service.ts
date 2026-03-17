@@ -25,6 +25,10 @@ export class DashboardService {
     return this.trendsService.getMonthlyTrends();
   }
 
+  getMonthlyDonorTarget() {
+    return this.statsService.getMonthlyDonorTarget();
+  }
+
   getDonationModeSplit() {
     return this.statsService.getDonationModeSplit();
   }

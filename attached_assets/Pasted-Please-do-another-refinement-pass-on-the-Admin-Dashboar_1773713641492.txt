@@ -1,0 +1,132 @@
+Please do another refinement pass on the Admin Dashboard UI.
+
+Overall direction is now better. Keep the cleaner lighter background approach.
+
+Now make these exact changes:
+
+1. HERO / CHAMPION SECTION CHANGES
+
+A. Make the main heading bigger
+Change:
+“Making a Difference, Together.”
+Make it larger, stronger, and more premium.
+It should be the clear hero statement.
+
+B. Remove these from the hero block
+Please remove:
+- System Active badge
+- FY total
+- This month
+- Retention
+Do not show those inside the hero/champion area because they already belong in the KPI/statistics area below.
+
+C. Make the welcome text bigger
+The welcome/supporting text under the heading should be more prominent and easier to read.
+Current welcome text feels too small.
+Increase font size and improve spacing.
+
+Suggested text style:
+“Welcome to Asha Kuteer Foundation Donor Management System. Track donors, donations, sponsorships, homes, and impact in one place.”
+
+D. Add image on the right side of hero
+Use the image I shared (hands together / unity / support image) on the right side of the hero section.
+
+Important:
+- show it in a premium way
+- rounded corners
+- clean fit
+- not too small
+- not awkwardly stretched
+- balance text on left and image on right
+- desktop layout: text left, image right
+- mobile layout: image can stack below
+
+E. Hero should feel warm and NGO-focused
+It should feel emotional, human, and impact-driven, not like a technical admin block.
+
+2. MONTHLY DONOR TARGET SECTION
+
+This is very important.
+
+We want to raise:
+₹3,00,000 per month
+ONLY from monthly donors.
+
+Please create a dedicated dashboard section/card for this.
+
+Show:
+- Monthly Donor Target
+- Amount raised so far from monthly donors
+- Amount still needed
+- Progress bar
+
+Example format:
+Monthly Donor Target
+₹X raised of ₹3,00,000 goal
+₹Y still needed
+
+Use a beautiful progress bar/card design.
+
+Please calculate this specifically from monthly donors only, not from all donors unless current data structure forces a temporary placeholder.
+If current backend does not yet separate this properly, create the UI cleanly and connect it as far as possible with existing donor/donation data.
+
+3. ADD “MONTHLY DONORS” IN CORE SECTION / SIDEBAR
+
+In the Core section of the sidebar, add:
+- Monthly Donors
+
+Important:
+- This should help us quickly track monthly donors
+- Monthly donors may still remain inside the main Donors list too
+- This is not replacing donors list
+- It is an important filtered/priority donor view for monthly giving target tracking
+
+So:
+- keep Donors
+- add Monthly Donors as a separate item under Core
+
+4. QUICK TRACKING FOR MONTHLY DONORS
+
+The dashboard should make it easy to answer:
+- How much monthly donor money is raised this month?
+- How much is still needed to reach ₹3,00,000?
+- How many monthly donors contributed?
+- Did we reach the monthly donor target or not?
+
+If possible, include small supporting stats such as:
+- number of monthly donors active this month
+- target achieved percentage
+- remaining gap
+
+5. VISUAL POLISH
+
+Please keep:
+- clean, premium spacing
+- lighter modern look
+- strong typography
+- rounded cards
+- good card padding
+
+Please improve:
+- hero text balance
+- section hierarchy
+- emotional NGO tone
+- visual harmony between hero text and right-side image
+
+6. IMPORTANT IMPLEMENTATION NOTES
+
+- Do not break existing dashboard structure
+- Do not remove the redesigned style
+- Keep KPI/stat cards below hero
+- Keep hero simpler and stronger
+- Use real data where available
+- If monthly donor-specific backend data is incomplete, still build the UI and wire it as far as possible, then tell me what is still needed
+
+7. AFTER CHANGES, TELL ME
+
+Please report:
+1. what files you changed
+2. whether the hands-together image is now added on the right side of the hero
+3. how monthly donor target is being calculated
+4. whether “Monthly Donors” was added to the Core sidebar
+5. whether any backend field/filter is still needed for accurate monthly donor tracking

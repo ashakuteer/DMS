@@ -46,6 +46,69 @@ export class DashboardStatsService {
     };
   }
 
+  async getMonthlyDonorTarget() {
+    const { start: monthStart, end: monthEnd } = getMonthRange();
+    const MONTHLY_TARGET = 300000;
+
+    // Step 1: Get all monthly donors
+    const monthlyDonors = await this.prisma.donor.findMany({
+      where: { deletedAt: null, donationFrequency: "MONTHLY" },
+      select: { id: true },
+    });
+
+    const monthlyDonorIds = monthlyDonors.map((d) => d.id);
+    const totalMonthlyDonors = monthlyDonorIds.length;
+
+    if (totalMonthlyDonors === 0) {
+      return {
+        raised: 0,
+        count: 0,
+        totalMonthlyDonors: 0,
+        target: MONTHLY_TARGET,
+        remaining: MONTHLY_TARGET,
+        progressPct: 0,
+        achieved: false,
+      };
+    }
+
+    // Step 2: Sum donations this month from monthly donors
+    const [amountAgg, donorsWhoGave] = await Promise.all([
+      this.prisma.donation.aggregate({
+        _sum: { donationAmount: true },
+        _count: { id: true },
+        where: {
+          deletedAt: null,
+          donorId: { in: monthlyDonorIds },
+          donationDate: { gte: monthStart, lte: monthEnd },
+        },
+      }),
+      this.prisma.donation.groupBy({
+        by: ["donorId"],
+        where: {
+          deletedAt: null,
+          donorId: { in: monthlyDonorIds },
+          donationDate: { gte: monthStart, lte: monthEnd },
+        },
+      }),
+    ]);
+
+    const raised = amountAgg._sum.donationAmount?.toNumber() || 0;
+    const count = donorsWhoGave.length;
+    const remaining = Math.max(0, MONTHLY_TARGET - raised);
+    const progressPct = Math.min(100, Math.round((raised / MONTHLY_TARGET) * 100));
+    const achieved = raised >= MONTHLY_TARGET;
+
+    return {
+      raised,
+      count,
+      totalMonthlyDonors,
+      target: MONTHLY_TARGET,
+      remaining,
+      progressPct,
+      achieved,
+    };
+  }
+
   async getDonationModeSplit() {
     const { fyStart, fyEnd } = getCurrentFY();
 

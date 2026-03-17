@@ -23,6 +23,12 @@ export class DashboardController {
     return this.dashboardService.getMonthlyTrends();
   }
 
+  @Get('monthly-target')
+  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT, Role.MANAGER)
+  async getMonthlyDonorTarget() {
+    return this.dashboardService.getMonthlyDonorTarget();
+  }
+
   @Get('mode-split')
   @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT)
   async getDonationModeSplit() {
