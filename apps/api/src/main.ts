@@ -5,6 +5,18 @@ import { AppModule } from "./app.module";
 import { join } from "path";
 import * as express from "express";
 
+// ─── Global BigInt JSON serialization fix ────────────────────────────────────
+// Prisma $queryRaw returns COUNT(*) as BigInt. If any escapes Number() conversion
+// it would throw "Cannot serialize BigInt" and crash the entire request/process.
+// This ensures BigInts are always safely serialized as numbers.
+(BigInt.prototype as any).toJSON = function () {
+  const n = Number(this);
+  if (!Number.isSafeInteger(n)) {
+    console.warn(`BigInt value ${this} exceeds Number.MAX_SAFE_INTEGER — precision may be lost`);
+  }
+  return n;
+};
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
@@ -57,4 +69,15 @@ async function bootstrap() {
   console.log(`API server running on http://0.0.0.0:${port}`);
 }
 
-bootstrap();
+// ─── Prevent process crash from unhandled errors ──────────────────────────────
+process.on("uncaughtException", (err) => {
+  console.error("[UNCAUGHT EXCEPTION] Process will NOT exit:", err);
+});
+process.on("unhandledRejection", (reason) => {
+  console.error("[UNHANDLED REJECTION] Process will NOT exit:", reason);
+});
+
+bootstrap().catch((err) => {
+  console.error("[BOOTSTRAP ERROR] Failed to start NestJS:", err);
+  process.exit(1);
+});

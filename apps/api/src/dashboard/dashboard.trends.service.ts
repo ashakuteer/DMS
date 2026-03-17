@@ -29,6 +29,7 @@ export class DashboardTrendsService {
     }
 
     const start = Date.now();
+    try {
     const now = new Date();
 
     // Build the 12-month label/range array (for ordering & labels)
@@ -79,5 +80,9 @@ export class DashboardTrendsService {
     this.setCached("monthly_trends", months);
     this.logger.log(`getMonthlyTrends() completed in ${Date.now() - start}ms`);
     return months;
+    } catch (err) {
+      this.logger.error(`getMonthlyTrends() FAILED after ${Date.now() - start}ms`, err instanceof Error ? err.stack : String(err));
+      throw err;
+    }
   }
 }

@@ -30,6 +30,7 @@ export class DashboardImpactService {
     }
 
     const start = Date.now();
+    try {
     const now = new Date();
     const { fyStart, fyEnd } = getCurrentFY();
 
@@ -308,5 +309,9 @@ export class DashboardImpactService {
     this.setCached("impact_dashboard", result);
     this.logger.log(`getImpactDashboard() completed in ${Date.now() - start}ms`);
     return result;
+    } catch (err) {
+      this.logger.error(`getImpactDashboard() FAILED after ${Date.now() - start}ms`, err instanceof Error ? err.stack : String(err));
+      throw err;
+    }
   }
 }

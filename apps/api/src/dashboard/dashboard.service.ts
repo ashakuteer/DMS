@@ -7,11 +7,12 @@ import { DashboardActionsService } from "./dashboard.actions.service";
 import { DashboardImpactService } from "./dashboard.impact.service";
 import { DashboardRetentionService } from "./dashboard.retention.service";
 
-/** Runs fn(); returns null instead of throwing if it rejects. */
-async function safeRun<T>(fn: () => Promise<T>): Promise<T | null> {
+/** Runs fn(); returns null instead of throwing if it rejects. Logs the error. */
+async function safeRun<T>(fn: () => Promise<T>, label?: string): Promise<T | null> {
   try {
     return await fn();
-  } catch {
+  } catch (err) {
+    console.error(`[DashboardService] safeRun failed${label ? ` [${label}]` : ""}:`, err);
     return null;
   }
 }
@@ -61,19 +62,19 @@ export class DashboardService {
       adminInsights,
       reminders,
     ] = await Promise.all([
-      canSeeCore ? safeRun(() => this.statsService.getStats()) : null,
-      canSeeTarget ? safeRun(() => this.statsService.getMonthlyDonorTarget()) : null,
-      canSeeCore ? safeRun(() => this.trendsService.getMonthlyTrends()) : null,
-      canSeeCore ? safeRun(() => this.statsService.getDonationModeSplit()) : null,
-      canSeeCore ? safeRun(() => this.statsService.getTopDonors(5)) : null,
-      canSeeCore ? safeRun(() => this.statsService.getRecentDonations(10)) : null,
-      canSeeInsights ? safeRun(() => this.insightsService.getAIInsights()) : null,
-      canSeeCards ? safeRun(() => this.insightsService.getInsightCards()) : null,
-      canSeeImpact ? safeRun(() => this.impactService.getImpactDashboard()) : null,
-      canSeeRetention ? safeRun(() => this.retentionService.getRetentionAnalytics()) : null,
-      canSeeActions ? safeRun(() => this.actionsService.getStaffActions()) : null,
-      isAdmin ? safeRun(() => this.insightsService.getAdminInsights()) : null,
-      canSeeReminders ? safeRun(() => this.getDueReminders()) : null,
+      canSeeCore ? safeRun(() => this.statsService.getStats(), "getStats") : null,
+      canSeeTarget ? safeRun(() => this.statsService.getMonthlyDonorTarget(), "getMonthlyDonorTarget") : null,
+      canSeeCore ? safeRun(() => this.trendsService.getMonthlyTrends(), "getMonthlyTrends") : null,
+      canSeeCore ? safeRun(() => this.statsService.getDonationModeSplit(), "getDonationModeSplit") : null,
+      canSeeCore ? safeRun(() => this.statsService.getTopDonors(5), "getTopDonors") : null,
+      canSeeCore ? safeRun(() => this.statsService.getRecentDonations(10), "getRecentDonations") : null,
+      canSeeInsights ? safeRun(() => this.insightsService.getAIInsights(), "getAIInsights") : null,
+      canSeeCards ? safeRun(() => this.insightsService.getInsightCards(), "getInsightCards") : null,
+      canSeeImpact ? safeRun(() => this.impactService.getImpactDashboard(), "getImpactDashboard") : null,
+      canSeeRetention ? safeRun(() => this.retentionService.getRetentionAnalytics(), "getRetentionAnalytics") : null,
+      canSeeActions ? safeRun(() => this.actionsService.getStaffActions(), "getStaffActions") : null,
+      isAdmin ? safeRun(() => this.insightsService.getAdminInsights(), "getAdminInsights") : null,
+      canSeeReminders ? safeRun(() => this.getDueReminders(), "getDueReminders") : null,
     ]);
 
     this.logger.log(`getSummary() [role=${role}] completed in ${Date.now() - t0}ms`);

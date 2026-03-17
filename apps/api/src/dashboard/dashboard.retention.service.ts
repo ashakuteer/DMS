@@ -29,6 +29,7 @@ export class DashboardRetentionService {
     }
 
     const start = Date.now();
+    try {
     const now = new Date();
     const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
     const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 12, 1);
@@ -242,5 +243,9 @@ export class DashboardRetentionService {
     this.setCached("retention_analytics", result);
     this.logger.log(`getRetentionAnalytics() completed in ${Date.now() - start}ms`);
     return result;
+    } catch (err) {
+      this.logger.error(`getRetentionAnalytics() FAILED after ${Date.now() - start}ms`, err instanceof Error ? err.stack : String(err));
+      throw err;
+    }
   }
 }

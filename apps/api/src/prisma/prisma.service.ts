@@ -29,7 +29,9 @@ function appendPoolParams(rawUrl: string): string {
   const url = new URL(rawUrl);
 
   if (!url.searchParams.has('connection_limit')) {
-    url.searchParams.set('connection_limit', '5');
+    // Dashboard runs ~48 parallel queries; pool of 5 causes severe queuing.
+    // 15 connections handles peak concurrent load without overloading the DB.
+    url.searchParams.set('connection_limit', '15');
   }
 
   const isSupabasePoolerPort = url.port === '6543';

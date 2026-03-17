@@ -184,8 +184,27 @@ export class RolePermissionsService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await this.seedDefaultPermissions();
-    await this.refreshCache();
+    try {
+      await this.seedDefaultPermissions();
+    } catch (err) {
+      console.error("[RolePermissionsService] seedDefaultPermissions failed (non-fatal):", err);
+    }
+    try {
+      await this.refreshCache();
+    } catch (err) {
+      console.error("[RolePermissionsService] refreshCache failed (non-fatal):", err);
+      // Build cache from DEFAULT_PERMISSIONS so the app still works without DB
+      this.permissionCache.clear();
+      for (const [module, actions] of Object.entries(DEFAULT_PERMISSIONS)) {
+        for (const [action, allowedRoles] of Object.entries(actions)) {
+          for (const role of allowedRoles) {
+            this.permissionCache.set(`${role}:${module}:${action}`, true);
+          }
+        }
+      }
+      this.cacheInitialized = true;
+      console.log("[RolePermissionsService] Fallback: cache populated from DEFAULT_PERMISSIONS");
+    }
   }
 
   private async seedDefaultPermissions() {
