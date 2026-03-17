@@ -6,6 +6,7 @@ import { EmailService } from '../email/email.service';
 import { ReceiptService } from '../receipt/receipt.service';
 import { CommChannel, CommunicationChannel, CommunicationType } from '@prisma/client';
 import { WhatsAppTemplateKey } from '../communications/twilio-whatsapp.service';
+import { DonationEmailType } from '../email/templates/donation.templates';
 
 export interface DonationNotificationParams {
   donationId: string;
@@ -15,6 +16,9 @@ export interface DonationNotificationParams {
   currency: string;
   donationType: string;
   donationDate: Date;
+  donationMode?: string;
+  donorPAN?: string;
+  emailType?: DonationEmailType;
   userId?: string;
 }
 
@@ -99,6 +103,15 @@ export class NotificationService {
         donorName,
         params.receiptNumber,
         pdfBuffer,
+        {
+          emailType: params.emailType || 'GENERAL',
+          donationAmount: params.donationAmount,
+          currency: params.currency,
+          donationDate: params.donationDate,
+          donationMode: params.donationMode,
+          donationType: params.donationType,
+          donorPAN: params.donorPAN,
+        },
       );
 
       await this.communicationLogService.logEmail({

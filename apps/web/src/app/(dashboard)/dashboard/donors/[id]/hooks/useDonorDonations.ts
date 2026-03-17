@@ -12,6 +12,7 @@ const EMPTY_DONATION_FORM: DonationFormData = {
   donationType: "CASH",
   designatedHome: "NONE",
   remarks: "",
+  emailType: "GENERAL",
 };
 
 export function useDonorDonations(donorId: string, donor?: Donor | null) {
@@ -112,6 +113,7 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
           donationType: donationForm.donationType,
           donationHomeType: donationForm.designatedHome === "NONE" ? null : (donationForm.designatedHome || null),
           remarks: donationForm.remarks || undefined,
+          emailType: donationForm.emailType || 'GENERAL',
         }),
       });
       setShowDonationDialog(false);

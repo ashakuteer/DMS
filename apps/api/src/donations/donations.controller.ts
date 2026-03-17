@@ -195,7 +195,8 @@ export class DonationsController {
   async resendReceipt(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,
+    @Body() body?: { emailType?: 'GENERAL' | 'TAX' | 'KIND' },
   ) {
-    return this.donationsService.resendReceipt(user, id);
+    return this.donationsService.resendReceipt(user, id, body?.emailType);
   }
 }

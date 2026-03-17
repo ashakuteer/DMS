@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { DonationFormData } from "../types";
+import type { DonationFormData, DonationEmailType } from "../types";
 
 interface DonationDialogProps {
   open: boolean;
@@ -31,6 +31,24 @@ interface DonationDialogProps {
   onSubmit: (e: React.FormEvent) => void;
 }
 
+const EMAIL_TYPE_OPTIONS: { value: DonationEmailType; label: string; description: string }[] = [
+  {
+    value: "GENERAL",
+    label: "General Thank You",
+    description: "Warm acknowledgement for regular donations",
+  },
+  {
+    value: "TAX",
+    label: "Tax Receipt",
+    description: "Formal receipt with 80G tax exemption details",
+  },
+  {
+    value: "KIND",
+    label: "Kind Donation",
+    description: "For food, clothes, groceries, or material support",
+  },
+];
+
 export default function DonationDialog({
   open,
   onOpenChange,
@@ -40,9 +58,13 @@ export default function DonationDialog({
   submittingDonation,
   onSubmit,
 }: DonationDialogProps) {
+  const selectedEmailType = EMAIL_TYPE_OPTIONS.find(
+    (o) => o.value === (donationForm.emailType || "GENERAL")
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>Add Donation</DialogTitle>
           <DialogDescription>
@@ -167,6 +189,40 @@ export default function DonationDialog({
                 }
                 data-testid="input-donation-remarks"
               />
+            </div>
+
+            {/* EMAIL TYPE SELECTOR */}
+            <div className="space-y-2 pt-1">
+              <Label>Acknowledgement Email Type</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {EMAIL_TYPE_OPTIONS.map((option) => {
+                  const isSelected = (donationForm.emailType || "GENERAL") === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      data-testid={`email-type-${option.value.toLowerCase()}`}
+                      onClick={() =>
+                        setDonationForm({ ...donationForm, emailType: option.value })
+                      }
+                      className={[
+                        "text-left rounded-md border px-3 py-2.5 text-xs transition-all cursor-pointer",
+                        isSelected
+                          ? "border-[#1F3B64] bg-[#1F3B64]/5 text-[#1F3B64]"
+                          : "border-border bg-background text-muted-foreground hover:border-[#1F3B64]/40",
+                      ].join(" ")}
+                    >
+                      <div className="font-semibold mb-0.5">{option.label}</div>
+                      <div className="opacity-70 leading-snug">{option.description}</div>
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedEmailType && (
+                <p className="text-[11px] text-muted-foreground pt-0.5">
+                  Selected: <span className="font-medium text-foreground">{selectedEmailType.label}</span>
+                </p>
+              )}
             </div>
           </div>
 

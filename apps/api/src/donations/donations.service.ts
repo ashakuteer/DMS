@@ -245,11 +245,13 @@ export class DonationsService {
       }
     }
 
+    const { emailType: _emailType, ...donationData } = data;
+
     const donation = await this.prisma.donation.create({
       data: {
-        ...data,
-        donationDate: new Date(data.donationDate),
-        donationHomeType: data.donationHomeType || null,
+        ...donationData,
+        donationDate: new Date(donationData.donationDate),
+        donationHomeType: donationData.donationHomeType || null,
         receiptNumber,
         financialYear,
         createdById: user.id,
@@ -279,7 +281,9 @@ export class DonationsService {
       donationAmount: Number(donation.donationAmount),
       currency: donation.currency,
       donationType: donation.donationType || 'General',
+      donationMode: donation.donationMode || undefined,
       donationDate: donation.donationDate,
+      emailType: (data.emailType as 'GENERAL' | 'TAX' | 'KIND') || 'GENERAL',
       userId: user.id,
     };
 
@@ -495,7 +499,7 @@ export class DonationsService {
     };
   }
 
-  async resendReceipt(user: UserContext, id: string) {
+  async resendReceipt(user: UserContext, id: string, emailType?: 'GENERAL' | 'TAX' | 'KIND') {
     const donation = await this.prisma.donation.findFirst({
       where: { id, isDeleted: false },
       include: {
@@ -560,6 +564,15 @@ export class DonationsService {
       donorName,
       donation.receiptNumber || "N/A",
       pdfBuffer,
+      {
+        emailType: emailType || 'GENERAL',
+        donationAmount: donation.donationAmount.toNumber(),
+        currency: donation.currency,
+        donationDate: donation.donationDate,
+        donationMode: donation.donationMode || undefined,
+        donationType: donation.donationType || undefined,
+        donorPAN: donation.donor.pan || undefined,
+      },
     );
 
     await this.communicationLogService.logEmail({

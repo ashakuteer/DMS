@@ -1,0 +1,150 @@
+We want to finalize the email system first. WhatsApp/Twilio templates will be handled tomorrow, so for now focus only on email templates and email flow.
+
+NEW EMAIL REQUIREMENT
+
+We want 3 email types after recording a donation:
+
+1. General Thank You (DEFAULT)
+2. Tax Receipt Email
+3. Kind Donation Acknowledgement
+
+Please implement this carefully in a premium and simple way.
+
+BUSINESS LOGIC
+
+1. General Thank You
+Use as default for most donations.
+This should be used when:
+- donor does not request tax exemption
+- PAN/Aadhar is not collected
+- donation is a regular contribution
+- we want a simple thank-you + acknowledgement
+
+2. Tax Receipt Email
+Use only when:
+- donor requests tax exemption
+- PAN details are available
+- donation is eligible for 80G
+- formal receipt email is needed
+
+3. Kind Donation Acknowledgement
+Use for:
+- food donation
+- clothes donation
+- groceries/material support
+- other in-kind donations
+
+DESIGN DIRECTION
+
+We do NOT want green design.
+
+Use this premium color theme:
+- Primary navy blue: #1F3B64
+- White: #FFFFFF
+- Light grey background/sections: #F4F6F8
+- Border grey: #D9E0E6
+- Text charcoal: #2E3440
+- Optional soft gold accent: #C9A96E
+
+Style should be:
+- premium
+- minimal
+- formal
+- trustworthy
+- donor-friendly
+- highly readable
+
+Avoid:
+- green theme
+- colorful NGO look
+- too many icons/emojis
+- crowded layout
+- childish styling
+
+COMMON EMAIL LAYOUT FOR ALL 3 TYPES
+
+1. Navy blue top header band
+2. Asha Kuteer Foundation
+3. Small registration line below
+4. Clean greeting
+5. Main email content
+6. One neat summary/info box
+7. Footer with phone, email, website
+
+EMAIL TEMPLATE CONTENT
+
+A. GENERAL THANK YOU
+Tone:
+- warm
+- simple
+- respectful
+- premium
+
+Include:
+- donor greeting
+- thank you message
+- short mission connection
+- donation summary box:
+  - receipt/reference number
+  - amount
+  - date
+  - payment mode
+
+No tax-heavy language here.
+
+B. TAX RECEIPT EMAIL
+Tone:
+- formal
+- official
+- donor-respectful
+
+Include:
+- thank you message
+- note that official receipt is attached
+- 80G eligibility information
+- PAN/tax section only here
+- donation summary box
+
+C. KIND DONATION ACKNOWLEDGEMENT
+Tone:
+- warm
+- appreciative
+- human
+
+Include:
+- thank donor for in-kind support
+- mention donation kind/type if available
+- mention the support helps our homes/inmates
+- simple acknowledgement summary box
+- no tax wording by default
+
+FUNCTIONAL REQUIREMENT
+
+After recording donation, provide an email type selection:
+- GENERAL
+- TAX
+- KIND
+
+Default selection should be:
+GENERAL
+
+Please ensure:
+- existing email sending flow is not broken
+- current placeholders/dynamic fields continue working
+- PDF attachment is attached where relevant
+- tax details are shown only in TAX email
+- kind donation mail does not use financial/tax wording unnecessarily
+
+DELIVERABLES
+
+1. Identify files used for current email templates
+2. Update them to the premium navy/white/grey style
+3. Add email type selection logic
+4. Keep GENERAL as default
+5. Show sample preview for all 3 email types
+6. Tell me exactly what files were changed
+
+IMPORTANT
+Do not work on WhatsApp now.
+Only finalize email templates and email type flow.
+We will handle Twilio templates tomorrow.

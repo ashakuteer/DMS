@@ -75,6 +75,8 @@ export interface Donation {
   };
 }
 
+export type DonationEmailType = 'GENERAL' | 'TAX' | 'KIND';
+
 export interface DonationFormData {
   donationAmount: string;
   donationDate: string;
@@ -82,6 +84,7 @@ export interface DonationFormData {
   donationType: string;
   designatedHome?: string;
   remarks: string;
+  emailType: DonationEmailType;
 }
 
 export interface Pledge {

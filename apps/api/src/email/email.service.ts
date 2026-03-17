@@ -3,6 +3,7 @@ import * as nodemailer from 'nodemailer';
 import * as fs from 'fs';
 import { OrganizationProfileService, OrganizationProfileData } from '../organization-profile/organization-profile.service';
 import { resolveLogoPath } from '../common/pdf-branding';
+import { DonationEmailType, getDonationEmailTemplate } from './templates/donation.templates';
 
 export interface EmailAttachment {
   filename: string;
@@ -351,157 +352,42 @@ Website: ${org.website}
     donorName: string,
     receiptNumber: string,
     pdfBuffer: Buffer,
+    options?: {
+      emailType?: DonationEmailType;
+      donationAmount?: number;
+      currency?: string;
+      donationDate?: Date;
+      donationMode?: string;
+      donationType?: string;
+      donorPAN?: string;
+      kindDescription?: string;
+    },
   ): Promise<{ success: boolean; messageId?: string; error?: string }> {
     const org = await this.orgProfileService.getProfile();
-    const phoneDisplay = org.phone2 ? `${org.phone1} / ${org.phone2}` : org.phone1;
-
-    const primaryColor = org.brandingPrimaryColor || '#2E7D32';
-    const tagline1 = org.tagline1 || 'Healing Hearts – Shaping Lives';
-    const tagline2 = org.tagline2 || 'In the service of Mankind since 2013';
-
     const logoFilePath = resolveLogoPath(org.logoUrl || null);
-    const hasLogo = !!logoFilePath;
-    
-    const html = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Donation Receipt</title>
-      </head>
-      <body style="margin: 0; padding: 0; background-color: #f0f4f0; font-family: 'Segoe UI', Arial, Helvetica, sans-serif;">
-        <div style="width: 100%; background-color: #f0f4f0; padding: 30px 0;">
-          <div style="max-width: 620px; margin: 0 auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); overflow: hidden;">
-            
-            <!-- BRAND BANNER -->
-            <div style="background: linear-gradient(135deg, ${primaryColor} 0%, #1b5e20 100%); padding: 0; text-align: center;">
-              <div style="padding: 36px 32px 20px 32px;">
-                ${hasLogo ? `<img src="cid:orglogo" alt="${org.name}" style="width: 140px; height: 140px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.6); display: block; margin: 0 auto 18px auto;" />` : ''}
-                <h1 style="margin: 0 0 10px 0; font-size: 28px; font-weight: 800; color: #ffffff; letter-spacing: 0.5px; line-height: 1.2;">
-                  ${org.name}
-                </h1>
-                <p style="margin: 0 0 6px 0; font-size: 16px; font-weight: 600; color: rgba(255,255,255,0.95); letter-spacing: 0.3px;">
-                  ${tagline1}
-                </p>
-                <p style="margin: 0; font-size: 14px; font-weight: 400; color: rgba(255,255,255,0.82); font-style: italic;">
-                  ${tagline2}
-                </p>
-              </div>
-              <div style="background-color: rgba(0,0,0,0.15); padding: 12px 32px;">
-                <p style="margin: 0; font-size: 16px; font-weight: 600; color: #ffffff; letter-spacing: 0.8px;">
-                  &#10084; Thank You for Your Generous Donation &#10084;
-                </p>
-              </div>
-            </div>
-            
-            <!-- BODY -->
-            <div style="padding: 36px 36px 28px 36px;">
-              
-              <p style="margin: 0 0 22px 0; font-size: 17px; color: #222222; line-height: 1.5;">
-                Dear <strong>${donorName}</strong>,
-              </p>
-              
-              <p style="margin: 0 0 18px 0; font-size: 15px; color: #444444; line-height: 1.75;">
-                We are deeply grateful for your generous donation to <strong>${org.name}</strong>. Your compassionate support enables us to continue our mission of <em>${tagline1}</em> and making a meaningful difference in the lives of those we serve.
-              </p>
-              
-              <p style="margin: 0 0 28px 0; font-size: 15px; color: #444444; line-height: 1.75;">
-                With your help, we can reach more people, provide essential services, and create lasting positive change in our community.
-              </p>
-              
-              <!-- RECEIPT BOX -->
-              <div style="margin: 0 0 28px 0; border: 2px solid #a5d6a7; border-radius: 8px; padding: 22px 24px; background-color: #f1f8e9;">
-                <p style="margin: 0 0 14px 0; font-size: 13px; font-weight: 700; text-transform: uppercase; color: ${primaryColor}; letter-spacing: 1px;">
-                  Receipt Details
-                </p>
-                <p style="margin: 0 0 10px 0; font-size: 15px; color: #222222;">
-                  <strong>Receipt Number:</strong> ${receiptNumber}
-                </p>
-                <p style="margin: 0; font-size: 14px; color: #555555;">
-                  Please find your donation receipt attached as a PDF for your records.
-                </p>
-              </div>
-              
-              <!-- TAX EXEMPTION -->
-              <div style="margin: 0 0 28px 0; background-color: #e8f5e9; border-left: 5px solid ${primaryColor}; padding: 18px 22px; border-radius: 0 6px 6px 0;">
-                <p style="margin: 0; font-size: 14px; color: #1b5e20; line-height: 1.65;">
-                  <strong>Tax Exemption:</strong> This donation is eligible for tax exemption under Section 80G of the Income Tax Act, 1961. Please retain your receipt for tax purposes.
-                </p>
-              </div>
-              
-              <p style="margin: 0 0 28px 0; font-size: 15px; color: #444444; line-height: 1.75;">
-                If you have any questions or would like to learn more about our work, please don't hesitate to reach out to us.
-              </p>
-              
-              <p style="margin: 0 0 6px 0; font-size: 15px; color: #333333;">
-                With heartfelt gratitude,
-              </p>
-              <p style="margin: 0; font-size: 16px; font-weight: 700; color: ${primaryColor};">
-                ${org.name}
-              </p>
-              
-            </div>
-            
-            <!-- CONTACT FOOTER -->
-            <div style="background-color: #e8f5e9; padding: 22px 36px; border-top: 2px solid ${primaryColor};">
-              <p style="margin: 0 0 10px 0; font-size: 14px; color: ${primaryColor}; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
-                Contact Us
-              </p>
-              <p style="margin: 0 0 5px 0; font-size: 13px; color: #444444;">
-                Phone: ${phoneDisplay}
-              </p>
-              <p style="margin: 0 0 5px 0; font-size: 13px; color: #444444;">
-                Email: <a href="mailto:${org.email}" style="color: ${primaryColor}; text-decoration: none; font-weight: 600;">${org.email}</a>
-              </p>
-              <p style="margin: 0; font-size: 13px; color: #444444;">
-                Website: <a href="https://${org.website}" style="color: ${primaryColor}; text-decoration: none; font-weight: 600;">${org.website}</a>
-              </p>
-            </div>
-            
-            <!-- DISCLAIMER -->
-            <div style="padding: 14px 36px; background-color: #fafafa; text-align: center; border-top: 1px solid #e0e0e0;">
-              <p style="margin: 0; font-size: 11px; color: #aaaaaa; font-style: italic;">
-                This is an automated email. Please do not reply.
-              </p>
-            </div>
-            
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
 
-    const text = `${org.name}
-${tagline1}
-${tagline2}
+    const emailType: DonationEmailType = options?.emailType || 'GENERAL';
 
-Thank You for Your Generous Donation
-
-Dear ${donorName},
-
-We are deeply grateful for your generous donation to ${org.name}. Your compassionate support enables us to continue our mission of ${tagline1} and making a meaningful difference in the lives of those we serve.
-
-With your help, we can reach more people, provide essential services, and create lasting positive change in our community.
-
-RECEIPT DETAILS
-Receipt Number: ${receiptNumber}
-Please find your donation receipt attached as a PDF for your records.
-
-TAX EXEMPTION
-This donation is eligible for tax exemption under Section 80G of the Income Tax Act, 1961. Please retain your receipt for tax purposes.
-
-If you have any questions or would like to learn more about our work, please don't hesitate to reach out to us.
-
-With heartfelt gratitude,
-${org.name}
-
-CONTACT US
-Phone: ${phoneDisplay}
-Email: ${org.email}
-Website: ${org.website}
-
-This is an automated email. Please do not reply.`;
+    const template = getDonationEmailTemplate(emailType, {
+      donorName,
+      receiptNumber,
+      donationAmount: options?.donationAmount,
+      currency: options?.currency,
+      donationDate: options?.donationDate,
+      donationMode: options?.donationMode,
+      donationType: options?.donationType,
+      donorPAN: options?.donorPAN,
+      kindDescription: options?.kindDescription,
+      org: {
+        name: org.name,
+        phone1: org.phone1 || undefined,
+        phone2: org.phone2 || undefined,
+        email: org.email || undefined,
+        website: org.website || undefined,
+        tagline1: org.tagline1 || undefined,
+        tagline2: org.tagline2 || undefined,
+      },
+    });
 
     const attachments: EmailAttachment[] = [
       {
@@ -528,9 +414,9 @@ This is an automated email. Please do not reply.`;
 
     return this.sendEmailWithInline({
       to: toEmail,
-      subject: `Thank you for your donation – ${org.name}`,
-      html,
-      text,
+      subject: template.subject,
+      html: template.html,
+      text: template.text,
       attachments,
       inlineAttachments,
       featureType: 'RECEIPT',
