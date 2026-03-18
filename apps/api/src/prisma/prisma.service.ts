@@ -199,7 +199,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
       // ── staff_performance foreign key + unique constraint ─────────────────
       `DO $$ BEGIN ALTER TABLE "staff_performance" ADD CONSTRAINT "staff_performance_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,
-      `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'staff_performance_userId_month_year_key') THEN ALTER TABLE "staff_performance" ADD CONSTRAINT "staff_performance_userId_month_year_key" UNIQUE ("userId","month","year"); END IF; END $$`,
+      `DO $$ BEGIN ALTER TABLE "staff_performance" ADD CONSTRAINT "staff_performance_userId_month_year_key" UNIQUE ("userId","month","year"); EXCEPTION WHEN duplicate_object THEN null; END $$`,
 
       // ── staff_performance indexes ─────────────────────────────────────────
       `CREATE INDEX IF NOT EXISTS "staff_performance_userId_idx" ON "staff_performance"("userId")`,
@@ -252,7 +252,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         CONSTRAINT "individual_donor_profiles_pkey" PRIMARY KEY ("id")
       )`,
       `DO $$ BEGIN ALTER TABLE "individual_donor_profiles" ADD CONSTRAINT "individual_donor_profiles_donorId_fkey" FOREIGN KEY ("donorId") REFERENCES "donors"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,
-      `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'individual_donor_profiles_donorId_key') THEN ALTER TABLE "individual_donor_profiles" ADD CONSTRAINT "individual_donor_profiles_donorId_key" UNIQUE ("donorId"); END IF; END $$`,
+      `DO $$ BEGIN ALTER TABLE "individual_donor_profiles" ADD CONSTRAINT "individual_donor_profiles_donorId_key" UNIQUE ("donorId"); EXCEPTION WHEN duplicate_object THEN null; END $$`,
       `CREATE INDEX IF NOT EXISTS "individual_donor_profiles_donorId_idx" ON "individual_donor_profiles"("donorId")`,
 
       // Step 7: volunteer_profiles table
@@ -273,7 +273,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         CONSTRAINT "volunteer_profiles_pkey" PRIMARY KEY ("id")
       )`,
       `DO $$ BEGIN ALTER TABLE "volunteer_profiles" ADD CONSTRAINT "volunteer_profiles_donorId_fkey" FOREIGN KEY ("donorId") REFERENCES "donors"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,
-      `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'volunteer_profiles_donorId_key') THEN ALTER TABLE "volunteer_profiles" ADD CONSTRAINT "volunteer_profiles_donorId_key" UNIQUE ("donorId"); END IF; END $$`,
+      `DO $$ BEGIN ALTER TABLE "volunteer_profiles" ADD CONSTRAINT "volunteer_profiles_donorId_key" UNIQUE ("donorId"); EXCEPTION WHEN duplicate_object THEN null; END $$`,
       `CREATE INDEX IF NOT EXISTS "volunteer_profiles_donorId_idx" ON "volunteer_profiles"("donorId")`,
 
       // Step 8: influencer_profiles table
@@ -294,7 +294,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         CONSTRAINT "influencer_profiles_pkey" PRIMARY KEY ("id")
       )`,
       `DO $$ BEGIN ALTER TABLE "influencer_profiles" ADD CONSTRAINT "influencer_profiles_donorId_fkey" FOREIGN KEY ("donorId") REFERENCES "donors"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,
-      `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'influencer_profiles_donorId_key') THEN ALTER TABLE "influencer_profiles" ADD CONSTRAINT "influencer_profiles_donorId_key" UNIQUE ("donorId"); END IF; END $$`,
+      `DO $$ BEGIN ALTER TABLE "influencer_profiles" ADD CONSTRAINT "influencer_profiles_donorId_key" UNIQUE ("donorId"); EXCEPTION WHEN duplicate_object THEN null; END $$`,
       `CREATE INDEX IF NOT EXISTS "influencer_profiles_donorId_idx" ON "influencer_profiles"("donorId")`,
 
       // Step 9: csr_profiles table
@@ -320,7 +320,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         CONSTRAINT "csr_profiles_pkey" PRIMARY KEY ("id")
       )`,
       `DO $$ BEGIN ALTER TABLE "csr_profiles" ADD CONSTRAINT "csr_profiles_donorId_fkey" FOREIGN KEY ("donorId") REFERENCES "donors"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,
-      `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'csr_profiles_donorId_key') THEN ALTER TABLE "csr_profiles" ADD CONSTRAINT "csr_profiles_donorId_key" UNIQUE ("donorId"); END IF; END $$`,
+      `DO $$ BEGIN ALTER TABLE "csr_profiles" ADD CONSTRAINT "csr_profiles_donorId_key" UNIQUE ("donorId"); EXCEPTION WHEN duplicate_object THEN null; END $$`,
       `CREATE INDEX IF NOT EXISTS "csr_profiles_donorId_idx" ON "csr_profiles"("donorId")`,
 
       // Step 10: new CSR profile columns
