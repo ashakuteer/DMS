@@ -1961,6 +1961,8 @@ model VolunteerProfile {
   workMode          String?
   skills            String[]
   areasOfInterest   String[]
+  inmatesSupport    String[]
+  adminSupport      String[]
   availabilityType  String?
   timePreference    String?
   engagementLevel   String?
@@ -1978,6 +1980,7 @@ model InfluencerProfile {
   id                    String    @id @default(uuid())
   donorId               String    @unique
   influenceTypes        String[]
+  groupName             String?
   audienceSize          Int?
   engagementLevel       String?
   contributionTypes     String[]
@@ -1995,26 +1998,33 @@ model InfluencerProfile {
 }
 
 model CSRProfile {
-  id                    String    @id @default(uuid())
-  donorId               String    @unique
-  companyName           String?
-  designation           String?
-  industry              String?
-  companySize           String?
-  csrBudget             Decimal?  @db.Decimal(15, 2)
-  focusAreas            String[]
-  supportTypes          String[]
-  decisionRole          String?
-  relationshipStrength  String?
-  lastContactDate       DateTime?
-  nextFollowUpDate      DateTime?
-  meetingStatus         String?
-  expectedContribution  Decimal?  @db.Decimal(15, 2)
-  proposalShared        Boolean   @default(false)
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  id                          String    @id @default(uuid())
+  donorId                     String    @unique
+  companyName                 String?
+  designation                 String?
+  industry                    String?
+  companySize                 String?
+  companyAddress              String?
+  csrAltName                  String?
+  csrAltPhone                 String?
+  csrAltEmail                 String?
+  csrOfficialEmailPrimary     String?
+  csrOfficialEmailSecondary   String?
+  csrBudget                   Decimal?  @db.Decimal(15, 2)
+  focusAreas                  String[]
+  supportTypes                String[]
+  csrSupportType              String?
+  decisionRole                String?
+  relationshipStrength        String?
+  lastContactDate             DateTime?
+  nextFollowUpDate            DateTime?
+  meetingStatus               String?
+  expectedContribution        Decimal?  @db.Decimal(15, 2)
+  proposalShared              Boolean   @default(false)
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
 
-  donor                 Donor     @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  donor                       Donor     @relation(fields: [donorId], references: [id], onDelete: Cascade)
 
   @@map("csr_profiles")
 }

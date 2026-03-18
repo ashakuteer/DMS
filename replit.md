@@ -4,7 +4,31 @@
 
 This project is a comprehensive donor management system for NGOs, designed to streamline the tracking of donors, donations, and beneficiaries. It provides a robust platform for fundraising, financial reporting, and donor engagement, incorporating features like role-based access control, detailed audit logging, and AI-powered insights. The system supports various donor categories, donation types, and payment modes, with automated receipt generation and email delivery. The business vision is to empower non-profits with a scalable and secure tool to efficiently manage their operations, enhance donor relationships, and maximize their impact.
 
-## Recent Changes (Role-Based Donor Profile Upgrade)
+## Recent Changes (Enhanced CSR / Volunteer / Influencer Profiles)
+
+### New Profile Fields Added (Mar 2026)
+
+**CSRProfile** — added to `csr_profiles` table via schema patches + Prisma model:
+- `companyAddress` — full company address textarea
+- `csrAltName`, `csrAltPhone`, `csrAltEmail` — alternate CSR contact
+- `csrOfficialEmailPrimary`, `csrOfficialEmailSecondary` — official corporate emails
+- `csrSupportType` — single-select: FINANCIAL, IN_KIND, EMPLOYEE_ENGAGEMENT, SKILLS_BASED, SPONSORSHIP, MIXED
+- `lastContactDate`, `nextFollowUpDate` — date fields for CRM follow-up (already existed in table; now exposed in UI)
+
+**VolunteerProfile** — added to `volunteer_profiles`:
+- `inmatesSupport String[]` — multi-select for FIELD type: Teaching, Hospital Support, Scribe, Elder Care, Child Care, Counseling, Recreation
+- `adminSupport String[]` — multi-select for ADMIN type: Accounts, Software/IT, Administration, Marketing, Fundraising, Event Management, HR Support
+- Volunteer types updated: FIELD (Inmate Support) and ADMIN (Organization Support)
+- Nature of Work section is conditional on volunteer type selected
+
+**InfluencerProfile** — added to `influencer_profiles`:
+- `groupName` — group/network name (Lions Club, WhatsApp Group, etc.)
+
+All patches applied via `applySchemaPatches()` in PrismaService (Steps 10–12) for production Railway/Supabase compatibility.
+
+Both new donor form and edit donor form updated to include all new fields with organized sub-sections (Company Details, Alternate CSR Contact, Official Emails, CSR Profile, Decision & Follow-up for CSR; Nature of Work conditional section for Volunteer; Group Name for Influencer).
+
+## Previous Changes (Role-Based Donor Profile Upgrade)
 
 ### Schema Changes (apps/api/prisma/schema.prisma)
 - Added `PersonRole` enum: `INDIVIDUAL`, `CSR`, `VOLUNTEER`, `INFLUENCER`

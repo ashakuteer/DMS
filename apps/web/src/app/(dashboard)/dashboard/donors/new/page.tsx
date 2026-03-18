@@ -120,8 +120,25 @@ const COMM_METHODS = [
 ];
 
 const VOLUNTEER_TYPES = [
-  { value: "FIELD", label: "Field Volunteer" },
-  { value: "SKILL_BASED", label: "Skill-Based Volunteer" },
+  { value: "FIELD", label: "Field Volunteer (Inmate Support)" },
+  { value: "ADMIN", label: "Admin Volunteer (Organization Support)" },
+];
+
+const INMATES_SUPPORT_OPTIONS = [
+  "Teaching", "Hospital Support", "Scribe", "Elder Care", "Child Care", "Counseling", "Recreation",
+];
+
+const ADMIN_SUPPORT_OPTIONS = [
+  "Accounts", "Software / IT", "Administration", "Marketing", "Fundraising", "Event Management", "HR Support",
+];
+
+const CSR_SUPPORT_TYPES = [
+  { value: "FINANCIAL", label: "Financial / Cash" },
+  { value: "IN_KIND", label: "In-Kind / Materials" },
+  { value: "EMPLOYEE_ENGAGEMENT", label: "Employee Engagement" },
+  { value: "SKILLS_BASED", label: "Skills-Based" },
+  { value: "SPONSORSHIP", label: "Event Sponsorship" },
+  { value: "MIXED", label: "Mixed / Multiple" },
 ];
 
 const WORK_MODES = [
@@ -224,6 +241,8 @@ export default function NewDonorPage() {
     workMode: "",
     skills: [] as string[],
     areasOfInterest: [] as string[],
+    inmatesSupport: [] as string[],
+    adminSupport: [] as string[],
     availabilityType: "",
     timePreference: "",
     engagementLevel: "",
@@ -232,6 +251,7 @@ export default function NewDonorPage() {
 
   const [influencerProfile, setInfluencerProfile] = useState({
     influenceTypes: [] as string[],
+    groupName: "",
     audienceSize: "",
     engagementLevel: "",
     contributionTypes: [] as string[],
@@ -244,11 +264,20 @@ export default function NewDonorPage() {
     designation: "",
     industry: "",
     companySize: "",
+    companyAddress: "",
+    csrAltName: "",
+    csrAltPhone: "",
+    csrAltEmail: "",
+    csrOfficialEmailPrimary: "",
+    csrOfficialEmailSecondary: "",
     csrBudget: "",
     focusAreas: [] as string[],
     supportTypes: [] as string[],
+    csrSupportType: "",
     decisionRole: "",
     relationshipStrength: "",
+    lastContactDate: "",
+    nextFollowUpDate: "",
     meetingStatus: "",
     expectedContribution: "",
     proposalShared: false,
@@ -405,6 +434,8 @@ export default function NewDonorPage() {
           ...(volunteerProfile.workMode ? { workMode: volunteerProfile.workMode } : {}),
           skills: volunteerProfile.skills,
           areasOfInterest: volunteerProfile.areasOfInterest,
+          inmatesSupport: volunteerProfile.inmatesSupport,
+          adminSupport: volunteerProfile.adminSupport,
           ...(volunteerProfile.engagementLevel ? { engagementLevel: volunteerProfile.engagementLevel } : {}),
           ...(volunteerProfile.availabilityType ? { availabilityType: volunteerProfile.availabilityType } : {}),
           ...(volunteerProfile.timePreference ? { timePreference: volunteerProfile.timePreference } : {}),
@@ -414,6 +445,7 @@ export default function NewDonorPage() {
       if (allRoles.includes("INFLUENCER")) {
         payload.influencerProfile = {
           influenceTypes: influencerProfile.influenceTypes,
+          ...(influencerProfile.groupName ? { groupName: influencerProfile.groupName } : {}),
           ...(influencerProfile.audienceSize ? { audienceSize: parseInt(influencerProfile.audienceSize) } : {}),
           ...(influencerProfile.engagementLevel ? { engagementLevel: influencerProfile.engagementLevel } : {}),
           contributionTypes: influencerProfile.contributionTypes,
@@ -427,11 +459,20 @@ export default function NewDonorPage() {
           ...(csrProfile.designation ? { designation: csrProfile.designation } : {}),
           ...(csrProfile.industry ? { industry: csrProfile.industry } : {}),
           ...(csrProfile.companySize ? { companySize: csrProfile.companySize } : {}),
+          ...(csrProfile.companyAddress ? { companyAddress: csrProfile.companyAddress } : {}),
+          ...(csrProfile.csrAltName ? { csrAltName: csrProfile.csrAltName } : {}),
+          ...(csrProfile.csrAltPhone ? { csrAltPhone: csrProfile.csrAltPhone } : {}),
+          ...(csrProfile.csrAltEmail ? { csrAltEmail: csrProfile.csrAltEmail } : {}),
+          ...(csrProfile.csrOfficialEmailPrimary ? { csrOfficialEmailPrimary: csrProfile.csrOfficialEmailPrimary } : {}),
+          ...(csrProfile.csrOfficialEmailSecondary ? { csrOfficialEmailSecondary: csrProfile.csrOfficialEmailSecondary } : {}),
           ...(csrProfile.csrBudget ? { csrBudget: parseFloat(csrProfile.csrBudget) } : {}),
           focusAreas: csrProfile.focusAreas,
           supportTypes: csrProfile.supportTypes,
+          ...(csrProfile.csrSupportType ? { csrSupportType: csrProfile.csrSupportType } : {}),
           ...(csrProfile.decisionRole ? { decisionRole: csrProfile.decisionRole } : {}),
           ...(csrProfile.relationshipStrength ? { relationshipStrength: csrProfile.relationshipStrength } : {}),
+          ...(csrProfile.lastContactDate ? { lastContactDate: new Date(csrProfile.lastContactDate).toISOString() } : {}),
+          ...(csrProfile.nextFollowUpDate ? { nextFollowUpDate: new Date(csrProfile.nextFollowUpDate).toISOString() } : {}),
           ...(csrProfile.meetingStatus ? { meetingStatus: csrProfile.meetingStatus } : {}),
           ...(csrProfile.expectedContribution ? { expectedContribution: parseFloat(csrProfile.expectedContribution) } : {}),
           proposalShared: csrProfile.proposalShared,
@@ -782,144 +823,227 @@ export default function NewDonorPage() {
               </TabsContent>
 
               {/* CSR Tab */}
-              <TabsContent value="csr" className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <Label>Company Name</Label>
-                    <Input value={csrProfile.companyName} onChange={(e) => setCsrProfile((p) => ({ ...p, companyName: e.target.value }))} placeholder="Company name" data-testid="input-company-name" />
-                  </div>
-                  <div>
-                    <Label>Designation</Label>
-                    <Input value={csrProfile.designation} onChange={(e) => setCsrProfile((p) => ({ ...p, designation: e.target.value }))} placeholder="Designation" data-testid="input-designation" />
-                  </div>
-                  <div>
-                    <Label>Industry</Label>
-                    <Input value={csrProfile.industry} onChange={(e) => setCsrProfile((p) => ({ ...p, industry: e.target.value }))} placeholder="Industry" data-testid="input-industry" />
-                  </div>
-                  <div>
-                    <Label>Company Size</Label>
-                    <Input value={csrProfile.companySize} onChange={(e) => setCsrProfile((p) => ({ ...p, companySize: e.target.value }))} placeholder="e.g. 50-200 employees" data-testid="input-company-size" />
-                  </div>
-                  <div>
-                    <Label>CSR Budget (₹)</Label>
-                    <Input type="number" value={csrProfile.csrBudget} onChange={(e) => setCsrProfile((p) => ({ ...p, csrBudget: e.target.value }))} placeholder="Annual CSR budget" data-testid="input-csr-budget" />
-                  </div>
-                  <div>
-                    <Label>Expected Contribution (₹)</Label>
-                    <Input type="number" value={csrProfile.expectedContribution} onChange={(e) => setCsrProfile((p) => ({ ...p, expectedContribution: e.target.value }))} placeholder="Expected contribution" data-testid="input-expected-contribution" />
-                  </div>
-                  <div>
-                    <Label>Decision Role</Label>
-                    <Input value={csrProfile.decisionRole} onChange={(e) => setCsrProfile((p) => ({ ...p, decisionRole: e.target.value }))} placeholder="e.g. Decision Maker" data-testid="input-decision-role" />
-                  </div>
-                  <div>
-                    <Label>Relationship Strength</Label>
-                    <Select value={csrProfile.relationshipStrength} onValueChange={(v) => setCsrProfile((p) => ({ ...p, relationshipStrength: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Select strength" /></SelectTrigger>
-                      <SelectContent>{RELATIONSHIP_STRENGTHS.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Meeting Status</Label>
-                    <Select value={csrProfile.meetingStatus} onValueChange={(v) => setCsrProfile((p) => ({ ...p, meetingStatus: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Meeting status" /></SelectTrigger>
-                      <SelectContent>{MEETING_STATUSES.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center gap-2 mt-6">
-                    <Checkbox id="proposalShared" checked={csrProfile.proposalShared} onCheckedChange={(c) => setCsrProfile((p) => ({ ...p, proposalShared: !!c }))} />
-                    <Label htmlFor="proposalShared" className="font-normal">Proposal Shared</Label>
+              <TabsContent value="csr" className="space-y-6">
+                {/* Company Details */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Company Details</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label>Company Name</Label>
+                      <Input value={csrProfile.companyName} onChange={(e) => setCsrProfile((p) => ({ ...p, companyName: e.target.value }))} placeholder="Company name" data-testid="input-company-name" />
+                    </div>
+                    <div>
+                      <Label>Designation</Label>
+                      <Input value={csrProfile.designation} onChange={(e) => setCsrProfile((p) => ({ ...p, designation: e.target.value }))} placeholder="e.g. CSR Head" data-testid="input-designation" />
+                    </div>
+                    <div>
+                      <Label>Industry</Label>
+                      <Input value={csrProfile.industry} onChange={(e) => setCsrProfile((p) => ({ ...p, industry: e.target.value }))} placeholder="e.g. Technology, FMCG" data-testid="input-industry" />
+                    </div>
+                    <div>
+                      <Label>Company Size</Label>
+                      <Input value={csrProfile.companySize} onChange={(e) => setCsrProfile((p) => ({ ...p, companySize: e.target.value }))} placeholder="e.g. 50-200 employees" data-testid="input-company-size" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label>Company Address</Label>
+                      <Textarea value={csrProfile.companyAddress} onChange={(e) => setCsrProfile((p) => ({ ...p, companyAddress: e.target.value }))} placeholder="Company registered / office address" rows={2} data-testid="input-company-address" />
+                    </div>
                   </div>
                 </div>
+
+                {/* Alternate CSR Contact */}
                 <div>
-                  <Label className="mb-2 block">Focus Areas</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {["Education", "Healthcare", "Environment", "Women Empowerment", "Child Welfare", "Elderly Care", "Livelihood"].map((area) => {
-                      const isSelected = csrProfile.focusAreas.includes(area);
-                      return (
-                        <Badge key={area} variant={isSelected ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setCsrProfile((p) => ({ ...p, focusAreas: toggleArrayItem(p.focusAreas, area) }))}>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Alternate CSR Contact</p>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div>
+                      <Label>Contact Name</Label>
+                      <Input value={csrProfile.csrAltName} onChange={(e) => setCsrProfile((p) => ({ ...p, csrAltName: e.target.value }))} placeholder="Alternate contact name" data-testid="input-csr-alt-name" />
+                    </div>
+                    <div>
+                      <Label>Contact Phone</Label>
+                      <Input value={csrProfile.csrAltPhone} onChange={(e) => setCsrProfile((p) => ({ ...p, csrAltPhone: e.target.value }))} placeholder="+91 98765 43210" data-testid="input-csr-alt-phone" />
+                    </div>
+                    <div>
+                      <Label>Contact Email</Label>
+                      <Input type="email" value={csrProfile.csrAltEmail} onChange={(e) => setCsrProfile((p) => ({ ...p, csrAltEmail: e.target.value }))} placeholder="alt@company.com" data-testid="input-csr-alt-email" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Official Emails */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Official Emails</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label>Primary Official Email</Label>
+                      <Input type="email" value={csrProfile.csrOfficialEmailPrimary} onChange={(e) => setCsrProfile((p) => ({ ...p, csrOfficialEmailPrimary: e.target.value }))} placeholder="csr@company.com" data-testid="input-csr-email-primary" />
+                    </div>
+                    <div>
+                      <Label>Secondary Official Email</Label>
+                      <Input type="email" value={csrProfile.csrOfficialEmailSecondary} onChange={(e) => setCsrProfile((p) => ({ ...p, csrOfficialEmailSecondary: e.target.value }))} placeholder="csr2@company.com" data-testid="input-csr-email-secondary" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* CSR Profile */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">CSR Profile</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label>CSR Budget (₹)</Label>
+                      <Input type="number" value={csrProfile.csrBudget} onChange={(e) => setCsrProfile((p) => ({ ...p, csrBudget: e.target.value }))} placeholder="Annual CSR budget" data-testid="input-csr-budget" />
+                    </div>
+                    <div>
+                      <Label>Expected Contribution (₹)</Label>
+                      <Input type="number" value={csrProfile.expectedContribution} onChange={(e) => setCsrProfile((p) => ({ ...p, expectedContribution: e.target.value }))} placeholder="Expected amount" data-testid="input-expected-contribution" />
+                    </div>
+                    <div>
+                      <Label>Support Type</Label>
+                      <Select value={csrProfile.csrSupportType} onValueChange={(v) => setCsrProfile((p) => ({ ...p, csrSupportType: v }))}>
+                        <SelectTrigger data-testid="select-csr-support-type"><SelectValue placeholder="Type of support" /></SelectTrigger>
+                        <SelectContent>{CSR_SUPPORT_TYPES.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <Label className="mb-2 block">Focus Areas</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {["Education", "Healthcare", "Environment", "Women Empowerment", "Child Welfare", "Elderly Care", "Livelihood", "Skill Development"].map((area) => (
+                        <Badge key={area} variant={csrProfile.focusAreas.includes(area) ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setCsrProfile((p) => ({ ...p, focusAreas: toggleArrayItem(p.focusAreas, area) }))}>
                           {area}
                         </Badge>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
                 </div>
+
+                {/* Decision & Follow-up */}
                 <div>
-                  <Label className="mb-2 block">Support Types</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {SUPPORT_TYPES.map((s) => {
-                      const isSelected = csrProfile.supportTypes.includes(s.value);
-                      return (
-                        <Badge key={s.value} variant={isSelected ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setCsrProfile((p) => ({ ...p, supportTypes: toggleArrayItem(p.supportTypes, s.value) }))}>
-                          {s.label}
-                        </Badge>
-                      );
-                    })}
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Decision & Follow-up</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label>Decision Role</Label>
+                      <Input value={csrProfile.decisionRole} onChange={(e) => setCsrProfile((p) => ({ ...p, decisionRole: e.target.value }))} placeholder="e.g. Decision Maker, Influencer" data-testid="input-decision-role" />
+                    </div>
+                    <div>
+                      <Label>Relationship Strength</Label>
+                      <Select value={csrProfile.relationshipStrength} onValueChange={(v) => setCsrProfile((p) => ({ ...p, relationshipStrength: v }))}>
+                        <SelectTrigger><SelectValue placeholder="Select strength" /></SelectTrigger>
+                        <SelectContent>{RELATIONSHIP_STRENGTHS.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Last Contact Date</Label>
+                      <Input type="date" value={csrProfile.lastContactDate} onChange={(e) => setCsrProfile((p) => ({ ...p, lastContactDate: e.target.value }))} data-testid="input-last-contact-date" />
+                    </div>
+                    <div>
+                      <Label>Next Follow-up Date</Label>
+                      <Input type="date" value={csrProfile.nextFollowUpDate} onChange={(e) => setCsrProfile((p) => ({ ...p, nextFollowUpDate: e.target.value }))} data-testid="input-next-followup-date" />
+                    </div>
+                    <div>
+                      <Label>Meeting Status</Label>
+                      <Select value={csrProfile.meetingStatus} onValueChange={(v) => setCsrProfile((p) => ({ ...p, meetingStatus: v }))}>
+                        <SelectTrigger><SelectValue placeholder="Meeting status" /></SelectTrigger>
+                        <SelectContent>{MEETING_STATUSES.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-2 mt-6">
+                      <Checkbox id="proposalShared" checked={csrProfile.proposalShared} onCheckedChange={(c) => setCsrProfile((p) => ({ ...p, proposalShared: !!c }))} />
+                      <Label htmlFor="proposalShared" className="font-normal">Proposal Shared</Label>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
 
               {/* Volunteer Tab */}
-              <TabsContent value="volunteer" className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <Label>Volunteer Type</Label>
-                    <Select value={volunteerProfile.volunteerType} onValueChange={(v) => setVolunteerProfile((p) => ({ ...p, volunteerType: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                      <SelectContent>{VOLUNTEER_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Work Mode</Label>
-                    <Select value={volunteerProfile.workMode} onValueChange={(v) => setVolunteerProfile((p) => ({ ...p, workMode: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Select mode" /></SelectTrigger>
-                      <SelectContent>{WORK_MODES.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Availability</Label>
-                    <Input value={volunteerProfile.availabilityType} onChange={(e) => setVolunteerProfile((p) => ({ ...p, availabilityType: e.target.value }))} placeholder="e.g. Weekends, Evenings" />
-                  </div>
-                  <div>
-                    <Label>Time Preference</Label>
-                    <Input value={volunteerProfile.timePreference} onChange={(e) => setVolunteerProfile((p) => ({ ...p, timePreference: e.target.value }))} placeholder="e.g. Morning, Afternoon" />
-                  </div>
-                  <div>
-                    <Label>Engagement Level</Label>
-                    <Select value={volunteerProfile.engagementLevel} onValueChange={(v) => setVolunteerProfile((p) => ({ ...p, engagementLevel: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
-                      <SelectContent>{ENGAGEMENT_LEVELS.map((l) => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                  <div className="flex items-center gap-2 mt-6">
-                    <Checkbox id="willingToDonate" checked={volunteerProfile.willingToDonate} onCheckedChange={(c) => setVolunteerProfile((p) => ({ ...p, willingToDonate: !!c }))} />
-                    <Label htmlFor="willingToDonate" className="font-normal">Willing to Donate</Label>
+              <TabsContent value="volunteer" className="space-y-6">
+                {/* Basic Details */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Volunteer Details</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label>Volunteer Type</Label>
+                      <Select value={volunteerProfile.volunteerType} onValueChange={(v) => setVolunteerProfile((p) => ({ ...p, volunteerType: v, inmatesSupport: [], adminSupport: [] }))}>
+                        <SelectTrigger data-testid="select-volunteer-type"><SelectValue placeholder="Select type" /></SelectTrigger>
+                        <SelectContent>{VOLUNTEER_TYPES.map((t) => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Work Mode</Label>
+                      <Select value={volunteerProfile.workMode} onValueChange={(v) => setVolunteerProfile((p) => ({ ...p, workMode: v }))}>
+                        <SelectTrigger><SelectValue placeholder="Select mode" /></SelectTrigger>
+                        <SelectContent>{WORK_MODES.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Availability</Label>
+                      <Input value={volunteerProfile.availabilityType} onChange={(e) => setVolunteerProfile((p) => ({ ...p, availabilityType: e.target.value }))} placeholder="e.g. Weekends, Evenings" />
+                    </div>
+                    <div>
+                      <Label>Time Preference</Label>
+                      <Input value={volunteerProfile.timePreference} onChange={(e) => setVolunteerProfile((p) => ({ ...p, timePreference: e.target.value }))} placeholder="e.g. Morning, Afternoon" />
+                    </div>
+                    <div>
+                      <Label>Engagement Level</Label>
+                      <Select value={volunteerProfile.engagementLevel} onValueChange={(v) => setVolunteerProfile((p) => ({ ...p, engagementLevel: v }))}>
+                        <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
+                        <SelectContent>{ENGAGEMENT_LEVELS.map((l) => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-2 mt-6">
+                      <Checkbox id="willingToDonate" checked={volunteerProfile.willingToDonate} onCheckedChange={(c) => setVolunteerProfile((p) => ({ ...p, willingToDonate: !!c }))} />
+                      <Label htmlFor="willingToDonate" className="font-normal">Willing to Donate</Label>
+                    </div>
                   </div>
                 </div>
+
+                {/* Nature of Work — conditional on type */}
+                {volunteerProfile.volunteerType === "FIELD" && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Nature of Work — Inmate Support</p>
+                    <div className="flex flex-wrap gap-2">
+                      {INMATES_SUPPORT_OPTIONS.map((opt) => (
+                        <Badge key={opt} variant={volunteerProfile.inmatesSupport.includes(opt) ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setVolunteerProfile((p) => ({ ...p, inmatesSupport: toggleArrayItem(p.inmatesSupport, opt) }))}>
+                          {opt}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {volunteerProfile.volunteerType === "ADMIN" && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Nature of Work — Admin Support</p>
+                    <div className="flex flex-wrap gap-2">
+                      {ADMIN_SUPPORT_OPTIONS.map((opt) => (
+                        <Badge key={opt} variant={volunteerProfile.adminSupport.includes(opt) ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setVolunteerProfile((p) => ({ ...p, adminSupport: toggleArrayItem(p.adminSupport, opt) }))}>
+                          {opt}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Skills */}
                 <div>
                   <Label className="mb-2 block">Skills</Label>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {["Teaching", "Medical", "Accounting", "Photography", "Social Media", "Cooking", "Driving", "IT/Tech", "Legal", "Counseling"].map((skill) => {
-                      const isSelected = volunteerProfile.skills.includes(skill);
-                      return (
-                        <Badge key={skill} variant={isSelected ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setVolunteerProfile((p) => ({ ...p, skills: toggleArrayItem(p.skills, skill) }))}>
-                          {skill}
-                        </Badge>
-                      );
-                    })}
+                    {["Teaching", "Medical", "Accounting", "Photography", "Social Media", "Cooking", "Driving", "IT / Tech", "Legal", "Counseling"].map((skill) => (
+                      <Badge key={skill} variant={volunteerProfile.skills.includes(skill) ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setVolunteerProfile((p) => ({ ...p, skills: toggleArrayItem(p.skills, skill) }))}>
+                        {skill}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
+
+                {/* Areas of Interest */}
                 <div>
                   <Label className="mb-2 block">Areas of Interest</Label>
                   <div className="flex flex-wrap gap-2">
-                    {["Education", "Healthcare", "Elder Care", "Child Development", "Events", "Fundraising", "Administration"].map((area) => {
-                      const isSelected = volunteerProfile.areasOfInterest.includes(area);
-                      return (
-                        <Badge key={area} variant={isSelected ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setVolunteerProfile((p) => ({ ...p, areasOfInterest: toggleArrayItem(p.areasOfInterest, area) }))}>
-                          {area}
-                        </Badge>
-                      );
-                    })}
+                    {["Education", "Healthcare", "Elder Care", "Child Development", "Events", "Fundraising", "Administration"].map((area) => (
+                      <Badge key={area} variant={volunteerProfile.areasOfInterest.includes(area) ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setVolunteerProfile((p) => ({ ...p, areasOfInterest: toggleArrayItem(p.areasOfInterest, area) }))}>
+                        {area}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               </TabsContent>
@@ -927,6 +1051,10 @@ export default function NewDonorPage() {
               {/* Influencer Tab */}
               <TabsContent value="influencer" className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label>Group / Network Name</Label>
+                    <Input value={influencerProfile.groupName} onChange={(e) => setInfluencerProfile((p) => ({ ...p, groupName: e.target.value }))} placeholder="e.g. Lions Club, WhatsApp Group" data-testid="input-group-name" />
+                  </div>
                   <div>
                     <Label>Audience Size</Label>
                     <Input type="number" value={influencerProfile.audienceSize} onChange={(e) => setInfluencerProfile((p) => ({ ...p, audienceSize: e.target.value }))} placeholder="e.g. 10000" />
@@ -953,27 +1081,21 @@ export default function NewDonorPage() {
                 <div>
                   <Label className="mb-2 block">Influence Types</Label>
                   <div className="flex flex-wrap gap-2">
-                    {INFLUENCE_TYPES.map((t) => {
-                      const isSelected = influencerProfile.influenceTypes.includes(t);
-                      return (
-                        <Badge key={t} variant={isSelected ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setInfluencerProfile((p) => ({ ...p, influenceTypes: toggleArrayItem(p.influenceTypes, t) }))}>
-                          {t}
-                        </Badge>
-                      );
-                    })}
+                    {INFLUENCE_TYPES.map((t) => (
+                      <Badge key={t} variant={influencerProfile.influenceTypes.includes(t) ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setInfluencerProfile((p) => ({ ...p, influenceTypes: toggleArrayItem(p.influenceTypes, t) }))}>
+                        {t}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
                 <div>
                   <Label className="mb-2 block">Contribution Types</Label>
                   <div className="flex flex-wrap gap-2">
-                    {CONTRIBUTION_TYPES.map((t) => {
-                      const isSelected = influencerProfile.contributionTypes.includes(t);
-                      return (
-                        <Badge key={t} variant={isSelected ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setInfluencerProfile((p) => ({ ...p, contributionTypes: toggleArrayItem(p.contributionTypes, t) }))}>
-                          {t}
-                        </Badge>
-                      );
-                    })}
+                    {CONTRIBUTION_TYPES.map((t) => (
+                      <Badge key={t} variant={influencerProfile.contributionTypes.includes(t) ? "default" : "outline"} className="cursor-pointer px-3 py-1.5" onClick={() => setInfluencerProfile((p) => ({ ...p, contributionTypes: toggleArrayItem(p.contributionTypes, t) }))}>
+                        {t}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               </TabsContent>

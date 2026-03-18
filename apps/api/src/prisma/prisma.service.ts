@@ -322,6 +322,22 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       `DO $$ BEGIN ALTER TABLE "csr_profiles" ADD CONSTRAINT "csr_profiles_donorId_fkey" FOREIGN KEY ("donorId") REFERENCES "donors"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,
       `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'csr_profiles_donorId_key') THEN ALTER TABLE "csr_profiles" ADD CONSTRAINT "csr_profiles_donorId_key" UNIQUE ("donorId"); END IF; END $$`,
       `CREATE INDEX IF NOT EXISTS "csr_profiles_donorId_idx" ON "csr_profiles"("donorId")`,
+
+      // Step 10: new CSR profile columns
+      `ALTER TABLE "csr_profiles" ADD COLUMN IF NOT EXISTS "companyAddress" TEXT`,
+      `ALTER TABLE "csr_profiles" ADD COLUMN IF NOT EXISTS "csrAltName" TEXT`,
+      `ALTER TABLE "csr_profiles" ADD COLUMN IF NOT EXISTS "csrAltPhone" TEXT`,
+      `ALTER TABLE "csr_profiles" ADD COLUMN IF NOT EXISTS "csrAltEmail" TEXT`,
+      `ALTER TABLE "csr_profiles" ADD COLUMN IF NOT EXISTS "csrOfficialEmailPrimary" TEXT`,
+      `ALTER TABLE "csr_profiles" ADD COLUMN IF NOT EXISTS "csrOfficialEmailSecondary" TEXT`,
+      `ALTER TABLE "csr_profiles" ADD COLUMN IF NOT EXISTS "csrSupportType" TEXT`,
+
+      // Step 11: new Volunteer profile columns
+      `ALTER TABLE "volunteer_profiles" ADD COLUMN IF NOT EXISTS "inmatesSupport" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[]`,
+      `ALTER TABLE "volunteer_profiles" ADD COLUMN IF NOT EXISTS "adminSupport" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[]`,
+
+      // Step 12: new Influencer profile columns
+      `ALTER TABLE "influencer_profiles" ADD COLUMN IF NOT EXISTS "groupName" TEXT`,
     ];
 
     for (const sql of patches) {
