@@ -25,7 +25,9 @@ This project is a comprehensive donor management system for NGOs, designed to st
 - Removed: Category dropdown, WhatsApp phone field, separate official email
 - Added: Role Selection section (primaryRole + additionalRoles), Donation Profile tabs (Individual/CSR/Volunteer/Influencer), Communication Preferences section
 - Email consolidated into single field mapped to `personalEmail` on submit
-- Sections: Basic Info, Contact Details, Address, Role Selection, Donation Profile (tabbed), Communication Preferences, Smart Fields, Source & Assignment, Notes
+- Sections: Basic Info, Contact Details, Address, Role Selection, Donation Profile (tabbed), Communication Preferences, Tags & Smart Fields, Source & Assignment, Notes
+- Tags & Smart Fields section: donor-level `donorTags` badge picker + special flags (isUnder18Helper, isSeniorCitizen, isSingleParent, isDisabled) as toggle buttons
+- Removed `lastDonationDate` and `totalDonationsManual` — these do not exist in the Prisma schema
 
 ### Frontend — Edit Donor (apps/web/src/app/(dashboard)/dashboard/donors/[id]/edit/page.tsx)
 - Completely rewritten to match new role-based profile structure

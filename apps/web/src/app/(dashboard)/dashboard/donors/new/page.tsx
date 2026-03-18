@@ -198,8 +198,6 @@ export default function NewDonorPage() {
     communicationChannels: [] as string[],
     preferredCommunicationMethod: "",
     communicationNotes: "",
-    lastDonationDate: "",
-    totalDonationsManual: "",
     sourceOfDonor: "",
     sourceDetails: "",
     pan: "",
@@ -208,6 +206,10 @@ export default function NewDonorPage() {
     prefWhatsapp: true,
     prefSms: false,
     prefReminders: true,
+    isUnder18Helper: false,
+    isSeniorCitizen: false,
+    isSingleParent: false,
+    isDisabled: false,
   });
 
   const [individualProfile, setIndividualProfile] = useState({
@@ -373,6 +375,10 @@ export default function NewDonorPage() {
       payload.primaryRole = formData.primaryRole;
       payload.additionalRoles = formData.additionalRoles;
       payload.donorTags = formData.donorTags;
+      payload.isUnder18Helper = formData.isUnder18Helper;
+      payload.isSeniorCitizen = formData.isSeniorCitizen;
+      payload.isSingleParent = formData.isSingleParent;
+      payload.isDisabled = formData.isDisabled;
       payload.communicationChannels = formData.communicationChannels;
       if (formData.preferredCommunicationMethod) payload.preferredCommunicationMethod = formData.preferredCommunicationMethod;
       if (formData.communicationNotes) payload.communicationNotes = formData.communicationNotes;
@@ -1034,22 +1040,58 @@ export default function NewDonorPage() {
           </CardContent>
         </Card>
 
-        {/* 6. Smart Fields */}
+        {/* 6. Tags & Smart Fields */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart2 className="h-5 w-5" />
-              Smart Fields
+              <Tag className="h-5 w-5" />
+              Tags &amp; Smart Fields
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
+          <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="lastDonationDate">Last Donation Date</Label>
-              <Input id="lastDonationDate" type="date" value={formData.lastDonationDate} onChange={(e) => handleChange("lastDonationDate", e.target.value)} data-testid="input-last-donation-date" />
+              <Label className="mb-2 block text-sm font-medium">Donor Tags</Label>
+              <div className="flex flex-wrap gap-2">
+                {DONOR_TAGS.map((tag) => {
+                  const isSelected = formData.donorTags.includes(tag);
+                  return (
+                    <Badge
+                      key={tag}
+                      variant={isSelected ? "default" : "outline"}
+                      className="cursor-pointer px-3 py-1.5"
+                      onClick={() => handleChange("donorTags", toggleArrayItem(formData.donorTags, tag))}
+                      data-testid={`donor-tag-${tag.toLowerCase().replace(/\s+/g, "-")}`}
+                    >
+                      {tag}
+                    </Badge>
+                  );
+                })}
+              </div>
             </div>
             <div>
-              <Label htmlFor="totalDonationsManual">Total Donations (Manual, ₹)</Label>
-              <Input id="totalDonationsManual" type="number" value={formData.totalDonationsManual} onChange={(e) => handleChange("totalDonationsManual", e.target.value)} placeholder="Total donation amount" data-testid="input-total-donations" />
+              <Label className="mb-2 block text-sm font-medium">Special Flags</Label>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { key: "isUnder18Helper", label: "Under-18 Helper" },
+                  { key: "isSeniorCitizen", label: "Senior Citizen" },
+                  { key: "isSingleParent", label: "Single Parent" },
+                  { key: "isDisabled", label: "Person with Disability" },
+                ].map(({ key, label }) => {
+                  const isSet = formData[key as keyof typeof formData] as boolean;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => handleChange(key, !isSet)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm transition-all ${isSet ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:border-primary/50"}`}
+                      data-testid={`flag-${key.toLowerCase()}`}
+                    >
+                      <span className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${isSet ? "bg-primary border-primary" : "border-muted-foreground"}`} />
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </CardContent>
         </Card>
