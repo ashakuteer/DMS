@@ -75,6 +75,7 @@ export enum DonationMode {
 
 export enum SourceOfDonor {
   SOCIAL_MEDIA = 'SOCIAL_MEDIA',
+  GOOGLE = 'GOOGLE',
   JUSTDIAL = 'JUSTDIAL',
   FRIEND = 'FRIEND',
   SPONSOR = 'SPONSOR',

@@ -67,6 +67,7 @@ const DONATION_FREQUENCIES = [
 
 const SOURCES = [
   { value: "SOCIAL_MEDIA", label: "Social Media" },
+  { value: "GOOGLE", label: "Google" },
   { value: "JUSTDIAL", label: "JustDial" },
   { value: "FRIEND", label: "Friend" },
   { value: "SPONSOR", label: "Sponsor" },
@@ -718,44 +719,48 @@ export default function EditDonorPage() {
               Contact Details
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
-            <div className="flex gap-2">
-              <div className="w-24">
-                <Label>Code</Label>
-                <Input value={formData.primaryPhoneCode} onChange={(e) => handleChange("primaryPhoneCode", e.target.value)} />
+          <CardContent className="grid gap-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="flex gap-2">
+                <div className="w-20 shrink-0">
+                  <Label>Code</Label>
+                  <Input value={formData.primaryPhoneCode} onChange={(e) => handleChange("primaryPhoneCode", e.target.value)} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Label htmlFor="primaryPhone">Primary Phone</Label>
+                  <Input id="primaryPhone" value={formData.primaryPhone} onChange={(e) => handleChange("primaryPhone", e.target.value)} placeholder="Phone number" data-testid="input-primary-phone" />
+                </div>
               </div>
-              <div className="flex-1">
-                <Label htmlFor="primaryPhone">Primary Phone</Label>
-                <Input id="primaryPhone" value={formData.primaryPhone} onChange={(e) => handleChange("primaryPhone", e.target.value)} placeholder="Phone number" data-testid="input-primary-phone" />
+              <div className="flex gap-2">
+                <div className="w-20 shrink-0">
+                  <Label>Code</Label>
+                  <Input value={formData.alternatePhoneCode} onChange={(e) => handleChange("alternatePhoneCode", e.target.value)} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Label htmlFor="alternatePhone">Alternate Phone</Label>
+                  <Input id="alternatePhone" value={formData.alternatePhone} onChange={(e) => handleChange("alternatePhone", e.target.value)} placeholder="Alternate phone" />
+                </div>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-24">
-                <Label>Code</Label>
-                <Input value={formData.alternatePhoneCode} onChange={(e) => handleChange("alternatePhoneCode", e.target.value)} />
-              </div>
-              <div className="flex-1">
-                <Label htmlFor="alternatePhone">Alternate Phone</Label>
-                <Input id="alternatePhone" value={formData.alternatePhone} onChange={(e) => handleChange("alternatePhone", e.target.value)} placeholder="Alternate phone" />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <div className="w-24">
-                <Label>Code</Label>
-                <Input value={formData.whatsappPhoneCode} onChange={(e) => handleChange("whatsappPhoneCode", e.target.value)} />
-              </div>
-              <div className="flex-1">
-                <Label htmlFor="whatsappPhone">WhatsApp Phone</Label>
-                <Input id="whatsappPhone" value={formData.whatsappPhone} onChange={(e) => handleChange("whatsappPhone", e.target.value)} placeholder="WhatsApp number" />
+              <div>
+                <Label htmlFor="personalEmail">Email</Label>
+                <Input id="personalEmail" type="email" value={formData.personalEmail} onChange={(e) => handleChange("personalEmail", e.target.value)} placeholder="Email address" data-testid="input-personal-email" />
               </div>
             </div>
-            <div>
-              <Label htmlFor="personalEmail">Personal Email</Label>
-              <Input id="personalEmail" type="email" value={formData.personalEmail} onChange={(e) => handleChange("personalEmail", e.target.value)} placeholder="Personal email" data-testid="input-personal-email" />
-            </div>
-            <div>
-              <Label htmlFor="officialEmail">Official Email</Label>
-              <Input id="officialEmail" type="email" value={formData.officialEmail} onChange={(e) => handleChange("officialEmail", e.target.value)} placeholder="Official email" />
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="flex gap-2">
+                <div className="w-20 shrink-0">
+                  <Label>Code</Label>
+                  <Input value={formData.whatsappPhoneCode} onChange={(e) => handleChange("whatsappPhoneCode", e.target.value)} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <Label htmlFor="whatsappPhone">WhatsApp Phone</Label>
+                  <Input id="whatsappPhone" value={formData.whatsappPhone} onChange={(e) => handleChange("whatsappPhone", e.target.value)} placeholder="WhatsApp number" />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="officialEmail">Official Email</Label>
+                <Input id="officialEmail" type="email" value={formData.officialEmail} onChange={(e) => handleChange("officialEmail", e.target.value)} placeholder="Official email" />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -1195,27 +1200,6 @@ export default function EditDonorPage() {
                   >
                     {tag}
                   </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <Label className="mb-3 block">Special Flags</Label>
-              <div className="flex flex-wrap gap-6">
-                {[
-                  { id: "isUnder18Helper", label: "Under 18 Helper" },
-                  { id: "isSeniorCitizen", label: "Senior Citizen" },
-                  { id: "isSingleParent", label: "Single Parent" },
-                  { id: "isDisabled", label: "Disabled" },
-                ].map((f) => (
-                  <div key={f.id} className="flex items-center gap-2">
-                    <Checkbox
-                      id={f.id}
-                      checked={formData[f.id as keyof typeof formData] as boolean}
-                      onCheckedChange={(c) => handleChange(f.id, c)}
-                      data-testid={`checkbox-${f.id.toLowerCase()}`}
-                    />
-                    <Label htmlFor={f.id} className="font-normal">{f.label}</Label>
-                  </div>
                 ))}
               </div>
             </div>

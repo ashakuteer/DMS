@@ -1105,6 +1105,7 @@ enum DonationPurpose {
 enum SourceOfDonor {
   SOCIAL_MEDIA
   JUSTDIAL
+  GOOGLE
   FRIEND
   SPONSOR
   WEBSITE

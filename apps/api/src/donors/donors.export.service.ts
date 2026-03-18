@@ -190,6 +190,7 @@ export class DonorsExportService {
 
     const sourceLabels: Record<string, string> = {
       SOCIAL_MEDIA: "Social Media",
+      GOOGLE: "Google",
       JUSTDIAL: "JustDial",
       FRIEND: "Friend",
       SPONSOR: "Sponsor",

@@ -152,6 +152,20 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         CONSTRAINT "staff_tasks_pkey" PRIMARY KEY ("id")
       )`,
 
+      // ── staff_tasks missing-column patches (idempotent ADD COLUMN) ─────────
+      // These are needed when staff_tasks was created before these columns were added.
+      `ALTER TABLE "staff_tasks" ADD COLUMN IF NOT EXISTS "parentTaskId"   TEXT`,
+      `ALTER TABLE "staff_tasks" ADD COLUMN IF NOT EXISTS "checklist"      JSONB`,
+      `ALTER TABLE "staff_tasks" ADD COLUMN IF NOT EXISTS "deletedAt"      TIMESTAMP(3)`,
+      `ALTER TABLE "staff_tasks" ADD COLUMN IF NOT EXISTS "isRecurring"    BOOLEAN NOT NULL DEFAULT false`,
+      `ALTER TABLE "staff_tasks" ADD COLUMN IF NOT EXISTS "recurrenceType" TEXT NOT NULL DEFAULT 'NONE'`,
+      `ALTER TABLE "staff_tasks" ADD COLUMN IF NOT EXISTS "linkedDonorId"  TEXT`,
+      `ALTER TABLE "staff_tasks" ADD COLUMN IF NOT EXISTS "startedAt"      TIMESTAMP(3)`,
+      `ALTER TABLE "staff_tasks" ADD COLUMN IF NOT EXISTS "completedAt"    TIMESTAMP(3)`,
+
+      // ── SourceOfDonor enum extension ──────────────────────────────────────
+      `ALTER TYPE "SourceOfDonor" ADD VALUE IF NOT EXISTS 'GOOGLE'`,
+
       // ── staff_tasks foreign keys ──────────────────────────────────────────
       `DO $$ BEGIN ALTER TABLE "staff_tasks" ADD CONSTRAINT "staff_tasks_assignedToId_fkey" FOREIGN KEY ("assignedToId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,
       `DO $$ BEGIN ALTER TABLE "staff_tasks" ADD CONSTRAINT "staff_tasks_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,

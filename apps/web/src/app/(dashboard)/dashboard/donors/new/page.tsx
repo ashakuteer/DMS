@@ -76,6 +76,7 @@ const DONATION_FREQUENCIES = [
 
 const SOURCES = [
   { value: "SOCIAL_MEDIA", label: "Social Media" },
+  { value: "GOOGLE", label: "Google" },
   { value: "JUSTDIAL", label: "JustDial" },
   { value: "FRIEND", label: "Friend" },
   { value: "SPONSOR", label: "Sponsor" },
@@ -590,23 +591,23 @@ export default function NewDonorPage() {
               Contact Details
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
+          <CardContent className="grid gap-4 md:grid-cols-3">
             <div className="flex gap-2">
-              <div className="w-24">
+              <div className="w-20 shrink-0">
                 <Label>Code</Label>
                 <Input value={formData.primaryPhoneCode} onChange={(e) => handleChange("primaryPhoneCode", e.target.value)} data-testid="input-phone-code" />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <Label htmlFor="primaryPhone">Primary Phone</Label>
                 <Input id="primaryPhone" value={formData.primaryPhone} onChange={(e) => handleChange("primaryPhone", e.target.value)} placeholder="Phone number" data-testid="input-primary-phone" />
               </div>
             </div>
             <div className="flex gap-2">
-              <div className="w-24">
+              <div className="w-20 shrink-0">
                 <Label>Code</Label>
                 <Input value={formData.alternatePhoneCode} onChange={(e) => handleChange("alternatePhoneCode", e.target.value)} />
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <Label htmlFor="alternatePhone">Alternate Phone</Label>
                 <Input id="alternatePhone" value={formData.alternatePhone} onChange={(e) => handleChange("alternatePhone", e.target.value)} placeholder="Alternate phone" data-testid="input-alternate-phone" />
               </div>
@@ -1064,31 +1065,6 @@ export default function NewDonorPage() {
                     >
                       {tag}
                     </Badge>
-                  );
-                })}
-              </div>
-            </div>
-            <div>
-              <Label className="mb-2 block text-sm font-medium">Special Flags</Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { key: "isUnder18Helper", label: "Under-18 Helper" },
-                  { key: "isSeniorCitizen", label: "Senior Citizen" },
-                  { key: "isSingleParent", label: "Single Parent" },
-                  { key: "isDisabled", label: "Person with Disability" },
-                ].map(({ key, label }) => {
-                  const isSet = formData[key as keyof typeof formData] as boolean;
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => handleChange(key, !isSet)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 text-sm transition-all ${isSet ? "border-primary bg-primary/10 text-primary font-medium" : "border-border hover:border-primary/50"}`}
-                      data-testid={`flag-${key.toLowerCase()}`}
-                    >
-                      <span className={`w-3 h-3 rounded-full border-2 flex-shrink-0 ${isSet ? "bg-primary border-primary" : "border-muted-foreground"}`} />
-                      {label}
-                    </button>
                   );
                 })}
               </div>

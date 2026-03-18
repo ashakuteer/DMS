@@ -1,0 +1,104 @@
+We have an existing NGO Donor Management System. After recent updates, donor creation is failing (502 error) and UI needs small fixes.
+
+This is NOT a new build. Fix issues carefully without breaking existing data.
+
+---
+
+# 🚨 CRITICAL ISSUE (FIX FIRST)
+
+Donor is NOT saving. Backend logs show:
+
+* "column parentTaskId does not exist"
+* prisma.$executeRawUnsafe errors
+* 502 API error on /api/donors
+
+---
+
+## 🔧 TASK 1: FIX DATABASE & PRISMA (HIGHEST PRIORITY)
+
+1. Locate correct Prisma schema file (schema.prisma) in project
+
+2. Ensure Prisma is correctly configured to use that schema
+
+3. Run database sync:
+
+   * prisma generate
+   * prisma db push
+
+4. Fix schema mismatch issues:
+
+   * Add missing columns if required (especially parentTaskId if referenced)
+   * OR remove invalid references to parentTaskId if not needed
+
+5. Review and FIX any raw SQL queries using:
+   prisma.$executeRawUnsafe
+   → Remove or correct queries referencing non-existing columns
+
+6. Ensure donor creation API works without errors
+
+---
+
+# ✅ TASK 2: VERIFY DONOR SAVE
+
+* Fix API so donor can be successfully created
+* Ensure no 502 errors
+* Ensure existing donors are not affected
+
+---
+
+# 🎨 TASK 3: UI FIXES (AFTER BACKEND WORKS)
+
+## Remove:
+
+* Completely remove "Special Flags" section from donor form (UI + validation)
+
+---
+
+## Update Source Dropdown:
+
+* Add "Google" as an option
+* Ensure it saves correctly
+
+---
+
+## Improve Contact Details Layout:
+
+* Show in ONE ROW:
+
+  * Primary Phone
+  * Alternate Phone
+  * Email
+* Keep responsive design (stack on small screens)
+
+---
+
+# ⚠️ IMPORTANT RULES
+
+* DO NOT create new form
+* DO NOT delete existing data
+* DO NOT break current working features
+* MODIFY existing components only
+
+---
+
+# ✅ FINAL EXPECTED RESULT
+
+* Donor form saves successfully
+* No backend errors
+* Clean UI:
+
+  * No Special Flags
+  * Google added
+  * Contact fields aligned in one row
+
+---
+
+# 🚀 IMPLEMENTATION STRATEGY
+
+1. Fix Prisma + DB first
+2. Test donor save
+3. Then apply UI fixes
+
+Do everything in one execution carefully.
+
+END
