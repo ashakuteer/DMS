@@ -108,6 +108,13 @@ model Donor {
   profilePicUrl      String?
   supportPreferences SupportPreference[]
 
+  primaryRole        PersonRole             @default(INDIVIDUAL)
+  additionalRoles    PersonRole[]
+  donorTags          String[]
+  communicationChannels         String[]
+  preferredCommunicationMethod  String?
+  communicationNotes            String?
+
   engagementLevel    DonorEngagement        @default(WARM)
   referredByDonorId  String?
   createdById        String
@@ -154,6 +161,12 @@ model Donor {
   linkedTasks            StaffTask[]           @relation("TaskLinkedDonor")
   communicationMessages  CommunicationMessage[] @relation("CommunicationMessageDonor")
 
+  individualProfile      IndividualDonorProfile?
+  volunteerProfile       VolunteerProfile?
+  influencerProfile      InfluencerProfile?
+  csrProfile             CSRProfile?
+
+  @@index([primaryRole])
   @@index([primaryPhone])
   @@index([dobMonth, dobDay])
   @@index([personalEmail])
@@ -1030,11 +1043,21 @@ enum DonationMethod {
 enum DonationFrequency {
   ONE_TIME
   WEEKLY
+  BI_WEEKLY
   MONTHLY
+  BI_MONTHLY
   QUARTERLY
   HALF_YEARLY
   YEARLY
   OCCASIONAL
+  FESTIVAL_BASED
+}
+
+enum PersonRole {
+  INDIVIDUAL
+  CSR
+  VOLUNTEER
+  INFLUENCER
 }
 
 enum DonationType {
@@ -1774,6 +1797,9 @@ enum SupportPreference {
   TOILETRIES
   SPONSORSHIP
   GENERAL
+  SNACKS_SWEETS
+  IN_KIND
+  CASH
 }
 
 enum KindCategory {
@@ -1911,6 +1937,85 @@ model CommunicationMessage {
   @@index([createdAt])
   @@index([donorId, createdAt])
   @@map("communication_messages")
+}
+
+model IndividualDonorProfile {
+  id                String              @id @default(uuid())
+  donorId           String              @unique
+  donationFrequency DonationFrequency?
+  supportTypes      SupportPreference[]
+  donorTags         String[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  donor             Donor               @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@map("individual_donor_profiles")
+}
+
+model VolunteerProfile {
+  id                String    @id @default(uuid())
+  donorId           String    @unique
+  volunteerType     String?
+  workMode          String?
+  skills            String[]
+  areasOfInterest   String[]
+  availabilityType  String?
+  timePreference    String?
+  engagementLevel   String?
+  willingToDonate   Boolean   @default(false)
+  lastActivityDate  DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  donor             Donor     @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@map("volunteer_profiles")
+}
+
+model InfluencerProfile {
+  id                    String    @id @default(uuid())
+  donorId               String    @unique
+  influenceTypes        String[]
+  audienceSize          Int?
+  engagementLevel       String?
+  contributionTypes     String[]
+  contributionPattern   String?
+  totalReferrals        Int       @default(0)
+  estimatedFunds        Decimal?  @db.Decimal(15, 2)
+  lastCampaignDate      DateTime?
+  relationshipStrength  String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  donor                 Donor     @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@map("influencer_profiles")
+}
+
+model CSRProfile {
+  id                    String    @id @default(uuid())
+  donorId               String    @unique
+  companyName           String?
+  designation           String?
+  industry              String?
+  companySize           String?
+  csrBudget             Decimal?  @db.Decimal(15, 2)
+  focusAreas            String[]
+  supportTypes          String[]
+  decisionRole          String?
+  relationshipStrength  String?
+  lastContactDate       DateTime?
+  nextFollowUpDate      DateTime?
+  meetingStatus         String?
+  expectedContribution  Decimal?  @db.Decimal(15, 2)
+  proposalShared        Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  donor                 Donor     @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@map("csr_profiles")
 }
 
 enum TimeMachineCategory {

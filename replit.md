@@ -4,6 +4,29 @@
 
 This project is a comprehensive donor management system for NGOs, designed to streamline the tracking of donors, donations, and beneficiaries. It provides a robust platform for fundraising, financial reporting, and donor engagement, incorporating features like role-based access control, detailed audit logging, and AI-powered insights. The system supports various donor categories, donation types, and payment modes, with automated receipt generation and email delivery. The business vision is to empower non-profits with a scalable and secure tool to efficiently manage their operations, enhance donor relationships, and maximize their impact.
 
+## Recent Changes (Role-Based Donor Profile Upgrade)
+
+### Schema Changes (apps/api/prisma/schema.prisma)
+- Added `PersonRole` enum: `INDIVIDUAL`, `CSR`, `VOLUNTEER`, `INFLUENCER`
+- Extended `DonationFrequency`: added `BI_WEEKLY`, `BI_MONTHLY`, `FESTIVAL_BASED`
+- Extended `SupportPreference`: added `SNACKS_SWEETS`, `IN_KIND`, `CASH`
+- Added to `Donor` model: `primaryRole`, `additionalRoles`, `donorTags`, `communicationChannels`, `preferredCommunicationMethod`, `communicationNotes`
+- Added relations on `Donor`: `individualProfile`, `volunteerProfile`, `influencerProfile`, `csrProfile`
+- Created 4 new profile tables: `IndividualDonorProfile`, `VolunteerProfile`, `InfluencerProfile`, `CSRProfile`
+
+### API Changes (apps/api/src/donors/donors.crud.service.ts)
+- Updated `create()`: extracts profile payloads, creates donor then creates profiles separately
+- Updated `update()`: extracts profile payloads, upserts profiles
+- Updated `findOne()`: includes all 4 profiles and new donor fields in select
+- Note: CSR model is accessed as `prisma.cSRProfile` (Prisma auto-casing)
+
+### Frontend (apps/web/src/app/(dashboard)/dashboard/donors/new/page.tsx)
+- Completely rewritten with role-based tabbed form
+- Removed: Category dropdown, WhatsApp phone field, separate official email
+- Added: Role Selection section (primaryRole + additionalRoles), Donation Profile tabs (Individual/CSR/Volunteer/Influencer), Communication Preferences section
+- Email consolidated into single field mapped to `personalEmail` on submit
+- Sections: Basic Info, Contact Details, Address, Role Selection, Donation Profile (tabbed), Communication Preferences, Smart Fields, Source & Assignment, Notes
+
 ## User Preferences
 
 No specific user preferences were provided in the original document.

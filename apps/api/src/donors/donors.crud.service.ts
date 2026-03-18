@@ -11,6 +11,7 @@ import {
   DonationFrequency,
   SupportPreference,
   HealthStatus,
+  PersonRole,
 } from "@prisma/client";
 import { UserContext, DonorQueryOptions } from "./donors.types";
 import { maskDonorData } from "../common/utils/masking.util";
@@ -277,6 +278,12 @@ if (assignedToUserId) {
         healthStatus: true,
         lastHealthCheck: true,
         assignedToUserId: true,
+        primaryRole: true,
+        additionalRoles: true,
+        donorTags: true,
+        communicationChannels: true,
+        preferredCommunicationMethod: true,
+        communicationNotes: true,
         assignedToUser: { select: { id: true, name: true, email: true } },
         createdBy: { select: { id: true, name: true } },
         specialOccasions: true,
@@ -292,6 +299,10 @@ if (assignedToUserId) {
           take: 5,
         },
         sponsorships: true,
+        individualProfile: true,
+        volunteerProfile: true,
+        influencerProfile: true,
+        csrProfile: true,
       },
     });
 
@@ -314,16 +325,45 @@ if (assignedToUserId) {
 ) {
   const donorCode = `AKF-DNR-${Date.now()}`;
 
-  return this.prisma.donor.create({
+  const {
+    individualProfile,
+    volunteerProfile,
+    influencerProfile,
+    csrProfile,
+    ...donorData
+  } = data;
+
+  const donor = await this.prisma.donor.create({
     data: {
-      donorCode: donorCode,   // IMPORTANT
+      donorCode: donorCode,
       donorSince: new Date(),
-
-      ...data,
-
+      ...donorData,
       createdById: user.id,
     },
   });
+
+  if (individualProfile) {
+    await this.prisma.individualDonorProfile.create({
+      data: { donorId: donor.id, ...individualProfile },
+    });
+  }
+  if (volunteerProfile) {
+    await this.prisma.volunteerProfile.create({
+      data: { donorId: donor.id, ...volunteerProfile },
+    });
+  }
+  if (influencerProfile) {
+    await this.prisma.influencerProfile.create({
+      data: { donorId: donor.id, ...influencerProfile },
+    });
+  }
+  if (csrProfile) {
+    await this.prisma.cSRProfile.create({
+      data: { donorId: donor.id, ...csrProfile },
+    });
+  }
+
+  return donor;
 }
 
   async update(
@@ -344,10 +384,49 @@ if (assignedToUserId) {
       );
     }
 
-    return this.prisma.donor.update({
+    const {
+      individualProfile,
+      volunteerProfile,
+      influencerProfile,
+      csrProfile,
+      ...donorData
+    } = data;
+
+    const donor = await this.prisma.donor.update({
       where: { id },
-      data,
+      data: donorData,
     });
+
+    if (individualProfile !== undefined) {
+      await this.prisma.individualDonorProfile.upsert({
+        where: { donorId: id },
+        create: { donorId: id, ...individualProfile },
+        update: individualProfile,
+      });
+    }
+    if (volunteerProfile !== undefined) {
+      await this.prisma.volunteerProfile.upsert({
+        where: { donorId: id },
+        create: { donorId: id, ...volunteerProfile },
+        update: volunteerProfile,
+      });
+    }
+    if (influencerProfile !== undefined) {
+      await this.prisma.influencerProfile.upsert({
+        where: { donorId: id },
+        create: { donorId: id, ...influencerProfile },
+        update: influencerProfile,
+      });
+    }
+    if (csrProfile !== undefined) {
+      await this.prisma.cSRProfile.upsert({
+        where: { donorId: id },
+        create: { donorId: id, ...csrProfile },
+        update: csrProfile,
+      });
+    }
+
+    return donor;
   }
 
   async softDelete(

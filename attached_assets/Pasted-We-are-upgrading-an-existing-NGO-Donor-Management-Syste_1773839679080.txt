@@ -1,0 +1,288 @@
+We are upgrading an existing NGO Donor Management System (DMS). This is NOT a new build. Modify the existing system carefully.
+
+---
+
+## ⚠️ CRITICAL RULES
+
+* DO NOT create a new donor form
+* MODIFY the existing donor form
+* DO NOT delete or lose existing data
+* Maintain backward compatibility
+* Implement changes step-by-step internally
+* Avoid breaking existing APIs and UI
+
+---
+
+# 🎯 FINAL GOAL
+
+1. Single Person system (no duplicate records)
+2. Primary Role + Additional Roles
+3. Tab-based UI for different roles
+4. Clean and scalable architecture
+
+---
+
+# 🧱 STEP 1 — CLEAN EXISTING DONOR FORM
+
+### REMOVE:
+
+* WhatsApp Phone field
+* Category field from Basic Info
+* Special Flags section
+* Separate personal/official email → keep single Email
+
+---
+
+### MODIFY:
+
+Rename:
+
+* "Preferences & Categories" → "Donation Profile"
+
+Update Donation Frequency options:
+
+* Add Bi-Weekly
+* Add Bi-Monthly
+* Add Festival-Based
+
+Rename:
+
+* Support Preferences → Support Type
+
+Add new Support Types:
+
+* Snacks/Sweets
+* In-Kind
+* Cash
+
+---
+
+### ADD:
+
+#### Basic Info:
+
+* Religion
+
+#### Donation Profile:
+
+* Donor Role Tags (multi-select)
+
+#### Communication Preferences Section:
+
+* Communication Channels (multi-select)
+* Preferred Communication Method (single select)
+* Communication Notes (text field)
+
+#### Smart Fields:
+
+* Last Donation Date
+* Total Donations (optional/manual)
+
+---
+
+### RESTRUCTURE FORM ORDER:
+
+1. Basic Information
+2. Contact Details
+3. Role Selection
+4. Tabs Section
+5. Communication Preferences
+6. Smart Fields
+7. Source & Assignment
+8. Notes
+
+---
+
+# 🧱 STEP 2 — ADD ROLE SYSTEM
+
+Add fields to Person:
+
+* primaryRole (ENUM)
+* additionalRoles (ARRAY of ENUM)
+
+Primary Roles:
+
+* INDIVIDUAL
+* CSR
+* VOLUNTEER
+* INFLUENCER
+
+👉 Default all existing donors to INDIVIDUAL
+
+---
+
+# 🧱 STEP 3 — CREATE ROLE PROFILE TABLES
+
+Create separate tables:
+
+### IndividualDonorProfile
+
+* personId (FK)
+* donationFrequency (ENUM)
+* supportTypes (ARRAY)
+* donorTags (ARRAY)
+
+---
+
+### VolunteerProfile
+
+* personId (FK)
+* volunteerType (FIELD / SKILL_BASED)
+* workMode (ONSITE / REMOTE / HYBRID)
+* skills (ARRAY)
+* areasOfInterest (ARRAY)
+* availabilityType
+* timePreference
+* engagementLevel
+* willingToDonate (BOOLEAN)
+* lastActivityDate
+
+---
+
+### InfluencerProfile
+
+* personId (FK)
+* influenceTypes (ARRAY)
+* audienceSize
+* engagementLevel
+* contributionTypes (ARRAY)
+* contributionPattern
+* totalReferrals
+* estimatedFunds
+* lastCampaignDate
+* relationshipStrength
+
+---
+
+### CSRProfile
+
+* personId (FK)
+* companyName
+* designation
+* industry
+* companySize
+* csrBudget
+* focusAreas (ARRAY)
+* supportTypes (ARRAY)
+* decisionRole
+* relationshipStrength
+* lastContactDate
+* nextFollowUpDate
+* meetingStatus
+* expectedContribution
+* proposalShared (BOOLEAN)
+
+---
+
+# 🧠 STEP 4 — IMPLEMENT TABS UI
+
+Create a tab-based interface below Role Selection.
+
+### Tabs:
+
+* Individual
+* CSR
+* Volunteer
+* Influencer
+
+---
+
+### TAB VISIBILITY RULES:
+
+* Show Individual tab by default
+* Show other tabs ONLY if:
+
+  * Selected as Primary Role OR
+  * Selected in Additional Roles
+
+---
+
+### TAB CONTENT:
+
+#### Individual Tab:
+
+* Donation Frequency
+* Support Type
+* Donor Tags
+
+---
+
+#### Volunteer Tab:
+
+* Volunteer Type
+* Work Mode
+* Skills
+* Availability
+* Engagement Level
+
+---
+
+#### Influencer Tab:
+
+* Influence Type
+* Audience Size
+* Contribution Type
+* Performance Tracking
+
+---
+
+#### CSR Tab:
+
+* Company Details
+* Budget
+* Focus Areas
+* Follow-up Tracking
+
+---
+
+# ⚠️ IMPORTANT LOGIC
+
+* ONE person = ONE record
+* Each tab saves data into its respective profile table
+* Use personId to link all profiles
+* Tabs must load existing data correctly
+
+---
+
+# 🎨 UI BEHAVIOR
+
+* Keep existing layout style
+* Do NOT redesign completely
+* Add tabs cleanly under Role Selection
+* Use modular components for each tab
+
+---
+
+# 🔐 DATA SAFETY
+
+* Do not overwrite existing donor data
+* Migrate existing donation fields into IndividualDonorProfile safely
+* Ensure no null errors
+
+---
+
+# ✅ OUTPUT REQUIRED
+
+* Updated Prisma schema
+* Updated backend APIs
+* Updated donor form UI with tabs
+* Data migration logic
+* No runtime errors
+
+---
+
+# 🚀 IMPLEMENTATION STRATEGY
+
+* Implement in internal steps:
+
+  1. Clean existing form
+  2. Add role fields
+  3. Add Individual profile
+  4. Add tabs UI
+  5. Add other profiles
+
+* Test after each step before moving next
+
+---
+
+END
