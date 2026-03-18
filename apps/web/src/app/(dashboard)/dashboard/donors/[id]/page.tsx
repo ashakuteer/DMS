@@ -22,8 +22,8 @@ import DonorPledgesTab from "./components/DonorPledgesTab";
 import DonorFamilyTab from "./components/DonorFamilyTab";
 import DonorSpecialDaysTab from "./components/DonorSpecialDaysTab";
 import DonorTimelineTab from "./components/DonorTimelineTab";
-import DonorCommunicationTab from "./components/DonorCommunicationTab";
 import DonorCommunicationLogTab from "./components/DonorCommunicationLogTab";
+import DonorQuickActions from "./components/DonorQuickActions";
 
 export default function DonorProfilePage() {
 
@@ -75,6 +75,13 @@ export default function DonorProfilePage() {
         onRequestAccess={handleRequestAccess}
       />
 
+      <DonorQuickActions
+        donor={donor}
+        donorId={donorId}
+        templates={communication.templates}
+        latestDonation={donations.donations[0] ?? null}
+      />
+
       <DonorStatsCards
         totalDonations={donations.totalDonations}
         donationsCount={donations.donations.length}
@@ -98,7 +105,7 @@ export default function DonorProfilePage() {
           <TabsTrigger value="pledges">Pledges</TabsTrigger>
           <TabsTrigger value="family">Family</TabsTrigger>
           <TabsTrigger value="special-days">Special Days</TabsTrigger>
-          <TabsTrigger value="communication">Communication</TabsTrigger>
+          <TabsTrigger value="comm-log">Comm Log</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -123,10 +130,6 @@ export default function DonorProfilePage() {
 
         <TabsContent value="special-days">
           <DonorSpecialDaysTab {...specialDays} />
-        </TabsContent>
-
-        <TabsContent value="communication">
-          <DonorCommunicationTab {...communication} />
         </TabsContent>
 
         <TabsContent value="comm-log">

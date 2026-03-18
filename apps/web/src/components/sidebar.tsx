@@ -22,7 +22,7 @@ import {
   TrendingUp, Milestone, ShieldCheck, DatabaseBackup, ArchiveRestore,
   Cake, Send, FileBarChart, ClipboardList, Building2, ArrowUpRight,
   FolderLock, Lock, Repeat, ListChecks, Phone, Clock, ChevronDown,
-  ChevronRight,
+  ChevronRight, MessageSquarePlus,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
@@ -75,6 +75,8 @@ const navGroups: NavGroup[] = [
   {
     label: "Communication",
     items: [
+      { title: "Send Message", href: "/dashboard/send-message", icon: MessageSquarePlus, permissionModule: "broadcasting" },
+      { title: "Templates", href: "/dashboard/comm-templates", icon: MessageSquareText, permissionModule: "templates" },
       { title: "Broadcasting", href: "/dashboard/broadcasting", icon: Radio, permissionModule: "broadcasting" },
       { title: "Donor Updates", href: "/dashboard/donor-updates", icon: Send, permissionModule: "donorUpdates" },
       { title: "Birthday Wishes", href: "/dashboard/birthday-wishes", icon: Cake, permissionModule: "birthdayWishes" },
@@ -105,7 +107,6 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Time Machine", href: "/dashboard/time-machine", icon: Clock, permissionModule: "timeMachine" },
       { title: "Milestones", href: "/dashboard/milestones", icon: Milestone, permissionModule: "milestones" },
-      { title: "Templates", href: "/dashboard/settings/templates", icon: MessageSquareText, permissionModule: "templates" },
       { title: "Settings", href: "/dashboard/settings", icon: Settings, permissionModule: "settings" },
     ],
   },
