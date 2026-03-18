@@ -9,15 +9,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { resolveImageUrl } from "@/lib/image-url"
-import { Donor } from "../../../types"
+import { Donor, PersonRole } from "../../../types"
 
 interface Props {
   donors: Donor[]
   onOpen: (id: string) => void
-}
-
-function getCategoryLabel(category: string) {
-  return category.replace(/_/g, " ")
 }
 
 function getHealthBadge(healthStatus?: string, healthScore?: number) {
@@ -43,6 +39,24 @@ function getEngagementBadge(level?: string) {
   return null
 }
 
+const ROLE_STYLES: Record<PersonRole, string> = {
+  INDIVIDUAL: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  CSR:        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  VOLUNTEER:  "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  INFLUENCER: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+}
+
+function getRoleBadge(role: PersonRole, size: "sm" | "xs" = "sm") {
+  return (
+    <Badge
+      key={role}
+      className={`${ROLE_STYLES[role]} text-xs whitespace-nowrap`}
+    >
+      {role}
+    </Badge>
+  )
+}
+
 function getInitials(donor: Donor) {
   const first = donor.firstName?.charAt(0) ?? ""
   const last = donor.lastName?.charAt(0) ?? ""
@@ -57,7 +71,7 @@ export default function DonorTable({ donors, onOpen }: Props) {
         <TableHeader>
           <TableRow>
             <TableHead>Donor</TableHead>
-            <TableHead>Category</TableHead>
+            <TableHead>Role</TableHead>
             <TableHead>Contact</TableHead>
             <TableHead>Location</TableHead>
             <TableHead className="text-center">Donations</TableHead>
@@ -92,9 +106,20 @@ export default function DonorTable({ donors, onOpen }: Props) {
               </TableCell>
 
               <TableCell>
-                <Badge variant="outline" className="text-xs whitespace-nowrap">
-                  {getCategoryLabel(d.category)}
-                </Badge>
+                <div className="flex flex-wrap gap-1">
+                  {d.primaryRole
+                    ? getRoleBadge(d.primaryRole)
+                    : <Badge variant="outline" className="text-xs">INDIVIDUAL</Badge>
+                  }
+                  {d.additionalRoles?.map((r) => (
+                    <Badge
+                      key={r}
+                      className={`${ROLE_STYLES[r]} text-xs opacity-75 whitespace-nowrap`}
+                    >
+                      {r}
+                    </Badge>
+                  ))}
+                </div>
               </TableCell>
 
               <TableCell>

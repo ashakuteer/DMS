@@ -1,0 +1,94 @@
+I need you to investigate and fix a production issue in my NGO Donor Management System.
+
+Current problem:
+1. Old donor records/details are missing or not showing.
+2. Creating a new donor fails with “Application failed to respond”.
+3. Browser console shows multiple API failures with 502 status.
+4. The donor creation page loads, but backend API requests are failing.
+5. I need both:
+   - restore/recover old donor data visibility
+   - make saving new donors work again
+
+Environment:
+- Frontend: Next.js on Vercel
+- Backend: NestJS
+- Database: Supabase Postgres with Prisma
+- Code is in Replit and GitHub connected deployment exists
+
+Symptoms from browser console:
+- 502 errors on donor-related API endpoints
+- donor search/check/create endpoints are failing
+- frontend is reachable, backend is not responding correctly
+
+Please do a full root-cause check in this order:
+
+STEP 1 — Check backend health
+- Verify the NestJS API is starting correctly
+- Check whether production API routes are returning 502 because of:
+  - crash during boot
+  - Prisma schema mismatch
+  - missing environment variables
+  - database connection failure
+  - runtime exception in donor controller/service
+- Identify the exact failing donor endpoints
+
+STEP 2 — Check donor module/backend errors
+- Inspect donor controller, donor service, donor CRUD service, and validation DTOs
+- Check whether create donor API is failing due to:
+  - required fields mismatch
+  - new donor profile fields not matching database columns
+  - undefined enum values
+  - role-specific fields causing Prisma failure
+  - bad request body shape from frontend
+- Add proper logging around donor create request and response
+
+STEP 3 — Check database/schema integrity
+- Verify donor table still contains old donor records
+- Check whether records are actually deleted, filtered out, or hidden due to:
+  - isDeleted flag
+  - new query filters
+  - changed field names
+  - relation/include errors
+  - soft delete logic
+- Confirm whether migration changes broke donor reads
+
+STEP 4 — Restore old donor details
+- If donor records still exist in DB, fix backend queries so they display again
+- If a migration/filter accidentally hides them, correct it safely
+- Do NOT destroy existing data
+- Preserve all old donors and make them visible again in dashboard/list/detail views
+
+STEP 5 — Fix new donor save
+- Make donor create work from UI
+- Ensure backend accepts current frontend payload
+- Fix any Prisma create/update mismatch
+- Ensure successful save returns valid response and newly created donor appears in list
+
+STEP 6 — Verify related endpoints
+- Test donor search
+- Test duplicate phone check
+- Test donor detail fetch
+- Test donor list fetch
+- Test donor create end-to-end
+
+STEP 7 — Protect against future silent failures
+- Add better error handling and logging for donor APIs
+- Return meaningful backend errors instead of generic 502 behavior
+- Point out any env vars or migrations that must be corrected in production
+
+Important instructions:
+- First find exact root cause before changing many files
+- Do not remove donor fields blindly
+- Do not delete data
+- Keep existing donor structure intact as much as possible
+- If schema mismatch exists, show clearly which field(s) are mismatched
+- If production migration is missing, tell me exactly what migration/database change is needed
+- If frontend payload is wrong, fix frontend and backend compatibility carefully
+
+Deliverables I want:
+1. Exact root cause
+2. Files changed
+3. Safe fix applied
+4. Whether old donor records were restored
+5. Whether new donor creation now works
+6. Any production migration/env action still needed from me

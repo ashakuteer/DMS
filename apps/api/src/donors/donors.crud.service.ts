@@ -1,7 +1,9 @@
 import {
   Injectable,
+  Logger,
   NotFoundException,
   ForbiddenException,
+  InternalServerErrorException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import {
@@ -19,6 +21,8 @@ import { DonorsEngagementService } from "./donors.engagement.service";
 
 @Injectable()
 export class DonorsCrudService {
+  private readonly logger = new Logger(DonorsCrudService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly engagementService: DonorsEngagementService,
@@ -164,6 +168,10 @@ if (assignedToUserId) {
           city: true,
           country: true,
           category: true,
+          primaryRole: true,
+          additionalRoles: true,
+          donorTags: true,
+          communicationChannels: true,
           donationFrequency: true,
           healthScore: true,
           healthStatus: true,
@@ -333,37 +341,45 @@ if (assignedToUserId) {
     ...donorData
   } = data;
 
-  const donor = await this.prisma.donor.create({
-    data: {
-      donorCode: donorCode,
-      donorSince: new Date(),
-      ...donorData,
-      createdById: user.id,
-    },
-  });
+  try {
+    const donor = await this.prisma.donor.create({
+      data: {
+        donorCode: donorCode,
+        donorSince: new Date(),
+        ...donorData,
+        createdById: user.id,
+      },
+    });
 
-  if (individualProfile) {
-    await this.prisma.individualDonorProfile.create({
-      data: { donorId: donor.id, ...individualProfile },
-    });
-  }
-  if (volunteerProfile) {
-    await this.prisma.volunteerProfile.create({
-      data: { donorId: donor.id, ...volunteerProfile },
-    });
-  }
-  if (influencerProfile) {
-    await this.prisma.influencerProfile.create({
-      data: { donorId: donor.id, ...influencerProfile },
-    });
-  }
-  if (csrProfile) {
-    await this.prisma.cSRProfile.create({
-      data: { donorId: donor.id, ...csrProfile },
-    });
-  }
+    if (individualProfile) {
+      await this.prisma.individualDonorProfile.create({
+        data: { donorId: donor.id, ...individualProfile },
+      });
+    }
+    if (volunteerProfile) {
+      await this.prisma.volunteerProfile.create({
+        data: { donorId: donor.id, ...volunteerProfile },
+      });
+    }
+    if (influencerProfile) {
+      await this.prisma.influencerProfile.create({
+        data: { donorId: donor.id, ...influencerProfile },
+      });
+    }
+    if (csrProfile) {
+      await this.prisma.cSRProfile.create({
+        data: { donorId: donor.id, ...csrProfile },
+      });
+    }
 
-  return donor;
+    return donor;
+  } catch (err) {
+    this.logger.error(
+      `[DonorCreate] Failed for user=${user.id} payload=${JSON.stringify({ ...donorData, primaryRole: data.primaryRole })} error=${err instanceof Error ? err.message : err}`,
+      err instanceof Error ? err.stack : undefined,
+    );
+    throw err;
+  }
 }
 
   async update(

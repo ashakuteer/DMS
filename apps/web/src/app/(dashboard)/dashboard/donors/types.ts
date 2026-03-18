@@ -1,3 +1,5 @@
+export type PersonRole = "INDIVIDUAL" | "CSR" | "VOLUNTEER" | "INFLUENCER"
+
 export interface Donor {
   id: string
   donorCode: string
@@ -13,6 +15,11 @@ export interface Donor {
   country?: string
 
   category: string
+
+  primaryRole?: PersonRole
+  additionalRoles?: PersonRole[]
+  donorTags?: string[]
+  communicationChannels?: string[]
 
   donorSince?: string
   healthScore?: number

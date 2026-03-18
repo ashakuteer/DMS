@@ -200,6 +200,114 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       `CREATE INDEX IF NOT EXISTS "sponsorships_status_createdAt_idx" ON "sponsorships"("status","createdAt")`,
       // donors: compound index for deletedAt + createdAt (impact monthly queries)
       `CREATE INDEX IF NOT EXISTS "donors_deletedAt_createdAt_idx" ON "donors"("deletedAt","createdAt")`,
+
+      // ── Role-based donor profile upgrade (2025) ───────────────────────────
+      // Step 1: PersonRole enum
+      `DO $$ BEGIN CREATE TYPE "PersonRole" AS ENUM ('INDIVIDUAL','CSR','VOLUNTEER','INFLUENCER'); EXCEPTION WHEN duplicate_object THEN null; END $$`,
+
+      // Step 2: Extend DonationFrequency enum with new values
+      `ALTER TYPE "DonationFrequency" ADD VALUE IF NOT EXISTS 'BI_WEEKLY'`,
+      `ALTER TYPE "DonationFrequency" ADD VALUE IF NOT EXISTS 'BI_MONTHLY'`,
+      `ALTER TYPE "DonationFrequency" ADD VALUE IF NOT EXISTS 'FESTIVAL_BASED'`,
+
+      // Step 3: Extend SupportPreference enum with new values
+      `ALTER TYPE "SupportPreference" ADD VALUE IF NOT EXISTS 'SNACKS_SWEETS'`,
+      `ALTER TYPE "SupportPreference" ADD VALUE IF NOT EXISTS 'IN_KIND'`,
+      `ALTER TYPE "SupportPreference" ADD VALUE IF NOT EXISTS 'CASH'`,
+
+      // Step 4: New columns on donors table
+      `ALTER TABLE "donors" ADD COLUMN IF NOT EXISTS "primaryRole" "PersonRole" NOT NULL DEFAULT 'INDIVIDUAL'`,
+      `ALTER TABLE "donors" ADD COLUMN IF NOT EXISTS "additionalRoles" "PersonRole"[] NOT NULL DEFAULT ARRAY[]::"PersonRole"[]`,
+      `ALTER TABLE "donors" ADD COLUMN IF NOT EXISTS "donorTags" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[]`,
+      `ALTER TABLE "donors" ADD COLUMN IF NOT EXISTS "communicationChannels" TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[]`,
+      `ALTER TABLE "donors" ADD COLUMN IF NOT EXISTS "preferredCommunicationMethod" TEXT`,
+      `ALTER TABLE "donors" ADD COLUMN IF NOT EXISTS "communicationNotes" TEXT`,
+
+      // Step 5: Index on donors.primaryRole
+      `CREATE INDEX IF NOT EXISTS "donors_primaryRole_idx" ON "donors"("primaryRole")`,
+
+      // Step 6: individual_donor_profiles table
+      `CREATE TABLE IF NOT EXISTS "individual_donor_profiles" (
+        "id"                TEXT                  NOT NULL DEFAULT gen_random_uuid()::text,
+        "donorId"           TEXT                  NOT NULL,
+        "donationFrequency" "DonationFrequency",
+        "supportTypes"      "SupportPreference"[] NOT NULL DEFAULT ARRAY[]::"SupportPreference"[],
+        "donorTags"         TEXT[]                NOT NULL DEFAULT ARRAY[]::TEXT[],
+        "createdAt"         TIMESTAMP(3)          NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt"         TIMESTAMP(3)          NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "individual_donor_profiles_pkey" PRIMARY KEY ("id")
+      )`,
+      `DO $$ BEGIN ALTER TABLE "individual_donor_profiles" ADD CONSTRAINT "individual_donor_profiles_donorId_fkey" FOREIGN KEY ("donorId") REFERENCES "donors"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,
+      `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'individual_donor_profiles_donorId_key') THEN ALTER TABLE "individual_donor_profiles" ADD CONSTRAINT "individual_donor_profiles_donorId_key" UNIQUE ("donorId"); END IF; END $$`,
+      `CREATE INDEX IF NOT EXISTS "individual_donor_profiles_donorId_idx" ON "individual_donor_profiles"("donorId")`,
+
+      // Step 7: volunteer_profiles table
+      `CREATE TABLE IF NOT EXISTS "volunteer_profiles" (
+        "id"               TEXT         NOT NULL DEFAULT gen_random_uuid()::text,
+        "donorId"          TEXT         NOT NULL,
+        "volunteerType"    TEXT,
+        "workMode"         TEXT,
+        "skills"           TEXT[]       NOT NULL DEFAULT ARRAY[]::TEXT[],
+        "areasOfInterest"  TEXT[]       NOT NULL DEFAULT ARRAY[]::TEXT[],
+        "availabilityType" TEXT,
+        "timePreference"   TEXT,
+        "engagementLevel"  TEXT,
+        "willingToDonate"  BOOLEAN      NOT NULL DEFAULT false,
+        "lastActivityDate" TIMESTAMP(3),
+        "createdAt"        TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt"        TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "volunteer_profiles_pkey" PRIMARY KEY ("id")
+      )`,
+      `DO $$ BEGIN ALTER TABLE "volunteer_profiles" ADD CONSTRAINT "volunteer_profiles_donorId_fkey" FOREIGN KEY ("donorId") REFERENCES "donors"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,
+      `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'volunteer_profiles_donorId_key') THEN ALTER TABLE "volunteer_profiles" ADD CONSTRAINT "volunteer_profiles_donorId_key" UNIQUE ("donorId"); END IF; END $$`,
+      `CREATE INDEX IF NOT EXISTS "volunteer_profiles_donorId_idx" ON "volunteer_profiles"("donorId")`,
+
+      // Step 8: influencer_profiles table
+      `CREATE TABLE IF NOT EXISTS "influencer_profiles" (
+        "id"                   TEXT         NOT NULL DEFAULT gen_random_uuid()::text,
+        "donorId"              TEXT         NOT NULL,
+        "influenceTypes"       TEXT[]       NOT NULL DEFAULT ARRAY[]::TEXT[],
+        "audienceSize"         INTEGER,
+        "engagementLevel"      TEXT,
+        "contributionTypes"    TEXT[]       NOT NULL DEFAULT ARRAY[]::TEXT[],
+        "contributionPattern"  TEXT,
+        "totalReferrals"       INTEGER      NOT NULL DEFAULT 0,
+        "estimatedFunds"       DECIMAL(15,2),
+        "lastCampaignDate"     TIMESTAMP(3),
+        "relationshipStrength" TEXT,
+        "createdAt"            TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt"            TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "influencer_profiles_pkey" PRIMARY KEY ("id")
+      )`,
+      `DO $$ BEGIN ALTER TABLE "influencer_profiles" ADD CONSTRAINT "influencer_profiles_donorId_fkey" FOREIGN KEY ("donorId") REFERENCES "donors"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,
+      `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'influencer_profiles_donorId_key') THEN ALTER TABLE "influencer_profiles" ADD CONSTRAINT "influencer_profiles_donorId_key" UNIQUE ("donorId"); END IF; END $$`,
+      `CREATE INDEX IF NOT EXISTS "influencer_profiles_donorId_idx" ON "influencer_profiles"("donorId")`,
+
+      // Step 9: csr_profiles table
+      `CREATE TABLE IF NOT EXISTS "csr_profiles" (
+        "id"                   TEXT         NOT NULL DEFAULT gen_random_uuid()::text,
+        "donorId"              TEXT         NOT NULL,
+        "companyName"          TEXT,
+        "designation"          TEXT,
+        "industry"             TEXT,
+        "companySize"          TEXT,
+        "csrBudget"            DECIMAL(15,2),
+        "focusAreas"           TEXT[]       NOT NULL DEFAULT ARRAY[]::TEXT[],
+        "supportTypes"         TEXT[]       NOT NULL DEFAULT ARRAY[]::TEXT[],
+        "decisionRole"         TEXT,
+        "relationshipStrength" TEXT,
+        "lastContactDate"      TIMESTAMP(3),
+        "nextFollowUpDate"     TIMESTAMP(3),
+        "meetingStatus"        TEXT,
+        "expectedContribution" DECIMAL(15,2),
+        "proposalShared"       BOOLEAN      NOT NULL DEFAULT false,
+        "createdAt"            TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt"            TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "csr_profiles_pkey" PRIMARY KEY ("id")
+      )`,
+      `DO $$ BEGIN ALTER TABLE "csr_profiles" ADD CONSTRAINT "csr_profiles_donorId_fkey" FOREIGN KEY ("donorId") REFERENCES "donors"("id") ON DELETE CASCADE ON UPDATE CASCADE; EXCEPTION WHEN duplicate_object THEN null; END $$`,
+      `DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'csr_profiles_donorId_key') THEN ALTER TABLE "csr_profiles" ADD CONSTRAINT "csr_profiles_donorId_key" UNIQUE ("donorId"); END IF; END $$`,
+      `CREATE INDEX IF NOT EXISTS "csr_profiles_donorId_idx" ON "csr_profiles"("donorId")`,
     ];
 
     for (const sql of patches) {

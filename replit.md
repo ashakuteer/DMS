@@ -15,10 +15,27 @@ This project is a comprehensive donor management system for NGOs, designed to st
 - Created 4 new profile tables: `IndividualDonorProfile`, `VolunteerProfile`, `InfluencerProfile`, `CSRProfile`
 
 ### API Changes (apps/api/src/donors/donors.crud.service.ts)
-- Updated `create()`: extracts profile payloads, creates donor then creates profiles separately
+- Updated `create()`: extracts profile payloads, creates donor then creates profiles separately; wrapped with try/catch + Logger for production error visibility
 - Updated `update()`: extracts profile payloads, upserts profiles
 - Updated `findOne()`: includes all 4 profiles and new donor fields in select
+- Updated `findAll()`: added `primaryRole`, `additionalRoles`, `donorTags`, `communicationChannels` to list select so role badges show in the donor table
 - Note: CSR model is accessed as `prisma.cSRProfile` (Prisma auto-casing)
+- Added `Logger` instance and `InternalServerErrorException` import
+
+### Production / Railway Schema Patches (apps/api/src/prisma/prisma.service.ts)
+- All ~40 new schema patches added covering: PersonRole enum, DonationFrequency/SupportPreference extensions, 6 new donor columns, and all 4 profile tables with FK constraints, unique constraints, and indexes
+- Patch failures for already-existing constraints are caught, logged as WARN, and skipped (fully idempotent)
+- On Railway (Supabase), these patches create all missing schema on first restart
+
+### Frontend — Donor List Table (apps/web/src/app/(dashboard)/dashboard/donors/components/donors/components/DonorTable.tsx)
+- Replaced "Category" column with "Role" column showing color-coded role badges
+- Primary role: blue (INDIVIDUAL), purple (CSR), green (VOLUNTEER), orange (INFLUENCER)
+- Additional roles shown with 75% opacity variants alongside the primary badge
+- Old donors (pre-upgrade) default to INDIVIDUAL badge
+
+### Frontend Types (apps/web/src/app/(dashboard)/dashboard/donors/types.ts)
+- Added `PersonRole` type export
+- Added optional fields: `primaryRole`, `additionalRoles`, `donorTags`, `communicationChannels` to `Donor` interface
 
 ### Frontend — Create Donor (apps/web/src/app/(dashboard)/dashboard/donors/new/page.tsx)
 - Completely rewritten with role-based tabbed form
