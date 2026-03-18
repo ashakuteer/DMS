@@ -20,12 +20,19 @@ This project is a comprehensive donor management system for NGOs, designed to st
 - Updated `findOne()`: includes all 4 profiles and new donor fields in select
 - Note: CSR model is accessed as `prisma.cSRProfile` (Prisma auto-casing)
 
-### Frontend (apps/web/src/app/(dashboard)/dashboard/donors/new/page.tsx)
+### Frontend — Create Donor (apps/web/src/app/(dashboard)/dashboard/donors/new/page.tsx)
 - Completely rewritten with role-based tabbed form
 - Removed: Category dropdown, WhatsApp phone field, separate official email
 - Added: Role Selection section (primaryRole + additionalRoles), Donation Profile tabs (Individual/CSR/Volunteer/Influencer), Communication Preferences section
 - Email consolidated into single field mapped to `personalEmail` on submit
 - Sections: Basic Info, Contact Details, Address, Role Selection, Donation Profile (tabbed), Communication Preferences, Smart Fields, Source & Assignment, Notes
+
+### Frontend — Edit Donor (apps/web/src/app/(dashboard)/dashboard/donors/[id]/edit/page.tsx)
+- Completely rewritten to match new role-based profile structure
+- Pre-populates all fields on load including: primaryRole, additionalRoles, donorTags, communicationChannels, preferredCommunicationMethod, communicationNotes
+- Loads and pre-fills all 4 profile types (individualProfile, volunteerProfile, influencerProfile, csrProfile) from API response
+- Same section structure as create form: Basic Info, Contact, Address, Role Selection, Donation Profile (tabs), Communication Preferences, Tags & Smart Fields, Source & Assignment, Notes
+- On save: PATCH with full donor fields + profile upserts (backend handles create-or-update for each profile)
 
 ## User Preferences
 
