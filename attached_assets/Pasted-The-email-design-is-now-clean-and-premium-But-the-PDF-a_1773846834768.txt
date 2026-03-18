@@ -1,0 +1,245 @@
+The email design is now clean and premium. But the PDF and donation flow still need major improvements.
+
+I want a complete redesign and logic improvement in one go. Please implement everything below carefully.
+
+-----------------------------------
+1. CORE GOAL
+-----------------------------------
+
+Make the donation system:
+- Simple
+- Smart (auto decisions)
+- Professional
+- Donor-friendly
+- Premium look (like modern NGO platforms)
+
+-----------------------------------
+2. CATEGORY-FIRST DONATION FLOW
+-----------------------------------
+
+The Add Donation form must be restructured.
+
+NEW ORDER:
+
+1. Purpose / Category  ← MUST BE FIRST
+2. Designated Home
+3. Donation details (dynamic based on category)
+4. Date
+5. Notes
+
+Remove confusion at the end. Everything should be auto-driven by category.
+
+-----------------------------------
+3. CATEGORY LOGIC (VERY IMPORTANT)
+-----------------------------------
+
+A. FINANCIAL DONATIONS
+
+Examples:
+- Cash Donation
+- UPI Donation
+- Bank Transfer
+- Online Donation
+
+For these:
+
+Show:
+- Amount (REQUIRED)
+- Payment Mode (REQUIRED)
+
+Allow:
+- Receipt Type selection:
+  1. General Thank You
+  2. Tax Receipt (80G)
+
+-----------------------------------
+
+B. IN-KIND DONATIONS
+
+Examples:
+- Grocery
+- Medicines
+- Prepared Food
+- Used Items
+- In Kind
+
+For these:
+
+DO NOT SHOW:
+- Payment mode (Cash/UPI/Bank)
+- Tax receipt option
+- General vs Tax selection
+
+Instead:
+
+Show:
+- Estimated Value / Worth (OPTIONAL)
+- Quantity (OPTIONAL)
+- Notes (OPTIONAL)
+
+Automatically:
+- Treat as "Kind Donation Acknowledgement"
+- Generate only acknowledgement (not tax receipt)
+
+-----------------------------------
+4. FORM BEHAVIOR
+-----------------------------------
+
+The form should dynamically change based on category.
+
+If category = Financial:
+- show amount + payment mode + receipt choice
+
+If category = In-Kind:
+- hide payment mode
+- amount becomes optional and renamed:
+  "Estimated Value / Worth (Optional)"
+- no receipt type selection
+
+-----------------------------------
+5. EMAIL DESIGN (KEEP CURRENT STYLE)
+-----------------------------------
+
+Email is already good. Maintain:
+
+- Navy blue header
+- White background
+- Soft grey sections
+- Clean typography
+- Professional spacing
+
+-----------------------------------
+6. PDF REDESIGN (CRITICAL FIX)
+-----------------------------------
+
+CURRENT PROBLEM:
+PDF is still old and does not match email or category logic.
+
+We need FULL redesign.
+
+-----------------------------------
+7. PDF STYLE (PREMIUM LOOK)
+-----------------------------------
+
+Use:
+
+- Navy blue header (#243A5E or similar)
+- White background
+- Light grey section boxes
+- Clean spacing
+- Modern typography
+- Minimal and elegant
+
+PDF must look like email.
+
+-----------------------------------
+8. PDF TYPES
+-----------------------------------
+
+Create TWO types of PDFs:
+
+-----------------------------------
+A. FINANCIAL DONATION PDF
+-----------------------------------
+
+Title:
+DONATION RECEIPT
+
+Show:
+
+- Receipt Number
+- Date
+- Donor Name
+- Amount
+- Payment Mode
+- Purpose / Category
+- Designated Home (if any)
+
+If Tax Receipt selected:
+- show Section 80G block
+- show PAN
+
+If General Thank You:
+- DO NOT show tax section
+
+-----------------------------------
+B. IN-KIND DONATION PDF
+-----------------------------------
+
+Title:
+DONATION ACKNOWLEDGEMENT
+
+Show:
+
+- Acknowledgement Number
+- Date
+- Donor Name
+- Nature of Donation (Grocery / Food / etc)
+- Designated Home
+- Notes (if any)
+
+Include message:
+
+“Thank you for your thoughtful support. Your contribution directly helps the people in our care.”
+
+DO NOT SHOW:
+- PAN
+- 80G
+- tax exemption
+- payment mode
+- financial receipt wording
+
+-----------------------------------
+9. REMOVE CURRENT PROBLEM
+-----------------------------------
+
+Right now:
+
+- Grocery donation is generating tax-style receipt ❌
+- This must be fixed
+
+Correct behavior:
+
+- Grocery → Acknowledgement only
+- Cash → Receipt (with optional tax)
+
+-----------------------------------
+10. SYSTEM BEHAVIOR SUMMARY
+-----------------------------------
+
+Category decides everything:
+
+Financial → Receipt flow  
+In-kind → Acknowledgement flow  
+
+No manual confusion.
+
+-----------------------------------
+11. IMPLEMENTATION EXPECTATION
+-----------------------------------
+
+Please:
+
+1. Update donation form UI
+2. Add dynamic field logic
+3. Update backend logic for category handling
+4. Create 2 PDF templates
+5. Link PDF generation to category
+6. Ensure email + PDF are aligned
+7. Keep existing database stable
+
+-----------------------------------
+12. FINAL OUTPUT REQUIRED
+-----------------------------------
+
+After implementation, show:
+
+1. Updated donation form screenshot
+2. Sample financial donation PDF
+3. Sample kind donation PDF
+4. Explain how category logic works now
+
+-----------------------------------
+
+IMPORTANT:
+Do everything in one pass. No partial implementation.

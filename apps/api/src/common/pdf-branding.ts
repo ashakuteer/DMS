@@ -28,7 +28,7 @@ function hexToRgb(hex: string): [number, number, number] {
   ];
 }
 
-function resolveLocalFile(url: string | null): string | null {
+export function resolveLocalFile(url: string | null): string | null {
   if (!url) return null;
   if (url.startsWith('/api/organization-profile/files/')) {
     const filename = path.basename(url);

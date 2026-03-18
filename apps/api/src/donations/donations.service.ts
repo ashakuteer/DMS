@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditService } from "../audit/audit.service";
-import { ReceiptService } from "../receipt/receipt.service";
+import { ReceiptService, isInKindDonation } from "../receipt/receipt.service";
 import { EmailService } from "../email/email.service";
 import { CommunicationLogService } from "../communication-log/communication-log.service";
 import { OrganizationProfileService } from "../organization-profile/organization-profile.service";
@@ -347,21 +347,35 @@ export class DonationsService {
         [donor.firstName, donor.lastName].filter(Boolean).join(" ") ||
         "Valued Donor";
 
-      const pdfBuffer = await this.receiptService.generateReceiptPDF({
-        receiptNumber,
-        donationDate: donation.donationDate,
-        donorName,
-        donationAmount: donation.donationAmount.toNumber(),
-        currency: donation.currency,
-        paymentMode: donation.donationMode,
-        donationType: donation.donationType,
-      });
+      const kindDon = isInKindDonation(donation.donationType || '');
+      let pdfBuffer: Buffer;
+      if (kindDon) {
+        pdfBuffer = await this.receiptService.generateAcknowledgementPDF({
+          ackNumber: receiptNumber,
+          donationDate: donation.donationDate,
+          donorName,
+          donationType: donation.donationType || 'KIND',
+          currency: donation.currency,
+        });
+      } else {
+        pdfBuffer = await this.receiptService.generateReceiptPDF({
+          receiptNumber,
+          donationDate: donation.donationDate,
+          donorName,
+          donationAmount: donation.donationAmount.toNumber(),
+          currency: donation.currency,
+          paymentMode: donation.donationMode,
+          donationType: donation.donationType || 'CASH',
+          receiptType: 'GENERAL',
+        });
+      }
 
       const result = await this.emailService.sendDonationReceipt(
         donorEmail,
         donorName,
         receiptNumber,
         pdfBuffer,
+        { emailType: kindDon ? 'KIND' : 'GENERAL' },
       );
 
       await this.communicationLogService.logEmail({
@@ -544,20 +558,40 @@ export class DonationsService {
       ? addressParts.join(", ")
       : undefined;
 
-    const pdfBuffer = await this.receiptService.generateReceiptPDF({
-      receiptNumber: donation.receiptNumber || "N/A",
-      donationDate: donation.donationDate,
-      donorName,
-      donationAmount: donation.donationAmount.toNumber(),
-      currency: donation.currency,
-      paymentMode: donation.donationMode,
-      donationType: donation.donationType,
-      remarks: donation.remarks || undefined,
-      donorAddress,
-      donorEmail,
-      donorPAN: donation.donor.pan || undefined,
-      transactionRef: donation.transactionId || undefined,
-    });
+    const kindDonation = isInKindDonation(donation.donationType || '');
+    const effectiveEmailType = kindDonation ? 'KIND' : (emailType || 'GENERAL');
+
+    let pdfBuffer: Buffer;
+    if (kindDonation) {
+      pdfBuffer = await this.receiptService.generateAcknowledgementPDF({
+        ackNumber: donation.receiptNumber || 'N/A',
+        donationDate: donation.donationDate,
+        donorName,
+        donationType: donation.donationType || 'KIND',
+        estimatedValue: donation.donationAmount.toNumber() || undefined,
+        currency: donation.currency,
+        designatedHome: donation.donationHomeType || null,
+        remarks: donation.remarks || undefined,
+        donorEmail,
+      });
+    } else {
+      pdfBuffer = await this.receiptService.generateReceiptPDF({
+        receiptNumber: donation.receiptNumber || 'N/A',
+        donationDate: donation.donationDate,
+        donorName,
+        donationAmount: donation.donationAmount.toNumber(),
+        currency: donation.currency,
+        paymentMode: donation.donationMode,
+        donationType: donation.donationType || 'CASH',
+        remarks: donation.remarks || undefined,
+        donorAddress,
+        donorEmail,
+        donorPAN: donation.donor.pan || undefined,
+        transactionRef: donation.transactionId || undefined,
+        designatedHome: donation.donationHomeType || null,
+        receiptType: effectiveEmailType === 'TAX' ? 'TAX' : 'GENERAL',
+      });
+    }
 
     const emailResult = await this.emailService.sendDonationReceipt(
       donorEmail,
@@ -565,7 +599,7 @@ export class DonationsService {
       donation.receiptNumber || "N/A",
       pdfBuffer,
       {
-        emailType: emailType || 'GENERAL',
+        emailType: effectiveEmailType,
         donationAmount: donation.donationAmount.toNumber(),
         currency: donation.currency,
         donationDate: donation.donationDate,

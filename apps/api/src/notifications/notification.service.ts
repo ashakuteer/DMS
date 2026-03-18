@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CommunicationsService } from '../communications/communications.service';
 import { CommunicationLogService } from '../communication-log/communication-log.service';
 import { EmailService } from '../email/email.service';
-import { ReceiptService } from '../receipt/receipt.service';
+import { ReceiptService, isInKindDonation } from '../receipt/receipt.service';
 import { CommChannel, CommunicationChannel, CommunicationType } from '@prisma/client';
 import { WhatsAppTemplateKey } from '../communications/twilio-whatsapp.service';
 import { DonationEmailType } from '../email/templates/donation.templates';
@@ -88,15 +88,31 @@ export class NotificationService {
     const donorName = [donor.firstName, donor.lastName].filter(Boolean).join(' ') || 'Valued Donor';
 
     try {
-      const pdfBuffer = await this.receiptService.generateReceiptPDF({
-        receiptNumber: params.receiptNumber,
-        donationDate: params.donationDate,
-        donorName,
-        donationAmount: params.donationAmount,
-        currency: params.currency,
-        paymentMode: params.donationType,
-        donationType: params.donationType,
-      });
+      const kindDonation = isInKindDonation(params.donationType);
+      const effectiveEmailType = kindDonation ? 'KIND' : (params.emailType || 'GENERAL');
+
+      let pdfBuffer: Buffer;
+      if (kindDonation) {
+        pdfBuffer = await this.receiptService.generateAcknowledgementPDF({
+          ackNumber: params.receiptNumber,
+          donationDate: params.donationDate,
+          donorName,
+          donationType: params.donationType,
+          currency: params.currency,
+        });
+      } else {
+        pdfBuffer = await this.receiptService.generateReceiptPDF({
+          receiptNumber: params.receiptNumber,
+          donationDate: params.donationDate,
+          donorName,
+          donationAmount: params.donationAmount,
+          currency: params.currency,
+          paymentMode: params.donationMode,
+          donationType: params.donationType,
+          donorPAN: params.donorPAN,
+          receiptType: effectiveEmailType === 'TAX' ? 'TAX' : 'GENERAL',
+        });
+      }
 
       const result = await this.emailService.sendDonationReceipt(
         donorEmail,
@@ -104,7 +120,7 @@ export class NotificationService {
         params.receiptNumber,
         pdfBuffer,
         {
-          emailType: params.emailType || 'GENERAL',
+          emailType: effectiveEmailType,
           donationAmount: params.donationAmount,
           currency: params.currency,
           donationDate: params.donationDate,

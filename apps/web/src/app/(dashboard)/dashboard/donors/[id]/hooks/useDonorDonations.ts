@@ -103,17 +103,22 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     e.preventDefault();
     setSubmittingDonation(true);
     try {
+      const IN_KIND_TYPES = new Set(["GROCERY", "MEDICINES", "PREPARED_FOOD", "USED_ITEMS", "KIND"]);
+      const isKind = IN_KIND_TYPES.has(donationForm.donationType);
+      const parsedAmount = parseFloat(donationForm.donationAmount);
+      const effectiveAmount = isNaN(parsedAmount) ? 0 : parsedAmount;
+
       await apiClient("/api/donations", {
         method: "POST",
         body: JSON.stringify({
           donorId,
-          donationAmount: parseFloat(donationForm.donationAmount),
+          donationAmount: effectiveAmount,
           donationDate: donationForm.donationDate,
-          donationMode: donationForm.donationMode,
+          donationMode: isKind ? null : (donationForm.donationMode || null),
           donationType: donationForm.donationType,
           donationHomeType: donationForm.designatedHome === "NONE" ? null : (donationForm.designatedHome || null),
           remarks: donationForm.remarks || undefined,
-          emailType: donationForm.emailType || 'GENERAL',
+          emailType: isKind ? 'KIND' : (donationForm.emailType || 'GENERAL'),
         }),
       });
       setShowDonationDialog(false);
