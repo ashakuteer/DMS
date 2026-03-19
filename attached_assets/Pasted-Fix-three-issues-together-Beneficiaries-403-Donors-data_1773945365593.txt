@@ -1,0 +1,127 @@
+Fix three issues together: Beneficiaries 403, Donors data missing, and Data masking.
+
+========================================
+1. FIX BENEFICIARIES 403 ERROR
+========================================
+
+File: beneficiaries.controller.ts
+
+- Update all @Roles decorators to:
+
+@Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+
+- Remove any old roles (TELECALLER, ACCOUNTANT, etc.)
+
+- Replace any manual checks like:
+if (user.role === ...)
+
+WITH:
+
+if (![Role.FOUNDER, Role.ADMIN, Role.STAFF].includes(user.role)) {
+  throw new ForbiddenException()
+}
+
+----------------------------------------
+Restart backend after change
+----------------------------------------
+
+========================================
+2. FIX DONORS SHOWING ONLY 5 RECORDS
+========================================
+
+File: donors.service.ts → findAll()
+
+- REMOVE filters like:
+assignedTo: user.id
+createdBy: user.id
+
+- Use this query:
+
+const [data, total] = await Promise.all([
+  prisma.donor.findMany({
+    orderBy: { createdAt: 'desc' }
+  }),
+  prisma.donor.count()
+])
+
+- Add log:
+console.log('Total donors:', total)
+
+- VERIFY DATABASE_URL is correct (not a new/empty DB)
+
+----------------------------------------
+Restart backend after change
+----------------------------------------
+
+========================================
+3. MASK PHONE & EMAIL (ADMIN + STAFF ONLY)
+========================================
+
+Requirement:
+- Founder → full data
+- Admin & Staff → masked data
+
+----------------------------------------
+PHONE MASKING
+----------------------------------------
+
+Example:
+9700700700 → 9*0*7*0*0*
+
+function maskPhone(phone: string) {
+  return phone
+    .split('')
+    .map((char, i) => (i === 0 ? char : i % 2 === 1 ? '*' : char))
+    .join('')
+}
+
+----------------------------------------
+EMAIL MASKING
+----------------------------------------
+
+Example:
+rajesh@gmail.com → r*j*s*@gmail.com
+
+function maskEmail(email: string) {
+  const [name, domain] = email.split('@')
+
+  const maskedName = name
+    .split('')
+    .map((char, i) => (i % 2 === 1 ? '*' : char))
+    .join('')
+
+  return `${maskedName}@${domain}`
+}
+
+----------------------------------------
+APPLY MASKING IN donors.service.ts
+----------------------------------------
+
+After fetching donors:
+
+if (user.role !== 'FOUNDER') {
+  data = data.map(donor => ({
+    ...donor,
+    phone: donor.phone ? maskPhone(donor.phone) : donor.phone,
+    email: donor.email ? maskEmail(donor.email) : donor.email
+  }))
+}
+
+----------------------------------------
+IMPORTANT
+----------------------------------------
+
+- Do NOT modify database values
+- Mask only in API response
+- Founder always sees full data
+- Admin & Staff see masked data
+
+========================================
+FINAL STEP
+========================================
+
+Restart backend and verify:
+
+- Beneficiaries page loads (no 403)
+- Donors count is correct (not 5)
+- Masking works correctly

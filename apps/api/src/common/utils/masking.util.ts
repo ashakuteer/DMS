@@ -1,9 +1,9 @@
 export function maskPhone(phone: string | null | undefined): string | null {
   if (!phone) return null;
-  const cleaned = phone.replace(/\D/g, '');
-  if (cleaned.length < 4) return '******';
-  const lastFour = cleaned.slice(-4);
-  return `******${lastFour}`;
+  return phone
+    .split('')
+    .map((char, i) => (i === 0 ? char : i % 2 === 1 ? '*' : char))
+    .join('');
 }
 
 export function maskEmail(email: string | null | undefined): string | null {
@@ -12,11 +12,11 @@ export function maskEmail(email: string | null | undefined): string | null {
   if (atIndex < 0) return '*****';
   const localPart = email.substring(0, atIndex);
   const domain = email.substring(atIndex);
-  if (localPart.length <= 2) {
-    return localPart + '*****' + domain;
-  }
-  const firstTwo = localPart.substring(0, 2);
-  return firstTwo + '*****' + domain;
+  const maskedLocal = localPart
+    .split('')
+    .map((char, i) => (i % 2 === 1 ? '*' : char))
+    .join('');
+  return `${maskedLocal}${domain}`;
 }
 
 export interface MaskOptions {

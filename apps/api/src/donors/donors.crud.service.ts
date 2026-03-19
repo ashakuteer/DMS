@@ -32,8 +32,8 @@ export class DonorsCrudService {
     return {};
   }
 
-  private shouldMaskData(_user: UserContext): boolean {
-    return false;
+  private shouldMaskData(user: UserContext): boolean {
+    return user.role !== Role.FOUNDER;
   }
 
   private async getActiveDonorOrThrow(id: string) {
@@ -193,6 +193,8 @@ if (assignedToUserId) {
       }),
       this.prisma.donor.count({ where }),
     ]);
+
+    console.log('Total donors:', total);
 
     const donorIds = donors.map((d) => d.id);
 

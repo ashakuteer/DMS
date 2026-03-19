@@ -55,7 +55,7 @@ export class BeneficiariesController {
   ) {}
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findAll(
     @CurrentUser() user: UserContext,
     @Query('page') page?: string,
@@ -82,7 +82,7 @@ export class BeneficiariesController {
   }
 
   @Get('export/excel')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportExcel(@CurrentUser() user: UserContext) {
     return this.beneficiariesService.exportToExcel(user);
   }
@@ -95,7 +95,7 @@ async downloadBulkTemplate() {
 }
 
 @Post("bulk-upload")
-@Roles(Role.ADMIN)
+@Roles(Role.FOUNDER, Role.ADMIN)
 @UseInterceptors(
   FileInterceptor("file", {
     storage: memoryStorage(),
@@ -123,7 +123,7 @@ async bulkUpload(
 }
 
   @Get("archived")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async findArchived(
     @CurrentUser() user: UserContext,
     @Query("search") search?: string,
@@ -139,13 +139,13 @@ async bulkUpload(
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findById(@Param('id') id: string) {
     return this.beneficiariesService.findById(id);
   }
 
   @Post()
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async create(
     @CurrentUser() user: UserContext,
     @Body() dto: CreateBeneficiaryDto,
@@ -154,7 +154,7 @@ async bulkUpload(
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async update(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -164,7 +164,7 @@ async bulkUpload(
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async delete(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -174,7 +174,7 @@ async bulkUpload(
   }
 
   @Post(':id/restore')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async restore(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -183,7 +183,7 @@ async bulkUpload(
   }
 
   @Post(':id/photo')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   @UseInterceptors(
     FileInterceptor('photo', {
       storage: memoryStorage(),
@@ -222,7 +222,7 @@ async bulkUpload(
   }
 
   @Delete(':id/photo')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async deletePhoto(
     @Param('id') id: string,
   ) {
@@ -235,7 +235,7 @@ async bulkUpload(
   }
 
   @Post(':id/photo/link')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async linkExistingPhoto(
     @Param('id') id: string,
     @Body() body: { photoUrl: string; photoPath?: string },
@@ -278,13 +278,13 @@ async bulkUpload(
   }
 
   @Get(':id/sponsors')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getSponsors(@Param('id') id: string) {
     return this.beneficiariesService.getSponsors(id);
   }
 
   @Post(':id/sponsors')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async addSponsor(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -294,13 +294,13 @@ async bulkUpload(
   }
 
   @Get(':id/updates')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getUpdates(@Param('id') id: string) {
     return this.beneficiariesService.getUpdates(id);
   }
 
   @Post(':id/updates')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async addUpdate(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -310,13 +310,13 @@ async bulkUpload(
   }
 
   @Get(':id/timeline')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getTimelineEvents(@Param('id') id: string) {
     return this.beneficiariesService.getTimelineEvents(id);
   }
 
   @Post(':id/timeline')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async addTimelineEvent(
     @Param('id') id: string,
     @Body() dto: CreateTimelineEventDto,
@@ -325,13 +325,13 @@ async bulkUpload(
   }
 
   @Get(':id/metrics')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getMetrics(@Param('id') id: string) {
     return this.beneficiariesService.getMetrics(id);
   }
 
   @Post(':id/metrics')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async addMetric(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -341,13 +341,13 @@ async bulkUpload(
   }
 
   @Get(':id/progress-cards')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getProgressCards(@Param('id') id: string) {
     return this.beneficiariesService.getProgressCards(id);
   }
 
   @Post(':id/progress-cards')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async addProgressCard(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -357,13 +357,13 @@ async bulkUpload(
   }
 
   @Get(':id/education-timeline')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getEducationTimeline(@Param('id') id: string) {
     return this.beneficiariesService.getEducationTimeline(id);
   }
 
   @Get(':id/education-summary/export')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async exportEducationSummary(@Param('id') id: string, @Res() res: any) {
     const pdfBuffer = await this.beneficiariesService.exportEducationSummaryPdf(id);
     res.set({
@@ -375,13 +375,13 @@ async bulkUpload(
   }
 
   @Get(':id/health-events')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getHealthEvents(@Param('id') id: string) {
     return this.beneficiariesService.getHealthEvents(id);
   }
 
   @Post(':id/health-events')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async addHealthEvent(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -391,7 +391,7 @@ async bulkUpload(
   }
 
   @Post('health-events/:eventId/notify-sponsors')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async notifySponsorsOfHealthEvent(
     @CurrentUser() user: UserContext,
     @Param('eventId') eventId: string,
@@ -400,13 +400,13 @@ async bulkUpload(
   }
 
   @Get(':id/health-timeline')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getHealthTimeline(@Param('id') id: string) {
     return this.beneficiariesService.getHealthTimeline(id);
   }
 
   @Get(':id/health-history/export')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async exportHealthHistoryPdf(
     @Param('id') id: string,
     @Res() res: Response,
@@ -421,7 +421,7 @@ async bulkUpload(
   }
 
   @Get(':id/documents')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getDocuments(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -430,7 +430,7 @@ async bulkUpload(
   }
 
   @Post(':id/documents')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
@@ -472,7 +472,7 @@ async bulkUpload(
   }
 
   @Get('documents/:docId')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getDocument(
     @CurrentUser() user: UserContext,
     @Param('docId') docId: string,
@@ -489,13 +489,13 @@ export class ReportCampaignsController {
   ) {}
 
   @Get()
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async findAll() {
     return this.beneficiariesService.getReportCampaigns();
   }
 
   @Post()
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async create(
     @CurrentUser() user: UserContext,
     @Body() dto: CreateReportCampaignDto,
@@ -504,7 +504,7 @@ export class ReportCampaignsController {
   }
 
   @Post(':id/send')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async sendEmails(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -521,20 +521,20 @@ export class SponsorshipsController {
   ) {}
 
   @Get('due')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getDue(@Query('window') window?: string) {
     const windowDays = parseInt(window || '7', 10);
     return this.beneficiariesService.getDueSponsorships(windowDays);
   }
 
   @Get('summary')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getSummary() {
     return this.beneficiariesService.getSponsorshipSummary();
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async update(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -544,13 +544,13 @@ export class SponsorshipsController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async delete(@Param('id') id: string) {
     return this.beneficiariesService.deleteSponsorship(id);
   }
 
   @Post(':id/mark-paid')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async markPaid(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -560,7 +560,7 @@ export class SponsorshipsController {
   }
 
   @Post(':id/send-email')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async sendEmail(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -569,7 +569,7 @@ export class SponsorshipsController {
   }
 
   @Post(':id/queue-email')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async queueEmail(
     @Param('id') id: string,
   ) {
@@ -577,7 +577,7 @@ export class SponsorshipsController {
   }
 
   @Post(':id/skip')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async skip(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -586,7 +586,7 @@ export class SponsorshipsController {
   }
 
   @Get(':id/history')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getHistory(@Param('id') id: string) {
     return this.beneficiariesService.getSponsorshipHistory(id);
   }
@@ -600,13 +600,13 @@ export class BeneficiaryUpdatesController {
   ) {}
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async delete(@Param('id') id: string) {
     return this.beneficiariesService.deleteUpdate(id);
   }
 
   @Get(':id/sponsors')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getSponsorsForUpdate(@Param('id') id: string) {
     const update = await this.beneficiariesService.getUpdateWithBeneficiary(id);
     const sponsors = await this.beneficiariesService.getSponsorsForUpdate(update.beneficiaryId);
@@ -623,7 +623,7 @@ export class BeneficiaryUpdatesController {
   }
 
   @Post(':id/send')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async sendToSponsors(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -642,7 +642,7 @@ export class SponsorDispatchesController {
   ) {}
 
   @Patch(':id/copied')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async markCopied(@Param('id') id: string) {
     return this.beneficiariesService.markDispatchCopied(id);
   }
