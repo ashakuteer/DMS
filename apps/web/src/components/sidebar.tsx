@@ -18,7 +18,7 @@ import { usePermissions } from "@/lib/permission-provider";
 import {
   LayoutDashboard, Users, IndianRupee, HandHeart, FileText, Settings,
   LogOut, ChevronLeft, Menu, Moon, Sun, UserCog, MessageSquareText,
-  Bell, Inbox, BarChart3, Megaphone, Radio, PresentationIcon, Target,
+  Bell, Inbox, BarChart3, Megaphone, Radio, Target,
   TrendingUp, Milestone, ShieldCheck, DatabaseBackup, ArchiveRestore,
   Cake, Send, FileBarChart, ClipboardList, Building2, ArrowUpRight,
   FolderLock, Lock, Repeat, ListChecks, Phone, Clock, ChevronDown,
@@ -63,7 +63,6 @@ const navGroups: NavGroup[] = [
       { title: "Analytics", href: "/dashboard/analytics", icon: BarChart3, permissionModule: "analytics" },
       { title: "Impact Dashboard", href: "/dashboard/impact", icon: TrendingUp, permissionModule: "impact" },
       { title: "Retention", href: "/dashboard/retention", icon: Repeat, permissionModule: "retention" },
-      { title: "Management", href: "/dashboard/management", icon: PresentationIcon, permissionModule: "management" },
       { title: "Reports", href: "/dashboard/reports", icon: FileText, permissionModule: "reports" },
       { title: "Donor Reports", href: "/dashboard/donor-reports", icon: FileBarChart, permissionModule: "donorReports" },
       { title: "Report Campaigns", href: "/dashboard/report-campaigns", icon: Megaphone, permissionModule: "reportCampaigns" },
