@@ -191,6 +191,8 @@ export class AuthService {
 
   async forgotPassword(dto: ForgotPasswordDto) {
     try {
+      console.log('Reset requested for username:', dto.username);
+
       const user = await this.prisma.user.findUnique({
         where: { username: dto.username },
       });
