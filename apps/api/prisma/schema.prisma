@@ -999,11 +999,6 @@ enum Role {
   FOUNDER
   ADMIN
   STAFF
-  TELECALLER
-  ACCOUNTANT
-  MANAGER
-  CARETAKER
-  VIEWER
 }
 
 enum DonorCategory {

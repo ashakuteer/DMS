@@ -19,7 +19,7 @@ export class BroadcastingController {
   constructor(private readonly broadcastingService: BroadcastingService) {}
 
   @Post('preview')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async previewAudience(
     @Body() body: { filters: BroadcastFilters; channel: 'WHATSAPP' | 'EMAIL' },
   ) {
@@ -27,7 +27,7 @@ export class BroadcastingController {
   }
 
   @Post('send')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async sendBroadcast(
     @CurrentUser() user: any,
     @Body() body: {
@@ -43,19 +43,19 @@ export class BroadcastingController {
   }
 
   @Get('whatsapp-templates')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getWhatsAppTemplates() {
     return this.broadcastingService.getAvailableWhatsAppTemplates();
   }
 
   @Get('email-templates')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getEmailTemplates() {
     return this.broadcastingService.getAvailableEmailTemplates();
   }
 
   @Get('staff-list')
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getStaffList() {
     return this.broadcastingService.getStaffList();
   }

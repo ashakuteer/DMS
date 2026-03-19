@@ -51,10 +51,7 @@ export class DonationsService {
     private notificationService: NotificationService,
   ) {}
 
-  private getDonorAccessFilter(user: UserContext): Record<string, any> {
-    if (user.role === Role.TELECALLER) {
-      return { donor: { assignedToUserId: user.id } };
-    }
+  private getDonorAccessFilter(_user: UserContext): Record<string, any> {
     return {};
   }
 
@@ -181,9 +178,6 @@ export class DonationsService {
     });
 
     if (!donation) {
-      if (user.role === Role.TELECALLER) {
-        throw new ForbiddenException("You do not have access to this donation");
-      }
       throw new NotFoundException("Donation not found");
     }
 
@@ -198,18 +192,6 @@ export class DonationsService {
     ipAddress?: string,
     userAgent?: string,
   ) {
-    if (user.role === Role.TELECALLER) {
-      const donor = await this.prisma.donor.findFirst({
-        where: { id: data.donorId, isDeleted: false },
-        select: { id: true, assignedToUserId: true },
-      });
-      if (!donor || donor.assignedToUserId !== user.id) {
-        throw new ForbiddenException(
-          "You can only create donations for donors assigned to you",
-        );
-      }
-    }
-
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
     const financialYear =
@@ -411,15 +393,6 @@ export class DonationsService {
     });
 
     if (!existing) throw new NotFoundException("Donation not found");
-
-    if (
-      user.role === Role.TELECALLER &&
-      existing.donor?.assignedToUserId !== user.id
-    ) {
-      throw new ForbiddenException(
-        "You do not have permission to update this donation",
-      );
-    }
 
     const updateData = { ...data };
     if (data.donationDate)

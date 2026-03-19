@@ -146,7 +146,7 @@ export default function ReportsPage() {
   const [isDownloadingBoardSummary, setIsDownloadingBoardSummary] = useState(false);
 
   const isAdmin = userRole === 'ADMIN';
-  const canAccessReports = userRole === 'ADMIN' || userRole === 'ACCOUNTANT';
+  const canAccessReports = userRole === 'FOUNDER' || userRole === 'ADMIN' || userRole === 'STAFF';
 
   useEffect(() => {
     const user = authStorage.getUser();

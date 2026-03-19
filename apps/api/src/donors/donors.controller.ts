@@ -52,7 +52,7 @@ export class DonorsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findAll(
     @CurrentUser() user: UserContext,
     @Query("page") page?: string,
@@ -87,7 +87,7 @@ export class DonorsController {
   }
 
   @Get("check-duplicate")
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async checkDuplicate(
     @Query("phone") phone?: string,
     @Query("email") email?: string,
@@ -96,7 +96,7 @@ export class DonorsController {
   }
 
   @Get("lookup")
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async lookupByPhone(@Query("phone") phone: string) {
     if (!phone) {
       throw new BadRequestException("Phone number is required");
@@ -105,7 +105,7 @@ export class DonorsController {
   }
 
   @Get("bulk-template")
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async downloadBulkTemplate(@Res() res: Response) {
     const buffer = await this.donorsService.generateBulkTemplate();
     res.setHeader(
@@ -120,7 +120,7 @@ export class DonorsController {
   }
 
   @Post("bulk-upload")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   @UseInterceptors(
     FileInterceptor("file", {
       storage: memoryStorage(),
@@ -162,7 +162,7 @@ export class DonorsController {
   }
 
   @Get("export")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportDonors(
     @CurrentUser() user: UserContext,
     @Query("search") search?: string,
@@ -178,7 +178,7 @@ export class DonorsController {
   }
 
   @Get("export/master-excel")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportMasterDonorExcel(
     @CurrentUser() user: UserContext,
     @Query("home") home?: string,
@@ -204,7 +204,7 @@ export class DonorsController {
   }
 
      @Get("duplicates")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async findDuplicates() {
     throw new BadRequestException(
       "Duplicate donor listing is not implemented in DuplicatesService yet",
@@ -212,7 +212,7 @@ export class DonorsController {
   }
 
   @Post("duplicates/merge")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async mergeDuplicates() {
     throw new BadRequestException(
       "Duplicate donor merge is not implemented in DuplicatesService yet",
@@ -220,7 +220,7 @@ export class DonorsController {
   }
 
   @Post("bulk-reassign")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async bulkReassignDonors(
     @Body() body: { fromUserId: string; toUserId: string },
   ) {
@@ -234,14 +234,14 @@ export class DonorsController {
   }
 
   @Get("count-by-assignee/:userId")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async countDonorsByAssignee(@Param("userId") userId: string) {
     const count = await this.donorsService.countDonorsByAssignee(userId);
     return { count };
   }
 
   @Get("archived")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async findArchived(
     @CurrentUser() user: UserContext,
     @Query("search") search?: string,
@@ -257,13 +257,13 @@ export class DonorsController {
   }
 
   @Get(":id")
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findOne(@CurrentUser() user: UserContext, @Param("id") id: string) {
     return this.donorsService.findOne(user, id);
   }
 
   @Post()
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async create(
     @CurrentUser() user: UserContext,
     @Body() data: Record<string, unknown>,
@@ -274,7 +274,7 @@ export class DonorsController {
   }
 
   @Patch(":id")
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async update(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,
@@ -286,7 +286,7 @@ export class DonorsController {
   }
 
   @Delete(":id")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async remove(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,
@@ -298,7 +298,7 @@ export class DonorsController {
   }
 
   @Post(":id/restore")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async restore(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,
@@ -307,7 +307,7 @@ export class DonorsController {
   }
 
   @Post(":id/request-access")
-  @Roles(Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async requestFullAccess(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,
@@ -325,7 +325,7 @@ export class DonorsController {
   }
 
   @Post("bulk-import/parse")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   @UseInterceptors(
     FileInterceptor("file", {
       storage: memoryStorage(),
@@ -360,7 +360,7 @@ export class DonorsController {
   }
 
   @Post("bulk-import/detect-duplicates")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async detectDuplicates(
     @Body() data: { rows: any[]; columnMapping: Record<string, string> },
   ) {
@@ -371,7 +371,7 @@ export class DonorsController {
   }
 
   @Post("bulk-import/execute")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async executeBulkImport(
     @CurrentUser() user: UserContext,
     @Body()
@@ -394,13 +394,13 @@ export class DonorsController {
   }
 
   @Get(":id/sponsorships")
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getDonorSponsorships(@Param("id") id: string) {
     return this.beneficiariesService.getDonorSponsorships(id);
   }
 
   @Get(":id/timeline")
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getTimeline(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,
@@ -420,7 +420,7 @@ export class DonorsController {
   }
 
   @Patch(":id/assign-telecaller")
-  @Roles(Role.ADMIN, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async assignTelecaller(
     @CurrentUser() user: UserContext,
     @Param("id") donorId: string,
@@ -452,19 +452,19 @@ export class DonorsController {
   }
 
   @Get(":id/health-score")
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getHealthScore(@Param("id") id: string) {
     return this.donorFundraisingService.getHealthScore(id);
   }
 
   @Get(":id/prediction")
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getPrediction(@Param("id") id: string) {
     return this.donorFundraisingService.getPrediction(id);
   }
 
   @Post(":id/upload-photo")
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   @UseInterceptors(
     FileInterceptor("photo", {
       storage: memoryStorage(),

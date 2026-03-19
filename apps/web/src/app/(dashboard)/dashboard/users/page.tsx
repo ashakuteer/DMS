@@ -69,12 +69,7 @@ interface SystemUser {
 const ROLE_BADGE_COLORS: Record<string, string> = {
   FOUNDER: "bg-purple-100 text-purple-800 border-purple-200",
   ADMIN: "bg-red-100 text-red-800 border-red-200",
-  MANAGER: "bg-blue-100 text-blue-800 border-blue-200",
   STAFF: "bg-green-100 text-green-800 border-green-200",
-  TELECALLER: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  ACCOUNTANT: "bg-orange-100 text-orange-800 border-orange-200",
-  CARETAKER: "bg-teal-100 text-teal-800 border-teal-200",
-  VIEWER: "bg-gray-100 text-gray-700 border-gray-200",
 };
 
 async function fetchUsers(): Promise<{ items: SystemUser[]; total: number }> {

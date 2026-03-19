@@ -63,10 +63,7 @@ export class PledgesService {
     private orgProfileService: OrganizationProfileService,
   ) {}
 
-  private getDonorAccessFilter(user: UserContext): Record<string, any> {
-    if (user.role === Role.TELECALLER) {
-      return { donor: { assignedToUserId: user.id } };
-    }
+  private getDonorAccessFilter(_user: UserContext): Record<string, any> {
     return {};
   }
 
@@ -162,10 +159,6 @@ export class PledgesService {
   }
 
   async create(user: UserContext, data: any, ipAddress: string, userAgent: string) {
-    if (user.role === Role.TELECALLER) {
-      throw new ForbiddenException('Telecallers cannot create pledges');
-    }
-
     const donor = await this.prisma.donor.findFirst({
       where: { id: data.donorId, isDeleted: false },
       select: { id: true, donorCode: true },
@@ -220,10 +213,6 @@ export class PledgesService {
   }
 
   async update(user: UserContext, id: string, data: any, ipAddress: string, userAgent: string) {
-    if (user.role === Role.TELECALLER) {
-      throw new ForbiddenException('Telecallers cannot update pledges');
-    }
-
     const existing = await this.prisma.pledge.findFirst({
       where: { id, isDeleted: false },
     });
@@ -278,10 +267,6 @@ export class PledgesService {
   }
 
   async markFulfilled(user: UserContext, id: string, dto: FulfillPledgeDto = {}, ipAddress?: string, userAgent?: string) {
-    if (user.role === Role.TELECALLER) {
-      throw new ForbiddenException('Telecallers cannot fulfill pledges');
-    }
-
     const existing = await this.prisma.pledge.findFirst({
       where: { id, isDeleted: false },
       include: {
@@ -420,10 +405,6 @@ export class PledgesService {
   }
 
   async postpone(user: UserContext, id: string, newDate: string, notes?: string, ipAddress?: string, userAgent?: string) {
-    if (user.role === Role.TELECALLER) {
-      throw new ForbiddenException('Telecallers cannot postpone pledges');
-    }
-
     const existing = await this.prisma.pledge.findFirst({
       where: { id, isDeleted: false },
       include: {
@@ -484,10 +465,6 @@ export class PledgesService {
   }
 
   async cancel(user: UserContext, id: string, reason?: string, ipAddress?: string, userAgent?: string) {
-    if (user.role === Role.TELECALLER) {
-      throw new ForbiddenException('Telecallers cannot cancel pledges');
-    }
-
     const existing = await this.prisma.pledge.findFirst({
       where: { id, isDeleted: false },
       include: {

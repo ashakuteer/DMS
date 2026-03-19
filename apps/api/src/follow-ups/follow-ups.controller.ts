@@ -23,7 +23,7 @@ export class FollowUpsController {
   constructor(private followUpsService: FollowUpsService) {}
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findAll(
     @Query('status') status: string,
     @Query('assignedToId') assignedToId: string,
@@ -50,19 +50,19 @@ export class FollowUpsController {
   }
 
   @Get('stats')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getStats(@Req() req: any) {
     return this.followUpsService.getDashboardStats(req.user.id, req.user.role);
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findOne(@Param('id') id: string, @Req() req: any) {
     return this.followUpsService.findOne(id, req.user.id, req.user.role);
   }
 
   @Post()
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async create(@Body() body: any, @Req() req: any) {
     return this.followUpsService.create({
       donorId: body.donorId,
@@ -75,25 +75,25 @@ export class FollowUpsController {
   }
 
   @Put(':id')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async update(@Param('id') id: string, @Body() body: any, @Req() req: any) {
     return this.followUpsService.update(id, body, req.user.id, req.user.role);
   }
 
   @Patch(':id/complete')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async markComplete(@Param('id') id: string, @Body() body: any, @Req() req: any) {
     return this.followUpsService.markComplete(id, body.completedNote || null, req.user.id, req.user.role);
   }
 
   @Patch(':id/reopen')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async reopen(@Param('id') id: string, @Req() req: any) {
     return this.followUpsService.reopen(id, req.user.id, req.user.role);
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async remove(@Param('id') id: string, @Req() req: any) {
     return this.followUpsService.remove(id, req.user.id, req.user.role);
   }

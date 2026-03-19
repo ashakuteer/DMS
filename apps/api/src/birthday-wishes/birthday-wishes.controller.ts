@@ -12,27 +12,27 @@ export class BirthdayWishController {
   constructor(private readonly birthdayWishService: BirthdayWishService) {}
 
   @Get('upcoming')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getUpcoming(@Query('range') range?: string) {
     const validRange = range === 'today' ? 'today' : 'next7';
     return this.birthdayWishService.getUpcomingBirthdays(validRange);
   }
 
   @Get('upcoming-beneficiaries')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getUpcomingBeneficiaries(@Query('range') range?: string) {
     const validRange = range === 'today' ? 'today' : 'next7';
     return this.birthdayWishService.getUpcomingBeneficiaryBirthdays(validRange);
   }
 
   @Get('preview/:donorId')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getPreview(@Param('donorId') donorId: string) {
     return this.birthdayWishService.getWishPreview(donorId);
   }
 
   @Post('queue-email/:donorId')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async queueEmail(
     @Param('donorId') donorId: string,
     @CurrentUser() user: any,
@@ -41,7 +41,7 @@ export class BirthdayWishController {
   }
 
   @Post('send-beneficiary-wish/:beneficiaryId')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async sendBeneficiaryWish(
     @Param('beneficiaryId') beneficiaryId: string,
     @CurrentUser() user: any,
@@ -50,7 +50,7 @@ export class BirthdayWishController {
   }
 
   @Post('mark-sent/:donorId')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async markSent(
     @Param('donorId') donorId: string,
     @Body('channel') channel: 'EMAIL' | 'WHATSAPP',
@@ -60,7 +60,7 @@ export class BirthdayWishController {
   }
 
   @Get('sent-log')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getSentLog(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -72,13 +72,13 @@ export class BirthdayWishController {
   }
 
   @Get('templates')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getTemplates() {
     return this.birthdayWishService.getTemplates();
   }
 
   @Post('templates/:id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async updateTemplate(
     @Param('id') id: string,
     @Body() body: { subject?: string; body: string },

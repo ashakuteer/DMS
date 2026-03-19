@@ -152,7 +152,7 @@ export class UsersService {
     return this.prisma.user.findMany({
       where: {
         isActive: true,
-        role: { in: [Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.MANAGER] },
+        role: { in: [Role.FOUNDER, Role.ADMIN, Role.STAFF] },
       },
       select: {
         id: true,
@@ -249,7 +249,7 @@ export class UsersService {
   async listAllStaff() {
     return this.prisma.user.findMany({
       where: {
-        role: { in: [Role.STAFF, Role.TELECALLER, Role.MANAGER] },
+        role: { in: [Role.STAFF] },
       },
       select: {
         id: true,

@@ -21,25 +21,25 @@ export class TemplatesController {
   constructor(private readonly templatesService: TemplatesService) {}
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findAll() {
     return this.templatesService.findAll();
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findOne(@Param('id') id: string) {
     return this.templatesService.findOne(id);
   }
 
   @Post()
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async create(@Body() dto: CreateTemplateDto, @Request() req: any) {
     return this.templatesService.create(dto, req.user.userId);
   }
 
   @Put(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateTemplateDto,
@@ -49,19 +49,19 @@ export class TemplatesController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async delete(@Param('id') id: string) {
     return this.templatesService.delete(id);
   }
 
   @Post('seed')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async seed(@Request() req: any) {
     return this.templatesService.seedDefaultTemplates(req.user.userId);
   }
 
   @Post('resolve')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async resolveTemplate(
     @Body()
     body: {

@@ -33,7 +33,7 @@ export class DonorRelationsController {
   }
 
   @Get('donors/:donorId/family-members')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getFamilyMembers(
     @CurrentUser() user: UserContext,
     @Param('donorId') donorId: string,
@@ -42,7 +42,7 @@ export class DonorRelationsController {
   }
 
   @Post('donors/:donorId/family-members')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async createFamilyMember(
     @CurrentUser() user: UserContext,
     @Param('donorId') donorId: string,
@@ -54,7 +54,7 @@ export class DonorRelationsController {
   }
 
   @Patch('family-members/:id')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async updateFamilyMember(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -66,7 +66,7 @@ export class DonorRelationsController {
   }
 
   @Delete('family-members/:id')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async deleteFamilyMember(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -77,7 +77,7 @@ export class DonorRelationsController {
   }
 
   @Get('donors/:donorId/special-occasions')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getSpecialOccasions(
     @CurrentUser() user: UserContext,
     @Param('donorId') donorId: string,
@@ -86,7 +86,7 @@ export class DonorRelationsController {
   }
 
   @Get('donors/:donorId/special-occasions/upcoming')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getUpcomingSpecialOccasions(
     @CurrentUser() user: UserContext,
     @Param('donorId') donorId: string,
@@ -100,7 +100,7 @@ export class DonorRelationsController {
   }
 
   @Post('donors/:donorId/special-occasions')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async createSpecialOccasion(
     @CurrentUser() user: UserContext,
     @Param('donorId') donorId: string,
@@ -112,7 +112,7 @@ export class DonorRelationsController {
   }
 
   @Patch('special-occasions/:id')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async updateSpecialOccasion(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -124,7 +124,7 @@ export class DonorRelationsController {
   }
 
   @Delete('special-occasions/:id')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async deleteSpecialOccasion(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,

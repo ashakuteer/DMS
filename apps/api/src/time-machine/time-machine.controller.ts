@@ -28,7 +28,7 @@ export class TimeMachineController {
   constructor(private readonly timeMachineService: TimeMachineService) {}
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF, Role.MANAGER, Role.CARETAKER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -48,19 +48,19 @@ export class TimeMachineController {
   }
 
   @Get('years')
-  @Roles(Role.ADMIN, Role.STAFF, Role.MANAGER, Role.CARETAKER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getAvailableYears() {
     return this.timeMachineService.getAvailableYears();
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.STAFF, Role.MANAGER, Role.CARETAKER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findOne(@Param('id') id: string) {
     return this.timeMachineService.findOne(id);
   }
 
   @Post()
-  @Roles(Role.ADMIN, Role.STAFF, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async create(
     @CurrentUser() user: any,
     @Body() dto: CreateTimeMachineEntryDto,
@@ -69,7 +69,7 @@ export class TimeMachineController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.STAFF, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateTimeMachineEntryDto,
@@ -78,13 +78,13 @@ export class TimeMachineController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async remove(@Param('id') id: string) {
     return this.timeMachineService.remove(id);
   }
 
   @Post(':id/photos')
-  @Roles(Role.ADMIN, Role.STAFF, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   @UseInterceptors(
     FileInterceptor('photo', {
       storage: memoryStorage(),
@@ -112,7 +112,7 @@ export class TimeMachineController {
   }
 
   @Delete(':id/photos')
-  @Roles(Role.ADMIN, Role.STAFF, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async deletePhoto(
     @Param('id') id: string,
     @Body() body: { photoUrl: string },

@@ -154,7 +154,7 @@ export default function BroadcastingPage() {
 
   const hasAccess =
     user?.role === "ADMIN" ||
-    user?.role === "MANAGER" ||
+    user?.role === "FOUNDER" ||
     canAccessModule(user?.role, "broadcasting");
 
   const fetchAuth = useCallback(

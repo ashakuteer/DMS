@@ -26,8 +26,7 @@ interface StaffMember {
 
 const STAFF_ROLES = [
   { value: "STAFF", label: "Staff" },
-  { value: "TELECALLER", label: "Telecaller" },
-  { value: "MANAGER", label: "Manager" },
+  { value: "ADMIN", label: "Admin" },
 ];
 
 export default function StaffManagementPage() {

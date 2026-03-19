@@ -93,9 +93,6 @@ export class DonorRelationsService {
       throw new NotFoundException('Donor not found');
     }
 
-    if (user.role === Role.TELECALLER && donor.assignedToUserId !== user.id) {
-      throw new ForbiddenException('You can only view donors assigned to you');
-    }
   }
 
   async getFamilyMembers(user: UserContext, donorId: string) {

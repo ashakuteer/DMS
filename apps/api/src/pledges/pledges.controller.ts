@@ -33,7 +33,7 @@ export class PledgesController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findAll(
     @CurrentUser() user: UserContext,
     @Query('page') page?: string,
@@ -54,19 +54,19 @@ export class PledgesController {
   }
 
   @Get('donor/:donorId/suggestions')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getDonorPledgeSuggestions(@Param('donorId') donorId: string) {
     return this.pledgesService.getDonorPledgeSuggestions(donorId);
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findOne(@CurrentUser() user: UserContext, @Param('id') id: string) {
     return this.pledgesService.findOne(user, id);
   }
 
   @Get(':id/whatsapp-text')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getWhatsAppText(@CurrentUser() user: UserContext, @Param('id') id: string) {
     const pledge = await this.pledgesService.findOne(user, id);
     const text = await this.pledgesService.buildWhatsAppReminderText(pledge);
@@ -74,7 +74,7 @@ export class PledgesController {
   }
 
   @Post()
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async create(
     @CurrentUser() user: UserContext,
     @Body() data: Record<string, unknown>,
@@ -85,7 +85,7 @@ export class PledgesController {
   }
 
   @Patch(':id')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async update(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -97,7 +97,7 @@ export class PledgesController {
   }
 
   @Post(':id/mark-fulfilled')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async markFulfilled(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -109,7 +109,7 @@ export class PledgesController {
   }
 
   @Post(':id/postpone')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async postpone(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -121,7 +121,7 @@ export class PledgesController {
   }
 
   @Post(':id/cancel')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async cancel(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -133,7 +133,7 @@ export class PledgesController {
   }
 
   @Post(':id/send-reminder-email')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async sendReminderEmail(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -142,7 +142,7 @@ export class PledgesController {
   }
 
   @Post(':id/log-whatsapp')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async logWhatsApp(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -151,7 +151,7 @@ export class PledgesController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async delete(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,

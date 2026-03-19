@@ -11,7 +11,7 @@ export class SearchController {
   constructor(private readonly searchService: SearchService) {}
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async globalSearch(
     @Query('q') query: string,
     @Query('limit') limit?: string,

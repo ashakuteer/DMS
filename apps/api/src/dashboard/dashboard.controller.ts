@@ -17,100 +17,97 @@ export class DashboardController {
    * Sections are null when the user's role lacks access to them.
    */
   @Get('summary')
-  @Roles(
-    Role.ADMIN, Role.STAFF, Role.TELECALLER,
-    Role.ACCOUNTANT, Role.MANAGER, Role.CARETAKER, Role.VIEWER,
-  )
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getSummary(@CurrentUser() user: any) {
     return this.dashboardService.getSummary(user);
   }
 
   @Get('stats')
-  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getStats() {
     return this.dashboardService.getStats();
   }
 
   @Get('trends')
-  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getMonthlyTrends() {
     return this.dashboardService.getMonthlyTrends();
   }
 
   @Get('monthly-target')
-  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getMonthlyDonorTarget() {
     return this.dashboardService.getMonthlyDonorTarget();
   }
 
   @Get('mode-split')
-  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getDonationModeSplit() {
     return this.dashboardService.getDonationModeSplit();
   }
 
   @Get('top-donors')
-  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getTopDonors() {
     return this.dashboardService.getTopDonors(5);
   }
 
   @Get('recent-donations')
-  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getRecentDonations() {
     return this.dashboardService.getRecentDonations(10);
   }
 
   @Get('insights')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getAIInsights() {
     return this.dashboardService.getAIInsights();
   }
 
   @Get('donor-insights/:donorId')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getDonorInsights(@Param('donorId') donorId: string) {
     return this.dashboardService.getDonorInsights(donorId);
   }
 
   @Get('impact')
-  @Roles(Role.ADMIN, Role.STAFF, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getImpactDashboard() {
     return this.dashboardService.getImpactDashboard();
   }
 
   @Get('retention')
-  @Roles(Role.ADMIN, Role.STAFF, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getRetentionAnalytics() {
     return this.dashboardService.getRetentionAnalytics();
   }
 
   @Get('insight-cards')
-  @Roles(Role.ADMIN, Role.STAFF, Role.MANAGER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getInsightCards() {
     return this.dashboardService.getInsightCards();
   }
 
   @Get('admin-insights')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getAdminInsights() {
     return this.dashboardService.getAdminInsights();
   }
 
   @Get('staff-actions')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getStaffActions() {
     return this.dashboardService.getStaffActions();
   }
 
   @Get('daily-actions')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getDailyActions() {
     return this.dashboardService.getDailyActions();
   }
 
   @Post('daily-actions/mark-done')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async markActionDone(
     @CurrentUser() user: any,
     @Body() body: { donorId: string; actionType: string; description: string },
@@ -119,7 +116,7 @@ export class DashboardController {
   }
 
   @Post('daily-actions/snooze')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async snoozeAction(
     @CurrentUser() user: any,
     @Body() body: { donorId: string; actionType: string; description: string; days: number },

@@ -454,10 +454,6 @@ export class ReminderTasksService {
   }
 
   async markDone(user: UserContext, id: string) {
-    if (user.role === Role.TELECALLER) {
-      throw new ForbiddenException('Telecallers cannot modify reminder tasks');
-    }
-
     const task = await this.prisma.reminderTask.findUnique({
       where: { id },
     });
@@ -487,10 +483,6 @@ export class ReminderTasksService {
   }
 
   async snooze(user: UserContext, id: string, days: number) {
-    if (user.role === Role.TELECALLER) {
-      throw new ForbiddenException('Telecallers cannot modify reminder tasks');
-    }
-
     if (![7, 30].includes(days)) {
       throw new Error('Snooze days must be 7 or 30');
     }

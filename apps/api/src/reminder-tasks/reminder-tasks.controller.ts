@@ -27,7 +27,7 @@ export class ReminderTasksController {
   constructor(private reminderTasksService: ReminderTasksService) {}
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getReminders(
     @CurrentUser() user: UserContext,
     @Query('filter') filter: 'today' | 'week' | 'month' | 'overdue' = 'today',
@@ -36,13 +36,13 @@ export class ReminderTasksController {
   }
 
   @Get('stats')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getStats() {
     return this.reminderTasksService.getStats();
   }
 
   @Patch(':id/done')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async markDone(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -51,7 +51,7 @@ export class ReminderTasksController {
   }
 
   @Patch(':id/snooze')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async snooze(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -61,14 +61,14 @@ export class ReminderTasksController {
   }
 
   @Post('generate')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async generateReminders() {
     const count = await this.reminderTasksService.generateSpecialDayReminders();
     return { message: `Generated ${count} reminder tasks`, count };
   }
 
   @Post(':id/whatsapp-log')
-  @Roles(Role.ADMIN, Role.STAFF, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async logWhatsAppClick(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -77,7 +77,7 @@ export class ReminderTasksController {
   }
 
   @Post(':id/send-email')
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async sendEmail(
     @CurrentUser() user: UserContext,
     @Param('id') id: string,
@@ -86,7 +86,7 @@ export class ReminderTasksController {
   }
 
   @Post('process-auto-emails')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async processAutoEmails() {
     const result = await this.reminderTasksService.processAutoEmails();
     return { message: `Processed auto emails: ${result.sent} sent, ${result.failed} failed`, ...result };

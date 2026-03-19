@@ -28,15 +28,12 @@ export class DonorsCrudService {
     private readonly engagementService: DonorsEngagementService,
   ) {}
 
-  private getAccessFilter(user: UserContext): Prisma.DonorWhereInput {
-    if (user.role === Role.TELECALLER) {
-      return { assignedToUserId: user.id };
-    }
+  private getAccessFilter(_user: UserContext): Prisma.DonorWhereInput {
     return {};
   }
 
-  private shouldMaskData(user: UserContext): boolean {
-    return user.role === Role.TELECALLER || user.role === Role.VIEWER;
+  private shouldMaskData(_user: UserContext): boolean {
+    return false;
   }
 
   private async getActiveDonorOrThrow(id: string) {
@@ -390,15 +387,6 @@ if (assignedToUserId) {
     userAgent?: string,
   ) {
     const existing = await this.getActiveDonorOrThrow(id);
-
-    if (
-      user.role === Role.TELECALLER &&
-      existing.assignedToUserId !== user.id
-    ) {
-      throw new ForbiddenException(
-        "You do not have permission to update this donor",
-      );
-    }
 
     const {
       individualProfile,

@@ -35,7 +35,7 @@ export class DonationsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findAll(
     @CurrentUser() user: UserContext,
     @Query("page") page?: string,
@@ -64,13 +64,13 @@ export class DonationsController {
   }
 
   @Get("stats/by-home")
-  @Roles(Role.ADMIN, Role.ACCOUNTANT, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async getStatsByHome(@CurrentUser() user: UserContext) {
     return this.donationsService.getStatsByHome(user);
   }
 
   @Get("export")
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportDonations(
     @CurrentUser() user: UserContext,
     @Req() req: Request,
@@ -88,7 +88,7 @@ export class DonationsController {
   }
 
   @Get("export/excel")
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportToExcel(
     @CurrentUser() user: UserContext,
     @Req() req: Request,
@@ -118,7 +118,7 @@ export class DonationsController {
   }
 
   @Get(":id/receipt")
-  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async downloadReceipt(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,
@@ -135,13 +135,13 @@ export class DonationsController {
   }
 
   @Get(":id")
-  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT, Role.TELECALLER)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findOne(@CurrentUser() user: UserContext, @Param("id") id: string) {
     return this.donationsService.findOne(user, id);
   }
 
   @Post()
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async create(
     @CurrentUser() user: UserContext,
     @Body() data: Record<string, unknown>,
@@ -152,7 +152,7 @@ export class DonationsController {
   }
 
   @Patch(":id")
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async update(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,
@@ -164,7 +164,7 @@ export class DonationsController {
   }
 
   @Delete(":id")
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async remove(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,
@@ -175,7 +175,7 @@ export class DonationsController {
   }
 
   @Post(":id/regenerate-receipt")
-  @Roles(Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async regenerateReceipt(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,
@@ -191,7 +191,7 @@ export class DonationsController {
   }
 
   @Post(":id/resend-receipt")
-  @Roles(Role.ADMIN, Role.STAFF, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async resendReceipt(
     @CurrentUser() user: UserContext,
     @Param("id") id: string,

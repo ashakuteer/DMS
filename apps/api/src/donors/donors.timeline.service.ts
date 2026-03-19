@@ -7,10 +7,7 @@ import { Role } from "@prisma/client";
 export class DonorsTimelineService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private getAccessFilter(user: UserContext): any {
-    if (user.role === Role.TELECALLER) {
-      return { assignedToUserId: user.id };
-    }
+  private getAccessFilter(_user: UserContext): any {
     return {};
   }
 

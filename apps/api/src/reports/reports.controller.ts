@@ -12,7 +12,7 @@ export class ReportsController {
   constructor(private readonly reportsService: ReportsService) {}
 
   @Get('monthly-donations')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getMonthlyDonations(
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
@@ -28,7 +28,7 @@ export class ReportsController {
 
   // New Donor-wise Summary endpoint (ADMIN ONLY)
   @Get('donors')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getDonorReport(
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
@@ -51,7 +51,7 @@ export class ReportsController {
   }
 
   @Get('donors/export/excel')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportDonorReportExcel(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -66,7 +66,7 @@ export class ReportsController {
   }
 
   @Get('donors/export/pdf')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportDonorReportPdf(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -81,7 +81,7 @@ export class ReportsController {
   }
 
   @Get('donor-summary')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getDonorSummary(
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
@@ -97,7 +97,7 @@ export class ReportsController {
 
   // Board Summary PDF - ADMIN ONLY
   @Get('board-summary')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getBoardSummaryPdf(@Res() res: Response) {
     const buffer = await this.reportsService.generateBoardSummaryPdf();
     const filename = `board-summary-${new Date().toISOString().split('T')[0]}.pdf`;
@@ -109,7 +109,7 @@ export class ReportsController {
 
   // New Receipt Register (Audit) - ADMIN ONLY
   @Get('receipts')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getReceiptsAudit(
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
@@ -130,7 +130,7 @@ export class ReportsController {
   }
 
   @Get('receipts/export/excel')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportReceiptsAuditExcel(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -149,7 +149,7 @@ export class ReportsController {
   }
 
   @Get('receipts/export/pdf')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportReceiptsAuditPdf(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -168,7 +168,7 @@ export class ReportsController {
   }
 
   @Get('receipt-register')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getReceiptRegister(
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
@@ -183,7 +183,7 @@ export class ReportsController {
   }
 
   @Get('monthly-donations/export/excel')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportMonthlyDonationsExcel(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -198,7 +198,7 @@ export class ReportsController {
   }
 
   @Get('monthly-donations/export/pdf')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportMonthlyDonationsPdf(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -213,7 +213,7 @@ export class ReportsController {
   }
 
   @Get('donor-summary/export/excel')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportDonorSummaryExcel(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -228,7 +228,7 @@ export class ReportsController {
   }
 
   @Get('donor-summary/export/pdf')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportDonorSummaryPdf(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -243,7 +243,7 @@ export class ReportsController {
   }
 
   @Get('receipt-register/export/excel')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportReceiptRegisterExcel(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,
@@ -258,7 +258,7 @@ export class ReportsController {
   }
 
   @Get('receipt-register/export/pdf')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async exportReceiptRegisterPdf(
     @Query('startDate') startDate: string,
     @Query('endDate') endDate: string,

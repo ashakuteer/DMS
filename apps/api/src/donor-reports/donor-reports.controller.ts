@@ -17,7 +17,7 @@ export class DonorReportsController {
   constructor(private readonly service: DonorReportsService) {}
 
   @Post('generate')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async generate(
     @Body() body: {
       type: DonorReportType;
@@ -34,7 +34,7 @@ export class DonorReportsController {
   }
 
   @Get()
-  @Roles(Role.FOUNDER, Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -56,31 +56,31 @@ export class DonorReportsController {
   }
 
   @Get('templates')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getTemplates() {
     return this.service.getTemplates();
   }
 
   @Get('campaigns')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async getCampaigns() {
     return this.service.getCampaigns();
   }
 
   @Get('search-donors')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async searchDonors(@Query('search') search: string, @Query('limit') limit?: string) {
     return this.service.searchDonors(search, limit ? parseInt(limit) : 20);
   }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 
   @Get(':id/download/pdf')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async downloadPdf(@Param('id') id: string, @Res() res: Response) {
     const buffer = await this.service.generatePdf(id);
     const filename = `donor-report-${new Date().toISOString().split('T')[0]}.pdf`;
@@ -90,7 +90,7 @@ export class DonorReportsController {
   }
 
   @Get(':id/download/excel')
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async downloadExcel(@Param('id') id: string, @Res() res: Response) {
     const buffer = await this.service.generateExcel(id);
     const filename = `donor-report-${new Date().toISOString().split('T')[0]}.xlsx`;
@@ -100,7 +100,7 @@ export class DonorReportsController {
   }
 
   @Post(':id/share')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async shareReport(
     @Param('id') id: string,
     @Body() body: { donorIds: string[] },
@@ -110,13 +110,13 @@ export class DonorReportsController {
   }
 
   @Delete(':id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async deleteReport(@Param('id') id: string) {
     return this.service.deleteReport(id);
   }
 
   @Post('templates')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async createTemplate(
     @Body() body: {
       name: string;
@@ -135,7 +135,7 @@ export class DonorReportsController {
   }
 
   @Patch('templates/:id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async updateTemplate(
     @Param('id') id: string,
     @Body() body: {
@@ -154,7 +154,7 @@ export class DonorReportsController {
   }
 
   @Delete('templates/:id')
-  @Roles(Role.ADMIN)
+  @Roles(Role.FOUNDER, Role.ADMIN)
   async deleteTemplate(@Param('id') id: string) {
     return this.service.deleteTemplate(id);
   }

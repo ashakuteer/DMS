@@ -73,7 +73,7 @@ if (!canAccessModule(user.role, "staffTasks")) {
 return <AccessDenied />;
 }
 
-const isAdminOrManager = user.role === "ADMIN" || user.role === "MANAGER";
+const isAdminOrManager = user.role === "FOUNDER" || user.role === "ADMIN";
 
 const canCreate = hasPermission(user.role, "staffTasks", "create");
 const canDelete = hasPermission(user.role, "staffTasks", "delete");

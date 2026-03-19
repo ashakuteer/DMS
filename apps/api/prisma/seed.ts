@@ -34,21 +34,35 @@ async function main() {
   console.log('Seeding database...');
 
   // Create users
-  const adminPassword = await bcrypt.hash('admin123', 10);
+  const founderPassword = await bcrypt.hash('StrongPassword123', 10);
+  const founder = await prisma.user.upsert({
+    where: { email: 'founder@ngo.org' },
+    update: {},
+    create: {
+      email: 'founder@ngo.org',
+      password: founderPassword,
+      name: 'Asha Kuteer Founder',
+      role: Role.FOUNDER,
+      isActive: true,
+    },
+  });
+  console.log(`Created founder user: ${founder.email}`);
+
+  const adminPassword = await bcrypt.hash('Admin123', 10);
   const admin = await prisma.user.upsert({
     where: { email: 'admin@ngo.org' },
     update: {},
     create: {
       email: 'admin@ngo.org',
       password: adminPassword,
-      name: 'Admin User',
+      name: 'System Admin',
       role: Role.ADMIN,
       isActive: true,
     },
   });
   console.log(`Created admin user: ${admin.email}`);
 
-  const staffPassword = await bcrypt.hash('staff123', 10);
+  const staffPassword = await bcrypt.hash('Staff123', 10);
   const staff = await prisma.user.upsert({
     where: { email: 'staff@ngo.org' },
     update: {},
@@ -61,34 +75,6 @@ async function main() {
     },
   });
   console.log(`Created staff user: ${staff.email}`);
-
-  const telecallerPassword = await bcrypt.hash('telecaller123', 10);
-  const telecaller = await prisma.user.upsert({
-    where: { email: 'telecaller@ngo.org' },
-    update: {},
-    create: {
-      email: 'telecaller@ngo.org',
-      password: telecallerPassword,
-      name: 'Telecaller User',
-      role: Role.TELECALLER,
-      isActive: true,
-    },
-  });
-  console.log(`Created telecaller user: ${telecaller.email}`);
-
-  const accountantPassword = await bcrypt.hash('accountant123', 10);
-  const accountant = await prisma.user.upsert({
-    where: { email: 'accountant@ngo.org' },
-    update: {},
-    create: {
-      email: 'accountant@ngo.org',
-      password: accountantPassword,
-      name: 'Accountant User',
-      role: Role.ACCOUNTANT,
-      isActive: true,
-    },
-  });
-  console.log(`Created accountant user: ${accountant.email}`);
 
   // Clear existing donors and related data for clean reseed
   await prisma.donation.deleteMany({});
@@ -250,7 +236,7 @@ async function main() {
       pan: 'ABCDE1234F',
       dobDay: new Date().getDate(),
       dobMonth: new Date().getMonth() + 1,
-      assignedToUserId: telecaller.id,
+      assignedToUserId: staff.id,
       createdById: admin.id,
     },
   });
@@ -317,8 +303,8 @@ async function main() {
       isSeniorCitizen: true,
       sourceOfDonor: SourceOfDonor.WALK_IN,
       donationFrequency: DonationFrequency.OCCASIONAL,
-      createdById: telecaller.id,
-      assignedToUserId: telecaller.id,
+      createdById: staff.id,
+      assignedToUserId: staff.id,
     },
   });
 
@@ -536,7 +522,7 @@ async function main() {
         servedFood: true,
         receiptNumber: '001',
         financialYear: financialYear,
-        createdById: accountant.id,
+        createdById: staff.id,
         campaignId: campaign.id,
       },
       {
@@ -574,7 +560,7 @@ async function main() {
         remarks: 'CSR quarterly contribution Q3',
         receiptNumber: '004',
         financialYear: financialYear,
-        createdById: accountant.id,
+        createdById: staff.id,
         campaignId: campaign.id,
       },
       {
@@ -589,7 +575,7 @@ async function main() {
         servedFood: true,
         receiptNumber: '005',
         financialYear: financialYear,
-        createdById: telecaller.id,
+        createdById: staff.id,
       },
     ],
   });

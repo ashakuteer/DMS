@@ -165,11 +165,9 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const isAdmin = userProfile?.role === "ADMIN";
-  const isAccountant = userProfile?.role === "ACCOUNTANT";
-  const isStaffOrTelecaller = ["STAFF", "TELECALLER"].includes(userProfile?.role || "");
+  const isAdmin = userProfile?.role === "ADMIN" || userProfile?.role === "FOUNDER";
   const isStaff = userProfile?.role === "STAFF";
-  const canSeeFinancialStats = isAdmin || isAccountant;
+  const canSeeFinancialStats = isAdmin;
   const canSeeDueReminders = isAdmin || isStaff;
 
   const getDaysOverdue = (dueDate: string) => {
@@ -292,8 +290,8 @@ export default function DashboardPage() {
         setUserProfile(profile);
       }
 
-      const userCanSeeFinancialStats = ["ADMIN", "ACCOUNTANT"].includes(profile?.role || "");
-      const userCanSeeStaffActions = ["ADMIN", "STAFF", "TELECALLER"].includes(profile?.role || "");
+      const userCanSeeFinancialStats = ["FOUNDER", "ADMIN"].includes(profile?.role || "");
+      const userCanSeeStaffActions = ["FOUNDER", "ADMIN", "STAFF"].includes(profile?.role || "");
 
       if (userCanSeeFinancialStats) {
         const [statsRes, trendsRes, modeRes, topRes, recentRes, insightsRes, insightCardsRes] = await Promise.all([

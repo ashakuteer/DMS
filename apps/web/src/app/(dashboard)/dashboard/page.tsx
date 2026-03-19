@@ -246,7 +246,7 @@ export default function DashboardPage() {
   const { toast } = useToast();
 
   const role = userProfile?.role ?? "";
-  const isActionRole = ["ADMIN", "STAFF", "TELECALLER"].includes(role);
+  const isActionRole = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
 
   const handleMarkDone = async (r: DueReminder) => {
     try {

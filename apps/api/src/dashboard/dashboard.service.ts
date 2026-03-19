@@ -37,15 +37,15 @@ export class DashboardService {
     const t0 = Date.now();
     const role = user.role;
 
-    const canSeeCore = ["ADMIN", "STAFF", "ACCOUNTANT"].includes(role);
-    const canSeeTarget = ["ADMIN", "STAFF", "ACCOUNTANT", "MANAGER"].includes(role);
-    const canSeeInsights = ["ADMIN", "STAFF", "TELECALLER", "ACCOUNTANT"].includes(role);
-    const canSeeCards = ["ADMIN", "STAFF", "MANAGER"].includes(role);
-    const canSeeImpact = ["ADMIN", "STAFF", "MANAGER"].includes(role);
-    const canSeeRetention = ["ADMIN", "STAFF", "MANAGER"].includes(role);
-    const canSeeActions = ["ADMIN", "STAFF", "TELECALLER"].includes(role);
-    const canSeeReminders = ["ADMIN", "STAFF"].includes(role);
-    const isAdmin = role === "ADMIN";
+    const canSeeCore = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
+    const canSeeTarget = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
+    const canSeeInsights = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
+    const canSeeCards = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
+    const canSeeImpact = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
+    const canSeeRetention = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
+    const canSeeActions = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
+    const canSeeReminders = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
+    const isAdmin = role === "ADMIN" || role === "FOUNDER";
 
     const [
       stats,
