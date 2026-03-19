@@ -52,7 +52,6 @@ const navGroups: NavGroup[] = [
     label: "Core",
     items: [
       { title: "Donors", href: "/dashboard/donors", icon: Users, permissionModule: "donors" },
-      { title: "Monthly Donors", href: "/dashboard/donors?frequency=MONTHLY", icon: Repeat, permissionModule: "donors" },
       { title: "Donations", href: "/dashboard/donations", icon: IndianRupee, permissionModule: "donations" },
       { title: "Beneficiaries", href: "/dashboard/beneficiaries", icon: HandHeart, permissionModule: "beneficiaries" },
       { title: "Campaigns", href: "/dashboard/campaigns", icon: Target, permissionModule: "campaigns" },

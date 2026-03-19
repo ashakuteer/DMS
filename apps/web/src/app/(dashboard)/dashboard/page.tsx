@@ -394,24 +394,6 @@ export default function DashboardPage() {
                   Track donors, donations, sponsorships, homes, and impact — all in one place.
                 </span>
               </p>
-              <div className="flex flex-wrap gap-3 mt-7">
-                <Link href="/dashboard/donors/new">
-                  <button
-                    className="inline-flex items-center gap-2 text-white font-semibold transition-all duration-200 hover:scale-[1.03] active:scale-[0.98]"
-                    style={{ background: "linear-gradient(135deg, #f97316, #ea580c)", padding: "0.6rem 1.4rem", borderRadius: "0.75rem", fontSize: "0.9rem", boxShadow: "0 4px 14px rgba(249,115,22,0.4)" }}
-                  >
-                    <UserPlus className="h-4 w-4" /> Add Donor
-                  </button>
-                </Link>
-                <Link href="/dashboard/donors?frequency=MONTHLY">
-                  <button
-                    className="inline-flex items-center gap-2 text-white font-medium transition-all duration-200 hover:bg-white/20 active:scale-[0.98]"
-                    style={{ background: "rgba(255,255,255,0.10)", border: "1px solid rgba(255,255,255,0.22)", padding: "0.6rem 1.4rem", borderRadius: "0.75rem", fontSize: "0.9rem" }}
-                  >
-                    <Repeat className="h-4 w-4" /> Monthly Donors
-                  </button>
-                </Link>
-              </div>
             </div>
 
             {/* Right: Photo with soft glow */}
@@ -463,30 +445,6 @@ export default function DashboardPage() {
           )}
         </section>
 
-        {/* ── QUICK ACTIONS ─────────────────────────────────────────────────── */}
-        <section>
-          <SectionHeader title="Quick Actions" subtitle="Common tasks at a glance" />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {[
-              { label: "Add Donor", icon: UserPlus, href: "/dashboard/donors/new", color: "text-violet-600", bg: "bg-violet-50 dark:bg-violet-950/30" },
-              { label: "Add Donation", icon: PlusCircle, href: "/dashboard/donations", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
-              { label: "Beneficiaries", icon: HandHeart, href: "/dashboard/beneficiaries", color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-950/30" },
-              { label: "View Reports", icon: FileText, href: "/dashboard/reports", color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30" },
-            ].map(({ label, icon: Icon, href, color, bg }) => (
-              <Link key={href} href={href} data-testid={`quick-action-${label.toLowerCase().replace(/\s+/g, "-")}`}>
-                <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl ${bg} flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                      <Icon className={`h-4 w-4 ${color}`} />
-                    </div>
-                    <span className="text-sm font-medium text-foreground">{label}</span>
-                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
 
         {/* ── CHARTS ────────────────────────────────────────────────────────── */}
         {(loading || trends.length > 0 || modeSplit.length > 0) && (
