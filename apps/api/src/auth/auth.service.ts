@@ -300,6 +300,8 @@ export class AuthService {
 
       const text = `Password Reset Request\n\nUsername: ${user.username}\nName: ${user.name}\nRole: ${user.role}\n\nReset link (expires in 1 hour):\n${resetLink}\n\n— Asha Kuteer Foundation DMS`;
 
+      console.log('Sending reset email to:', adminEmail);
+
       const emailResult = await this.emailService.sendEmail({
         to: adminEmail,
         subject: `DMS Password Reset — ${user.username} (${user.role})`,
