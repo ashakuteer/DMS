@@ -31,7 +31,7 @@ export interface AuthResponse {
 export const authStorage = {
   getAccessToken: () => {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('accessToken');
+    return localStorage.getItem('accessToken') || localStorage.getItem('token');
   },
   getRefreshToken: () => {
     if (typeof window === 'undefined') return null;
@@ -44,6 +44,7 @@ export const authStorage = {
   },
   setTokens: (tokens: AuthTokens) => {
     localStorage.setItem('accessToken', tokens.accessToken);
+    localStorage.setItem('token', tokens.accessToken);
     localStorage.setItem('refreshToken', tokens.refreshToken);
   },
   setUser: (user: User) => {
@@ -51,6 +52,7 @@ export const authStorage = {
   },
   clear: () => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('token');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
   },
