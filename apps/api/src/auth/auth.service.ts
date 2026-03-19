@@ -61,43 +61,56 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email: dto.email },
+      });
 
-    if (!user) {
+      if (!user) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      if (!user.isActive) {
+        throw new ForbiddenException('Account is deactivated');
+      }
+
+      console.log('User found:', user.email);
+      const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid email or password');
+      }
+
+      const tokens = await this.generateTokens(user.id, user.email, user.role);
+      await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+      await this.auditService.log({
+        userId: user.id,
+        action: AuditAction.LOGIN,
+        entityType: 'USER',
+        entityId: user.id,
+      });
+
+      console.log('Login success for:', user.email);
+      return {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          isActive: user.isActive,
+        },
+        tokens,
+      };
+    } catch (error) {
+      if (
+        error instanceof UnauthorizedException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      }
+      console.error('Auth error:', error);
       throw new UnauthorizedException('Invalid credentials');
     }
-
-    if (!user.isActive) {
-      throw new ForbiddenException('Account is deactivated');
-    }
-
-    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const tokens = await this.generateTokens(user.id, user.email, user.role);
-    await this.updateRefreshToken(user.id, tokens.refreshToken);
-
-    await this.auditService.log({
-      userId: user.id,
-      action: AuditAction.LOGIN,
-      entityType: 'USER',
-      entityId: user.id,
-    });
-
-    return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        isActive: user.isActive,
-      },
-      tokens,
-    };
   }
 
   async logout(userId: string) {
@@ -175,30 +188,35 @@ export class AuthService {
   }
 
   async forgotPassword(dto: ForgotPasswordDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email: dto.email },
+      });
 
-    if (!user) {
+      if (!user) {
+        return { message: 'If that email is registered, a reset link has been sent.' };
+      }
+
+      const rawToken = crypto.randomBytes(32).toString('hex');
+      const expires = new Date(Date.now() + 60 * 60 * 1000);
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          resetPasswordToken: rawToken,
+          resetPasswordExpires: expires,
+        },
+      });
+
+      return {
+        message: 'Password reset token generated. In production, this would be emailed.',
+        resetToken: rawToken,
+        expiresAt: expires,
+      };
+    } catch (error) {
+      console.error('Auth error:', error);
       return { message: 'If that email is registered, a reset link has been sent.' };
     }
-
-    const rawToken = crypto.randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 60 * 60 * 1000);
-
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        resetPasswordToken: rawToken,
-        resetPasswordExpires: expires,
-      },
-    });
-
-    return {
-      message: 'Password reset token generated. In production, this would be emailed.',
-      resetToken: rawToken,
-      expiresAt: expires,
-    };
   }
 
   async resetPassword(dto: ResetPasswordDto) {
