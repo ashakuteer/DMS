@@ -46,6 +46,10 @@ JWT_REFRESH_SECRET = "ngo-donor-refresh-secret-2024"
 API_PORT = "3001"
 FRONTEND_URL = "http://localhost:5000"
 NEXT_PUBLIC_API_URL = "http://localhost:3001"
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = "587"
+SMTP_USER = "ashakuteer@gmail.com"
+SMTP_FROM = "ashakuteer@gmail.com"
 
 [agent]
 expertMode = true
