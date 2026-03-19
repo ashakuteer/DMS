@@ -9,7 +9,12 @@ function resolveDbUrl(): string {
     PGPASSWORD,
     PGDATABASE,
     DATABASE_URL,
+    SUPABASE_DATABASE_URL,
   } = process.env;
+
+  if (SUPABASE_DATABASE_URL?.trim()) {
+    return SUPABASE_DATABASE_URL.trim();
+  }
 
   if (DATABASE_URL?.trim()) {
     return DATABASE_URL.trim();
