@@ -27,6 +27,7 @@ const nextConfig = {
 
   async rewrites() {
     const apiUrl =
+      process.env.API_INTERNAL_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
       (process.env.NODE_ENV === "production"
         ? "https://dms-production-598e.up.railway.app"

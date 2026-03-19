@@ -1,6 +1,6 @@
 "use client";
 
-import { API_URL } from "@/lib/api-config";
+
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -110,7 +110,7 @@ export default function RemindersPage() {
     setLoading(true);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`${API_URL}/api/reminder-tasks?filter=${filter}`, {
+      const res = await fetch(`/api/reminder-tasks?filter=${filter}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -127,7 +127,7 @@ export default function RemindersPage() {
   const fetchStats = async () => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`${API_URL}/api/reminder-tasks/stats`, {
+      const res = await fetch(`/api/reminder-tasks/stats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -147,7 +147,7 @@ export default function RemindersPage() {
   const handleMarkDone = async (id: string) => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`${API_URL}/api/reminder-tasks/${id}/done`, {
+      const res = await fetch(`/api/reminder-tasks/${id}/done`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -166,7 +166,7 @@ export default function RemindersPage() {
   const handleSnooze = async (id: string, days: number) => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`${API_URL}/api/reminder-tasks/${id}/snooze`, {
+      const res = await fetch(`/api/reminder-tasks/${id}/snooze`, {
         method: "PATCH",
         headers: { 
           Authorization: `Bearer ${token}`,
@@ -190,7 +190,7 @@ export default function RemindersPage() {
     setGenerating(true);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`${API_URL}/api/reminder-tasks/generate`, {
+      const res = await fetch(`/api/reminder-tasks/generate`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -220,7 +220,7 @@ export default function RemindersPage() {
 
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`${API_URL}/api/reminder-tasks/${id}/whatsapp-log`, {
+      const res = await fetch(`/api/reminder-tasks/${id}/whatsapp-log`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
