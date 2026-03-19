@@ -47,9 +47,10 @@ API_PORT = "3001"
 FRONTEND_URL = "http://localhost:5000"
 NEXT_PUBLIC_API_URL = "http://localhost:3001"
 SMTP_HOST = "smtp.gmail.com"
-SMTP_PORT = "587"
 SMTP_USER = "ashakuteer@gmail.com"
-SMTP_FROM = "ashakuteer@gmail.com"
+SMTP_FROM = "Asha Kuteer Foundation <ashakuteer@gmail.com>"
+SMTP_PORT = "465"
+APP_URL = "https://51898bee-34e7-4f08-9d00-f107417de13e-00-3xs729fukxh3.spock.replit.dev"
 
 [agent]
 expertMode = true

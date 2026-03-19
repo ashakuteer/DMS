@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto, RegisterDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto } from './dto';
 import { Role, AuditAction } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private auditService: AuditService,
+    private emailService: EmailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -208,11 +210,81 @@ export class AuthService {
         },
       });
 
-      return {
-        message: 'Password reset token generated. In production, this would be emailed.',
-        resetToken: rawToken,
-        expiresAt: expires,
-      };
+      const appUrl = process.env.APP_URL || 'http://localhost:5000';
+      const resetLink = `${appUrl}/reset-password?token=${rawToken}`;
+      const firstName = user.name?.split(' ')[0] || user.name || 'there';
+
+      const html = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+          <div style="background: linear-gradient(135deg, #0f2847 0%, #1a4480 100%); padding: 32px 40px; border-radius: 12px 12px 0 0;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700;">Asha Kuteer Foundation</h1>
+            <p style="color: #93c5fd; margin: 4px 0 0 0; font-size: 13px;">Donor Management System</p>
+          </div>
+
+          <div style="padding: 40px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
+            <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 20px;">Password Reset Request</h2>
+            <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 12px 0;">
+              Hi ${firstName},
+            </p>
+            <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 24px 0;">
+              We received a request to reset the password for your account (<strong>${user.email}</strong>).
+              Click the button below to set a new password. This link will expire in <strong>1 hour</strong>.
+            </p>
+
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="${resetLink}"
+                 style="display: inline-block; background: #f97316; color: #ffffff; text-decoration: none;
+                        font-size: 15px; font-weight: 600; padding: 14px 36px; border-radius: 8px;
+                        letter-spacing: 0.3px;">
+                Reset My Password
+              </a>
+            </div>
+
+            <p style="color: #6b7280; font-size: 13px; line-height: 1.6; margin: 24px 0 0 0;">
+              If the button doesn't work, copy and paste this link into your browser:
+            </p>
+            <p style="color: #3b82f6; font-size: 12px; word-break: break-all; margin: 6px 0 24px 0;">
+              ${resetLink}
+            </p>
+
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 8px;">
+              <p style="color: #9ca3af; font-size: 12px; margin: 0; line-height: 1.6;">
+                If you did not request a password reset, please ignore this email — your password will remain unchanged.
+                <br/>This is an automated message. Please do not reply to this email.
+              </p>
+            </div>
+          </div>
+
+          <div style="text-align: center; padding: 20px 40px;">
+            <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+              © ${new Date().getFullYear()} Asha Kuteer Foundation. All rights reserved.
+            </p>
+          </div>
+        </div>
+      `;
+
+      const text = `Hi ${firstName},\n\nWe received a request to reset your password for ${user.email}.\n\nClick this link to reset your password (expires in 1 hour):\n${resetLink}\n\nIf you did not request this, please ignore this email.\n\n— Asha Kuteer Foundation`;
+
+      const emailResult = await this.emailService.sendEmail({
+        to: user.email,
+        subject: 'Reset your password — Asha Kuteer Foundation',
+        html,
+        text,
+        featureType: 'MANUAL',
+      });
+
+      if (emailResult.success) {
+        return {
+          message: 'A password reset link has been sent to your email address.',
+        };
+      } else {
+        console.error('Failed to send reset email:', emailResult.error);
+        return {
+          message: 'Password reset token generated. Email delivery failed — use the token below.',
+          resetToken: rawToken,
+          expiresAt: expires,
+        };
+      }
     } catch (error) {
       console.error('Auth error:', error);
       return { message: 'If that email is registered, a reset link has been sent.' };
