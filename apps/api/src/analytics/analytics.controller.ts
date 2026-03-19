@@ -19,7 +19,16 @@ export class AnalyticsController {
 
   @Get('charts')
   async getCharts() {
-    return this.analyticsService.getCharts();
+    try {
+      return await this.analyticsService.getCharts();
+    } catch {
+      return {
+        monthlyDonations: [],
+        donationsByType: [],
+        donationsByHome: [],
+        sponsorshipsDue: [],
+      };
+    }
   }
 
   @Get('segments')
