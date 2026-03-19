@@ -1,9 +1,10 @@
-import { Injectable, UnauthorizedException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { LoginDto, RegisterDto, RefreshTokenDto } from './dto';
+import { LoginDto, RegisterDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto } from './dto';
 import { Role, AuditAction } from '@prisma/client';
 import { AuditService } from '../audit/audit.service';
 
@@ -17,12 +18,20 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const existingUser = await this.prisma.user.findUnique({
+    const existingByEmail = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
+    if (existingByEmail) {
+      throw new ConflictException('A user with this email already exists');
+    }
 
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
+    if (dto.phone) {
+      const existingByPhone = await this.prisma.user.findUnique({
+        where: { phone: dto.phone },
+      });
+      if (existingByPhone) {
+        throw new ConflictException('A user with this phone number already exists');
+      }
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -32,12 +41,14 @@ export class AuthService {
         email: dto.email,
         password: hashedPassword,
         name: dto.name,
+        phone: dto.phone || null,
         role: dto.role || Role.STAFF,
       },
       select: {
         id: true,
         email: true,
         name: true,
+        phone: true,
         role: true,
         isActive: true,
       },
@@ -46,10 +57,7 @@ export class AuthService {
     const tokens = await this.generateTokens(user.id, user.email, user.role);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
 
-    return {
-      user,
-      tokens,
-    };
+    return { user, tokens };
   }
 
   async login(dto: LoginDto) {
@@ -66,7 +74,6 @@ export class AuthService {
     }
 
     const isPasswordValid = await bcrypt.compare(dto.password, user.password);
-
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -165,6 +172,60 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+
+    if (!user) {
+      return { message: 'If that email is registered, a reset link has been sent.' };
+    }
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const expires = new Date(Date.now() + 60 * 60 * 1000);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetPasswordToken: rawToken,
+        resetPasswordExpires: expires,
+      },
+    });
+
+    return {
+      message: 'Password reset token generated. In production, this would be emailed.',
+      resetToken: rawToken,
+      expiresAt: expires,
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        resetPasswordToken: dto.token,
+        resetPasswordExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException('Invalid or expired password reset token');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetPasswordToken: null,
+        resetPasswordExpires: null,
+        refreshToken: null,
+      },
+    });
+
+    return { message: 'Password reset successfully. Please log in with your new password.' };
   }
 
   private async generateTokens(userId: string, email: string, role: Role) {

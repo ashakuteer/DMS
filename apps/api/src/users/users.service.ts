@@ -10,7 +10,7 @@ export class UsersService {
     private auditService: AuditService,
   ) {}
 
-  async findAll(page = 1, limit = 10) {
+  async findAll(page = 1, limit = 50) {
     const skip = (page - 1) * limit;
 
     const [users, total] = await Promise.all([
@@ -21,6 +21,7 @@ export class UsersService {
           id: true,
           email: true,
           name: true,
+          phone: true,
           role: true,
           isActive: true,
           createdAt: true,
@@ -47,6 +48,7 @@ export class UsersService {
         id: true,
         email: true,
         name: true,
+        phone: true,
         role: true,
         isActive: true,
         createdAt: true,
@@ -83,6 +85,7 @@ export class UsersService {
         id: true,
         email: true,
         name: true,
+        phone: true,
         role: true,
         isActive: true,
       },
@@ -100,6 +103,30 @@ export class UsersService {
     return updated;
   }
 
+  async updateUser(id: string, data: { name?: string; phone?: string; role?: Role }) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException("User not found");
+
+    if (data.phone && data.phone !== user.phone) {
+      const existing = await this.prisma.user.findUnique({ where: { phone: data.phone } });
+      if (existing) throw new ConflictException("Phone number already in use");
+    }
+
+    return this.prisma.user.update({
+      where: { id },
+      data,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        updatedAt: true,
+      },
+    });
+  }
+
   async toggleActive(id: string) {
     const user = await this.prisma.user.findUnique({ where: { id } });
 
@@ -114,18 +141,18 @@ export class UsersService {
         id: true,
         email: true,
         name: true,
+        phone: true,
         role: true,
         isActive: true,
       },
     });
   }
 
-  // ✅ ADD THIS INSIDE THE CLASS (NOT OUTSIDE)
   async listStaffForAssignment() {
     return this.prisma.user.findMany({
       where: {
         isActive: true,
-        role: { in: [Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.MANAGER] },
+        role: { in: [Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.MANAGER] },
       },
       select: {
         id: true,
@@ -137,10 +164,16 @@ export class UsersService {
     });
   }
 
-  async createStaff(data: { name: string; email: string; phone: string; role: string; password: string }) {
+  async createStaff(data: { name: string; email: string; phone?: string; role: string; password: string }) {
     const existing = await this.prisma.user.findFirst({
-      where: { OR: [{ email: data.email }, { phone: data.phone }] },
+      where: {
+        OR: [
+          { email: data.email },
+          ...(data.phone ? [{ phone: data.phone }] : []),
+        ],
+      },
     });
+
     if (existing) {
       if (existing.email === data.email) {
         throw new ConflictException("A user with this email already exists");
@@ -155,8 +188,8 @@ export class UsersService {
       data: {
         name: data.name,
         email: data.email,
-        phone: data.phone,
-        role: data.role as any,
+        phone: data.phone || null,
+        role: data.role as Role,
         password: hashedPassword,
       },
       select: {
@@ -169,6 +202,21 @@ export class UsersService {
         createdAt: true,
       },
     });
+  }
+
+  async resetUserPassword(id: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) throw new NotFoundException("User not found");
+
+    const bcrypt = await import("bcryptjs");
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword, refreshToken: null },
+    });
+
+    return { message: "Password updated successfully" };
   }
 
   async reassignPhone(fromUserId: string, toUserId: string) {
@@ -195,8 +243,6 @@ export class UsersService {
     return {
       success: true,
       message: `Phone ${phoneNumber} transferred from ${fromUser.name} to ${toUser.name}`,
-      fromUser: { id: fromUser.id, name: fromUser.name, isActive: false },
-      toUser: { id: toUser.id, name: toUser.name, phone: phoneNumber },
     };
   }
 

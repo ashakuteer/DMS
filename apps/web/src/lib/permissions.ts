@@ -1,154 +1,159 @@
-type Role = 'ADMIN' | 'STAFF' | 'TELECALLER' | 'ACCOUNTANT' | 'MANAGER' | 'CARETAKER' | 'VIEWER';
+type Role = 'FOUNDER' | 'ADMIN' | 'STAFF' | 'TELECALLER' | 'ACCOUNTANT' | 'MANAGER' | 'CARETAKER' | 'VIEWER';
 
 export const DEFAULT_PERMISSIONS: Record<string, Record<string, Role[]>> = {
   donors: {
-    view: ['ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
-    create: ['ADMIN', 'STAFF', 'MANAGER'],
-    edit: ['ADMIN', 'STAFF', 'MANAGER'],
-    delete: ['ADMIN'],
-    export: ['ADMIN', 'MANAGER'],
-    addNotes: ['ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
-    viewSensitive: ['ADMIN', 'MANAGER'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
+    create: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    edit: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    delete: ['FOUNDER', 'ADMIN'],
+    export: ['FOUNDER', 'ADMIN', 'MANAGER'],
+    addNotes: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
+    viewSensitive: ['FOUNDER', 'ADMIN', 'MANAGER'],
+    assign: ['FOUNDER', 'ADMIN', 'MANAGER'],
   },
   donations: {
-    view: ['ADMIN', 'STAFF', 'ACCOUNTANT', 'MANAGER', 'VIEWER'],
-    create: ['ADMIN', 'STAFF', 'MANAGER'],
-    edit: ['ADMIN', 'STAFF', 'MANAGER'],
-    delete: ['ADMIN'],
-    export: ['ADMIN', 'ACCOUNTANT', 'MANAGER'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'ACCOUNTANT', 'MANAGER', 'VIEWER'],
+    create: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    edit: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    delete: ['FOUNDER', 'ADMIN'],
+    export: ['FOUNDER', 'ADMIN', 'ACCOUNTANT', 'MANAGER'],
   },
   beneficiaries: {
-    view: ['ADMIN', 'STAFF', 'MANAGER', 'CARETAKER'],
-    create: ['ADMIN', 'STAFF', 'MANAGER'],
-    edit: ['ADMIN', 'STAFF', 'MANAGER', 'CARETAKER'],
-    delete: ['ADMIN'],
-    export: ['ADMIN', 'MANAGER'],
-    viewSensitive: ['ADMIN', 'MANAGER', 'CARETAKER'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER', 'CARETAKER'],
+    create: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    edit: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER', 'CARETAKER'],
+    delete: ['FOUNDER', 'ADMIN'],
+    export: ['FOUNDER', 'ADMIN', 'MANAGER'],
+    viewSensitive: ['FOUNDER', 'ADMIN', 'MANAGER', 'CARETAKER'],
   },
   pledges: {
-    view: ['ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
-    create: ['ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
-    edit: ['ADMIN', 'STAFF', 'MANAGER'],
-    delete: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
+    create: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
+    edit: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    delete: ['FOUNDER', 'ADMIN'],
   },
   campaigns: {
-    view: ['ADMIN', 'STAFF', 'MANAGER', 'VIEWER'],
-    create: ['ADMIN', 'STAFF', 'MANAGER'],
-    edit: ['ADMIN', 'STAFF', 'MANAGER'],
-    delete: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER', 'VIEWER'],
+    create: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    edit: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    delete: ['FOUNDER', 'ADMIN'],
   },
   reports: {
-    view: ['ADMIN', 'ACCOUNTANT', 'MANAGER'],
-    export: ['ADMIN', 'ACCOUNTANT', 'MANAGER'],
+    view: ['FOUNDER', 'ADMIN', 'ACCOUNTANT', 'MANAGER'],
+    export: ['FOUNDER', 'ADMIN', 'ACCOUNTANT', 'MANAGER'],
   },
   analytics: {
-    view: ['ADMIN', 'MANAGER'],
+    view: ['FOUNDER', 'ADMIN', 'MANAGER'],
   },
   management: {
-    view: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN'],
   },
   settings: {
-    view: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN'],
   },
   users: {
-    view: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN'],
+    create: ['FOUNDER', 'ADMIN'],
+    edit: ['FOUNDER', 'ADMIN'],
+    delete: ['FOUNDER', 'ADMIN'],
+    resetPassword: ['FOUNDER', 'ADMIN'],
   },
   milestones: {
-    view: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN'],
   },
   dailyActions: {
-    view: ['ADMIN', 'STAFF', 'TELECALLER', 'MANAGER', 'CARETAKER'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'MANAGER', 'CARETAKER'],
   },
   reminders: {
-    view: ['ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
   },
   followUps: {
-    view: ['ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
-    create: ['ADMIN', 'STAFF', 'MANAGER'],
-    edit: ['ADMIN', 'STAFF', 'MANAGER'],
-    delete: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
+    create: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    edit: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    delete: ['FOUNDER', 'ADMIN'],
   },
   templates: {
-    view: ['ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'MANAGER'],
   },
   reportCampaigns: {
-    view: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN'],
   },
   emailQueue: {
-    view: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN'],
   },
   auditLog: {
-    view: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN'],
   },
   backup: {
-    view: ['ADMIN'],
-    create: ['ADMIN'],
-    restore: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN'],
+    create: ['FOUNDER', 'ADMIN'],
+    restore: ['FOUNDER', 'ADMIN'],
   },
   archive: {
-    view: ['ADMIN'],
-    manage: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN'],
+    manage: ['FOUNDER', 'ADMIN'],
   },
   birthdayWishes: {
-    view: ['ADMIN', 'STAFF', 'MANAGER'],
-    send: ['ADMIN', 'STAFF', 'MANAGER'],
-    manageTemplates: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    send: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    manageTemplates: ['FOUNDER', 'ADMIN'],
   },
   donorUpdates: {
-    view: ['ADMIN', 'STAFF', 'MANAGER'],
-    create: ['ADMIN', 'STAFF', 'MANAGER'],
-    send: ['ADMIN', 'STAFF', 'MANAGER'],
-    delete: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    create: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    send: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    delete: ['FOUNDER', 'ADMIN'],
   },
   donorReports: {
-    view: ['ADMIN', 'ACCOUNTANT', 'MANAGER'],
-    generate: ['ADMIN', 'MANAGER'],
-    share: ['ADMIN', 'MANAGER'],
-    delete: ['ADMIN'],
-    manageTemplates: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN', 'ACCOUNTANT', 'MANAGER'],
+    generate: ['FOUNDER', 'ADMIN', 'MANAGER'],
+    share: ['FOUNDER', 'ADMIN', 'MANAGER'],
+    delete: ['FOUNDER', 'ADMIN'],
+    manageTemplates: ['FOUNDER', 'ADMIN'],
   },
   progressReports: {
-    view: ['ADMIN', 'STAFF', 'MANAGER', 'CARETAKER'],
-    generate: ['ADMIN', 'STAFF', 'MANAGER'],
-    share: ['ADMIN', 'STAFF', 'MANAGER'],
-    delete: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER', 'CARETAKER'],
+    generate: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    share: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    delete: ['FOUNDER', 'ADMIN'],
   },
   homeSummary: {
-    view: ['ADMIN', 'STAFF', 'MANAGER', 'CARETAKER'],
-    export: ['ADMIN', 'STAFF', 'MANAGER'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER', 'CARETAKER'],
+    export: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
   },
   ngoDocuments: {
-    view: ['ADMIN', 'STAFF', 'MANAGER'],
-    upload: ['ADMIN', 'STAFF', 'MANAGER'],
-    edit: ['ADMIN', 'STAFF', 'MANAGER'],
-    delete: ['ADMIN'],
-    accessLog: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    upload: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    edit: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    delete: ['FOUNDER', 'ADMIN'],
+    accessLog: ['FOUNDER', 'ADMIN'],
   },
   timeMachine: {
-    view: ['ADMIN', 'STAFF', 'MANAGER', 'CARETAKER'],
-    create: ['ADMIN', 'STAFF', 'MANAGER'],
-    edit: ['ADMIN', 'STAFF', 'MANAGER'],
-    delete: ['ADMIN'],
-    uploadPhoto: ['ADMIN', 'STAFF', 'MANAGER'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER', 'CARETAKER'],
+    create: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    edit: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
+    delete: ['FOUNDER', 'ADMIN'],
+    uploadPhoto: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
   },
   permissions: {
-    view: ['ADMIN'],
-    manage: ['ADMIN'],
+    view: ['FOUNDER', 'ADMIN'],
+    manage: ['FOUNDER', 'ADMIN'],
   },
   impact: {
-    view: ['ADMIN', 'STAFF', 'MANAGER'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
   },
   retention: {
-    view: ['ADMIN', 'STAFF', 'MANAGER'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'MANAGER'],
   },
   staffTasks: {
-    view: ['ADMIN', 'MANAGER', 'STAFF', 'TELECALLER'],
-    create: ['ADMIN', 'MANAGER'],
-    update: ['ADMIN', 'MANAGER', 'STAFF', 'TELECALLER'],
-    delete: ['ADMIN', 'MANAGER'],
+    view: ['FOUNDER', 'ADMIN', 'MANAGER', 'STAFF', 'TELECALLER'],
+    create: ['FOUNDER', 'ADMIN', 'MANAGER'],
+    update: ['FOUNDER', 'ADMIN', 'MANAGER', 'STAFF', 'TELECALLER'],
+    delete: ['FOUNDER', 'ADMIN', 'MANAGER'],
   },
   dashboard: {
-    view: ['ADMIN', 'STAFF', 'TELECALLER', 'ACCOUNTANT', 'MANAGER', 'CARETAKER', 'VIEWER'],
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'ACCOUNTANT', 'MANAGER', 'CARETAKER', 'VIEWER'],
   },
 };
 
@@ -170,7 +175,7 @@ export function hasPermission(
   action: string
 ): boolean {
   if (!userRole) return false;
-  if (userRole === 'ADMIN') return true;
+  if (userRole === 'FOUNDER' || userRole === 'ADMIN') return true;
 
   if (_apiPermissions) {
     const modulePerms = _apiPermissions[module];
@@ -192,9 +197,10 @@ export function canAccessModule(
   return hasPermission(userRole, module, 'view');
 }
 
-export const ALL_ROLES: Role[] = ['ADMIN', 'STAFF', 'TELECALLER', 'ACCOUNTANT', 'MANAGER', 'CARETAKER', 'VIEWER'];
+export const ALL_ROLES: Role[] = ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'ACCOUNTANT', 'MANAGER', 'CARETAKER', 'VIEWER'];
 
 export const ROLE_LABELS: Record<string, string> = {
+  FOUNDER: 'Founder',
   ADMIN: 'Admin',
   STAFF: 'Staff',
   TELECALLER: 'Telecaller',

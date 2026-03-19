@@ -14,7 +14,8 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'ADMIN' | 'STAFF' | 'TELECALLER' | 'ACCOUNTANT' | 'MANAGER' | 'CARETAKER' | 'VIEWER';
+  role: 'FOUNDER' | 'ADMIN' | 'STAFF' | 'TELECALLER' | 'ACCOUNTANT' | 'MANAGER' | 'CARETAKER' | 'VIEWER';
+  phone?: string;
   isActive: boolean;
 }
 

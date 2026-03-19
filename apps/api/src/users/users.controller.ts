@@ -38,7 +38,6 @@ export class UsersController {
     return { ipAddress, userAgent };
   }
 
-  // ✅ IMPORTANT: put /users/staff BEFORE /users/:id
   @Get("staff")
   @RequirePermission("donors", "assign")
   listStaff() {
@@ -46,34 +45,34 @@ export class UsersController {
   }
 
   @Get("staff-all")
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.FOUNDER)
   listAllStaff() {
     return this.usersService.listAllStaff();
   }
 
   @Post("create-staff")
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.FOUNDER)
   async createStaff(@Body() data: Record<string, any>) {
     return this.usersService.createStaff(data as any);
   }
 
   @Get()
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.FOUNDER)
   async findAll(@Query("page") page?: string, @Query("limit") limit?: string) {
     return this.usersService.findAll(
       page ? parseInt(page, 10) : 1,
-      limit ? parseInt(limit, 10) : 10,
+      limit ? parseInt(limit, 10) : 50,
     );
   }
 
   @Get(":id")
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.FOUNDER)
   async findOne(@Param("id") id: string) {
     return this.usersService.findOne(id);
   }
 
   @Patch(":id/role")
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.FOUNDER)
   async updateRole(
     @Param("id") id: string,
     @Body("role") role: Role,
@@ -81,23 +80,35 @@ export class UsersController {
     @Req() req: Request,
   ) {
     const { ipAddress, userAgent } = this.getClientInfo(req);
-    return this.usersService.updateRole(
-      id,
-      role,
-      user.id,
-      ipAddress,
-      userAgent,
-    );
+    return this.usersService.updateRole(id, role, user.id, ipAddress, userAgent);
+  }
+
+  @Patch(":id")
+  @Roles(Role.ADMIN, Role.FOUNDER)
+  async updateUser(
+    @Param("id") id: string,
+    @Body() data: { name?: string; phone?: string; role?: Role },
+  ) {
+    return this.usersService.updateUser(id, data);
   }
 
   @Patch(":id/toggle-active")
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.FOUNDER)
   async toggleActive(@Param("id") id: string) {
     return this.usersService.toggleActive(id);
   }
 
+  @Patch(":id/reset-password")
+  @Roles(Role.ADMIN, Role.FOUNDER)
+  async resetPassword(
+    @Param("id") id: string,
+    @Body("newPassword") newPassword: string,
+  ) {
+    return this.usersService.resetUserPassword(id, newPassword);
+  }
+
   @Patch(":id/reassign-phone")
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.FOUNDER)
   async reassignPhone(
     @Param("id") fromUserId: string,
     @Body("toUserId") toUserId: string,
