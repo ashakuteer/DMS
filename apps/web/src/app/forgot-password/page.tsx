@@ -5,25 +5,24 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, ArrowLeft, Mail, KeyRound } from "lucide-react";
+import { Loader2, ArrowLeft, User, CheckCircle2 } from "lucide-react";
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [result, setResult] = useState<{ message: string; resetToken?: string } | null>(null);
+  const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    setResult(null);
 
     try {
       const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ username: username.trim() }),
       });
 
       const data = await res.json();
@@ -33,7 +32,7 @@ export default function ForgotPasswordPage() {
         return;
       }
 
-      setResult(data);
+      setSubmitted(true);
     } catch {
       setError("Unable to connect to the server. Please try again.");
     } finally {
@@ -70,7 +69,7 @@ export default function ForgotPasswordPage() {
             Forgot your password?
           </h1>
           <p className="text-blue-100 text-lg leading-relaxed">
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your username and the admin will receive a secure reset link at the registered inbox.
           </p>
         </div>
         <div className="relative z-10">
@@ -93,34 +92,38 @@ export default function ForgotPasswordPage() {
           </div>
 
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8">
-            {!result ? (
+            {!submitted ? (
               <>
                 <div className="mb-8">
                   <div className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 mb-4">
-                    <Mail className="h-6 w-6 text-orange-500" />
+                    <User className="h-6 w-6 text-orange-500" />
                   </div>
                   <h2 className="text-2xl font-bold text-foreground">Reset password</h2>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Enter your email to receive a reset link
+                    Enter your username to request a password reset
                   </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium">
-                      Email address
+                    <Label htmlFor="username" className="text-sm font-medium">
+                      Username
                     </Label>
                     <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      id="username"
+                      type="text"
+                      placeholder="e.g. admin, staff, founder"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       required
                       disabled={isLoading}
+                      autoComplete="username"
                       className="h-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-orange-500"
-                      data-testid="input-forgot-email"
+                      data-testid="input-forgot-username"
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Your username was assigned when your account was created.
+                    </p>
                   </div>
 
                   {error && (
@@ -144,7 +147,7 @@ export default function ForgotPasswordPage() {
                         Sending...
                       </>
                     ) : (
-                      "Send Reset Link"
+                      "Send Reset Request"
                     )}
                   </Button>
                 </form>
@@ -152,35 +155,17 @@ export default function ForgotPasswordPage() {
             ) : (
               <div className="text-center space-y-4" data-testid="section-reset-success">
                 <div className="flex items-center justify-center w-14 h-14 rounded-full bg-green-100 dark:bg-green-900/30 mx-auto">
-                  <KeyRound className="h-7 w-7 text-green-600 dark:text-green-400" />
+                  <CheckCircle2 className="h-7 w-7 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-foreground">Check your inbox</h2>
-                  <p className="text-muted-foreground text-sm mt-2">
-                    {result.message}
+                  <h2 className="text-xl font-bold text-foreground">Request sent!</h2>
+                  <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
+                    If the username <strong className="text-foreground font-semibold">{username}</strong> exists,
+                    the admin has received a reset link at the registered inbox.
+                    <br /><br />
+                    Please contact your admin to get the new password.
                   </p>
                 </div>
-
-                {result.resetToken && (
-                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-4 text-left space-y-2">
-                    <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
-                      Dev mode — Token (use to reset password)
-                    </p>
-                    <p
-                      className="font-mono text-xs text-amber-900 dark:text-amber-200 break-all select-all"
-                      data-testid="text-reset-token"
-                    >
-                      {result.resetToken}
-                    </p>
-                    <Link
-                      href={`/reset-password?token=${result.resetToken}`}
-                      className="inline-flex items-center gap-1 text-xs font-medium text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 underline underline-offset-2"
-                      data-testid="link-go-reset"
-                    >
-                      Go to Reset Password →
-                    </Link>
-                  </div>
-                )}
               </div>
             )}
 

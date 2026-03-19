@@ -192,11 +192,11 @@ export class AuthService {
   async forgotPassword(dto: ForgotPasswordDto) {
     try {
       const user = await this.prisma.user.findUnique({
-        where: { email: dto.email },
+        where: { username: dto.username },
       });
 
-      if (!user) {
-        return { message: 'If that email is registered, a reset link has been sent.' };
+      if (!user || !user.isActive) {
+        return { message: 'If that username exists, a reset link has been sent to the admin.' };
       }
 
       const rawToken = crypto.randomBytes(32).toString('hex');
@@ -212,36 +212,69 @@ export class AuthService {
 
       const appUrl = process.env.APP_URL || 'http://localhost:5000';
       const resetLink = `${appUrl}/reset-password?token=${rawToken}`;
-      const firstName = user.name?.split(' ')[0] || user.name || 'there';
+      const adminEmail = process.env.SMTP_USER || 'ashakuteer@gmail.com';
+
+      const roleBadgeColor = user.role === 'FOUNDER' ? '#7c3aed' : user.role === 'ADMIN' ? '#1d4ed8' : '#0f766e';
 
       const html = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
           <div style="background: linear-gradient(135deg, #0f2847 0%, #1a4480 100%); padding: 32px 40px; border-radius: 12px 12px 0 0;">
             <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700;">Asha Kuteer Foundation</h1>
-            <p style="color: #93c5fd; margin: 4px 0 0 0; font-size: 13px;">Donor Management System</p>
+            <p style="color: #93c5fd; margin: 4px 0 0 0; font-size: 13px;">Donor Management System — Admin Alert</p>
           </div>
 
           <div style="padding: 40px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
             <h2 style="color: #111827; margin: 0 0 16px 0; font-size: 20px;">Password Reset Request</h2>
-            <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 12px 0;">
-              Hi ${firstName},
-            </p>
-            <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 24px 0;">
-              We received a request to reset the password for your account (<strong>${user.email}</strong>).
-              Click the button below to set a new password. This link will expire in <strong>1 hour</strong>.
+            <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
+              A password reset was requested for the following user:
             </p>
 
-            <div style="text-align: center; margin: 32px 0;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 24px; margin-bottom: 28px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="color: #64748b; font-size: 13px; padding: 6px 0; width: 120px;">Username</td>
+                  <td style="color: #0f172a; font-size: 15px; font-weight: 600; padding: 6px 0; font-family: monospace;">${user.username}</td>
+                </tr>
+                <tr>
+                  <td style="color: #64748b; font-size: 13px; padding: 6px 0;">Full Name</td>
+                  <td style="color: #0f172a; font-size: 14px; padding: 6px 0;">${user.name}</td>
+                </tr>
+                <tr>
+                  <td style="color: #64748b; font-size: 13px; padding: 6px 0;">Role</td>
+                  <td style="padding: 6px 0;">
+                    <span style="display: inline-block; background: ${roleBadgeColor}; color: #ffffff;
+                                 font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+                                 letter-spacing: 0.5px;">
+                      ${user.role}
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color: #64748b; font-size: 13px; padding: 6px 0;">Email</td>
+                  <td style="color: #0f172a; font-size: 14px; padding: 6px 0;">${user.email}</td>
+                </tr>
+                <tr>
+                  <td style="color: #64748b; font-size: 13px; padding: 6px 0;">Expires</td>
+                  <td style="color: #0f172a; font-size: 14px; padding: 6px 0;">1 hour from now</td>
+                </tr>
+              </table>
+            </div>
+
+            <p style="color: #374151; font-size: 14px; line-height: 1.6; margin: 0 0 24px 0;">
+              Click the button below to set a new password for this account, then share the new credentials with the user:
+            </p>
+
+            <div style="text-align: center; margin: 28px 0;">
               <a href="${resetLink}"
                  style="display: inline-block; background: #f97316; color: #ffffff; text-decoration: none;
                         font-size: 15px; font-weight: 600; padding: 14px 36px; border-radius: 8px;
                         letter-spacing: 0.3px;">
-                Reset My Password
+                Reset Password for ${user.username}
               </a>
             </div>
 
             <p style="color: #6b7280; font-size: 13px; line-height: 1.6; margin: 24px 0 0 0;">
-              If the button doesn't work, copy and paste this link into your browser:
+              If the button doesn't work, copy and paste this link:
             </p>
             <p style="color: #3b82f6; font-size: 12px; word-break: break-all; margin: 6px 0 24px 0;">
               ${resetLink}
@@ -249,8 +282,8 @@ export class AuthService {
 
             <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 8px;">
               <p style="color: #9ca3af; font-size: 12px; margin: 0; line-height: 1.6;">
-                If you did not request a password reset, please ignore this email — your password will remain unchanged.
-                <br/>This is an automated message. Please do not reply to this email.
+                If this request was not made by you or the user, please ignore this email and no changes will be made.
+                <br/>This is an automated message from the DMS. Please do not reply.
               </p>
             </div>
           </div>
@@ -263,31 +296,25 @@ export class AuthService {
         </div>
       `;
 
-      const text = `Hi ${firstName},\n\nWe received a request to reset your password for ${user.email}.\n\nClick this link to reset your password (expires in 1 hour):\n${resetLink}\n\nIf you did not request this, please ignore this email.\n\n— Asha Kuteer Foundation`;
+      const text = `Password Reset Request\n\nUsername: ${user.username}\nName: ${user.name}\nRole: ${user.role}\n\nReset link (expires in 1 hour):\n${resetLink}\n\n— Asha Kuteer Foundation DMS`;
 
       const emailResult = await this.emailService.sendEmail({
-        to: user.email,
-        subject: 'Reset your password — Asha Kuteer Foundation',
+        to: adminEmail,
+        subject: `DMS Password Reset — ${user.username} (${user.role})`,
         html,
         text,
         featureType: 'MANUAL',
       });
 
       if (emailResult.success) {
-        return {
-          message: 'A password reset link has been sent to your email address.',
-        };
+        return { message: 'If that username exists, a reset link has been sent to the admin.' };
       } else {
         console.error('Failed to send reset email:', emailResult.error);
-        return {
-          message: 'Password reset token generated. Email delivery failed — use the token below.',
-          resetToken: rawToken,
-          expiresAt: expires,
-        };
+        return { message: 'If that username exists, a reset link has been sent to the admin.' };
       }
     } catch (error) {
       console.error('Auth error:', error);
-      return { message: 'If that email is registered, a reset link has been sent.' };
+      return { message: 'If that username exists, a reset link has been sent to the admin.' };
     }
   }
 
