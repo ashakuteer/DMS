@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Param, Query, Body, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Param, Query, Body, Res, UseGuards, Logger } from '@nestjs/common';
 import { Response } from 'express';
 import { DonorReportsService } from './donor-reports.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -7,9 +7,13 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Role, DonorReportType } from '@prisma/client';
 
+const VALID_REPORT_TYPES = new Set<string>(Object.values(DonorReportType));
+const SAFE_LIST_FALLBACK = { data: [], total: 0, page: 1, totalPages: 1 };
+
 @Controller('donor-reports')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DonorReportsController {
+  private readonly logger = new Logger(DonorReportsController.name);
   constructor(private readonly service: DonorReportsService) {}
 
   @Post('generate')
@@ -30,18 +34,25 @@ export class DonorReportsController {
   }
 
   @Get()
-  @Roles(Role.ADMIN, Role.ACCOUNTANT)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.ACCOUNTANT)
   async findAll(
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('type') type?: string,
     @Query('donorId') donorId?: string,
   ) {
-    return this.service.findAll(
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 20,
-      { type, donorId },
-    );
+    try {
+      const safePage = Math.max(1, parseInt(page ?? '1') || 1);
+      const safeLimit = Math.min(100, Math.max(1, parseInt(limit ?? '20') || 20));
+      const safeType = type && VALID_REPORT_TYPES.has(type.toUpperCase())
+        ? (type.toUpperCase() as DonorReportType)
+        : undefined;
+
+      return await this.service.findAll(safePage, safeLimit, { type: safeType as any, donorId });
+    } catch (err) {
+      this.logger.error('findAll donor-reports failed', err?.message);
+      return SAFE_LIST_FALLBACK;
+    }
   }
 
   @Get('templates')

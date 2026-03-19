@@ -337,31 +337,40 @@ export class DonorReportsService {
   }
 
   async findAll(page: number = 1, limit: number = 20, filters?: { type?: string; donorId?: string }) {
-    const where: any = {};
-    if (filters?.type) where.type = filters.type;
-    if (filters?.donorId) where.donorId = filters.donorId;
+    const safePage = Math.max(1, page || 1);
+    const safeLimit = Math.max(1, Math.min(100, limit || 20));
 
-    const [items, total] = await Promise.all([
-      this.prisma.donorReport.findMany({
-        where,
-        include: {
-          generatedBy: { select: { name: true } },
-          donor: { select: { firstName: true, lastName: true, donorCode: true } },
-          template: { select: { name: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
-      }),
-      this.prisma.donorReport.count({ where }),
-    ]);
+    try {
+      const where: any = {};
+      if (filters?.type) where.type = filters.type;
+      if (filters?.donorId) where.donorId = filters.donorId;
 
-    return {
-      items,
-      total,
-      page,
-      totalPages: Math.ceil(total / limit),
-    };
+      const [items, total] = await Promise.all([
+        this.prisma.donorReport.findMany({
+          where,
+          include: {
+            generatedBy: { select: { name: true } },
+            donor: { select: { firstName: true, lastName: true, donorCode: true } },
+            template: { select: { name: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+          skip: (safePage - 1) * safeLimit,
+          take: safeLimit,
+        }),
+        this.prisma.donorReport.count({ where }),
+      ]);
+
+      const safeTotal = typeof total === 'number' && isFinite(total) ? total : 0;
+
+      return {
+        data: items ?? [],
+        total: safeTotal,
+        page: safePage,
+        totalPages: safeLimit > 0 ? Math.ceil(safeTotal / safeLimit) : 1,
+      };
+    } catch (err) {
+      return { data: [], total: 0, page: safePage, totalPages: 1 };
+    }
   }
 
   async findOne(id: string) {
