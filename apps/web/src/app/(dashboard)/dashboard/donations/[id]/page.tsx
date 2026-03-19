@@ -661,7 +661,7 @@ export default function DashboardPage() {
         </Card>
       )}
 
-      {(isAdmin || isStaffOrTelecaller) && staffActions && (
+      {(isAdmin || isStaff) && staffActions && (
         <Card className="border-0 shadow-sm bg-gradient-to-br from-teal-50/50 to-cyan-50/50 dark:from-teal-950/20 dark:to-cyan-950/20" data-testid="card-staff-actions">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
