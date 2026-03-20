@@ -38,12 +38,54 @@ export class BeneficiarySponsorshipService {
   }
 
   async addSponsor(user: any, beneficiaryId: string, dto: any) {
-    return this.prisma.sponsorship.create({
-      data: {
-        ...dto,
-        beneficiaryId,
-        createdById: user.id,
+    const { donorId, sponsorshipType, amount, inKindItem, frequency, startDate, status, notes, currency } = dto;
+    this.logger.log(`addSponsor: beneficiaryId=${beneficiaryId}, donorId=${donorId}, type=${sponsorshipType}`);
+    console.log("Saving sponsorship (from beneficiary side):", { beneficiaryId, ...dto });
+    try {
+      return await this.prisma.sponsorship.create({
+        data: {
+          donorId,
+          beneficiaryId,
+          sponsorshipType: sponsorshipType as any,
+          amount: amount ? parseFloat(amount) : null,
+          inKindItem: inKindItem || null,
+          currency: currency || "INR",
+          frequency: (frequency || "ADHOC") as any,
+          startDate: startDate ? new Date(startDate) : null,
+          status: (status || "ACTIVE") as any,
+          isActive: (status || "ACTIVE") === "ACTIVE",
+          notes: notes || null,
+        },
+        include: {
+          donor: {
+            select: { id: true, donorCode: true, firstName: true, lastName: true, primaryPhone: true, personalEmail: true },
+          },
+        },
+      });
+    } catch (err: any) {
+      this.logger.error(`addSponsor failed: ${err?.message}`);
+      if (err?.code === "P2002") throw new ConflictException(`A ${sponsorshipType} sponsorship already exists for this donor and beneficiary.`);
+      if (err?.code === "P2003") throw new BadRequestException("Invalid donorId or beneficiaryId.");
+      throw err;
+    }
+  }
+
+  async getSponsorshipsByBeneficiary(beneficiaryId: string) {
+    return this.prisma.sponsorship.findMany({
+      where: { beneficiaryId },
+      include: {
+        donor: {
+          select: {
+            id: true,
+            donorCode: true,
+            firstName: true,
+            lastName: true,
+            primaryPhone: true,
+            personalEmail: true,
+          },
+        },
       },
+      orderBy: { createdAt: "desc" },
     });
   }
 

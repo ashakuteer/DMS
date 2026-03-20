@@ -548,6 +548,12 @@ export class SponsorshipsController {
     return this.beneficiariesService.getDonorSponsorships(donorId);
   }
 
+  @Get('beneficiary/:beneficiaryId')
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  async getByBeneficiary(@Param('beneficiaryId') beneficiaryId: string) {
+    return this.beneficiariesService.getSponsorshipsByBeneficiary(beneficiaryId);
+  }
+
   @Post()
   @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async create(

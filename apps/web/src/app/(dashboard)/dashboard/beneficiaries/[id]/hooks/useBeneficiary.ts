@@ -60,6 +60,9 @@ export function useBeneficiary(beneficiaryId: string) {
   const [educationTimeline, setEducationTimeline] = useState<EducationTimelineItem[]>([]);
   const [educationTimelineLoading, setEducationTimelineLoading] = useState(false);
 
+  const [sponsors, setSponsors] = useState<Sponsorship[]>([]);
+  const [sponsorsLoading, setSponsorsLoading] = useState(false);
+
   const [photoUploading, setPhotoUploading] = useState(false);
   const [showLinkPhotoDialog, setShowLinkPhotoDialog] = useState(false);
   const [linkPhotoUrl, setLinkPhotoUrl] = useState("");
@@ -245,6 +248,22 @@ export function useBeneficiary(beneficiaryId: string) {
     } catch { /* silent */ } finally { setEducationTimelineLoading(false); }
   }, [beneficiaryId]);
 
+  const fetchSponsors = useCallback(async () => {
+    setSponsorsLoading(true);
+    try {
+      const response = await fetchWithAuth(`/api/sponsorships/beneficiary/${beneficiaryId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSponsors(Array.isArray(data) ? data : []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch sponsors:", err);
+      setSponsors([]);
+    } finally {
+      setSponsorsLoading(false);
+    }
+  }, [beneficiaryId]);
+
   useEffect(() => {
     fetchBeneficiary().then(() => {
       fetchMetrics();
@@ -254,7 +273,8 @@ export function useBeneficiary(beneficiaryId: string) {
       fetchHealthTimeline();
       fetchEducationTimeline();
     });
-  }, [fetchBeneficiary, fetchMetrics, fetchProgressCards, fetchHealthEvents, fetchDocuments, fetchHealthTimeline, fetchEducationTimeline]);
+    fetchSponsors();
+  }, [fetchBeneficiary, fetchMetrics, fetchProgressCards, fetchHealthEvents, fetchDocuments, fetchHealthTimeline, fetchEducationTimeline, fetchSponsors]);
 
   const searchDonors = useCallback(async (query: string) => {
     if (!query || query.length < 2) { setDonorSearchResults([]); return; }
@@ -374,12 +394,13 @@ export function useBeneficiary(beneficiaryId: string) {
         const err = await response.json();
         throw new Error(err.message || "Failed to add sponsor");
       }
-      toast({ title: "Success", description: "Sponsor linked successfully" });
+      toast({ title: "Sponsor Linked", description: "Sponsor linked successfully" });
       setShowAddSponsorDialog(false);
       setSelectedDonor(null);
       setDonorSearch("");
       setNewSponsorship({ sponsorshipType: "FULL", amount: "", inKindItem: "", frequency: "ADHOC", startDate: format(new Date(), "yyyy-MM-dd"), notes: "" });
       fetchBeneficiary();
+      fetchSponsors();
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to add sponsor", variant: "destructive" });
     } finally {
@@ -464,6 +485,7 @@ export function useBeneficiary(beneficiaryId: string) {
       toast({ title: "Success", description: "Sponsorship status updated" });
       setShowStatusChangeDialog(false);
       fetchBeneficiary();
+      fetchSponsors();
     } catch {
       toast({ title: "Error", description: "Failed to update sponsorship status", variant: "destructive" });
     } finally {
@@ -488,11 +510,13 @@ export function useBeneficiary(beneficiaryId: string) {
   };
 
   const handleDeleteSponsorship = async (sponsorshipId: string) => {
+    if (!confirm("Remove this sponsorship permanently? This cannot be undone.")) return;
     try {
       const response = await fetchWithAuth(`/api/sponsorships/${sponsorshipId}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to remove sponsorship");
-      toast({ title: "Success", description: "Sponsorship removed" });
+      toast({ title: "Sponsorship Removed", description: "Sponsorship has been removed." });
       fetchBeneficiary();
+      fetchSponsors();
     } catch {
       toast({ title: "Error", description: "Failed to remove sponsorship", variant: "destructive" });
     }
@@ -999,6 +1023,8 @@ export function useBeneficiary(beneficiaryId: string) {
     photoUploading,
     handlePhotoUpload,
     handlePhotoRemove,
+    sponsors,
+    sponsorsLoading,
     metrics,
     metricsLoading,
     healthEvents,

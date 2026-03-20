@@ -43,6 +43,8 @@ export default function BeneficiaryProfilePage() {
     photoUploading,
     handlePhotoUpload,
     handlePhotoRemove,
+    sponsors,
+    sponsorsLoading,
     metrics,
     metricsLoading,
     healthEvents,
@@ -110,7 +112,8 @@ export default function BeneficiaryProfilePage() {
 
         <TabsContent value="sponsors">
           <BeneficiarySponsorsTab
-            beneficiary={beneficiary}
+            sponsors={sponsors}
+            sponsorsLoading={sponsorsLoading}
             canEdit={canEdit}
             onOpenAddSponsor={actions.openAddSponsor}
             onOpenStatusChange={actions.openStatusChange}
@@ -163,7 +166,7 @@ export default function BeneficiaryProfilePage() {
             educationTimeline={educationTimeline}
             educationTimelineLoading={educationTimelineLoading}
             educationExporting={educationExporting}
-            hasSponsors={(beneficiary.sponsorships || []).some((s: any) => s.isActive)}
+            hasSponsors={sponsors.some((s) => s.isActive)}
             onExportEducationPdf={actions.exportEducationPdf}
             onOpenAddProgressCard={actions.openAddProgressCard}
             onShareProgressCard={actions.shareProgressCard}

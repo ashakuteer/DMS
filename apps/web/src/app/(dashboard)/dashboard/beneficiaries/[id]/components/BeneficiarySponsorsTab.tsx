@@ -9,11 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-import type { Beneficiary, Sponsorship } from "../types";
+import { Loader2 } from "lucide-react";
+import type { Sponsorship } from "../types";
 import { formatAmount, getStatusBadgeVariant } from "../utils";
 
 interface BeneficiarySponsorsTabProps {
-  beneficiary: Beneficiary;
+  sponsors: Sponsorship[];
+  sponsorsLoading: boolean;
   canEdit: boolean;
   onOpenAddSponsor: () => void;
   onOpenStatusChange: (sponsorship: Sponsorship) => void;
@@ -25,7 +27,8 @@ interface BeneficiarySponsorsTabProps {
 }
 
 export default function BeneficiarySponsorsTab({
-  beneficiary,
+  sponsors,
+  sponsorsLoading,
   canEdit,
   onOpenAddSponsor,
   onOpenStatusChange,
@@ -35,13 +38,16 @@ export default function BeneficiarySponsorsTab({
   onViewDonorProfile,
   onSendWhatsApp,
 }: BeneficiarySponsorsTabProps) {
-  const sponsorships = beneficiary.sponsorships ?? [];
+  const sponsorships = sponsors ?? [];
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center flex-wrap gap-2">
         <h3 className="text-lg font-semibold" data-testid="text-sponsors-count">
-          Sponsors ({sponsorships.length})
+          {sponsorsLoading
+            ? <span className="flex items-center gap-2">Sponsors <Loader2 className="h-4 w-4 animate-spin" /></span>
+            : `Sponsors (${sponsorships.length})`
+          }
         </h3>
 
         {canEdit && (
