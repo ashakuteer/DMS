@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -58,5 +57,11 @@ export class BroadcastingController {
   @Roles(Role.FOUNDER, Role.ADMIN)
   async getStaffList() {
     return this.broadcastingService.getStaffList();
+  }
+
+  @Get('profession-list')
+  @Roles(Role.FOUNDER, Role.ADMIN)
+  async getProfessionList() {
+    return this.broadcastingService.getProfessionList();
   }
 }

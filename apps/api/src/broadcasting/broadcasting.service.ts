@@ -13,12 +13,18 @@ export interface BroadcastFilters {
   country?: string;
   category?: string;
   donationFrequency?: string;
+  donationFrequencies?: string[];
   assignedToUserId?: string;
   supportPreferences?: string[];
   engagementLevel?: string;
   healthStatus?: string;
   ageMin?: number;
   ageMax?: number;
+  professions?: string[];
+  donationCategories?: string[];
+  sponsorshipTypes?: string[];
+  donationAmountMin?: number;
+  donationAmountMax?: number;
 }
 
 export interface BroadcastRequest {
@@ -57,7 +63,6 @@ export class BroadcastingService {
     if (filters.city) where.city = { contains: filters.city, mode: 'insensitive' };
     if (filters.country) where.country = { contains: filters.country, mode: 'insensitive' };
     if (filters.category) where.category = filters.category;
-    if (filters.donationFrequency) where.donationFrequency = filters.donationFrequency;
     if (filters.assignedToUserId) where.assignedToUserId = filters.assignedToUserId;
     if (filters.engagementLevel) where.engagementLevel = filters.engagementLevel;
     if (filters.healthStatus) where.healthStatus = filters.healthStatus;
@@ -70,6 +75,57 @@ export class BroadcastingService {
       where.approximateAge = {};
       if (filters.ageMin !== undefined) where.approximateAge.gte = filters.ageMin;
       if (filters.ageMax !== undefined) where.approximateAge.lte = filters.ageMax;
+    }
+
+    if (filters.donationFrequencies && filters.donationFrequencies.length > 0) {
+      where.donationFrequency = { in: filters.donationFrequencies };
+    } else if (filters.donationFrequency) {
+      where.donationFrequency = filters.donationFrequency;
+    }
+
+    if (filters.professions && filters.professions.length > 0) {
+      where.profession = { in: filters.professions };
+    }
+
+    const andConditions: any[] = [];
+
+    if (filters.donationCategories && filters.donationCategories.length > 0) {
+      andConditions.push({
+        donations: {
+          some: {
+            donationType: { in: filters.donationCategories },
+            isDeleted: false,
+          },
+        },
+      });
+    }
+
+    if (filters.sponsorshipTypes && filters.sponsorshipTypes.length > 0) {
+      andConditions.push({
+        sponsorships: {
+          some: {
+            sponsorshipType: { in: filters.sponsorshipTypes },
+          },
+        },
+      });
+    }
+
+    if (filters.donationAmountMin !== undefined || filters.donationAmountMax !== undefined) {
+      const amountFilter: any = {};
+      if (filters.donationAmountMin !== undefined) amountFilter.gte = filters.donationAmountMin;
+      if (filters.donationAmountMax !== undefined) amountFilter.lte = filters.donationAmountMax;
+      andConditions.push({
+        donations: {
+          some: {
+            donationAmount: amountFilter,
+            isDeleted: false,
+          },
+        },
+      });
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     return where;
@@ -297,5 +353,15 @@ export class BroadcastingService {
       select: { id: true, name: true, role: true },
       orderBy: { name: 'asc' },
     });
+  }
+
+  async getProfessionList(): Promise<string[]> {
+    const results = await this.prisma.donor.findMany({
+      where: { isDeleted: false, profession: { not: null } },
+      select: { profession: true },
+      distinct: ['profession'],
+      orderBy: { profession: 'asc' },
+    });
+    return results.map(r => r.profession!).filter(Boolean);
   }
 }

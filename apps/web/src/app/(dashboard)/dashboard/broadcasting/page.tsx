@@ -32,6 +32,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Radio,
   Users,
   Send,
@@ -44,6 +52,7 @@ import {
   Mail,
   ChevronDown,
   ChevronUp,
+  X,
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { authStorage } from "@/lib/auth";
@@ -57,13 +66,18 @@ interface BroadcastFilters {
   city?: string;
   country?: string;
   category?: string;
-  donationFrequency?: string;
+  donationFrequencies?: string[];
   assignedToUserId?: string;
   supportPreferences?: string[];
   engagementLevel?: string;
   healthStatus?: string;
   ageMin?: number;
   ageMax?: number;
+  professions?: string[];
+  donationCategories?: string[];
+  sponsorshipTypes?: string[];
+  donationAmountMin?: number;
+  donationAmountMax?: number;
 }
 
 interface PreviewResult {
@@ -112,10 +126,108 @@ const SUPPORT_PREFERENCES = [
   "GENERAL",
 ];
 
+const DONATION_FREQUENCY_OPTIONS = [
+  { value: "ONE_TIME", label: "One-Time" },
+  { value: "WEEKLY", label: "Weekly" },
+  { value: "BI_WEEKLY", label: "Bi-Weekly" },
+  { value: "MONTHLY", label: "Monthly" },
+  { value: "BI_MONTHLY", label: "Bi-Monthly" },
+  { value: "QUARTERLY", label: "Quarterly" },
+  { value: "HALF_YEARLY", label: "Half-Yearly" },
+  { value: "YEARLY", label: "Yearly" },
+  { value: "OCCASIONAL", label: "Occasional" },
+  { value: "FESTIVAL_BASED", label: "Festival-Based" },
+];
+
+const DONATION_CATEGORY_OPTIONS = [
+  { value: "CASH", label: "Cash" },
+  { value: "GROCERIES", label: "Groceries" },
+  { value: "GROCERY", label: "Grocery" },
+  { value: "MEDICINES", label: "Medicines" },
+  { value: "ANNADANAM", label: "Annadanam" },
+  { value: "RICE_BAGS", label: "Rice Bags" },
+  { value: "STATIONERY", label: "Stationery" },
+  { value: "SPORTS_KITS", label: "Sports Kits" },
+  { value: "USED_ITEMS", label: "Used Items" },
+  { value: "PREPARED_FOOD", label: "Prepared Food" },
+  { value: "KIND", label: "Kind" },
+  { value: "OTHER", label: "Other" },
+];
+
+const SPONSORSHIP_TYPE_OPTIONS = [
+  { value: "FULL", label: "Full Sponsorship" },
+  { value: "PARTIAL", label: "Partial Sponsorship" },
+  { value: "EDUCATION", label: "Education" },
+  { value: "MEDICAL", label: "Medical" },
+  { value: "FOOD", label: "Food" },
+  { value: "GROCERIES", label: "Groceries" },
+  { value: "MONTHLY_SUPPORT", label: "Monthly Support" },
+  { value: "ONE_TIME", label: "One-Time" },
+  { value: "FESTIVAL", label: "Festival" },
+  { value: "OTHER", label: "Other" },
+];
+
 const DEFAULT_FILTERS: BroadcastFilters = {
   country: "India",
   supportPreferences: [],
+  donationFrequencies: [],
+  professions: [],
+  donationCategories: [],
+  sponsorshipTypes: [],
 };
+
+function MultiSelectDropdown({
+  label,
+  options,
+  selected,
+  onToggle,
+  testId,
+  emptyLabel = "None available",
+}: {
+  label: string;
+  options: { value: string; label: string }[];
+  selected: string[];
+  onToggle: (value: string) => void;
+  testId?: string;
+  emptyLabel?: string;
+}) {
+  const selectedCount = selected.length;
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="outline"
+          className="w-full justify-between font-normal h-9 px-3"
+          data-testid={testId}
+        >
+          <span className="truncate text-sm">
+            {selectedCount === 0
+              ? `All ${label}`
+              : `${label}: ${selectedCount} selected`}
+          </span>
+          <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56 max-h-64 overflow-y-auto">
+        <DropdownMenuLabel>{label}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {options.length === 0 ? (
+          <div className="px-2 py-3 text-sm text-muted-foreground text-center">{emptyLabel}</div>
+        ) : (
+          options.map((opt) => (
+            <DropdownMenuCheckboxItem
+              key={opt.value}
+              checked={selected.includes(opt.value)}
+              onCheckedChange={() => onToggle(opt.value)}
+            >
+              {opt.label}
+            </DropdownMenuCheckboxItem>
+          ))
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 export default function BroadcastingPage() {
   const [user, setUser] = useState<any>(null);
@@ -127,6 +239,7 @@ export default function BroadcastingPage() {
 
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
   const [staffLoading, setStaffLoading] = useState(false);
+  const [professionList, setProfessionList] = useState<string[]>([]);
 
   const [previewResult, setPreviewResult] = useState<PreviewResult | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -184,6 +297,15 @@ export default function BroadcastingPage() {
     }
   }, [fetchAuth]);
 
+  const loadProfessions = useCallback(async () => {
+    try {
+      const res = await fetchAuth("/api/broadcasting/profession-list");
+      if (res.ok) setProfessionList(await res.json());
+    } catch (e) {
+      console.error(e);
+    }
+  }, [fetchAuth]);
+
   const loadTemplates = useCallback(async () => {
     if (!channel) return;
     setTemplatesLoading(true);
@@ -203,12 +325,35 @@ export default function BroadcastingPage() {
   }, [channel, fetchAuth]);
 
   useEffect(() => {
-    if (mounted && hasAccess) loadStaffList();
-  }, [mounted, hasAccess, loadStaffList]);
+    if (mounted && hasAccess) {
+      loadStaffList();
+      loadProfessions();
+    }
+  }, [mounted, hasAccess, loadStaffList, loadProfessions]);
 
   useEffect(() => {
     if (channel) loadTemplates();
   }, [channel, loadTemplates]);
+
+  const buildCleanFilters = () => {
+    const cleanFilters = { ...filters };
+    const arrayKeys: (keyof BroadcastFilters)[] = [
+      "supportPreferences",
+      "donationFrequencies",
+      "professions",
+      "donationCategories",
+      "sponsorshipTypes",
+    ];
+    arrayKeys.forEach((key) => {
+      const val = cleanFilters[key] as string[] | undefined;
+      if (!val || val.length === 0) delete (cleanFilters as any)[key];
+    });
+    Object.keys(cleanFilters).forEach((key) => {
+      const val = (cleanFilters as any)[key];
+      if (val === "" || val === undefined) delete (cleanFilters as any)[key];
+    });
+    return cleanFilters;
+  };
 
   const handlePreview = async () => {
     if (!channel) {
@@ -218,16 +363,9 @@ export default function BroadcastingPage() {
     setPreviewLoading(true);
     setPreviewResult(null);
     try {
-      const cleanFilters = { ...filters };
-      if (!cleanFilters.supportPreferences?.length) delete cleanFilters.supportPreferences;
-      Object.keys(cleanFilters).forEach((key) => {
-        const val = (cleanFilters as any)[key];
-        if (val === "" || val === undefined) delete (cleanFilters as any)[key];
-      });
-
       const res = await fetchAuth("/api/broadcasting/preview", {
         method: "POST",
-        body: JSON.stringify({ filters: cleanFilters, channel }),
+        body: JSON.stringify({ filters: buildCleanFilters(), channel }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -249,14 +387,7 @@ export default function BroadcastingPage() {
     setSendLoading(true);
     setSendResult(null);
     try {
-      const cleanFilters = { ...filters };
-      if (!cleanFilters.supportPreferences?.length) delete cleanFilters.supportPreferences;
-      Object.keys(cleanFilters).forEach((key) => {
-        const val = (cleanFilters as any)[key];
-        if (val === "" || val === undefined) delete (cleanFilters as any)[key];
-      });
-
-      const body: any = { channel, filters: cleanFilters };
+      const body: any = { channel, filters: buildCleanFilters() };
       if (channel === "WHATSAPP") {
         const tpl = whatsappTemplates.find((t) => t.contentSid === selectedWaTemplate);
         if (!tpl) {
@@ -303,16 +434,18 @@ export default function BroadcastingPage() {
     setPreviewResult(null);
   };
 
-  const toggleSupportPref = (pref: string) => {
+  const toggleArrayFilter = (key: keyof BroadcastFilters, value: string) => {
     setFilters((prev) => {
-      const current = prev.supportPreferences || [];
-      const updated = current.includes(pref)
-        ? current.filter((p) => p !== pref)
-        : [...current, pref];
-      return { ...prev, supportPreferences: updated };
+      const current = (prev[key] as string[]) || [];
+      const updated = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
+      return { ...prev, [key]: updated };
     });
     setPreviewResult(null);
   };
+
+  const toggleSupportPref = (pref: string) => toggleArrayFilter("supportPreferences", pref);
 
   const handleEmailTemplateSelect = (templateId: string) => {
     const tpl = emailTemplates.find((t) => t.id === templateId);
@@ -329,6 +462,24 @@ export default function BroadcastingPage() {
     previewResult &&
     previewResult.reachable > 0 &&
     (channel === "WHATSAPP" ? !!selectedWaTemplate : !!(emailSubject.trim() && emailBody.trim()));
+
+  const activeFilterCount = (() => {
+    let count = 0;
+    if (filters.gender) count++;
+    if (filters.religion) count++;
+    if (filters.city) count++;
+    if (filters.category) count++;
+    if (filters.engagementLevel) count++;
+    if (filters.assignedToUserId) count++;
+    if (filters.ageMin !== undefined || filters.ageMax !== undefined) count++;
+    if (filters.donationAmountMin !== undefined || filters.donationAmountMax !== undefined) count++;
+    if (filters.donationFrequencies?.length) count++;
+    if (filters.professions?.length) count++;
+    if (filters.donationCategories?.length) count++;
+    if (filters.sponsorshipTypes?.length) count++;
+    if (filters.supportPreferences?.length) count++;
+    return count;
+  })();
 
   if (!mounted) return null;
   if (user && !hasAccess) return <AccessDenied />;
@@ -347,6 +498,7 @@ export default function BroadcastingPage() {
         </div>
       </div>
 
+      {/* Step 1: Channel */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
@@ -402,6 +554,7 @@ export default function BroadcastingPage() {
         </CardContent>
       </Card>
 
+      {/* Step 2: Filters */}
       <Card>
         <CardHeader
           className="cursor-pointer flex flex-row items-center justify-between gap-2"
@@ -410,6 +563,11 @@ export default function BroadcastingPage() {
           <CardTitle className="text-lg flex items-center gap-2">
             <Filter className="h-5 w-5" />
             Step 2: Audience Filters
+            {activeFilterCount > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {activeFilterCount} active
+              </Badge>
+            )}
           </CardTitle>
           <Button variant="ghost" size="icon" data-testid="button-toggle-filters">
             {filtersOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -417,154 +575,291 @@ export default function BroadcastingPage() {
         </CardHeader>
         {filtersOpen && (
           <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label>Gender</Label>
-                <Select
-                  value={filters.gender || ""}
-                  onValueChange={(v) => updateFilter("gender", v || undefined)}
-                >
-                  <SelectTrigger data-testid="select-gender">
-                    <SelectValue placeholder="All genders" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="MALE">Male</SelectItem>
-                    <SelectItem value="FEMALE">Female</SelectItem>
-                    <SelectItem value="OTHER">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Select
-                  value={filters.category || ""}
-                  onValueChange={(v) => updateFilter("category", v || undefined)}
-                >
-                  <SelectTrigger data-testid="select-category">
-                    <SelectValue placeholder="All categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="INDIVIDUAL">Individual</SelectItem>
-                    <SelectItem value="ORGANIZATION">Organization</SelectItem>
-                    <SelectItem value="TRUST">Trust</SelectItem>
-                    <SelectItem value="TEMPLE">Temple</SelectItem>
-                    <SelectItem value="ANONYMOUS">Anonymous</SelectItem>
-                  </SelectContent>
-                </Select>
+            {/* Basic Filters */}
+            <div>
+              <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                Basic Filters
               </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Gender</Label>
+                  <Select
+                    value={filters.gender || ""}
+                    onValueChange={(v) => updateFilter("gender", v || undefined)}
+                  >
+                    <SelectTrigger data-testid="select-gender">
+                      <SelectValue placeholder="All genders" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MALE">Male</SelectItem>
+                      <SelectItem value="FEMALE">Female</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label>City</Label>
-                <Input
-                  placeholder="e.g. Bangalore"
-                  value={filters.city || ""}
-                  onChange={(e) => updateFilter("city", e.target.value || undefined)}
-                  data-testid="input-city"
-                />
-              </div>
+                <div className="space-y-2">
+                  <Label>Category</Label>
+                  <Select
+                    value={filters.category || ""}
+                    onValueChange={(v) => updateFilter("category", v || undefined)}
+                  >
+                    <SelectTrigger data-testid="select-category">
+                      <SelectValue placeholder="All categories" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="INDIVIDUAL">Individual</SelectItem>
+                      <SelectItem value="ORGANIZATION">Organization</SelectItem>
+                      <SelectItem value="TRUST">Trust</SelectItem>
+                      <SelectItem value="TEMPLE">Temple</SelectItem>
+                      <SelectItem value="ANONYMOUS">Anonymous</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
-              <div className="space-y-2">
-                <Label>Country</Label>
-                <Input
-                  placeholder="e.g. India"
-                  value={filters.country || ""}
-                  onChange={(e) => updateFilter("country", e.target.value || undefined)}
-                  data-testid="input-country"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Religion</Label>
-                <Input
-                  placeholder="e.g. Hindu"
-                  value={filters.religion || ""}
-                  onChange={(e) => updateFilter("religion", e.target.value || undefined)}
-                  data-testid="input-religion"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Engagement Level</Label>
-                <Select
-                  value={filters.engagementLevel || ""}
-                  onValueChange={(v) => updateFilter("engagementLevel", v || undefined)}
-                >
-                  <SelectTrigger data-testid="select-engagement">
-                    <SelectValue placeholder="All levels" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="HOT">Hot</SelectItem>
-                    <SelectItem value="WARM">Warm</SelectItem>
-                    <SelectItem value="COLD">Cold</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Donation Frequency</Label>
-                <Select
-                  value={filters.donationFrequency || ""}
-                  onValueChange={(v) => updateFilter("donationFrequency", v || undefined)}
-                >
-                  <SelectTrigger data-testid="select-frequency">
-                    <SelectValue placeholder="All frequencies" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ONE_TIME">One-Time</SelectItem>
-                    <SelectItem value="MONTHLY">Monthly</SelectItem>
-                    <SelectItem value="QUARTERLY">Quarterly</SelectItem>
-                    <SelectItem value="HALF_YEARLY">Half-Yearly</SelectItem>
-                    <SelectItem value="YEARLY">Yearly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Assigned Staff</Label>
-                <Select
-                  value={filters.assignedToUserId || ""}
-                  onValueChange={(v) => updateFilter("assignedToUserId", v || undefined)}
-                >
-                  <SelectTrigger data-testid="select-staff">
-                    <SelectValue placeholder={staffLoading ? "Loading..." : "All staff"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {staffList.map((s) => (
-                      <SelectItem key={s.id} value={s.id}>
-                        {s.name} ({s.role})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Age Range</Label>
-                <div className="flex items-center gap-2">
+                <div className="space-y-2">
+                  <Label>City</Label>
                   <Input
-                    type="number"
-                    placeholder="Min"
-                    value={filters.ageMin ?? ""}
-                    onChange={(e) =>
-                      updateFilter("ageMin", e.target.value ? Number(e.target.value) : undefined)
-                    }
-                    data-testid="input-age-min"
+                    placeholder="e.g. Bangalore"
+                    value={filters.city || ""}
+                    onChange={(e) => updateFilter("city", e.target.value || undefined)}
+                    data-testid="input-city"
                   />
-                  <span className="text-muted-foreground">to</span>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Country</Label>
                   <Input
-                    type="number"
-                    placeholder="Max"
-                    value={filters.ageMax ?? ""}
-                    onChange={(e) =>
-                      updateFilter("ageMax", e.target.value ? Number(e.target.value) : undefined)
-                    }
-                    data-testid="input-age-max"
+                    placeholder="e.g. India"
+                    value={filters.country || ""}
+                    onChange={(e) => updateFilter("country", e.target.value || undefined)}
+                    data-testid="input-country"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Religion</Label>
+                  <Input
+                    placeholder="e.g. Hindu"
+                    value={filters.religion || ""}
+                    onChange={(e) => updateFilter("religion", e.target.value || undefined)}
+                    data-testid="input-religion"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Engagement Level</Label>
+                  <Select
+                    value={filters.engagementLevel || ""}
+                    onValueChange={(v) => updateFilter("engagementLevel", v || undefined)}
+                  >
+                    <SelectTrigger data-testid="select-engagement">
+                      <SelectValue placeholder="All levels" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="HOT">Hot</SelectItem>
+                      <SelectItem value="WARM">Warm</SelectItem>
+                      <SelectItem value="COLD">Cold</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Assigned Staff (Telecaller)</Label>
+                  <Select
+                    value={filters.assignedToUserId || ""}
+                    onValueChange={(v) => updateFilter("assignedToUserId", v || undefined)}
+                  >
+                    <SelectTrigger data-testid="select-staff">
+                      <SelectValue placeholder={staffLoading ? "Loading..." : "All staff"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {staffList.map((s) => (
+                        <SelectItem key={s.id} value={s.id}>
+                          {s.name} ({s.role})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Age Range</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Min"
+                      value={filters.ageMin ?? ""}
+                      onChange={(e) =>
+                        updateFilter("ageMin", e.target.value ? Number(e.target.value) : undefined)
+                      }
+                      data-testid="input-age-min"
+                    />
+                    <span className="text-muted-foreground">to</span>
+                    <Input
+                      type="number"
+                      placeholder="Max"
+                      value={filters.ageMax ?? ""}
+                      onChange={(e) =>
+                        updateFilter("ageMax", e.target.value ? Number(e.target.value) : undefined)
+                      }
+                      data-testid="input-age-max"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
+            {/* Segmentation Filters */}
+            <div>
+              <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                Segmentation Filters
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                {/* Profession Multi-Select */}
+                <div className="space-y-2">
+                  <Label>Profession</Label>
+                  <MultiSelectDropdown
+                    label="Professions"
+                    options={professionList.map((p) => ({ value: p, label: p }))}
+                    selected={filters.professions || []}
+                    onToggle={(v) => toggleArrayFilter("professions", v)}
+                    testId="dropdown-professions"
+                    emptyLabel="No professions found"
+                  />
+                  {(filters.professions || []).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(filters.professions || []).map((p) => (
+                        <Badge key={p} variant="secondary" className="text-xs gap-1">
+                          {p}
+                          <button
+                            type="button"
+                            onClick={() => toggleArrayFilter("professions", p)}
+                            className="hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Donation Frequency Multi-Select */}
+                <div className="space-y-2">
+                  <Label>Donation Frequency</Label>
+                  <MultiSelectDropdown
+                    label="Frequencies"
+                    options={DONATION_FREQUENCY_OPTIONS}
+                    selected={filters.donationFrequencies || []}
+                    onToggle={(v) => toggleArrayFilter("donationFrequencies", v)}
+                    testId="dropdown-frequencies"
+                  />
+                  {(filters.donationFrequencies || []).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(filters.donationFrequencies || []).map((f) => (
+                        <Badge key={f} variant="secondary" className="text-xs gap-1">
+                          {DONATION_FREQUENCY_OPTIONS.find((o) => o.value === f)?.label || f}
+                          <button
+                            type="button"
+                            onClick={() => toggleArrayFilter("donationFrequencies", f)}
+                            className="hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Donation Category Multi-Select */}
+                <div className="space-y-2">
+                  <Label>Donation Category</Label>
+                  <MultiSelectDropdown
+                    label="Categories"
+                    options={DONATION_CATEGORY_OPTIONS}
+                    selected={filters.donationCategories || []}
+                    onToggle={(v) => toggleArrayFilter("donationCategories", v)}
+                    testId="dropdown-donation-categories"
+                  />
+                  {(filters.donationCategories || []).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(filters.donationCategories || []).map((c) => (
+                        <Badge key={c} variant="secondary" className="text-xs gap-1">
+                          {DONATION_CATEGORY_OPTIONS.find((o) => o.value === c)?.label || c}
+                          <button
+                            type="button"
+                            onClick={() => toggleArrayFilter("donationCategories", c)}
+                            className="hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Sponsorship Type Multi-Select */}
+                <div className="space-y-2">
+                  <Label>Sponsorship Type</Label>
+                  <MultiSelectDropdown
+                    label="Sponsorship Types"
+                    options={SPONSORSHIP_TYPE_OPTIONS}
+                    selected={filters.sponsorshipTypes || []}
+                    onToggle={(v) => toggleArrayFilter("sponsorshipTypes", v)}
+                    testId="dropdown-sponsorship-types"
+                  />
+                  {(filters.sponsorshipTypes || []).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(filters.sponsorshipTypes || []).map((s) => (
+                        <Badge key={s} variant="secondary" className="text-xs gap-1">
+                          {SPONSORSHIP_TYPE_OPTIONS.find((o) => o.value === s)?.label || s}
+                          <button
+                            type="button"
+                            onClick={() => toggleArrayFilter("sponsorshipTypes", s)}
+                            className="hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Donation Amount Range */}
+                <div className="space-y-2">
+                  <Label>Donation Amount Range (₹)</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      placeholder="Min ₹"
+                      value={filters.donationAmountMin ?? ""}
+                      onChange={(e) =>
+                        updateFilter("donationAmountMin", e.target.value ? Number(e.target.value) : undefined)
+                      }
+                      data-testid="input-amount-min"
+                    />
+                    <span className="text-muted-foreground shrink-0">to</span>
+                    <Input
+                      type="number"
+                      placeholder="Max ₹"
+                      value={filters.donationAmountMax ?? ""}
+                      onChange={(e) =>
+                        updateFilter("donationAmountMax", e.target.value ? Number(e.target.value) : undefined)
+                      }
+                      data-testid="input-amount-max"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Support Preferences */}
             <div className="space-y-2">
               <Label>Support Preferences</Label>
               <div className="flex flex-wrap gap-4">
@@ -581,6 +876,7 @@ export default function BroadcastingPage() {
               </div>
             </div>
 
+            {/* Action Buttons */}
             <div className="flex items-center gap-3 flex-wrap">
               <Button onClick={handlePreview} disabled={!channel || previewLoading} data-testid="button-preview">
                 {previewLoading ? (
@@ -602,6 +898,7 @@ export default function BroadcastingPage() {
               </Button>
             </div>
 
+            {/* Preview Result */}
             {previewResult && (
               <Card>
                 <CardContent className="pt-4">
@@ -652,6 +949,7 @@ export default function BroadcastingPage() {
         )}
       </Card>
 
+      {/* Step 3: Message Template */}
       {channel && (
         <Card>
           <CardHeader>
@@ -697,9 +995,7 @@ export default function BroadcastingPage() {
                 )}
                 <div className="flex items-start gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md p-3">
                   <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-                  <span>
-                    {"Variable {{1}} will be auto-filled with the donor's name."}
-                  </span>
+                  <span>{"Variable {{1}} will be auto-filled with the donor's name."}</span>
                 </div>
                 {whatsappTemplates.length === 0 && (
                   <div className="text-sm text-muted-foreground text-center py-4">
@@ -747,9 +1043,7 @@ export default function BroadcastingPage() {
                 </div>
                 <div className="flex items-start gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md p-3">
                   <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
-                  <span>
-                    {"Available placeholders: {{donorName}}, {{date}}"}
-                  </span>
+                  <span>{"Available placeholders: {{donorName}}, {{date}}"}</span>
                 </div>
               </div>
             )}
@@ -757,6 +1051,7 @@ export default function BroadcastingPage() {
         </Card>
       )}
 
+      {/* Step 4: Review & Send */}
       {channel && (
         <Card>
           <CardHeader>
@@ -771,13 +1066,9 @@ export default function BroadcastingPage() {
                 <div className="text-sm text-muted-foreground">Channel</div>
                 <div className="font-medium flex items-center gap-2" data-testid="text-review-channel">
                   {channel === "WHATSAPP" ? (
-                    <>
-                      <SiWhatsapp className="h-4 w-4 text-green-500" /> WhatsApp
-                    </>
+                    <><SiWhatsapp className="h-4 w-4 text-green-500" /> WhatsApp</>
                   ) : (
-                    <>
-                      <Mail className="h-4 w-4 text-blue-500" /> Email
-                    </>
+                    <><Mail className="h-4 w-4 text-blue-500" /> Email</>
                   )}
                 </div>
               </div>
@@ -909,6 +1200,7 @@ export default function BroadcastingPage() {
         </Card>
       )}
 
+      {/* Confirm Dialog */}
       <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <DialogContent>
           <DialogHeader>
