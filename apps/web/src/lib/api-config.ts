@@ -1,4 +1,5 @@
-const rawUrl = process.env.NEXT_PUBLIC_API_URL || '';
+const RAILWAY_URL = 'https://dms-production-598e.up.railway.app';
+const rawUrl = process.env.NEXT_PUBLIC_API_URL || RAILWAY_URL;
 
 // In the browser, localhost URLs are unreachable (they point to the user's machine,
 // not the server). When NEXT_PUBLIC_API_URL is localhost, fall back to relative paths
