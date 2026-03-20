@@ -25,6 +25,7 @@ interface DonationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   donorName: string;
+  editingDonation?: boolean;
   donationForm: DonationFormData;
   setDonationForm: (form: DonationFormData) => void;
   submittingDonation: boolean;
@@ -68,6 +69,7 @@ export default function DonationDialog({
   open,
   onOpenChange,
   donorName,
+  editingDonation = false,
   donationForm,
   setDonationForm,
   submittingDonation,
@@ -89,8 +91,10 @@ export default function DonationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[540px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Donation</DialogTitle>
-          <DialogDescription>Record a new donation for {donorName}</DialogDescription>
+          <DialogTitle>{editingDonation ? "Edit Donation" : "Add Donation"}</DialogTitle>
+          <DialogDescription>
+            {editingDonation ? `Update donation details for ${donorName}` : `Record a new donation for ${donorName}`}
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={onSubmit}>
@@ -322,7 +326,7 @@ export default function DonationDialog({
               disabled={submittingDonation}
               data-testid="button-submit-donation"
             >
-              {submittingDonation ? "Saving..." : "Save Donation"}
+              {submittingDonation ? "Saving..." : editingDonation ? "Update Donation" : "Save Donation"}
             </Button>
           </DialogFooter>
         </form>

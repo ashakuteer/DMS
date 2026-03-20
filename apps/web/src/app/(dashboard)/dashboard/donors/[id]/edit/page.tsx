@@ -168,6 +168,20 @@ const MEETING_STATUSES = [
   { value: "FOLLOW_UP_NEEDED", label: "Follow-up Needed" },
 ];
 
+const RELIGIONS = [
+  { value: "Hindu", label: "Hindu" },
+  { value: "Muslim", label: "Muslim" },
+  { value: "Christian", label: "Christian" },
+  { value: "Sikh", label: "Sikh" },
+  { value: "Buddhist", label: "Buddhist" },
+  { value: "Jain", label: "Jain" },
+  { value: "Zoroastrian", label: "Zoroastrian / Parsi" },
+  { value: "Jewish", label: "Jewish" },
+  { value: "Secular", label: "No Religion / Secular" },
+  { value: "Other", label: "Other" },
+  { value: "Prefer Not to Say", label: "Prefer Not to Say" },
+];
+
 export default function EditDonorPage() {
   const router = useRouter();
   const params = useParams();
@@ -752,7 +766,10 @@ export default function EditDonorPage() {
             </div>
             <div>
               <Label htmlFor="religion">Religion</Label>
-              <Input id="religion" value={formData.religion} onChange={(e) => handleChange("religion", e.target.value)} placeholder="Religion" data-testid="input-religion" />
+              <Select value={formData.religion} onValueChange={(v) => handleChange("religion", v)}>
+                <SelectTrigger data-testid="select-religion"><SelectValue placeholder="Select religion" /></SelectTrigger>
+                <SelectContent>{RELIGIONS.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="incomeSpectrum">Income Spectrum</Label>
@@ -1368,7 +1385,21 @@ export default function EditDonorPage() {
                 placeholder="ABCDE1234F"
                 maxLength={10}
                 data-testid="input-pan"
+                className={
+                  formData.pan && formData.pan.length > 0
+                    ? /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan)
+                      ? "border-green-500 focus-visible:ring-green-500"
+                      : "border-red-400 focus-visible:ring-red-400"
+                    : ""
+                }
               />
+              {formData.pan && formData.pan.length > 0 && (
+                <p className={`text-xs mt-1 ${/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan) ? "text-green-600" : "text-red-500"}`}>
+                  {/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan)
+                    ? "Valid PAN format"
+                    : "Invalid format — must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)"}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

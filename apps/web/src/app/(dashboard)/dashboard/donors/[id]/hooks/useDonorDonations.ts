@@ -15,14 +15,19 @@ const EMPTY_DONATION_FORM: DonationFormData = {
   emailType: "GENERAL",
 };
 
+const IN_KIND_TYPES = new Set(["GROCERY", "MEDICINES", "PREPARED_FOOD", "USED_ITEMS", "KIND"]);
+
 export function useDonorDonations(donorId: string, donor?: Donor | null) {
   const { toast } = useToast();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [donationsLoading, setDonationsLoading] = useState(false);
   const [resendingReceiptId, setResendingReceiptId] = useState<string | null>(null);
+  const [deletingDonationId, setDeletingDonationId] = useState<string | null>(null);
   const [templates, setTemplates] = useState<Template[]>([]);
 
   const [showDonationDialog, setShowDonationDialog] = useState(false);
+  const [editingDonation, setEditingDonation] = useState(false);
+  const [editingDonationId, setEditingDonationId] = useState<string | null>(null);
   const [donationForm, setDonationForm] = useState<DonationFormData>(EMPTY_DONATION_FORM);
   const [submittingDonation, setSubmittingDonation] = useState(false);
 
@@ -95,47 +100,93 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
   }, [toast]);
 
   const onAddDonation = useCallback(() => {
+    setEditingDonation(false);
+    setEditingDonationId(null);
     setDonationForm(EMPTY_DONATION_FORM);
     setShowDonationDialog(true);
   }, []);
+
+  const onEditDonation = useCallback((donation: Donation) => {
+    const isKind = IN_KIND_TYPES.has(donation.donationType);
+    setEditingDonation(true);
+    setEditingDonationId(donation.id);
+    setDonationForm({
+      donationAmount: donation.donationAmount,
+      donationDate: donation.donationDate ? donation.donationDate.split("T")[0] : "",
+      donationMode: donation.donationMode || "CASH",
+      donationType: donation.donationType,
+      designatedHome: donation.donationHomeType || "NONE",
+      remarks: donation.remarks || "",
+      emailType: isKind ? "KIND" : "GENERAL",
+    });
+    setShowDonationDialog(true);
+  }, []);
+
+  const onDeleteDonation = useCallback(async (donationId: string) => {
+    setDeletingDonationId(donationId);
+    try {
+      await apiClient(`/api/donations/${donationId}`, { method: "DELETE" });
+      setDonations((prev) => prev.filter((d) => d.id !== donationId));
+      toast({ title: "Donation Deleted", description: "The donation has been removed." });
+    } catch (err: any) {
+      console.error("Failed to delete donation:", err?.message);
+      toast({
+        title: "Failed to Delete Donation",
+        description: err?.message || "Could not delete the donation.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingDonationId(null);
+    }
+  }, [toast]);
 
   const handleDonationSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmittingDonation(true);
     try {
-      const IN_KIND_TYPES = new Set(["GROCERY", "MEDICINES", "PREPARED_FOOD", "USED_ITEMS", "KIND"]);
       const isKind = IN_KIND_TYPES.has(donationForm.donationType);
       const parsedAmount = parseFloat(donationForm.donationAmount);
       const effectiveAmount = isNaN(parsedAmount) ? 0 : parsedAmount;
 
-      await apiClient("/api/donations", {
-        method: "POST",
-        body: JSON.stringify({
-          donorId,
-          donationAmount: effectiveAmount,
-          donationDate: donationForm.donationDate,
-          donationMode: isKind ? null : (donationForm.donationMode || null),
-          donationType: donationForm.donationType,
-          donationHomeType: donationForm.designatedHome === "NONE" ? null : (donationForm.designatedHome || null),
-          remarks: donationForm.remarks || undefined,
-          emailType: isKind ? 'KIND' : (donationForm.emailType || 'GENERAL'),
-        }),
+      const body = JSON.stringify({
+        donorId,
+        donationAmount: effectiveAmount,
+        donationDate: donationForm.donationDate,
+        donationMode: isKind ? null : (donationForm.donationMode || null),
+        donationType: donationForm.donationType,
+        donationHomeType: donationForm.designatedHome === "NONE" ? null : (donationForm.designatedHome || null),
+        remarks: donationForm.remarks || undefined,
+        emailType: isKind ? "KIND" : (donationForm.emailType || "GENERAL"),
       });
+
+      if (editingDonationId) {
+        await apiClient(`/api/donations/${editingDonationId}`, { method: "PATCH", body });
+      } else {
+        await apiClient("/api/donations", { method: "POST", body });
+      }
+
       setShowDonationDialog(false);
       setDonationForm(EMPTY_DONATION_FORM);
+      setEditingDonation(false);
+      setEditingDonationId(null);
       await fetchDonations();
-      toast({ title: "Donation Saved", description: "The donation has been recorded successfully." });
-    } catch (err: any) {
-      console.error("Failed to add donation:", err?.message);
       toast({
-        title: "Failed to Save Donation",
+        title: editingDonationId ? "Donation Updated" : "Donation Saved",
+        description: editingDonationId
+          ? "The donation has been updated successfully."
+          : "The donation has been recorded successfully.",
+      });
+    } catch (err: any) {
+      console.error("Failed to save donation:", err?.message);
+      toast({
+        title: editingDonationId ? "Failed to Update Donation" : "Failed to Save Donation",
         description: err?.message || "Please check the details and try again.",
         variant: "destructive",
       });
     } finally {
       setSubmittingDonation(false);
     }
-  }, [donorId, donationForm, fetchDonations]);
+  }, [donorId, donationForm, editingDonationId, fetchDonations, toast]);
 
   const onSendWhatsApp = useCallback((_donation: Donation) => {}, []);
   const onSendEmail = useCallback((_donation: Donation) => {}, []);
@@ -152,13 +203,17 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     templates,
     donorName,
     resendingReceiptId,
+    deletingDonationId,
     fetchDonations,
     onAddDonation,
+    onEditDonation,
+    onDeleteDonation,
     onSendWhatsApp,
     onSendEmail,
     onResendReceipt,
     showDonationDialog,
     setShowDonationDialog,
+    editingDonation,
     donationForm,
     setDonationForm,
     submittingDonation,

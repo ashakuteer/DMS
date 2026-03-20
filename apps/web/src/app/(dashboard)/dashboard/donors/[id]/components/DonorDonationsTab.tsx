@@ -1,6 +1,6 @@
 "use client";
 
-import { Mail, Plus, Receipt, Send } from "lucide-react";
+import { Edit, Loader2, Mail, Plus, Receipt, Send, Trash2 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,12 +25,16 @@ interface DonorDonationsTabProps {
   templates: Template[];
   donorName: string;
   resendingReceiptId: string | null;
+  deletingDonationId: string | null;
   onAddDonation: () => void;
+  onEditDonation: (donation: Donation) => void;
+  onDeleteDonation: (donationId: string) => void;
   onSendWhatsApp: (donation: Donation) => void;
   onSendEmail: (donation: Donation) => void;
   onResendReceipt: (donationId: string) => void;
   showDonationDialog: boolean;
   setShowDonationDialog: (open: boolean) => void;
+  editingDonation: boolean;
   donationForm: DonationFormData;
   setDonationForm: (form: DonationFormData) => void;
   submittingDonation: boolean;
@@ -48,12 +52,16 @@ export default function DonorDonationsTab({
   templates,
   donorName,
   resendingReceiptId,
+  deletingDonationId,
   onAddDonation,
+  onEditDonation,
+  onDeleteDonation,
   onSendWhatsApp,
   onSendEmail,
   onResendReceipt,
   showDonationDialog,
   setShowDonationDialog,
+  editingDonation,
   donationForm,
   setDonationForm,
   submittingDonation,
@@ -122,7 +130,7 @@ export default function DonorDonationsTab({
                       </div>
 
                       <p className="text-sm text-muted-foreground">
-                        {donation.donationType} via {donation.donationMode}
+                        {donation.donationType}{donation.donationMode ? ` via ${donation.donationMode}` : ""}
                       </p>
 
                       {donation.remarks && (
@@ -132,7 +140,7 @@ export default function DonorDonationsTab({
                       )}
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <div className="text-right">
                         <p className="text-sm">{formatDate(donation.donationDate)}</p>
                       </div>
@@ -212,6 +220,43 @@ export default function DonorDonationsTab({
                           </TooltipContent>
                         </Tooltip>
                       )}
+
+                      {isAdmin && (
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => onEditDonation(donation)}
+                                data-testid={`button-edit-donation-${donation.id}`}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Edit Donation</TooltipContent>
+                          </Tooltip>
+
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => onDeleteDonation(donation.id)}
+                                disabled={deletingDonationId === donation.id}
+                                data-testid={`button-delete-donation-${donation.id}`}
+                              >
+                                {deletingDonationId === donation.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Delete Donation</TooltipContent>
+                          </Tooltip>
+                        </>
+                      )}
                     </div>
                   </div>
                 );
@@ -229,6 +274,7 @@ export default function DonorDonationsTab({
         open={showDonationDialog}
         onOpenChange={setShowDonationDialog}
         donorName={donorName}
+        editingDonation={editingDonation}
         donationForm={donationForm}
         setDonationForm={setDonationForm}
         submittingDonation={submittingDonation}

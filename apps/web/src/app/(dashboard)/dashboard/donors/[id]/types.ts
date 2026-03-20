@@ -64,6 +64,7 @@ export interface Donation {
   currency: string;
   donationType: string;
   donationMode: string;
+  donationHomeType?: string;
   receiptNumber?: string;
   remarks?: string;
   communicationResults?: {
