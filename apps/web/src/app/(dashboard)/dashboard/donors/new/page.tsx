@@ -193,6 +193,7 @@ export default function NewDonorPage() {
   const { toast } = useToast();
   const user = authStorage.getUser();
   const [saving, setSaving] = useState(false);
+  console.log("TEST CHANGE");
   const [duplicates, setDuplicates] = useState<DuplicateDonor[]>([]);
   const [staffMembers, setStaffMembers] = useState<StaffMember[]>([]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
