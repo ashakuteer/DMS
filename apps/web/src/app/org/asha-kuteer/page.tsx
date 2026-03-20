@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/lib/api-config";
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -31,7 +32,7 @@ export default function PublicOrganizationPage() {
   const fetchProfile = async () => {
     try {
       setIsLoading(true);
-      const res = await fetch("/api/organization-profile/public");
+      const res = await fetch(`${API_URL}/api/organization-profile/public`);
       if (res.ok) {
         const data = await res.json();
         if (data) {

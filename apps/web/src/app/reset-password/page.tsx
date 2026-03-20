@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/lib/api-config";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -46,7 +47,7 @@ function ResetPasswordForm() {
 
     setIsLoading(true);
     try {
-      const res = await fetch("/api/auth/reset-password", {
+      const res = await fetch(`${API_URL}/api/auth/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: token.trim(), newPassword }),

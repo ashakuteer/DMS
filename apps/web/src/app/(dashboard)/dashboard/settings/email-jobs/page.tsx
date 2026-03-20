@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/lib/api-config";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,7 +68,7 @@ export default function EmailJobsPage() {
       if (statusFilter !== "all") params.append("status", statusFilter);
       if (typeFilter !== "all") params.append("type", typeFilter);
 
-      const res = await fetch(`/api/email-jobs?${params}`, {
+      const res = await fetch(`${API_URL}/api/email-jobs?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -85,7 +86,7 @@ export default function EmailJobsPage() {
   async function fetchStats() {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/email-jobs/stats", {
+      const res = await fetch(`${API_URL}/api/email-jobs/stats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -101,7 +102,7 @@ export default function EmailJobsPage() {
     setActionLoading(id);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/email-jobs/${id}/retry`, {
+      const res = await fetch(`${API_URL}/api/email-jobs/${id}/retry`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -123,7 +124,7 @@ export default function EmailJobsPage() {
     setActionLoading(id);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/email-jobs/${id}`, {
+      const res = await fetch(`${API_URL}/api/email-jobs/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });

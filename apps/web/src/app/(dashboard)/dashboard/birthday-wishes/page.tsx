@@ -1,5 +1,7 @@
 "use client";
 
+import { API_URL } from "@/lib/api-config";
+
 
 
 import { useState, useEffect, useCallback } from "react";
@@ -147,7 +149,7 @@ export default function BirthdayWishesPage() {
   const fetchDonorBirthdays = useCallback(async () => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/upcoming?range=next7`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/upcoming?range=next7`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setDonorBirthdays(await res.json());
@@ -159,7 +161,7 @@ export default function BirthdayWishesPage() {
   const fetchBeneficiaryBirthdays = useCallback(async () => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/upcoming-beneficiaries?range=next7`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/upcoming-beneficiaries?range=next7`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setBeneficiaryBirthdays(await res.json());
@@ -171,7 +173,7 @@ export default function BirthdayWishesPage() {
   const fetchSentLog = useCallback(async (page: number = 1) => {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/sent-log?page=${page}&limit=15`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/sent-log?page=${page}&limit=15`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -187,7 +189,7 @@ export default function BirthdayWishesPage() {
     if (!isAdmin) return;
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/templates`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/templates`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) setTemplates(await res.json());
@@ -210,7 +212,7 @@ export default function BirthdayWishesPage() {
     setActionLoading(`donor-email-${donorId}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/queue-email/${donorId}`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/queue-email/${donorId}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -229,7 +231,7 @@ export default function BirthdayWishesPage() {
     setActionLoading(`donor-wa-${donorId}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/mark-sent/${donorId}`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/mark-sent/${donorId}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ channel: "WHATSAPP" }),
@@ -269,7 +271,7 @@ export default function BirthdayWishesPage() {
     setActionLoading(`ben-email-${beneficiaryId}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/send-beneficiary-wish/${beneficiaryId}`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/send-beneficiary-wish/${beneficiaryId}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -294,7 +296,7 @@ export default function BirthdayWishesPage() {
     setActionLoading(`save-template-${id}`);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch(`/api/birthday-wishes/templates/${id}`, {
+      const res = await fetch(`${API_URL}/api/birthday-wishes/templates/${id}`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         body: JSON.stringify({ subject: editSubject, body: editBody }),

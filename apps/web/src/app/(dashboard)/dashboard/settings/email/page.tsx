@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/lib/api-config";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,7 +54,7 @@ export default function EmailSettingsPage() {
   async function fetchSettings() {
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/organization-profile/email-settings", {
+      const res = await fetch(`${API_URL}/api/organization-profile/email-settings`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -86,7 +87,7 @@ export default function EmailSettingsPage() {
       }
       delete payload.hasPassword;
 
-      const res = await fetch("/api/organization-profile/email-settings", {
+      const res = await fetch(`${API_URL}/api/organization-profile/email-settings`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -130,7 +131,7 @@ export default function EmailSettingsPage() {
     setTestResult(null);
     try {
       const token = authStorage.getAccessToken();
-      const res = await fetch("/api/organization-profile/test-email", {
+      const res = await fetch(`${API_URL}/api/organization-profile/test-email`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -1,26 +1,29 @@
+const RAILWAY_URL = 'https://dms-production-598e.up.railway.app';
+const _rawUrl = process.env.NEXT_PUBLIC_API_URL || RAILWAY_URL;
+
+// In the browser, localhost URLs are unreachable (they point to the user's machine).
+// Fall back to relative paths so Next.js proxy handles routing in dev.
+// In production (Vercel), NEXT_PUBLIC_API_URL is the Railway URL and is used directly.
 const API_BASE =
-  typeof window === "undefined"
-    ? process.env.NEXT_PUBLIC_API_URL ||
-      (process.env.NODE_ENV === "production"
-        ? "https://dms-production-598e.up.railway.app"
-        : "http://localhost:3001")
-    : "";
+  typeof window !== 'undefined' && _rawUrl.startsWith('http://localhost')
+    ? ''
+    : _rawUrl;
 
 export async function apiClient<T = unknown>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
   const token =
-    typeof window !== "undefined"
-      ? (localStorage.getItem("accessToken") || localStorage.getItem("token"))
+    typeof window !== 'undefined'
+      ? (localStorage.getItem('accessToken') || localStorage.getItem('token'))
       : null;
 
-  const url = path.startsWith("http") ? path : `${API_BASE}${path}`;
+  const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
 
   const response = await fetch(url, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
@@ -32,7 +35,7 @@ export async function apiClient<T = unknown>(
       const errorBody = await response.json();
       if (errorBody?.message) {
         errorMessage = Array.isArray(errorBody.message)
-          ? errorBody.message.join(", ")
+          ? errorBody.message.join(', ')
           : String(errorBody.message);
       }
     } catch {
@@ -44,7 +47,7 @@ export async function apiClient<T = unknown>(
 
   if (
     response.status === 204 ||
-    response.headers.get("content-length") === "0"
+    response.headers.get('content-length') === '0'
   ) {
     return null as T;
   }

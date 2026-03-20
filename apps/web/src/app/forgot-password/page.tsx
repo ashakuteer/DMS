@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from "@/lib/api-config";
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      const res = await fetch("/api/auth/forgot-password", {
+      const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: username.trim() }),

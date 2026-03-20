@@ -1,14 +1,14 @@
 const RAILWAY_URL = 'https://dms-production-598e.up.railway.app';
 
-// In the browser, always use relative URLs so Next.js rewrites proxy the
-// request server-side to the correct backend (avoids "Failed to fetch" when
-// NEXT_PUBLIC_API_URL points to localhost, which is unreachable from the browser).
-// On the server side (SSR), use the configured absolute URL.
+const _rawUrl = process.env.NEXT_PUBLIC_API_URL || RAILWAY_URL;
+
+// In the browser, localhost URLs are unreachable (they point to the user's machine).
+// Fall back to relative paths so Next.js proxy handles routing in dev.
+// In production (Vercel), NEXT_PUBLIC_API_URL is the Railway URL and is used directly.
 const API_URL =
-  typeof window === 'undefined'
-    ? process.env.NEXT_PUBLIC_API_URL ||
-      (process.env.NODE_ENV === 'production' ? RAILWAY_URL : 'http://localhost:3001')
-    : '';
+  typeof window !== 'undefined' && _rawUrl.startsWith('http://localhost')
+    ? ''
+    : _rawUrl;
 
 export interface User {
   id: string;

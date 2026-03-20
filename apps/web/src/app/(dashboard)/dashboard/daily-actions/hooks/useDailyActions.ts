@@ -1,5 +1,7 @@
 "use client"
 
+import { API_URL } from "@/lib/api-config"
+
 import { useEffect, useState } from "react"
 
 import { authStorage } from "@/lib/auth"
@@ -14,7 +16,7 @@ export function useDailyActions() {
     try {
       const token = authStorage.getAccessToken()
 
-      const res = await fetch(`/api/dashboard/daily-actions`, {
+      const res = await fetch(`${API_URL}/api/dashboard/daily-actions`, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
