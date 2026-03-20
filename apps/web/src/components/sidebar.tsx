@@ -26,9 +26,11 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 interface NavItem {
   title: string;
+  tKey: string;
   href: string;
   icon: React.ElementType;
   permissionModule?: string;
@@ -36,6 +38,7 @@ interface NavItem {
 
 interface NavGroup {
   label?: string;
+  labelKey?: string;
   pinned?: boolean;
   items: NavItem[];
 }
@@ -44,68 +47,74 @@ const navGroups: NavGroup[] = [
   {
     pinned: true,
     items: [
-      { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard, permissionModule: "dashboard" },
-      { title: "Daily Actions", href: "/dashboard/daily-actions", icon: Inbox, permissionModule: "dailyActions" },
+      { title: "Dashboard", tKey: "dashboard", href: "/dashboard", icon: LayoutDashboard, permissionModule: "dashboard" },
+      { title: "Daily Actions", tKey: "daily_actions", href: "/dashboard/daily-actions", icon: Inbox, permissionModule: "dailyActions" },
     ],
   },
   {
     label: "Core",
+    labelKey: "group_core",
     items: [
-      { title: "Donors", href: "/dashboard/donors", icon: Users, permissionModule: "donors" },
-      { title: "Donations", href: "/dashboard/donations", icon: IndianRupee, permissionModule: "donations" },
-      { title: "Beneficiaries", href: "/dashboard/beneficiaries", icon: HandHeart, permissionModule: "beneficiaries" },
-      { title: "Campaigns", href: "/dashboard/campaigns", icon: Target, permissionModule: "campaigns" },
+      { title: "Donors", tKey: "donors", href: "/dashboard/donors", icon: Users, permissionModule: "donors" },
+      { title: "Donations", tKey: "donations", href: "/dashboard/donations", icon: IndianRupee, permissionModule: "donations" },
+      { title: "Beneficiaries", tKey: "beneficiaries", href: "/dashboard/beneficiaries", icon: HandHeart, permissionModule: "beneficiaries" },
+      { title: "Campaigns", tKey: "campaigns", href: "/dashboard/campaigns", icon: Target, permissionModule: "campaigns" },
     ],
   },
   {
     label: "Reports & Analytics",
+    labelKey: "group_reports_analytics",
     items: [
-      { title: "Analytics", href: "/dashboard/analytics", icon: BarChart3, permissionModule: "analytics" },
-      { title: "Impact Dashboard", href: "/dashboard/impact", icon: TrendingUp, permissionModule: "impact" },
-      { title: "Retention", href: "/dashboard/retention", icon: Repeat, permissionModule: "retention" },
-      { title: "Reports", href: "/dashboard/reports", icon: FileText, permissionModule: "reports" },
-      { title: "Donor Reports", href: "/dashboard/donor-reports", icon: FileBarChart, permissionModule: "donorReports" },
-      { title: "Report Campaigns", href: "/dashboard/report-campaigns", icon: Megaphone, permissionModule: "reportCampaigns" },
-      { title: "Progress Reports", href: "/dashboard/progress-reports", icon: ClipboardList, permissionModule: "progressReports" },
-      { title: "Home Summary", href: "/dashboard/home-summary", icon: Building2, permissionModule: "homeSummary" },
+      { title: "Analytics", tKey: "analytics", href: "/dashboard/analytics", icon: BarChart3, permissionModule: "analytics" },
+      { title: "Impact Dashboard", tKey: "impact_dashboard", href: "/dashboard/impact", icon: TrendingUp, permissionModule: "impact" },
+      { title: "Retention", tKey: "retention", href: "/dashboard/retention", icon: Repeat, permissionModule: "retention" },
+      { title: "Reports", tKey: "reports", href: "/dashboard/reports", icon: FileText, permissionModule: "reports" },
+      { title: "Donor Reports", tKey: "donor_reports", href: "/dashboard/donor-reports", icon: FileBarChart, permissionModule: "donorReports" },
+      { title: "Report Campaigns", tKey: "report_campaigns", href: "/dashboard/report-campaigns", icon: Megaphone, permissionModule: "reportCampaigns" },
+      { title: "Progress Reports", tKey: "progress_reports", href: "/dashboard/progress-reports", icon: ClipboardList, permissionModule: "progressReports" },
+      { title: "Home Summary", tKey: "home_summary", href: "/dashboard/home-summary", icon: Building2, permissionModule: "homeSummary" },
     ],
   },
   {
     label: "Communication",
+    labelKey: "group_communication",
     items: [
-      { title: "Send Message", href: "/dashboard/send-message", icon: MessageSquarePlus, permissionModule: "broadcasting" },
-      { title: "Templates", href: "/dashboard/comm-templates", icon: MessageSquareText, permissionModule: "templates" },
-      { title: "Broadcasting", href: "/dashboard/broadcasting", icon: Radio, permissionModule: "broadcasting" },
-      { title: "Donor Updates", href: "/dashboard/donor-updates", icon: Send, permissionModule: "donorUpdates" },
-      { title: "Birthday Wishes", href: "/dashboard/birthday-wishes", icon: Cake, permissionModule: "birthdayWishes" },
-      { title: "Reminders", href: "/dashboard/reminders", icon: Bell, permissionModule: "reminders" },
-      { title: "Follow-ups", href: "/dashboard/follow-ups", icon: ArrowUpRight, permissionModule: "followUps" },
+      { title: "Send Message", tKey: "send_message", href: "/dashboard/send-message", icon: MessageSquarePlus, permissionModule: "broadcasting" },
+      { title: "Templates", tKey: "templates", href: "/dashboard/comm-templates", icon: MessageSquareText, permissionModule: "templates" },
+      { title: "Broadcasting", tKey: "broadcasting", href: "/dashboard/broadcasting", icon: Radio, permissionModule: "broadcasting" },
+      { title: "Donor Updates", tKey: "donor_updates", href: "/dashboard/donor-updates", icon: Send, permissionModule: "donorUpdates" },
+      { title: "Birthday Wishes", tKey: "birthday_wishes", href: "/dashboard/birthday-wishes", icon: Cake, permissionModule: "birthdayWishes" },
+      { title: "Reminders", tKey: "reminders", href: "/dashboard/reminders", icon: Bell, permissionModule: "reminders" },
+      { title: "Follow-ups", tKey: "follow_ups", href: "/dashboard/follow-ups", icon: ArrowUpRight, permissionModule: "followUps" },
     ],
   },
   {
     label: "Staff",
+    labelKey: "group_staff",
     items: [
-      { title: "Staff & Tasks", href: "/dashboard/staff-tasks", icon: ListChecks, permissionModule: "staffTasks" },
-      { title: "Staff Contacts", href: "/dashboard/staff-management", icon: Phone, permissionModule: "users" },
+      { title: "Staff & Tasks", tKey: "staff_tasks", href: "/dashboard/staff-tasks", icon: ListChecks, permissionModule: "staffTasks" },
+      { title: "Staff Contacts", tKey: "staff_contacts", href: "/dashboard/staff-management", icon: Phone, permissionModule: "users" },
     ],
   },
   {
     label: "Admin Tools",
+    labelKey: "group_admin_tools",
     items: [
-      { title: "Users", href: "/dashboard/users", icon: UserCog, permissionModule: "users" },
-      { title: "Permissions", href: "/dashboard/permissions", icon: Lock, permissionModule: "permissions" },
-      { title: "Document Vault", href: "/dashboard/ngo-documents", icon: FolderLock, permissionModule: "ngoDocuments" },
-      { title: "Audit Log", href: "/dashboard/audit-log", icon: ShieldCheck, permissionModule: "auditLog" },
-      { title: "Backup & Restore", href: "/dashboard/backup", icon: DatabaseBackup, permissionModule: "backup" },
-      { title: "Archive", href: "/dashboard/admin/archive", icon: ArchiveRestore, permissionModule: "archive" },
+      { title: "Users", tKey: "users", href: "/dashboard/users", icon: UserCog, permissionModule: "users" },
+      { title: "Permissions", tKey: "permissions", href: "/dashboard/permissions", icon: Lock, permissionModule: "permissions" },
+      { title: "Document Vault", tKey: "document_vault", href: "/dashboard/ngo-documents", icon: FolderLock, permissionModule: "ngoDocuments" },
+      { title: "Audit Log", tKey: "audit_log", href: "/dashboard/audit-log", icon: ShieldCheck, permissionModule: "auditLog" },
+      { title: "Backup & Restore", tKey: "backup_restore", href: "/dashboard/backup", icon: DatabaseBackup, permissionModule: "backup" },
+      { title: "Archive", tKey: "archive", href: "/dashboard/admin/archive", icon: ArchiveRestore, permissionModule: "archive" },
     ],
   },
   {
     label: "System",
+    labelKey: "group_system",
     items: [
-      { title: "Time Machine", href: "/dashboard/time-machine", icon: Clock, permissionModule: "timeMachine" },
-      { title: "Milestones", href: "/dashboard/milestones", icon: Milestone, permissionModule: "milestones" },
-      { title: "Settings", href: "/dashboard/settings", icon: Settings, permissionModule: "settings" },
+      { title: "Time Machine", tKey: "time_machine", href: "/dashboard/time-machine", icon: Clock, permissionModule: "timeMachine" },
+      { title: "Milestones", tKey: "milestones", href: "/dashboard/milestones", icon: Milestone, permissionModule: "milestones" },
+      { title: "Settings", tKey: "settings", href: "/dashboard/settings", icon: Settings, permissionModule: "settings" },
     ],
   },
 ];
@@ -123,6 +132,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const [mounted, setMounted] = useState(false);
   const { canAccessModule } = usePermissions();
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
+  const { t } = useTranslation();
 
   useEffect(() => {
     setMounted(true);
@@ -208,7 +218,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             const items = getFilteredItems(group);
             if (items.length === 0) return null;
 
-            /* ── Pinned items (Dashboard, Daily Actions) ── */
+            /* Pinned items (Dashboard, Daily Actions) */
             if (group.pinned) {
               return (
                 <div key={groupIdx} className="mb-2">
@@ -227,7 +237,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                           data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                         >
                           <item.icon className="h-4 w-4 flex-shrink-0" />
-                          {!collapsed && <span className="truncate flex-1">{item.title}</span>}
+                          {!collapsed && <span className="truncate flex-1">{t(item.tKey)}</span>}
                           {!collapsed && active && <ChevronRight className="ml-auto h-3 w-3 flex-shrink-0 text-orange-200" />}
                         </div>
                       </Link>
@@ -238,7 +248,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               );
             }
 
-            /* ── Collapsed: show icons only ── */
+            /* Collapsed: show icons only */
             if (collapsed) {
               return (
                 <div key={groupIdx} className="py-0.5">
@@ -251,7 +261,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                             "flex items-center justify-center rounded-lg p-2 transition-all cursor-pointer",
                             active ? "bg-orange-500 text-white shadow-sm" : "text-foreground/50 hover:text-foreground hover:bg-muted"
                           )}
-                          title={item.title}
+                          title={t(item.tKey)}
                           data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                         >
                           <item.icon className="h-4 w-4" />
@@ -263,7 +273,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               );
             }
 
-            /* ── Collapsible group ── */
+            /* Collapsible group */
             const isExpanded = expandedGroups[group.label!] ?? false;
             const hasActive = items.some(isItemActive);
 
@@ -276,7 +286,9 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                     hasActive ? "text-orange-600" : "text-muted-foreground hover:text-foreground/70"
                   )}
                 >
-                  <span className="truncate flex-1 text-left">{group.label}</span>
+                  <span className="truncate flex-1 text-left">
+                    {group.labelKey ? t(group.labelKey) : group.label}
+                  </span>
                   <ChevronDown className={cn("h-3 w-3 flex-shrink-0 transition-transform duration-200", isExpanded && "rotate-180")} />
                 </button>
 
@@ -296,7 +308,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                             data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                           >
                             <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
-                            <span className="truncate">{item.title}</span>
+                            <span className="truncate">{t(item.tKey)}</span>
                           </div>
                         </Link>
                       );
@@ -323,7 +335,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           data-testid="button-theme-toggle"
         >
           {theme === "dark" ? <Sun className="h-4 w-4 flex-shrink-0" /> : <Moon className="h-4 w-4 flex-shrink-0" />}
-          {!collapsed && <span className="text-xs">{theme === "dark" ? "Light mode" : "Dark mode"}</span>}
+          {!collapsed && <span className="text-xs">{theme === "dark" ? t("light_mode") : t("dark_mode")}</span>}
         </button>
 
         <DropdownMenu>
@@ -362,7 +374,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               data-testid="button-logout"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
+              <span>{t("log_out")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

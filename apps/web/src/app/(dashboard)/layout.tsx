@@ -7,6 +7,7 @@ import { Sidebar } from "@/components/sidebar";
 import { GlobalSearchTrigger } from "@/components/global-search";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { PermissionProvider } from "@/lib/permission-provider";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export default function DashboardLayout({
   children,
@@ -49,6 +50,9 @@ export default function DashboardLayout({
               <div className="flex items-center gap-4 px-4 h-full sm:px-6">
                 <div className="flex-1 max-w-md">
                   <GlobalSearchTrigger />
+                </div>
+                <div className="ml-auto">
+                  <LanguageSwitcher />
                 </div>
               </div>
             </header>

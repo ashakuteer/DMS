@@ -1,5 +1,6 @@
 "use client";
 
+import "@/i18n";
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
