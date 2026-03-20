@@ -82,6 +82,10 @@ export class BeneficiariesService {
     return this.sponsorship.getSponsorshipsByBeneficiary(beneficiaryId);
   }
 
+  sendUpdateToSponsor(userId: string, sponsorshipId: string) {
+    return this.sponsorship.sendUpdateToSponsor(userId, sponsorshipId);
+  }
+
   createSponsorshipForDonor(user: any, dto: any) {
     return this.sponsorship.createSponsorshipForDonor(user, dto);
   }

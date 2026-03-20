@@ -169,12 +169,14 @@ export function useDonorSponsorships(donorId: string, donorPhone?: string | null
     }
   }, [toast]);
 
-  const onSendWhatsApp = useCallback((sponsorship: SponsoredBeneficiary, message: string) => {
-    const phone = donorPhone?.replace(/\D/g, "");
-    if (phone) {
-      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(message)}`, "_blank");
+  const onSendUpdate = useCallback(async (sponsorship: SponsoredBeneficiary) => {
+    try {
+      const res = await apiClient(`/api/sponsorships/${sponsorship.id}/send-update`, { method: "POST" });
+      toast({ title: "Update Sent", description: "Latest update sent to this sponsorship." });
+    } catch (err: any) {
+      toast({ title: "Error", description: err?.message || "Failed to send update", variant: "destructive" });
     }
-  }, [donorPhone]);
+  }, [toast]);
 
   const onCopyMessage = useCallback((message: string) => {
     navigator.clipboard.writeText(message).then(() => {
@@ -221,7 +223,7 @@ export function useDonorSponsorships(donorId: string, donorPhone?: string | null
     onViewHistory,
 
     onDeleteSponsorship,
-    onSendWhatsApp,
+    onSendUpdate,
     onCopyMessage,
     onViewBeneficiary,
     onViewAllBeneficiaries,

@@ -90,17 +90,27 @@ export function useDonorCommunication(
     });
   }, []);
 
-  const openWhatsApp = useCallback((
+  const openWhatsApp = useCallback(async (
     message: string,
     _templateId?: string,
     _donationId?: string,
     _type?: string,
   ) => {
-    const phone = donor?.whatsappPhone || donor?.primaryPhone || "";
-    if (!phone) return;
-    const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/${phone.replace(/\D/g, "")}?text=${encoded}`, "_blank");
-  }, [donor]);
+    const toE164 = donor?.whatsappPhone || donor?.primaryPhone || "";
+    if (!toE164) return;
+    try {
+      const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ donorId, toE164, message, type: _type || "FREEFORM" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || "Failed to send");
+    } catch (err: any) {
+      console.error("WhatsApp send failed:", err?.message);
+      throw err;
+    }
+  }, [donor, donorId]);
 
   const openEmailComposer = useCallback((
     _template: Template | null,

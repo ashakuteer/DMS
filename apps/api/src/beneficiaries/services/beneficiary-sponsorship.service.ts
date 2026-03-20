@@ -1,12 +1,21 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException, Logger } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
+import { CommunicationsService } from "../../communications/communications.service";
+import { EmailService } from "../../email/email.service";
+import { CommunicationLogService } from "../../communication-log/communication-log.service";
+import { CommunicationType } from "@prisma/client";
 
 @Injectable()
 export class BeneficiarySponsorshipService {
 
   private readonly logger = new Logger(BeneficiarySponsorshipService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private communicationsService: CommunicationsService,
+    private emailService: EmailService,
+    private communicationLogService: CommunicationLogService,
+  ) {}
 
   async getSponsors(beneficiaryId: string) {
 
@@ -200,6 +209,113 @@ export class BeneficiarySponsorshipService {
 
   async getSponsorshipSummary() {
     return this.prisma.sponsorship.count();
+  }
+
+  async sendUpdateToSponsor(userId: string, sponsorshipId: string) {
+    const sponsorship = await this.prisma.sponsorship.findUnique({
+      where: { id: sponsorshipId },
+      include: {
+        donor: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            personalEmail: true,
+            officialEmail: true,
+            whatsappPhone: true,
+            primaryPhone: true,
+            primaryPhoneCode: true,
+          },
+        },
+        beneficiary: {
+          select: { id: true, fullName: true },
+        },
+      },
+    });
+
+    if (!sponsorship) throw new NotFoundException("Sponsorship not found");
+
+    const latestUpdate = await this.prisma.beneficiaryUpdate.findFirst({
+      where: { beneficiaryId: sponsorship.beneficiaryId, isPrivate: false },
+      orderBy: { createdAt: "desc" },
+      select: { title: true, content: true },
+    });
+
+    const { donor, beneficiary } = sponsorship;
+    const donorName = [donor.firstName, donor.lastName].filter(Boolean).join(" ") || "Valued Sponsor";
+    const beneficiaryName = beneficiary.fullName;
+
+    const updateBody = latestUpdate
+      ? `*${latestUpdate.title}*\n${latestUpdate.content}`
+      : `Thank you for your continued support for ${beneficiaryName}.`;
+
+    const message = `Dear ${donorName},\n\nUpdate about ${beneficiaryName}:\n\n${updateBody}`;
+
+    const emailSubject = `Update about ${beneficiaryName}`;
+    const emailHtml = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #2d6a4f;">Update about ${beneficiaryName}</h2>
+        <p>Dear ${donorName},</p>
+        ${latestUpdate ? `<h3>${latestUpdate.title}</h3><p style="white-space: pre-wrap;">${latestUpdate.content}</p>` : `<p>Thank you for your continued support for ${beneficiaryName}.</p>`}
+        <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;" />
+        <p style="color: #888; font-size: 12px;">This message was sent from the Asha Kuteer Foundation.</p>
+      </div>
+    `;
+
+    const results: { whatsapp?: string; email?: string } = {};
+
+    const { normalizeToE164 } = await import("../../common/phone-utils");
+    const rawPhone = donor.whatsappPhone || donor.primaryPhone;
+    if (rawPhone) {
+      const e164 = normalizeToE164(rawPhone, donor.primaryPhoneCode);
+      if (e164) {
+        try {
+          await this.communicationsService.sendFreeform(donor.id, e164, message, "UPDATE_NOTIFICATION", userId);
+          results.whatsapp = "sent";
+          this.logger.log(`WhatsApp sent to donor ${donor.id} for sponsorship ${sponsorshipId}`);
+        } catch (err: any) {
+          results.whatsapp = "failed";
+          this.logger.warn(`WhatsApp failed for donor ${donor.id}: ${err?.message}`);
+        }
+      }
+    }
+
+    const donorEmail = donor.personalEmail || donor.officialEmail;
+    if (donorEmail) {
+      try {
+        const result = await this.emailService.sendEmail({
+          to: donorEmail,
+          subject: emailSubject,
+          html: emailHtml,
+          text: message,
+          featureType: "MANUAL",
+        });
+
+        await this.communicationLogService.logEmail({
+          donorId: donor.id,
+          toEmail: donorEmail,
+          subject: emailSubject,
+          messagePreview: `Manual update notification: ${latestUpdate?.title ?? "(no update)"}`,
+          status: result.success ? "SENT" : "FAILED",
+          errorMessage: result.error,
+          sentById: userId,
+          type: CommunicationType.GENERAL,
+        });
+
+        results.email = result.success ? "sent" : "failed";
+      } catch (err: any) {
+        results.email = "failed";
+        this.logger.warn(`Email failed for donor ${donor.id}: ${err?.message}`);
+      }
+    }
+
+    return {
+      success: true,
+      donorName,
+      beneficiaryName,
+      results,
+      latestUpdateTitle: latestUpdate?.title ?? null,
+    };
   }
 
 }

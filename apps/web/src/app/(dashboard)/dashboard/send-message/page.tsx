@@ -90,6 +90,27 @@ export default function SendMessagePage() {
   const [groupDonorType, setGroupDonorType] = useState("");
   const [groupResults, setGroupResults] = useState<Donor[]>([]);
   const [loadingGroup, setLoadingGroup] = useState(false);
+  const [sendingWhatsapp, setSendingWhatsapp] = useState<Record<string, boolean>>({});
+
+  const handleSendWhatsApp = useCallback(async (donor: Donor, message: string) => {
+    const toE164 = donor.whatsappPhone || donor.primaryPhone || "";
+    if (!toE164) return;
+    setSendingWhatsapp((prev) => ({ ...prev, [donor.id]: true }));
+    try {
+      const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ donorId: donor.id, toE164, message, type: "FREEFORM" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || "Failed to send");
+      toast({ title: "Sent", description: `WhatsApp message sent to ${donor.firstName}.` });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Could not send message.", variant: "destructive" });
+    } finally {
+      setSendingWhatsapp((prev) => ({ ...prev, [donor.id]: false }));
+    }
+  }, [toast]);
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
   const recipients = recipientMode === "individual" ? selectedDonors : groupResults;
@@ -513,11 +534,14 @@ export default function SendMessagePage() {
                             size="sm"
                             variant="outline"
                             className="text-green-700 border-green-300 hover:bg-green-50 dark:text-green-400 dark:border-green-700 dark:hover:bg-green-950 gap-1.5"
-                            onClick={() => window.open(`https://wa.me/${phone}?text=${encodeURIComponent(waMessage)}`, "_blank")}
+                            onClick={() => handleSendWhatsApp(donor, waMessage)}
+                            disabled={sendingWhatsapp[donor.id]}
                             data-testid={`button-send-whatsapp-${donor.donorCode}`}
                           >
-                            <SiWhatsapp className="h-3.5 w-3.5" />
-                            <ExternalLink className="h-3 w-3" />
+                            {sendingWhatsapp[donor.id]
+                              ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                              : <SiWhatsapp className="h-3.5 w-3.5" />
+                            }
                           </Button>
                         ) : (
                           <Button size="sm" variant="ghost" disabled className="text-xs text-muted-foreground">No phone</Button>

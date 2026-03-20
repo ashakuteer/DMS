@@ -152,7 +152,7 @@ export default function DonorProfilePage() {
             onViewAllBeneficiaries={sponsorships.onViewAllBeneficiaries}
             onOpenStatusChange={sponsorships.onOpenStatusChange}
             onViewHistory={sponsorships.onViewHistory}
-            onSendWhatsApp={sponsorships.onSendWhatsApp}
+            onSendUpdate={sponsorships.onSendUpdate}
             onCopyMessage={sponsorships.onCopyMessage}
             onViewBeneficiary={sponsorships.onViewBeneficiary}
             onAddSponsorship={sponsorships.onAddSponsorship}

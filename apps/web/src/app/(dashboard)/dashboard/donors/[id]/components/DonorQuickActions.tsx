@@ -94,13 +94,29 @@ export default function DonorQuickActions({
     }
   };
 
-  const handleSendWhatsApp = () => {
+  const [sendingWhatsapp, setSendingWhatsapp] = useState(false);
+
+  const handleSendWhatsApp = async () => {
     const template = templates.find((t) => t.id === selectedTemplateId) || templates[0];
     if (!template) return;
     const message = resolvePlaceholders(template.whatsappMessage, donor, latestDonation);
-    const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
-    setWhatsappDialogOpen(false);
+    const toE164 = donor.whatsappPhone || donor.primaryPhone || "";
+    setSendingWhatsapp(true);
+    try {
+      const res = await fetchWithAuth("/api/communications/whatsapp/send-freeform", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ donorId, toE164, message, type: "FREEFORM" }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || "Failed to send");
+      toast({ title: "WhatsApp Sent", description: "Message sent to donor." });
+      setWhatsappDialogOpen(false);
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Could not send WhatsApp message.", variant: "destructive" });
+    } finally {
+      setSendingWhatsapp(false);
+    }
   };
 
   const handleSendEmail = () => {
@@ -225,10 +241,14 @@ export default function DonorQuickActions({
               <Button
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                 onClick={handleSendWhatsApp}
+                disabled={sendingWhatsapp}
                 data-testid="button-confirm-whatsapp"
               >
-                <Send className="h-4 w-4 mr-2" />
-                Open WhatsApp
+                {sendingWhatsapp
+                  ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  : <Send className="h-4 w-4 mr-2" />
+                }
+                {sendingWhatsapp ? "Sending..." : "Send Message"}
               </Button>
             </div>
           </div>

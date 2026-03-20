@@ -1,0 +1,100 @@
+Remove all manual WhatsApp (web) logic and replace with backend-driven messaging.
+
+------------------------------------
+STEP 1: REMOVE OLD WHATSAPP CODE
+------------------------------------
+
+Search entire codebase and REMOVE:
+
+1. Any usage of:
+- api.whatsapp.com
+- wa.me
+- window.open
+- whatsapp/send
+- hardcoded number like 9700700700
+
+2. Remove any function like:
+sendWhatsAppMessage()
+openWhatsApp()
+handleWhatsAppClick()
+
+------------------------------------
+STEP 2: REMOVE FRONTEND WHATSAPP LINK BUTTON
+------------------------------------
+
+In Sponsorship card:
+
+- Remove direct WhatsApp link button
+- Replace with API call button
+
+------------------------------------
+STEP 3: CREATE BACKEND API
+------------------------------------
+
+POST /api/sponsorships/:id/send-update
+
+Logic:
+
+1. Get sponsorship
+2. Get donor details
+3. Get beneficiary + latest update
+
+4. Prepare message:
+
+"Update about {beneficiaryName}:
+{title} - {description}"
+
+5. Send via Twilio:
+
+await twilioClient.messages.create({
+  body: message,
+  from: 'whatsapp:+14155238886',
+  to: `whatsapp:${donor.phone}`
+});
+
+6. Send Email:
+
+await mailService.sendMail({
+  to: donor.email,
+  subject: "Update about " + beneficiaryName,
+  text: message
+});
+
+------------------------------------
+STEP 4: CONNECT FRONTEND BUTTON
+------------------------------------
+
+On click of WhatsApp icon:
+
+Call:
+POST /api/sponsorships/:id/send-update
+
+DO NOT open any link
+
+------------------------------------
+STEP 5: ADD EMAIL BUTTON
+------------------------------------
+
+Add Email button beside WhatsApp:
+
+On click:
+POST /api/sponsorships/:id/send-update
+
+(Backend decides WhatsApp + Email both)
+
+------------------------------------
+STEP 6: OPTIONAL (AUTO TRIGGER)
+------------------------------------
+
+When update is created:
+
+Automatically call:
+send-update for all sponsors
+
+------------------------------------
+
+GOAL:
+- No WhatsApp Web
+- No hardcoded numbers
+- Messages sent from backend
+- Email + WhatsApp both supported

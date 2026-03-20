@@ -121,7 +121,7 @@ export default function BeneficiaryProfilePage() {
             onDeleteSponsorship={actions.deleteSponsorship}
             onCopyMessage={actions.copyMessage}
             onViewDonorProfile={actions.viewDonorProfile}
-            onSendWhatsApp={actions.sendWhatsApp}
+            onSendUpdate={actions.sendUpdate}
           />
         </TabsContent>
 

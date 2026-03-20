@@ -1,15 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { format } from "date-fns";
-import { Copy, Edit, ExternalLink, Heart, History, Trash2 } from "lucide-react";
-import { SiWhatsapp } from "react-icons/si";
+import { Copy, Edit, ExternalLink, Heart, History, Loader2, Send, Trash2 } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { Loader2 } from "lucide-react";
 import type { Sponsorship } from "../types";
 import { formatAmount, getStatusBadgeVariant } from "../utils";
 
@@ -23,7 +22,7 @@ interface BeneficiarySponsorsTabProps {
   onDeleteSponsorship: (sponsorshipId: string) => void;
   onCopyMessage: (sponsorship: Sponsorship) => void;
   onViewDonorProfile: (donorId: string) => void;
-  onSendWhatsApp: (sponsorship: Sponsorship) => void;
+  onSendUpdate: (sponsorshipId: string) => Promise<void>;
 }
 
 export default function BeneficiarySponsorsTab({
@@ -36,9 +35,19 @@ export default function BeneficiarySponsorsTab({
   onDeleteSponsorship,
   onCopyMessage,
   onViewDonorProfile,
-  onSendWhatsApp,
+  onSendUpdate,
 }: BeneficiarySponsorsTabProps) {
   const sponsorships = sponsors ?? [];
+  const [sendingUpdate, setSendingUpdate] = useState<string | null>(null);
+
+  const handleSendUpdate = async (sponsorshipId: string) => {
+    setSendingUpdate(sponsorshipId);
+    try {
+      await onSendUpdate(sponsorshipId);
+    } finally {
+      setSendingUpdate(null);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -202,17 +211,19 @@ export default function BeneficiarySponsorsTab({
                     Copy Message
                   </Button>
 
-                  {sponsorship.donor.primaryPhone && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onSendWhatsApp(sponsorship)}
-                      data-testid={`button-whatsapp-${sponsorship.id}`}
-                    >
-                      <SiWhatsapp className="h-4 w-4 mr-1" />
-                      WhatsApp
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleSendUpdate(sponsorship.id)}
+                    disabled={sendingUpdate === sponsorship.id}
+                    data-testid={`button-send-update-${sponsorship.id}`}
+                  >
+                    {sendingUpdate === sponsorship.id
+                      ? <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      : <Send className="h-4 w-4 mr-1" />
+                    }
+                    Send Update
+                  </Button>
 
                   {canEdit && (
                     <Button

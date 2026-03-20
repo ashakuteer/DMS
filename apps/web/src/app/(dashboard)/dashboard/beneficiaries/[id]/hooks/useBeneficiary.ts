@@ -842,23 +842,32 @@ export function useBeneficiary(beneficiaryId: string) {
     }
   };
 
-  const generateWhatsAppMessage = (sponsorship: Sponsorship) => {
+  const buildSponsorMessage = (sponsorship: Sponsorship) => {
     if (!beneficiary) return "";
     const donorName = `${sponsorship.donor.firstName} ${sponsorship.donor.lastName || ""}`.trim();
-    const message = `Dear ${donorName},\n\nThank you for your continued support for ${beneficiary.fullName} at Asha Kuteer Foundation.\n\nYour sponsorship means the world to them and helps us provide care, education, and a loving home.\n\nWith gratitude,\nAsha Kuteer Foundation`;
-    return encodeURIComponent(message);
+    return `Dear ${donorName},\n\nThank you for your continued support for ${beneficiary.fullName} at Asha Kuteer Foundation.\n\nYour sponsorship means the world to them and helps us provide care, education, and a loving home.\n\nWith gratitude,\nAsha Kuteer Foundation`;
   };
 
   const handleCopyMessage = (sponsorship: Sponsorship) => {
-    const message = decodeURIComponent(generateWhatsAppMessage(sponsorship));
+    const message = buildSponsorMessage(sponsorship);
     navigator.clipboard.writeText(message);
     toast({ title: "Copied", description: "Message copied to clipboard" });
   };
 
-  const handleSendWhatsApp = (sponsorship: Sponsorship) => {
-    const message = generateWhatsAppMessage(sponsorship);
-    const phone = sponsorship.donor.primaryPhone?.replace(/\D/g, "") || "";
-    window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+  const handleSendUpdate = async (sponsorshipId: string) => {
+    try {
+      const response = await fetchWithAuth(`/api/sponsorships/${sponsorshipId}/send-update`, { method: "POST" });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.message || "Failed to send update");
+      toast({
+        title: "Update Sent",
+        description: data.results
+          ? `WhatsApp: ${data.results.whatsapp ?? "skipped"} · Email: ${data.results.email ?? "skipped"}`
+          : "Update sent to sponsor.",
+      });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Failed to send update", variant: "destructive" });
+    }
   };
 
   const handleViewDonorProfile = (donorId: string) => {
@@ -1048,7 +1057,7 @@ export function useBeneficiary(beneficiaryId: string) {
       deleteSponsorship: handleDeleteSponsorship,
       copyMessage: handleCopyMessage,
       viewDonorProfile: handleViewDonorProfile,
-      sendWhatsApp: handleSendWhatsApp,
+      sendUpdate: handleSendUpdate,
       openAddUpdate: () => setShowAddUpdateDialog(true),
       openSendToSponsors: handleOpenSendToSponsors,
       openAddMetric: () => setShowAddMetricDialog(true),

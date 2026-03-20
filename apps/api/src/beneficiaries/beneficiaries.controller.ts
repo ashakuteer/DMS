@@ -580,6 +580,15 @@ export class SponsorshipsController {
     return this.beneficiariesService.deleteSponsorship(id);
   }
 
+  @Post(':id/send-update')
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  async sendUpdate(
+    @CurrentUser() user: UserContext,
+    @Param('id') id: string,
+  ) {
+    return this.beneficiariesService.sendUpdateToSponsor(user.id, id);
+  }
+
   @Post(':id/mark-paid')
   @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async markPaid(

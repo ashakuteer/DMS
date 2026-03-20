@@ -1,7 +1,6 @@
 "use client";
 
-import { Copy, Edit, ExternalLink, Heart, History, Loader2, Plus, Trash2 } from "lucide-react";
-import { SiWhatsapp } from "react-icons/si";
+import { Copy, Edit, ExternalLink, Heart, History, Loader2, Plus, Send, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,7 @@ interface DonorSponsorshipsTabProps {
   onViewAllBeneficiaries: () => void;
   onOpenStatusChange: (sponsorship: SponsoredBeneficiary) => void;
   onViewHistory: (sponsorship: SponsoredBeneficiary) => void;
-  onSendWhatsApp: (sponsorship: SponsoredBeneficiary, message: string) => void;
+  onSendUpdate: (sponsorship: SponsoredBeneficiary) => void;
   onCopyMessage: (message: string) => void;
   onViewBeneficiary: (beneficiaryId: string) => void;
   onAddSponsorship?: () => void;
@@ -37,7 +36,7 @@ export default function DonorSponsorshipsTab({
   onViewAllBeneficiaries,
   onOpenStatusChange,
   onViewHistory,
-  onSendWhatsApp,
+  onSendUpdate,
   onCopyMessage,
   onViewBeneficiary,
   onAddSponsorship,
@@ -317,13 +316,13 @@ export default function DonorSponsorshipsTab({
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => onSendWhatsApp(sponsorship, sponsorshipMessage)}
-                                data-testid={`button-whatsapp-sponsorship-${sponsorship.id}`}
+                                onClick={() => onSendUpdate(sponsorship)}
+                                data-testid={`button-send-update-sponsorship-${sponsorship.id}`}
                               >
-                                <SiWhatsapp className="h-4 w-4 text-green-600" />
+                                <Send className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Send WhatsApp message</TooltipContent>
+                            <TooltipContent>Send latest update</TooltipContent>
                           </Tooltip>
 
                           <Tooltip>
