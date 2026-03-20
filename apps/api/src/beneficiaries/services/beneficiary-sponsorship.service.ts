@@ -68,6 +68,69 @@ export class BeneficiarySponsorshipService {
     });
   }
 
+  async getSponsorsByDonor(donorId: string) {
+    return this.prisma.sponsorship.findMany({
+      where: { donorId },
+      include: {
+        beneficiary: {
+          select: {
+            id: true,
+            code: true,
+            fullName: true,
+            homeType: true,
+            photoUrl: true,
+            status: true,
+            updates: {
+              select: { id: true, title: true, content: true, updateType: true, createdAt: true },
+              orderBy: { createdAt: "desc" },
+              take: 3,
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async createSponsorshipForDonor(user: any, dto: {
+    donorId: string;
+    beneficiaryId: string;
+    sponsorshipType: string;
+    amount?: number;
+    currency?: string;
+    frequency?: string;
+    startDate?: string;
+    status?: string;
+    notes?: string;
+  }) {
+    return this.prisma.sponsorship.create({
+      data: {
+        donorId: dto.donorId,
+        beneficiaryId: dto.beneficiaryId,
+        sponsorshipType: dto.sponsorshipType as any,
+        amount: dto.amount ?? null,
+        currency: dto.currency ?? "INR",
+        frequency: (dto.frequency ?? "MONTHLY") as any,
+        startDate: dto.startDate ? new Date(dto.startDate) : null,
+        status: (dto.status ?? "ACTIVE") as any,
+        notes: dto.notes ?? null,
+        isActive: (dto.status ?? "ACTIVE") === "ACTIVE",
+      },
+      include: {
+        beneficiary: {
+          select: {
+            id: true,
+            code: true,
+            fullName: true,
+            homeType: true,
+            photoUrl: true,
+            status: true,
+          },
+        },
+      },
+    });
+  }
+
   async getSponsorshipSummary() {
     return this.prisma.sponsorship.count();
   }

@@ -533,6 +533,21 @@ export class SponsorshipsController {
     return this.beneficiariesService.getSponsorshipSummary();
   }
 
+  @Get('donor/:donorId')
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  async getByDonor(@Param('donorId') donorId: string) {
+    return this.beneficiariesService.getDonorSponsorships(donorId);
+  }
+
+  @Post()
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  async create(
+    @CurrentUser() user: UserContext,
+    @Body() dto: any,
+  ) {
+    return this.beneficiariesService.createSponsorshipForDonor(user, dto);
+  }
+
   @Patch(':id')
   @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async update(

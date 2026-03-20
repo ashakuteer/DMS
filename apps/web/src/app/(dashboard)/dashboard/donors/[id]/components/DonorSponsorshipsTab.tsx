@@ -1,6 +1,6 @@
 "use client";
 
-import { Copy, Edit, ExternalLink, Heart, History, Loader2 } from "lucide-react";
+import { Copy, Edit, ExternalLink, Heart, History, Loader2, Plus, Trash2 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,8 @@ interface DonorSponsorshipsTabProps {
   onSendWhatsApp: (sponsorship: SponsoredBeneficiary, message: string) => void;
   onCopyMessage: (message: string) => void;
   onViewBeneficiary: (beneficiaryId: string) => void;
+  onAddSponsorship?: () => void;
+  onDeleteSponsorship?: (sponsorshipId: string) => void;
 }
 
 export default function DonorSponsorshipsTab({
@@ -38,24 +40,34 @@ export default function DonorSponsorshipsTab({
   onSendWhatsApp,
   onCopyMessage,
   onViewBeneficiary,
+  onAddSponsorship,
+  onDeleteSponsorship,
 }: DonorSponsorshipsTabProps) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
             <CardTitle>Sponsored Beneficiaries</CardTitle>
             <CardDescription>
               Children and elderly this donor supports
             </CardDescription>
           </div>
-          <Button
-            variant="outline"
-            onClick={onViewAllBeneficiaries}
-            data-testid="button-view-all-beneficiaries"
-          >
-            View All Beneficiaries
-          </Button>
+          <div className="flex gap-2">
+            {canEditSponsorship && onAddSponsorship && (
+              <Button onClick={onAddSponsorship} data-testid="button-add-sponsorship">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Sponsorship
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={onViewAllBeneficiaries}
+              data-testid="button-view-all-beneficiaries"
+            >
+              View All Beneficiaries
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -341,6 +353,23 @@ export default function DonorSponsorshipsTab({
                             </TooltipTrigger>
                             <TooltipContent>View beneficiary profile</TooltipContent>
                           </Tooltip>
+
+                          {canEditSponsorship && onDeleteSponsorship && (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-destructive hover:text-destructive"
+                                  onClick={() => onDeleteSponsorship(sponsorship.id)}
+                                  data-testid={`button-delete-sponsorship-${sponsorship.id}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>Delete sponsorship</TooltipContent>
+                            </Tooltip>
+                          )}
                         </div>
                       </div>
                     </div>
