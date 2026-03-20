@@ -16,6 +16,8 @@ import { AuditModule } from "../audit/audit.module";
 import { EmailModule } from "../email/email.module";
 import { EmailJobsModule } from "../email-jobs/email-jobs.module";
 import { StorageModule } from "../storage/storage.module";
+import { CommunicationsModule } from "../communications/communications.module";
+import { CommunicationLogModule } from "../communication-log/communication-log.module";
 
 import { BeneficiaryCoreService } from "./services/beneficiary-core.service";
 import { BeneficiarySponsorshipService } from "./services/beneficiary-sponsorship.service";
@@ -33,6 +35,8 @@ import { BeneficiaryRemindersService } from "./services/beneficiary-reminders.se
     EmailModule,
     EmailJobsModule,
     StorageModule,
+    CommunicationsModule,
+    CommunicationLogModule,
   ],
   controllers: [
     BeneficiariesController,
