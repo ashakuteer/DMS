@@ -193,6 +193,15 @@ export class EmailService {
   }
 
   async sendEmail(options: EmailOptions): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    // If TEST_EMAIL is set, redirect all outgoing emails to that address.
+    // This prevents emails reaching unmonitored inboxes (staff@ngo.org, etc.)
+    // while keeping the system fully testable. Remove TEST_EMAIL to restore real delivery.
+    const testEmail = process.env.TEST_EMAIL;
+    if (testEmail && options.to !== testEmail) {
+      this.logger.log(`[TEST_EMAIL] Redirecting email from ${options.to} → ${testEmail}`);
+      options = { ...options, to: testEmail };
+    }
+
     if (this.emailRelayUrl) {
       const relayResult = await this.sendViaRelay(options);
       if (relayResult.success) return relayResult;
@@ -426,6 +435,12 @@ Website: ${org.website}
   private async sendEmailWithInline(options: EmailOptions & {
     inlineAttachments?: Array<{ filename: string; content: Buffer; cid: string; contentType: string }>;
   }): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const testEmail = process.env.TEST_EMAIL;
+    if (testEmail && options.to !== testEmail) {
+      this.logger.log(`[TEST_EMAIL] Redirecting email from ${options.to} → ${testEmail}`);
+      options = { ...options, to: testEmail };
+    }
+
     if (this.emailRelayUrl) {
       const relayResult = await this.sendViaRelay(options);
       if (relayResult.success) return relayResult;
