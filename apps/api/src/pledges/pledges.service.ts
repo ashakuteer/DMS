@@ -523,7 +523,7 @@ export class PledgesService {
   }
 
   async delete(user: UserContext, id: string, ipAddress: string, userAgent: string) {
-    if (user.role !== Role.ADMIN) {
+    if (user.role !== Role.ADMIN && user.role !== Role.FOUNDER) {
       throw new ForbiddenException('Only admins can delete pledges');
     }
 

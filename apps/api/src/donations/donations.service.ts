@@ -433,7 +433,7 @@ export class DonationsService {
     ipAddress?: string,
     userAgent?: string,
   ) {
-    if (user.role !== Role.ADMIN) {
+    if (user.role !== Role.ADMIN && user.role !== Role.FOUNDER) {
       throw new ForbiddenException("Only administrators can delete donations");
     }
 

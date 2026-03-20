@@ -54,7 +54,7 @@ export class DonorRelationsService {
   ) {}
 
   private canEdit(user: UserContext): boolean {
-    return user.role === Role.ADMIN || user.role === Role.STAFF;
+    return user.role === Role.FOUNDER || user.role === Role.ADMIN || user.role === Role.STAFF;
   }
 
   private validateMonthDay(month: number | undefined | null, day: number | undefined | null, required: boolean = false): void {

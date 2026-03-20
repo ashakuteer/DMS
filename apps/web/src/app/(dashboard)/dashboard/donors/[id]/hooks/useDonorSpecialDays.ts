@@ -67,6 +67,7 @@ export function useDonorSpecialDays(donorId: string) {
   }, [fetchSpecialOccasions])
 
   const onDelete = useCallback(async (occasionId: string) => {
+    if (!confirm("Are you sure you want to delete this special day? This cannot be undone.")) return
     setDeletingSpecialOccasionId(occasionId)
     try {
       await apiClient(
@@ -74,12 +75,14 @@ export function useDonorSpecialDays(donorId: string) {
         { method: "DELETE" }
       )
       setSpecialOccasions((prev) => prev.filter((o) => o.id !== occasionId))
-    } catch {
-      console.error("Failed to delete special occasion")
+      toast({ title: "Special Day Deleted", description: "The special occasion has been removed." })
+    } catch (err: any) {
+      console.error("Failed to delete special occasion:", err?.message)
+      toast({ title: "Delete Failed", description: err?.message || "Could not delete the special day.", variant: "destructive" })
     } finally {
       setDeletingSpecialOccasionId(null)
     }
-  }, [])
+  }, [toast])
 
   const onAdd = useCallback(() => {
     setEditingSpecialOccasion(false)

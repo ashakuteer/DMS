@@ -1,0 +1,171 @@
+Fix donor profile actions completely (donations, pledges, family, special days).
+
+CURRENT PROBLEMS:
+1. Donations:
+   - No Edit button
+   - No Delete button
+
+2. Pledges, Family Members, Special Days:
+   - Delete button exists but not working (403 error)
+   - No Edit button
+
+GOAL:
+- Add Edit + Delete for ALL sections
+- Ensure all actions work properly with backend
+
+------------------------------------
+FRONTEND FIXES (Next.js / React)
+------------------------------------
+
+1. DONATIONS SECTION
+
+For each donation item:
+- Add two buttons on right side:
+  - Edit (pencil icon)
+  - Delete (trash icon)
+
+Delete:
+- Show confirmation popup
+- Call:
+  DELETE /api/donations/:id
+- On success → refresh list
+
+Edit:
+- Open modal
+- Pre-fill:
+  amount, date, type, mode
+- On submit:
+  PATCH /api/donations/:id
+
+------------------------------------
+
+2. PLEDGES SECTION
+
+Add Edit button next to delete
+
+Edit:
+- Open modal
+- Update pledge details
+- Call:
+  PATCH /api/pledges/:id
+
+Delete:
+- Fix existing button
+- Call:
+  DELETE /api/pledges/:id
+
+------------------------------------
+
+3. FAMILY MEMBERS
+
+Add Edit button
+
+Edit:
+- Update name, relation, phone
+- PATCH /api/family/:id
+
+Delete:
+- Fix delete button
+- DELETE /api/family/:id
+
+------------------------------------
+
+4. SPECIAL DAYS
+
+Add Edit button
+
+Edit:
+- Update title, date
+- PATCH /api/special-days/:id
+
+Delete:
+- Fix delete button
+- DELETE /api/special-days/:id
+
+------------------------------------
+
+COMMON UI:
+- Use modal popup for edit
+- Show toast:
+  "Updated successfully"
+  "Deleted successfully"
+- Refresh data after action
+
+------------------------------------
+BACKEND FIXES (NestJS)
+------------------------------------
+
+1. ENABLE CORS (VERY IMPORTANT)
+
+In main.ts:
+
+app.enableCors({
+  origin: [
+    'https://dms-sepia-gamma.vercel.app',
+    'http://localhost:3000'
+  ],
+  credentials: true,
+});
+
+------------------------------------
+
+2. ADD / FIX CONTROLLERS
+
+Donations:
+
+@Delete(':id')
+deleteDonation(@Param('id') id: string) {
+  return this.service.delete(id);
+}
+
+@Patch(':id')
+updateDonation(@Param('id') id: string, @Body() dto) {
+  return this.service.update(id, dto);
+}
+
+------------------------------------
+
+Pledges / Family / Special Days:
+Ensure ALL have:
+
+DELETE /:id
+PATCH /:id
+
+------------------------------------
+
+3. FIX SERVICE (PRISMA)
+
+delete:
+prisma.model.delete({ where: { id } })
+
+update:
+prisma.model.update({ where: { id }, data })
+
+------------------------------------
+
+4. AUTH FIX
+
+If 403 error:
+- Temporarily disable auth guard OR
+- Ensure JWT token is passed properly
+
+------------------------------------
+
+5. ADD LOGS
+
+console.log("DELETE:", id);
+console.log("UPDATE:", id);
+
+------------------------------------
+
+6. REDEPLOY BACKEND (Railway)
+
+------------------------------------
+
+EXPECTED RESULT:
+
+- Donations → Edit + Delete working
+- Pledges → Edit + Delete working
+- Family → Edit + Delete working
+- Special Days → Edit + Delete working
+- No 403 / CORS errors

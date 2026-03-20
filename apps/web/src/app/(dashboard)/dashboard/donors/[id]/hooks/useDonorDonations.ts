@@ -32,7 +32,7 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
   const [submittingDonation, setSubmittingDonation] = useState(false);
 
   const user = authStorage.getUser();
-  const isAdmin = user?.role === "ADMIN";
+  const isAdmin = user?.role === "ADMIN" || user?.role === "FOUNDER";
   const canSendWhatsApp = hasPermission(user?.role, "communication", "whatsapp");
   const canSendEmail = hasPermission(user?.role, "communication", "email");
   const hasWhatsAppNumber = !!(donor?.whatsappPhone || donor?.primaryPhone);

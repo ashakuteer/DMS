@@ -50,6 +50,7 @@ export function useDonorFamily(donorId: string) {
   }, [fetchFamilyMembers]);
 
   const onDelete = useCallback(async (memberId: string) => {
+    if (!confirm("Are you sure you want to delete this family member? This cannot be undone.")) return;
     setDeletingFamilyMemberId(memberId);
     try {
       await apiClient(
@@ -57,12 +58,14 @@ export function useDonorFamily(donorId: string) {
         { method: "DELETE" }
       );
       setFamilyMembers((prev) => prev.filter((m) => m.id !== memberId));
-    } catch {
-      console.error("Failed to delete family member");
+      toast({ title: "Family Member Deleted", description: "The family member has been removed." });
+    } catch (err: any) {
+      console.error("Failed to delete family member:", err?.message);
+      toast({ title: "Delete Failed", description: err?.message || "Could not delete the family member.", variant: "destructive" });
     } finally {
       setDeletingFamilyMemberId(null);
     }
-  }, []);
+  }, [toast]);
 
   const onAdd = useCallback(() => {
     setEditingFamilyMember(false);
