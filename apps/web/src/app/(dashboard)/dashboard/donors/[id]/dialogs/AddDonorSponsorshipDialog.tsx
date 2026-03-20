@@ -86,8 +86,8 @@ export default function AddDonorSponsorshipDialog({
     if (q.length < 2) { setSearchResults([]); return; }
     setSearching(true);
     try {
-      const data = await apiClient<any>(`/api/beneficiaries?search=${encodeURIComponent(q)}&limit=10`);
-      setSearchResults(data?.items ?? data ?? []);
+      const data = await apiClient<any[]>(`/api/beneficiaries/search?q=${encodeURIComponent(q)}`);
+      setSearchResults(Array.isArray(data) ? data : []);
     } catch {
       setSearchResults([]);
     } finally {

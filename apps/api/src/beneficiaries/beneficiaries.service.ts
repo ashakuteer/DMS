@@ -26,6 +26,10 @@ export class BeneficiariesService {
   // BENEFICIARY CORE
   // ----------------------------
 
+  quickSearch(q: string) {
+    return this.core.quickSearch(q);
+  }
+
   findAll(user: any, options: any) {
     return this.core.findAll(options);
   }

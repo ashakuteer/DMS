@@ -138,6 +138,12 @@ async bulkUpload(
     );
   }
 
+  @Get('search')
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  async quickSearch(@Query('q') q: string) {
+    return this.beneficiariesService.quickSearch(q ?? '');
+  }
+
   @Get(':id')
   @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findById(@Param('id') id: string) {

@@ -30,6 +30,22 @@ private async generateBeneficiaryCode(): Promise<string> {
   return `AKF-BEN-${String(nextNum).padStart(6,"0")}`;
 }
 
+async quickSearch(q: string) {
+  if (!q || q.trim().length < 2) return [];
+  return this.prisma.beneficiary.findMany({
+    where: {
+      isDeleted: false,
+      OR: [
+        { fullName: { contains: q.trim(), mode: "insensitive" } },
+        { code: { contains: q.trim(), mode: "insensitive" } },
+      ],
+    },
+    select: { id: true, fullName: true, code: true, homeType: true },
+    take: 15,
+    orderBy: { code: "asc" },
+  });
+}
+
 async findAll(options: any) {
   const {
     page = 1,
