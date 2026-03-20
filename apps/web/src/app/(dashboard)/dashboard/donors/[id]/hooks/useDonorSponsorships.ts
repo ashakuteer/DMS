@@ -88,19 +88,21 @@ export function useDonorSponsorships(donorId: string, donorPhone?: string | null
     }
     setAddingSponsor(true);
     try {
+      const payload = {
+        donorId,
+        beneficiaryId: sponsorshipForm.beneficiaryId,
+        sponsorshipType: sponsorshipForm.sponsorshipType,
+        amount: sponsorshipForm.amount ? parseFloat(sponsorshipForm.amount) : undefined,
+        currency: sponsorshipForm.currency,
+        frequency: sponsorshipForm.frequency,
+        startDate: sponsorshipForm.startDate || undefined,
+        status: sponsorshipForm.status,
+        notes: sponsorshipForm.notes || undefined,
+      };
+      console.log("Saving sponsorship:", payload);
       await apiClient("/api/sponsorships", {
         method: "POST",
-        body: JSON.stringify({
-          donorId,
-          beneficiaryId: sponsorshipForm.beneficiaryId,
-          sponsorshipType: sponsorshipForm.sponsorshipType,
-          amount: sponsorshipForm.amount ? parseFloat(sponsorshipForm.amount) : undefined,
-          currency: sponsorshipForm.currency,
-          frequency: sponsorshipForm.frequency,
-          startDate: sponsorshipForm.startDate || undefined,
-          status: sponsorshipForm.status,
-          notes: sponsorshipForm.notes || undefined,
-        }),
+        body: JSON.stringify(payload),
       });
       setShowAddDialog(false);
       setSponsorshipForm(EMPTY_SPONSORSHIP_FORM);

@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, ConflictException, BadRequestException, Logger } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 
 @Injectable()
 export class BeneficiarySponsorshipService {
+
+  private readonly logger = new Logger(BeneficiarySponsorshipService.name);
 
   constructor(private prisma: PrismaService) {}
 
@@ -103,32 +105,55 @@ export class BeneficiarySponsorshipService {
     status?: string;
     notes?: string;
   }) {
-    return this.prisma.sponsorship.create({
-      data: {
-        donorId: dto.donorId,
-        beneficiaryId: dto.beneficiaryId,
-        sponsorshipType: dto.sponsorshipType as any,
-        amount: dto.amount ?? null,
-        currency: dto.currency ?? "INR",
-        frequency: (dto.frequency ?? "MONTHLY") as any,
-        startDate: dto.startDate ? new Date(dto.startDate) : null,
-        status: (dto.status ?? "ACTIVE") as any,
-        notes: dto.notes ?? null,
-        isActive: (dto.status ?? "ACTIVE") === "ACTIVE",
-      },
-      include: {
-        beneficiary: {
-          select: {
-            id: true,
-            code: true,
-            fullName: true,
-            homeType: true,
-            photoUrl: true,
-            status: true,
+    console.log("Saving sponsorship:", JSON.stringify(dto, null, 2));
+    this.logger.log(`Creating sponsorship: donorId=${dto.donorId}, beneficiaryId=${dto.beneficiaryId}, type=${dto.sponsorshipType}`);
+
+    if (!dto.donorId) throw new BadRequestException("donorId is required");
+    if (!dto.beneficiaryId) throw new BadRequestException("beneficiaryId is required");
+    if (!dto.sponsorshipType) throw new BadRequestException("sponsorshipType is required");
+
+    try {
+      const result = await this.prisma.sponsorship.create({
+        data: {
+          donorId: dto.donorId,
+          beneficiaryId: dto.beneficiaryId,
+          sponsorshipType: dto.sponsorshipType as any,
+          amount: dto.amount ?? null,
+          currency: dto.currency ?? "INR",
+          frequency: (dto.frequency ?? "MONTHLY") as any,
+          startDate: dto.startDate ? new Date(dto.startDate) : null,
+          status: (dto.status ?? "ACTIVE") as any,
+          notes: dto.notes ?? null,
+          isActive: (dto.status ?? "ACTIVE") === "ACTIVE",
+        },
+        include: {
+          beneficiary: {
+            select: {
+              id: true,
+              code: true,
+              fullName: true,
+              homeType: true,
+              photoUrl: true,
+              status: true,
+            },
           },
         },
-      },
-    });
+      });
+      this.logger.log(`Sponsorship created successfully: id=${result.id}`);
+      return result;
+    } catch (err: any) {
+      this.logger.error(`Failed to create sponsorship: ${err?.message}`, err?.stack);
+      if (err?.code === "P2002") {
+        throw new ConflictException(
+          `A ${dto.sponsorshipType} sponsorship already exists for this donor and beneficiary. ` +
+          `Please choose a different sponsorship type or update the existing one.`
+        );
+      }
+      if (err?.code === "P2003") {
+        throw new BadRequestException("Invalid donorId or beneficiaryId — record not found.");
+      }
+      throw err;
+    }
   }
 
   async getSponsorshipSummary() {

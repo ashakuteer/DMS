@@ -12,6 +12,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 
 import type { Response, Express } from 'express';
@@ -522,6 +523,8 @@ export class ReportCampaignsController {
 @Controller('sponsorships')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SponsorshipsController {
+  private readonly logger = new Logger(SponsorshipsController.name);
+
   constructor(
     private readonly beneficiariesService: BeneficiariesService,
   ) {}
@@ -551,6 +554,7 @@ export class SponsorshipsController {
     @CurrentUser() user: UserContext,
     @Body() dto: any,
   ) {
+    this.logger.log(`POST /api/sponsorships - body: ${JSON.stringify(dto)}`);
     return this.beneficiariesService.createSponsorshipForDonor(user, dto);
   }
 
