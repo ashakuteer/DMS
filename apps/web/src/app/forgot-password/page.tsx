@@ -70,7 +70,7 @@ export default function ForgotPasswordPage() {
             Forgot your password?
           </h1>
           <p className="text-blue-100 text-lg leading-relaxed">
-            Enter your username and the admin will receive a secure reset link at the registered inbox.
+            Enter your username or email address and the admin will receive a secure reset link.
           </p>
         </div>
         <div className="relative z-10">
@@ -101,19 +101,19 @@ export default function ForgotPasswordPage() {
                   </div>
                   <h2 className="text-2xl font-bold text-foreground">Reset password</h2>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Enter your username to request a password reset
+                    Enter your username or email to request a password reset
                   </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="space-y-2">
                     <Label htmlFor="username" className="text-sm font-medium">
-                      Username
+                      Username or Email
                     </Label>
                     <Input
                       id="username"
                       type="text"
-                      placeholder="e.g. admin, staff, founder"
+                      placeholder="e.g. admin or staff@ashakuteer.org"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       required
@@ -123,7 +123,7 @@ export default function ForgotPasswordPage() {
                       data-testid="input-forgot-username"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Your username was assigned when your account was created.
+                      Enter your username (if assigned) or your email address.
                     </p>
                   </div>
 
@@ -161,7 +161,7 @@ export default function ForgotPasswordPage() {
                 <div>
                   <h2 className="text-xl font-bold text-foreground">Request sent!</h2>
                   <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
-                    If the username <strong className="text-foreground font-semibold">{username}</strong> exists,
+                    If <strong className="text-foreground font-semibold">{username}</strong> matches an account,
                     the admin has received a reset link at the registered inbox.
                     <br /><br />
                     Please contact your admin to get the new password.

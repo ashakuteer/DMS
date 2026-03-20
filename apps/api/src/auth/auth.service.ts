@@ -191,14 +191,19 @@ export class AuthService {
 
   async forgotPassword(dto: ForgotPasswordDto) {
     try {
-      console.log('Reset requested for username:', dto.username);
+      console.log('Reset requested for identifier:', dto.username);
 
-      const user = await this.prisma.user.findUnique({
-        where: { username: dto.username },
+      const user = await this.prisma.user.findFirst({
+        where: {
+          OR: [
+            { username: dto.username },
+            { email: dto.username },
+          ],
+        },
       });
 
       if (!user || !user.isActive) {
-        return { message: 'If that username exists, a reset link has been sent to the admin.' };
+        return { message: 'If that account exists, a reset link has been sent to the admin.' };
       }
 
       const rawToken = crypto.randomBytes(32).toString('hex');
@@ -298,27 +303,28 @@ export class AuthService {
         </div>
       `;
 
-      const text = `Password Reset Request\n\nUsername: ${user.username}\nName: ${user.name}\nRole: ${user.role}\n\nReset link (expires in 1 hour):\n${resetLink}\n\n— Asha Kuteer Foundation DMS`;
+      const text = `Password Reset Request\n\nUsername: ${user.username || user.email}\nName: ${user.name}\nRole: ${user.role}\n\nReset link (expires in 1 hour):\n${resetLink}\n\n— Asha Kuteer Foundation DMS`;
 
-      console.log('Sending reset email to:', adminEmail);
+      const recipient = process.env.TEST_EMAIL || adminEmail;
+      console.log('Sending reset email to:', recipient, '(user:', user.email, 'role:', user.role + ')');
 
       const emailResult = await this.emailService.sendEmail({
         to: adminEmail,
-        subject: `DMS Password Reset — ${user.username} (${user.role})`,
+        subject: `DMS Password Reset — ${user.username || user.email} (${user.role})`,
         html,
         text,
         featureType: 'MANUAL',
       });
 
       if (emailResult.success) {
-        return { message: 'If that username exists, a reset link has been sent to the admin.' };
+        return { message: 'If that account exists, a reset link has been sent to the admin.' };
       } else {
         console.error('Failed to send reset email:', emailResult.error);
-        return { message: 'If that username exists, a reset link has been sent to the admin.' };
+        return { message: 'If that account exists, a reset link has been sent to the admin.' };
       }
     } catch (error) {
-      console.error('Auth error:', error);
-      return { message: 'If that username exists, a reset link has been sent to the admin.' };
+      console.error('Auth error in forgotPassword:', error);
+      return { message: 'If that account exists, a reset link has been sent to the admin.' };
     }
   }
 
