@@ -32,30 +32,30 @@ export interface AuthResponse {
 export const authStorage = {
   getAccessToken: () => {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('accessToken') || localStorage.getItem('token');
+    return sessionStorage.getItem('accessToken') || sessionStorage.getItem('token');
   },
   getRefreshToken: () => {
     if (typeof window === 'undefined') return null;
-    return localStorage.getItem('refreshToken');
+    return sessionStorage.getItem('refreshToken');
   },
   getUser: (): User | null => {
     if (typeof window === 'undefined') return null;
-    const user = localStorage.getItem('user');
+    const user = sessionStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   },
   setTokens: (tokens: AuthTokens) => {
-    localStorage.setItem('accessToken', tokens.accessToken);
-    localStorage.setItem('token', tokens.accessToken);
-    localStorage.setItem('refreshToken', tokens.refreshToken);
+    sessionStorage.setItem('accessToken', tokens.accessToken);
+    sessionStorage.setItem('token', tokens.accessToken);
+    sessionStorage.setItem('refreshToken', tokens.refreshToken);
   },
   setUser: (user: User) => {
-    localStorage.setItem('user', JSON.stringify(user));
+    sessionStorage.setItem('user', JSON.stringify(user));
   },
   clear: () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('token');
+    sessionStorage.removeItem('refreshToken');
+    sessionStorage.removeItem('user');
   },
 };
 

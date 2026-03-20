@@ -57,7 +57,6 @@ export class AuthService {
     });
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);
-    await this.updateRefreshToken(user.id, tokens.refreshToken);
 
     return { user, tokens };
   }
@@ -83,7 +82,6 @@ export class AuthService {
       }
 
       const tokens = await this.generateTokens(user.id, user.email, user.role);
-      await this.updateRefreshToken(user.id, tokens.refreshToken);
 
       await this.auditService.log({
         userId: user.id,
@@ -116,11 +114,6 @@ export class AuthService {
   }
 
   async logout(userId: string) {
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: null },
-    });
-
     await this.auditService.log({
       userId,
       action: AuditAction.LOGOUT,
@@ -141,17 +134,11 @@ export class AuthService {
         where: { id: payload.sub },
       });
 
-      if (!user || !user.refreshToken) {
-        throw new ForbiddenException('Access denied');
-      }
-
-      const isRefreshTokenValid = await bcrypt.compare(dto.refreshToken, user.refreshToken);
-      if (!isRefreshTokenValid) {
+      if (!user || !user.isActive) {
         throw new ForbiddenException('Access denied');
       }
 
       const tokens = await this.generateTokens(user.id, user.email, user.role);
-      await this.updateRefreshToken(user.id, tokens.refreshToken);
 
       return {
         user: {
@@ -370,14 +357,6 @@ export class AuthService {
     ]);
 
     return { accessToken, refreshToken };
-  }
-
-  private async updateRefreshToken(userId: string, refreshToken: string) {
-    const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { refreshToken: hashedRefreshToken },
-    });
   }
 
   private getJwtSecret(): string {

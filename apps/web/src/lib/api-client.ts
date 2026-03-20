@@ -15,7 +15,7 @@ export async function apiClient<T = unknown>(
 ): Promise<T> {
   const token =
     typeof window !== 'undefined'
-      ? (localStorage.getItem('accessToken') || localStorage.getItem('token'))
+      ? (sessionStorage.getItem('accessToken') || sessionStorage.getItem('token'))
       : null;
 
   const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
