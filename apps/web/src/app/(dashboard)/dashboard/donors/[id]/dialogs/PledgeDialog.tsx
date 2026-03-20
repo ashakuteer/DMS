@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,15 +42,19 @@ export default function PledgeDialog({
   savingPledge,
   onSubmit,
 }: PledgeDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{editingPledge ? "Edit Pledge" : "Add Pledge"}</DialogTitle>
+          <DialogTitle>
+            {editingPledge ? t("donor_profile.edit_pledge_title") : t("donor_profile.add_pledge")}
+          </DialogTitle>
           <DialogDescription>
             {editingPledge
-              ? "Update pledge details"
-              : "Record a new promise from this donor"}
+              ? t("donor_profile.update_pledge_desc")
+              : t("donor_profile.new_pledge_desc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -57,7 +62,7 @@ export default function PledgeDialog({
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="pledge-type" className="text-right">
-                Type *
+                {t("donor_profile.pledge_type_label")} *
               </Label>
               <Select
                 value={pledgeForm.pledgeType}
@@ -65,20 +70,17 @@ export default function PledgeDialog({
                   setPledgeForm({ ...pledgeForm, pledgeType: value })
                 }
               >
-                <SelectTrigger
-                  className="col-span-3"
-                  data-testid="select-pledge-type"
-                >
-                  <SelectValue placeholder="Select type" />
+                <SelectTrigger className="col-span-3" data-testid="select-pledge-type">
+                  <SelectValue placeholder={t("donor_profile.select_type")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="MONEY">Money</SelectItem>
-                  <SelectItem value="RICE">Rice</SelectItem>
-                  <SelectItem value="GROCERIES">Groceries</SelectItem>
-                  <SelectItem value="MEDICINES">Medicines</SelectItem>
-                  <SelectItem value="MEAL_SPONSOR">Meal Sponsor</SelectItem>
-                  <SelectItem value="VISIT">Visit</SelectItem>
-                  <SelectItem value="OTHER">Other</SelectItem>
+                  <SelectItem value="MONEY">{t("donor_profile.pledge_money")}</SelectItem>
+                  <SelectItem value="RICE">{t("donor_profile.pledge_rice")}</SelectItem>
+                  <SelectItem value="GROCERIES">{t("donor_profile.grocery")}</SelectItem>
+                  <SelectItem value="MEDICINES">{t("donor_profile.medicines")}</SelectItem>
+                  <SelectItem value="MEAL_SPONSOR">{t("donor_profile.pledge_meal_sponsor")}</SelectItem>
+                  <SelectItem value="VISIT">{t("donor_profile.timeline_visits")}</SelectItem>
+                  <SelectItem value="OTHER">{t("common.other")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -86,7 +88,7 @@ export default function PledgeDialog({
             {pledgeForm.pledgeType === "MONEY" ? (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="pledge-amount" className="text-right">
-                  Amount *
+                  {t("donor_profile.amount_label")} *
                 </Label>
                 <Input
                   id="pledge-amount"
@@ -96,14 +98,14 @@ export default function PledgeDialog({
                     setPledgeForm({ ...pledgeForm, amount: e.target.value })
                   }
                   className="col-span-3"
-                  placeholder="Enter amount"
+                  placeholder={t("donor_profile.enter_amount")}
                   data-testid="input-pledge-amount"
                 />
               </div>
             ) : (
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="pledge-quantity" className="text-right">
-                  Quantity
+                  {t("donor_profile.quantity")}
                 </Label>
                 <Input
                   id="pledge-quantity"
@@ -112,7 +114,7 @@ export default function PledgeDialog({
                     setPledgeForm({ ...pledgeForm, quantity: e.target.value })
                   }
                   className="col-span-3"
-                  placeholder="e.g., 10 kg, 1 event"
+                  placeholder={t("donor_profile.quantity_placeholder")}
                   data-testid="input-pledge-quantity"
                 />
               </div>
@@ -120,17 +122,14 @@ export default function PledgeDialog({
 
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="pledge-date" className="text-right">
-                Expected Date *
+                {t("donor_profile.expected_date")} *
               </Label>
               <Input
                 id="pledge-date"
                 type="date"
                 value={pledgeForm.expectedFulfillmentDate}
                 onChange={(e) =>
-                  setPledgeForm({
-                    ...pledgeForm,
-                    expectedFulfillmentDate: e.target.value,
-                  })
+                  setPledgeForm({ ...pledgeForm, expectedFulfillmentDate: e.target.value })
                 }
                 className="col-span-3"
                 data-testid="input-pledge-date"
@@ -139,7 +138,7 @@ export default function PledgeDialog({
 
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="pledge-notes" className="text-right">
-                Notes
+                {t("donor_profile.notes")}
               </Label>
               <Textarea
                 id="pledge-notes"
@@ -148,35 +147,27 @@ export default function PledgeDialog({
                   setPledgeForm({ ...pledgeForm, notes: e.target.value })
                 }
                 className="col-span-3"
-                placeholder="Optional notes about this pledge"
+                placeholder={t("donor_profile.pledge_notes_placeholder")}
                 data-testid="input-pledge-notes"
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+              {t("common.cancel")}
             </Button>
 
-            <Button
-              type="submit"
-              disabled={savingPledge}
-              data-testid="button-save-pledge"
-            >
+            <Button type="submit" disabled={savingPledge} data-testid="button-save-pledge">
               {savingPledge ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
+                  {t("common.saving")}
                 </>
               ) : editingPledge ? (
-                "Update"
+                t("common.update")
               ) : (
-                "Add"
+                t("common.add")
               )}
             </Button>
           </DialogFooter>

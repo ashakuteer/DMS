@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { canAccessModule } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
+import { useTranslation } from "react-i18next";
 import {
   Users, IndianRupee, TrendingUp, TrendingDown,
   AlertTriangle, Calendar, HandHeart, FileDown,
@@ -266,6 +267,7 @@ function WhatsAppCopyButton({ phone, message, testId }: { phone?: string; messag
 }
 
 export default function AnalyticsPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const user = authStorage.getUser();
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -405,8 +407,8 @@ export default function AnalyticsPage() {
     <div className="p-4 md:p-6 space-y-6 max-w-[1400px] mx-auto">
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold" data-testid="text-analytics-title">Donor Engagement Analytics</h1>
-          <p className="text-sm text-muted-foreground">Board-ready insights and donor intelligence</p>
+          <h1 className="text-2xl font-bold" data-testid="text-analytics-title">{t("analytics.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("analytics.subtitle")}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <Button
@@ -417,7 +419,7 @@ export default function AnalyticsPage() {
             data-testid="button-export-pdf"
           >
             {exporting === "pdf" ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
-            Summary PDF
+            {t("analytics.export_summary_pdf")}
           </Button>
           <Button
             variant="outline"
@@ -427,7 +429,7 @@ export default function AnalyticsPage() {
             data-testid="button-export-donations-xlsx"
           >
             {exporting === "donations-xlsx" ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
-            Donations Excel
+            {t("analytics.export_donations_excel")}
           </Button>
           <Button
             variant="outline"
@@ -437,7 +439,7 @@ export default function AnalyticsPage() {
             data-testid="button-export-risk-xlsx"
           >
             {exporting === "risk-xlsx" ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileDown className="h-4 w-4 mr-2" />}
-            At Risk Excel
+            {t("analytics.export_at_risk_excel")}
           </Button>
         </div>
       </div>
@@ -450,56 +452,56 @@ export default function AnalyticsPage() {
         </div>
       ) : summary && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <KPICard title="Total Donors" value={summary.totalDonors.toLocaleString("en-IN")} icon={Users} testId="kpi-total-donors" />
+          <KPICard title={t("analytics.total_donors")} value={summary.totalDonors.toLocaleString("en-IN")} icon={Users} testId="kpi-total-donors" />
           <KPICard
-            title="Donations This Month"
+            title={t("analytics.donations_this_month")}
             value={fmtCurrency(summary.donationsThisMonth)}
             trend={summary.donationsThisMonthTrend}
-            subtitle="vs last month"
+            subtitle={t("analytics.vs_last_month")}
             icon={IndianRupee}
             testId="kpi-donations-month"
           />
-          <KPICard title="Trailing 12 Months" value={fmtCurrency(summary.donationsT12)} icon={TrendingUp} testId="kpi-donations-t12" />
+          <KPICard title={t("analytics.trailing_12_months")} value={fmtCurrency(summary.donationsT12)} icon={TrendingUp} testId="kpi-donations-t12" />
           <KPICard
-            title="Donation Count"
+            title={t("analytics.donation_count")}
             value={summary.donationCountThisMonth.toLocaleString("en-IN")}
             trend={summary.donationCountTrend}
-            subtitle="this month"
+            subtitle={t("analytics.this_month")}
             icon={IndianRupee}
             testId="kpi-donation-count"
           />
           <KPICard
-            title="Active Sponsorships"
+            title={t("analytics.active_sponsorships")}
             value={String(summary.activeSponsorships)}
             subtitle={`${fmtCurrency(summary.activeSponsorshipsMonthlyTotal)}/mo`}
             icon={HandHeart}
             testId="kpi-active-sponsorships"
           />
           <KPICard
-            title="Overdue Sponsorships"
+            title={t("analytics.overdue_sponsorships")}
             value={String(summary.overdueSponsorships)}
-            subtitle="past due this month"
+            subtitle={t("analytics.past_due_this_month")}
             icon={AlertTriangle}
             testId="kpi-overdue-sponsorships"
           />
           <KPICard
-            title="Pledges Pending"
+            title={t("analytics.pledges_pending")}
             value={String(summary.pledgesPendingCount)}
             subtitle={fmtCurrency(summary.pledgesPendingAmount)}
             icon={Calendar}
             testId="kpi-pledges-pending"
           />
           <KPICard
-            title="Special Days (30d)"
+            title={t("analytics.special_days_30d")}
             value={String(summary.donorsWithSpecialDaysNext30)}
-            subtitle="donors with upcoming events"
+            subtitle={t("analytics.donors_with_upcoming_events")}
             icon={Calendar}
             testId="kpi-special-days"
           />
           <KPICard
-            title="Donors At Risk"
+            title={t("analytics.donors_at_risk")}
             value={String(summary.donorsAtRisk)}
-            subtitle="need re-engagement"
+            subtitle={t("analytics.need_re_engagement")}
             icon={AlertTriangle}
             testId="kpi-at-risk"
           />
@@ -516,7 +518,7 @@ export default function AnalyticsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card className="lg:col-span-2" data-testid="chart-monthly-donations">
             <CardHeader>
-              <CardTitle className="text-base">Donations by Month (Last 12 Months)</CardTitle>
+              <CardTitle className="text-base">{t("analytics.donations_by_month")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -558,7 +560,7 @@ export default function AnalyticsPage() {
 
           <Card data-testid="chart-donations-type">
             <CardHeader>
-              <CardTitle className="text-base">Donations by Type (This FY)</CardTitle>
+              <CardTitle className="text-base">{t("analytics.donations_by_type_fy")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
@@ -586,7 +588,7 @@ export default function AnalyticsPage() {
 
           <Card data-testid="chart-donations-home">
             <CardHeader>
-              <CardTitle className="text-base">Donations by Home (This FY)</CardTitle>
+              <CardTitle className="text-base">{t("analytics.donations_by_home_fy")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
@@ -607,7 +609,7 @@ export default function AnalyticsPage() {
 
           <Card className="lg:col-span-2" data-testid="chart-sponsorships-due">
             <CardHeader>
-              <CardTitle className="text-base">Sponsorships Due vs Overdue (Last 6 Months)</CardTitle>
+              <CardTitle className="text-base">{t("analytics.sponsorships_due_vs_overdue")}</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={250}>
@@ -628,16 +630,16 @@ export default function AnalyticsPage() {
 
       <Card data-testid="card-segments">
         <CardHeader>
-          <CardTitle className="text-base">Donor Segments</CardTitle>
+          <CardTitle className="text-base">{t("analytics.donor_segments")}</CardTitle>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-4 flex-wrap h-auto gap-1">
-              <TabsTrigger value="top" data-testid="tab-top-donors">Top Donors (FY)</TabsTrigger>
-              <TabsTrigger value="risk" data-testid="tab-at-risk">Donors At Risk</TabsTrigger>
-              <TabsTrigger value="pledges" data-testid="tab-pledges">Pledges Due</TabsTrigger>
-              <TabsTrigger value="sponsorships" data-testid="tab-sponsorships">Sponsorships Due</TabsTrigger>
-              <TabsTrigger value="specialdays" data-testid="tab-special-days">Special Days</TabsTrigger>
+              <TabsTrigger value="top" data-testid="tab-top-donors">{t("analytics.tab_top_donors")}</TabsTrigger>
+              <TabsTrigger value="risk" data-testid="tab-at-risk">{t("analytics.tab_at_risk")}</TabsTrigger>
+              <TabsTrigger value="pledges" data-testid="tab-pledges">{t("analytics.tab_pledges")}</TabsTrigger>
+              <TabsTrigger value="sponsorships" data-testid="tab-sponsorships">{t("analytics.tab_sponsorships")}</TabsTrigger>
+              <TabsTrigger value="specialdays" data-testid="tab-special-days">{t("analytics.tab_special_days")}</TabsTrigger>
             </TabsList>
 
             {loadingSegment ? (
@@ -674,13 +676,13 @@ export default function AnalyticsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
-              Export Donations
+              {t("analytics.export_donations_title")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="export-from">From Date</Label>
+                <Label htmlFor="export-from">{t("analytics.export_from")}</Label>
                 <Input
                   id="export-from"
                   type="date"
@@ -690,7 +692,7 @@ export default function AnalyticsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="export-to">To Date</Label>
+                <Label htmlFor="export-to">{t("analytics.export_to")}</Label>
                 <Input
                   id="export-to"
                   type="date"
@@ -701,13 +703,13 @@ export default function AnalyticsPage() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label>Designated Home</Label>
+              <Label>{t("analytics.export_home")}</Label>
               <Select value={exportHome} onValueChange={setExportHome}>
                 <SelectTrigger data-testid="select-export-home">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Homes</SelectItem>
+                  <SelectItem value="all">{t("analytics.export_all_homes")}</SelectItem>
                   <SelectItem value="GIRLS_HOME">Girls Home</SelectItem>
                   <SelectItem value="BLIND_BOYS_HOME">Blind Boys Home</SelectItem>
                   <SelectItem value="OLD_AGE_HOME">Old Age Home</SelectItem>
@@ -716,13 +718,13 @@ export default function AnalyticsPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Donation Type</Label>
+              <Label>{t("analytics.export_type")}</Label>
               <Select value={exportType} onValueChange={setExportType}>
                 <SelectTrigger data-testid="select-export-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="all">{t("analytics.export_all_types")}</SelectItem>
                   <SelectItem value="CASH">Cash</SelectItem>
                   <SelectItem value="GROCERIES">Groceries</SelectItem>
                   <SelectItem value="RICE_BAGS">Rice Bags</SelectItem>
@@ -737,11 +739,11 @@ export default function AnalyticsPage() {
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setShowExportModal(false)} data-testid="button-export-cancel">
-              Cancel
+              {t("analytics.export_cancel")}
             </Button>
             <Button onClick={handleDonationsExport} data-testid="button-export-download">
               <FileDown className="h-4 w-4 mr-2" />
-              Download Excel
+              {t("analytics.export_download")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -751,17 +753,18 @@ export default function AnalyticsPage() {
 }
 
 function TopDonorsTable({ data }: { data: TopDonor[] }) {
-  if (!data.length) return <p className="text-sm text-muted-foreground py-4" data-testid="text-no-top-donors">No donation data found for this FY.</p>;
+  const { t } = useTranslation();
+  if (!data.length) return <p className="text-sm text-muted-foreground py-4" data-testid="text-no-top-donors">{t("analytics.no_data")}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm" data-testid="table-top-donors">
         <thead>
           <tr className="border-b text-left">
             <th className="pb-2 pr-4 font-medium text-muted-foreground">#</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Donor</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground text-right">Total Amount</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground text-right">Count</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Last Donation</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.donor")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground text-right">{t("analytics.amount")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground text-right">{t("analytics.count")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.last_donation")}</th>
             <th className="pb-2 font-medium text-muted-foreground"></th>
           </tr>
         </thead>
@@ -792,17 +795,18 @@ function TopDonorsTable({ data }: { data: TopDonor[] }) {
 }
 
 function AtRiskTable({ data }: { data: AtRiskDonor[] }) {
-  if (!data.length) return <p className="text-sm text-muted-foreground py-4" data-testid="text-no-risk">No at-risk donors detected.</p>;
+  const { t } = useTranslation();
+  if (!data.length) return <p className="text-sm text-muted-foreground py-4" data-testid="text-no-risk">{t("analytics.no_data")}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm" data-testid="table-at-risk">
         <thead>
           <tr className="border-b text-left">
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Donor</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Last Donation</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Expected Next</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Risk</th>
-            <th className="pb-2 font-medium text-muted-foreground">Actions</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.donor")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.last_donation")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("common.expected_next", "Expected Next")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.risk_score")}</th>
+            <th className="pb-2 font-medium text-muted-foreground">{t("common.actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -848,18 +852,19 @@ function AtRiskTable({ data }: { data: AtRiskDonor[] }) {
 }
 
 function PledgesTable({ data }: { data: PledgeItem[] }) {
-  if (!data.length) return <p className="text-sm text-muted-foreground py-4" data-testid="text-no-pledges">No pending pledges.</p>;
+  const { t } = useTranslation();
+  if (!data.length) return <p className="text-sm text-muted-foreground py-4" data-testid="text-no-pledges">{t("analytics.no_data")}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm" data-testid="table-pledges">
         <thead>
           <tr className="border-b text-left">
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Donor</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Type</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground text-right">Amount/Qty</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Expected Date</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Status</th>
-            <th className="pb-2 font-medium text-muted-foreground">Actions</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.donor")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.export_type")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground text-right">{t("analytics.amount")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.due_date")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.status")}</th>
+            <th className="pb-2 font-medium text-muted-foreground">{t("common.actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -905,19 +910,20 @@ function PledgesTable({ data }: { data: PledgeItem[] }) {
 }
 
 function SponsorshipsDueTable({ data }: { data: SponsorshipDue[] }) {
-  if (!data.length) return <p className="text-sm text-muted-foreground py-4" data-testid="text-no-sponsorships">No sponsorships due this period.</p>;
+  const { t } = useTranslation();
+  if (!data.length) return <p className="text-sm text-muted-foreground py-4" data-testid="text-no-sponsorships">{t("analytics.no_data")}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm" data-testid="table-sponsorships-due">
         <thead>
           <tr className="border-b text-left">
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Donor</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Beneficiary</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Home</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground text-right">Amount</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground text-right">Due Day</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Status</th>
-            <th className="pb-2 font-medium text-muted-foreground">Actions</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.donor")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("beneficiaries.title")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.home")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground text-right">{t("analytics.amount")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground text-right">{t("analytics.due_date")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.status")}</th>
+            <th className="pb-2 font-medium text-muted-foreground">{t("common.actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -974,17 +980,18 @@ function SponsorshipsDueTable({ data }: { data: SponsorshipDue[] }) {
 }
 
 function SpecialDaysTable({ data }: { data: SpecialDay[] }) {
-  if (!data.length) return <p className="text-sm text-muted-foreground py-4" data-testid="text-no-special-days">No special days in the next 30 days.</p>;
+  const { t } = useTranslation();
+  if (!data.length) return <p className="text-sm text-muted-foreground py-4" data-testid="text-no-special-days">{t("analytics.no_data")}</p>;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm" data-testid="table-special-days">
         <thead>
           <tr className="border-b text-left">
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Donor</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Date</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Type</th>
-            <th className="pb-2 pr-4 font-medium text-muted-foreground">Assigned Staff</th>
-            <th className="pb-2 font-medium text-muted-foreground">Actions</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.donor")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.date")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("analytics.event_type")}</th>
+            <th className="pb-2 pr-4 font-medium text-muted-foreground">{t("common.assigned_staff", "Assigned Staff")}</th>
+            <th className="pb-2 font-medium text-muted-foreground">{t("common.actions")}</th>
           </tr>
         </thead>
         <tbody>

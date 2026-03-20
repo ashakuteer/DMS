@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 import {
   Tooltip,
   TooltipContent,
@@ -42,21 +43,23 @@ export default function DonorSponsorshipsTab({
   onAddSponsorship,
   onDeleteSponsorship,
 }: DonorSponsorshipsTabProps) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <CardTitle>Sponsored Beneficiaries</CardTitle>
+            <CardTitle>{t("donor_profile.sponsored_beneficiaries")}</CardTitle>
             <CardDescription>
-              Children and elderly this donor supports
+              {t("donor_profile.sponsored_beneficiaries_description")}
             </CardDescription>
           </div>
           <div className="flex gap-2">
             {canEditSponsorship && onAddSponsorship && (
               <Button onClick={onAddSponsorship} data-testid="button-add-sponsorship">
                 <Plus className="h-4 w-4 mr-2" />
-                Add Sponsorship
+                {t("donor_profile.add_sponsorship")}
               </Button>
             )}
             <Button
@@ -64,7 +67,7 @@ export default function DonorSponsorshipsTab({
               onClick={onViewAllBeneficiaries}
               data-testid="button-view-all-beneficiaries"
             >
-              View All Beneficiaries
+              {t("donor_profile.view_all_beneficiaries")}
             </Button>
           </div>
         </div>
@@ -78,9 +81,9 @@ export default function DonorSponsorshipsTab({
         ) : sponsoredBeneficiaries.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
             <Heart className="h-10 w-10 mb-2 opacity-50" />
-            <p>No sponsored beneficiaries yet</p>
+            <p>{t("donor_profile.no_sponsored_beneficiaries")}</p>
             <p className="text-sm">
-              Link this donor as a sponsor from the beneficiary&apos;s profile
+              {t("donor_profile.link_donor_as_sponsor")}
             </p>
           </div>
         ) : (
@@ -88,20 +91,20 @@ export default function DonorSponsorshipsTab({
             {sponsoredBeneficiaries.map((sponsorship) => {
               const homeLabel =
                 sponsorship.beneficiary.homeType === "ORPHAN_GIRLS"
-                  ? "Orphan Girls Home"
+                  ? t("donor_profile.home_orphan_girls")
                   : sponsorship.beneficiary.homeType === "BLIND_BOYS"
-                    ? "Blind Boys Home"
-                    : "Old Age Home";
+                    ? t("donor_profile.home_blind_boys")
+                    : t("donor_profile.home_old_age");
 
               const frequencyLabel =
                 sponsorship.frequency === "MONTHLY"
-                  ? "Monthly"
+                  ? t("donor_profile.freq_monthly")
                   : sponsorship.frequency === "QUARTERLY"
-                    ? "Quarterly"
+                    ? t("donor_profile.freq_quarterly")
                     : sponsorship.frequency === "YEARLY"
-                      ? "Yearly"
+                      ? t("donor_profile.freq_yearly")
                       : sponsorship.frequency === "ONE_TIME"
-                        ? "One-Time"
+                        ? t("donor_profile.freq_one_time")
                         : sponsorship.frequency;
 
               const sponsorshipMessage = `Hello! I wanted to connect with you about the sponsorship of ${sponsorship.beneficiary.fullName} at ${homeLabel}. Thank you for your continued support!`;
@@ -163,10 +166,10 @@ export default function DonorSponsorshipsTab({
                             }
                           >
                             {sponsorship.beneficiary.homeType === "ORPHAN_GIRLS"
-                              ? "Orphan Girls"
+                              ? t("donor_profile.home_orphan_girls_short")
                               : sponsorship.beneficiary.homeType === "BLIND_BOYS"
-                                ? "Blind Boys"
-                                : "Old Age"}
+                                ? t("donor_profile.home_blind_boys_short")
+                                : t("donor_profile.home_old_age_short")}
                           </Badge>
 
                           <Badge variant="secondary">
@@ -178,7 +181,7 @@ export default function DonorSponsorshipsTab({
 
                         <div className="grid grid-cols-3 gap-4 mt-3 pt-3 border-t">
                           <div>
-                            <p className="text-xs text-muted-foreground">Amount</p>
+                            <p className="text-xs text-muted-foreground">{t("donor_profile.amount_label")}</p>
                             {sponsorship.amount ? (
                               <p
                                 className="font-semibold"
@@ -198,7 +201,7 @@ export default function DonorSponsorshipsTab({
                           </div>
 
                           <div>
-                            <p className="text-xs text-muted-foreground">Start Date</p>
+                            <p className="text-xs text-muted-foreground">{t("donor_profile.start_date")}</p>
                             <p
                               className="text-sm"
                               data-testid={`text-donor-sponsorship-start-${sponsorship.id}`}
@@ -220,7 +223,7 @@ export default function DonorSponsorshipsTab({
                           </div>
 
                           <div>
-                            <p className="text-xs text-muted-foreground">End Date</p>
+                            <p className="text-xs text-muted-foreground">{t("donor_profile.end_date")}</p>
                             <p
                               className="text-sm"
                               data-testid={`text-donor-sponsorship-end-${sponsorship.id}`}
@@ -231,7 +234,7 @@ export default function DonorSponsorshipsTab({
                                     month: "short",
                                     year: "numeric",
                                   })
-                                : "Ongoing"}
+                                : t("donor_profile.ongoing")}
                             </p>
                           </div>
                         </div>
@@ -240,7 +243,7 @@ export default function DonorSponsorshipsTab({
                           sponsorship.beneficiary.updates.length > 0 && (
                             <div className="mt-3 border-t pt-3 space-y-2">
                               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                Latest Updates
+                                {t("donor_profile.latest_updates")}
                               </p>
 
                               {sponsorship.beneficiary.updates.map((update) => (
@@ -287,10 +290,10 @@ export default function DonorSponsorshipsTab({
                                   data-testid={`button-change-status-donor-sponsorship-${sponsorship.id}`}
                                 >
                                   <Edit className="h-4 w-4 mr-1" />
-                                  Status
+                                  {t("donor_profile.status")}
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Change sponsorship status</TooltipContent>
+                              <TooltipContent>{t("donor_profile.change_sponsorship_status")}</TooltipContent>
                             </Tooltip>
                           )}
 
@@ -304,10 +307,10 @@ export default function DonorSponsorshipsTab({
                                   data-testid={`button-history-donor-sponsorship-${sponsorship.id}`}
                                 >
                                   <History className="h-4 w-4 mr-1" />
-                                  History
+                                  {t("donor_profile.history")}
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>View change history</TooltipContent>
+                              <TooltipContent>{t("donor_profile.view_change_history")}</TooltipContent>
                             </Tooltip>
                           )}
 
@@ -322,7 +325,7 @@ export default function DonorSponsorshipsTab({
                                 <Send className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Send latest update</TooltipContent>
+                            <TooltipContent>{t("donor_profile.send_latest_update")}</TooltipContent>
                           </Tooltip>
 
                           <Tooltip>
@@ -336,7 +339,7 @@ export default function DonorSponsorshipsTab({
                                 <Copy className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Copy message to clipboard</TooltipContent>
+                            <TooltipContent>{t("donor_profile.copy_message")}</TooltipContent>
                           </Tooltip>
 
                           <Tooltip>
@@ -350,7 +353,7 @@ export default function DonorSponsorshipsTab({
                                 <ExternalLink className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>View beneficiary profile</TooltipContent>
+                            <TooltipContent>{t("donor_profile.view_beneficiary_profile")}</TooltipContent>
                           </Tooltip>
 
                           {canEditSponsorship && onDeleteSponsorship && (
@@ -366,7 +369,7 @@ export default function DonorSponsorshipsTab({
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Delete sponsorship</TooltipContent>
+                              <TooltipContent>{t("donor_profile.delete_sponsorship")}</TooltipContent>
                             </Tooltip>
                           )}
                         </div>

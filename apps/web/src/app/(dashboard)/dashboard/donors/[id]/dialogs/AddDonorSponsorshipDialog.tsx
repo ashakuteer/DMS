@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Heart, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,33 +23,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { apiClient } from "@/lib/api-client";
-
-const SPONSORSHIP_TYPES = [
-  { value: "FULL", label: "Full Sponsorship" },
-  { value: "PARTIAL", label: "Partial Sponsorship" },
-  { value: "EDUCATION", label: "Education" },
-  { value: "MEDICAL", label: "Medical" },
-  { value: "FOOD", label: "Food" },
-  { value: "GROCERIES", label: "Groceries" },
-  { value: "MONTHLY_SUPPORT", label: "Monthly Support" },
-  { value: "ONE_TIME", label: "One-Time" },
-  { value: "FESTIVAL", label: "Festival" },
-  { value: "OTHER", label: "Other" },
-];
-
-const FREQUENCIES = [
-  { value: "MONTHLY", label: "Monthly" },
-  { value: "QUARTERLY", label: "Quarterly" },
-  { value: "YEARLY", label: "Yearly" },
-  { value: "ONE_TIME", label: "One-Time" },
-  { value: "ADHOC", label: "Ad-hoc" },
-];
-
-const STATUSES = [
-  { value: "ACTIVE", label: "Active" },
-  { value: "PAUSED", label: "Paused" },
-  { value: "STOPPED", label: "Stopped" },
-];
 
 interface AddDonorSponsorshipDialogProps {
   open: boolean;
@@ -76,10 +50,38 @@ export default function AddDonorSponsorshipDialog({
   loading,
   onSubmit,
 }: AddDonorSponsorshipDialogProps) {
+  const { t } = useTranslation();
   const [beneficiarySearch, setBeneficiarySearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   const [selectedBeneficiary, setSelectedBeneficiary] = useState<any>(null);
+
+  const SPONSORSHIP_TYPES = [
+    { value: "FULL", label: t("donor_profile.sptype_full") },
+    { value: "PARTIAL", label: t("donor_profile.sptype_partial") },
+    { value: "EDUCATION", label: t("donor_profile.sptype_education") },
+    { value: "MEDICAL", label: t("donor_profile.sptype_medical") },
+    { value: "FOOD", label: t("donor_profile.sptype_food") },
+    { value: "GROCERIES", label: t("donor_profile.grocery") },
+    { value: "MONTHLY_SUPPORT", label: t("donor_profile.sptype_monthly_support") },
+    { value: "ONE_TIME", label: t("donor_profile.freq_one_time") },
+    { value: "FESTIVAL", label: t("donor_profile.sptype_festival") },
+    { value: "OTHER", label: t("common.other") },
+  ];
+
+  const FREQUENCIES = [
+    { value: "MONTHLY", label: t("donor_profile.freq_monthly") },
+    { value: "QUARTERLY", label: t("donor_profile.freq_quarterly") },
+    { value: "YEARLY", label: t("donor_profile.freq_yearly") },
+    { value: "ONE_TIME", label: t("donor_profile.freq_one_time") },
+    { value: "ADHOC", label: t("donor_profile.adhoc") },
+  ];
+
+  const STATUSES = [
+    { value: "ACTIVE", label: t("donor_profile.status_active") },
+    { value: "PAUSED", label: t("donor_profile.status_paused") },
+    { value: "STOPPED", label: t("donor_profile.status_stopped") },
+  ];
 
   const handleSearch = useCallback(async (q: string) => {
     setBeneficiarySearch(q);
@@ -113,35 +115,39 @@ export default function AddDonorSponsorshipDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5" />
-            Add Sponsorship
+            {t("donor_profile.add_sponsorship")}
           </DialogTitle>
           <DialogDescription>
-            Link this donor as a sponsor for a beneficiary
+            {t("donor_profile.add_sponsorship_desc")}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={onSubmit} className="space-y-4 py-2">
           <div className="space-y-2">
-            <Label>Beneficiary *</Label>
+            <Label>{t("donor_profile.beneficiary_label")} *</Label>
             {selectedBeneficiary ? (
               <div className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
                 <div>
                   <p className="font-medium">{selectedBeneficiary.fullName}</p>
-                  <p className="text-xs text-muted-foreground">{selectedBeneficiary.code} · {selectedBeneficiary.homeType}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedBeneficiary.code} · {selectedBeneficiary.homeType}
+                  </p>
                 </div>
                 <Button type="button" variant="ghost" size="sm" onClick={clearBeneficiary}>
-                  Change
+                  {t("donor_profile.change")}
                 </Button>
               </div>
             ) : (
               <div className="space-y-1">
                 <Input
-                  placeholder="Search by name or code..."
+                  placeholder={t("donor_profile.search_beneficiary")}
                   value={beneficiarySearch}
                   onChange={(e) => handleSearch(e.target.value)}
                   data-testid="input-beneficiary-search"
                 />
-                {searching && <p className="text-xs text-muted-foreground">Searching...</p>}
+                {searching && (
+                  <p className="text-xs text-muted-foreground">{t("donor_profile.searching")}</p>
+                )}
                 {searchResults.length > 0 && (
                   <div className="border rounded-md max-h-40 overflow-y-auto">
                     {searchResults.map((b) => (
@@ -162,14 +168,17 @@ export default function AddDonorSponsorshipDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Sponsorship Type *</Label>
-            <Select value={form.sponsorshipType} onValueChange={(v) => setForm((p: any) => ({ ...p, sponsorshipType: v }))}>
+            <Label>{t("donor_profile.sponsorship_type")} *</Label>
+            <Select
+              value={form.sponsorshipType}
+              onValueChange={(v) => setForm((p: any) => ({ ...p, sponsorshipType: v }))}
+            >
               <SelectTrigger data-testid="select-sponsorship-type">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {SPONSORSHIP_TYPES.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                {SPONSORSHIP_TYPES.map((st) => (
+                  <SelectItem key={st.value} value={st.value}>{st.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -177,7 +186,7 @@ export default function AddDonorSponsorshipDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Amount</Label>
+              <Label>{t("donor_profile.amount_label")}</Label>
               <Input
                 type="number"
                 placeholder="0"
@@ -187,8 +196,11 @@ export default function AddDonorSponsorshipDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Currency</Label>
-              <Select value={form.currency} onValueChange={(v) => setForm((p: any) => ({ ...p, currency: v }))}>
+              <Label>{t("donor_profile.currency")}</Label>
+              <Select
+                value={form.currency}
+                onValueChange={(v) => setForm((p: any) => ({ ...p, currency: v }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -202,8 +214,11 @@ export default function AddDonorSponsorshipDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Frequency</Label>
-              <Select value={form.frequency} onValueChange={(v) => setForm((p: any) => ({ ...p, frequency: v }))}>
+              <Label>{t("donor_profile.frequency")}</Label>
+              <Select
+                value={form.frequency}
+                onValueChange={(v) => setForm((p: any) => ({ ...p, frequency: v }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -215,8 +230,11 @@ export default function AddDonorSponsorshipDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Status</Label>
-              <Select value={form.status} onValueChange={(v) => setForm((p: any) => ({ ...p, status: v }))}>
+              <Label>{t("donor_profile.status")}</Label>
+              <Select
+                value={form.status}
+                onValueChange={(v) => setForm((p: any) => ({ ...p, status: v }))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -230,7 +248,7 @@ export default function AddDonorSponsorshipDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Start Date</Label>
+            <Label>{t("donor_profile.start_date")}</Label>
             <Input
               type="date"
               value={form.startDate}
@@ -240,9 +258,9 @@ export default function AddDonorSponsorshipDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Notes</Label>
+            <Label>{t("donor_profile.notes")}</Label>
             <Textarea
-              placeholder="Optional notes..."
+              placeholder={t("donor_profile.optional_notes")}
               value={form.notes}
               onChange={(e) => setForm((p: any) => ({ ...p, notes: e.target.value }))}
               data-testid="input-notes"
@@ -251,11 +269,15 @@ export default function AddDonorSponsorshipDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
-            <Button type="submit" disabled={loading || !form.beneficiaryId} data-testid="button-submit-sponsorship">
+            <Button
+              type="submit"
+              disabled={loading || !form.beneficiaryId}
+              data-testid="button-submit-sponsorship"
+            >
               {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Add Sponsorship
+              {t("donor_profile.add_sponsorship")}
             </Button>
           </DialogFooter>
         </form>

@@ -19,6 +19,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Stats { totalDonationsFY: number; donationsThisMonth: number; activeDonors: number; totalBeneficiaries: number; }
@@ -138,6 +139,7 @@ function insightStyle(type: string) {
 
 // ─── Monthly Target Card ──────────────────────────────────────────────────────
 function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; loading: boolean }) {
+  const { t } = useTranslation();
   const now = new Date();
   const monthName = now.toLocaleString("en-IN", { month: "long" });
 
@@ -157,13 +159,13 @@ function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; load
               <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-950/40">
                 <Target className="h-4 w-4 text-orange-600" />
               </div>
-              <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Monthly Donor Target</span>
+              <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t("home.monthly_target_label")}</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1">{monthName} — From monthly recurring donors</p>
           </div>
           {achieved ? (
             <Badge className="bg-emerald-500 text-white border-0 gap-1 flex-shrink-0">
-              <CheckCircle2 className="h-3 w-3" /> Target Achieved!
+              <CheckCircle2 className="h-3 w-3" /> {t("home.target_achieved")}
             </Badge>
           ) : (
             <Badge variant="outline" className="text-orange-600 border-orange-300 bg-orange-50 flex-shrink-0">
@@ -226,6 +228,7 @@ function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; load
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<Stats | null>(null);
   const [monthlyTarget, setMonthlyTarget] = useState<MonthlyTarget | null>(null);
   const [trends, setTrends] = useState<MonthlyTrend[]>([]);
@@ -341,10 +344,10 @@ export default function DashboardPage() {
           <CardContent className="p-8 text-center space-y-4">
             <div className="flex justify-center"><div className="p-4 rounded-full bg-red-50"><WifiOff className="h-8 w-8 text-red-400" /></div></div>
             <div>
-              <h3 className="text-base font-semibold">Connection Error</h3>
-              <p className="text-sm text-muted-foreground mt-1">Could not connect to the server. Please try again.</p>
+              <h3 className="text-base font-semibold">{t("home.connection_error")}</h3>
+              <p className="text-sm text-muted-foreground mt-1">{t("home.connection_error_desc")}</p>
             </div>
-            <Button onClick={() => window.location.reload()} className="w-full"><RefreshCcw className="h-4 w-4 mr-2" />Retry</Button>
+            <Button onClick={() => window.location.reload()} className="w-full"><RefreshCcw className="h-4 w-4 mr-2" />{t("home.retry")}</Button>
           </CardContent>
         </Card>
       </div>
@@ -382,9 +385,7 @@ export default function DashboardPage() {
                 className="font-black text-white tracking-tight"
                 style={{ fontSize: "clamp(2.4rem, 4.5vw, 3.5rem)", lineHeight: 1.12 }}
               >
-                Making a<br />
-                <span style={{ color: "#fb923c" }}>Difference,</span><br />
-                Together.
+                {t("home.title")}
               </h1>
               <p className="mt-5 max-w-lg" style={{ color: "rgba(219,234,254,0.9)", fontSize: "1.05rem", lineHeight: 1.8 }}>
                 Welcome to{" "}
@@ -413,7 +414,7 @@ export default function DashboardPage() {
         {/* ── MONTHLY DONOR TARGET ──────────────────────────────────────────── */}
         <section>
           <SectionHeader
-            title="Monthly Donor Target"
+            title={t("home.monthly_target_label")}
             subtitle={`₹3,00,000 / month from recurring monthly donors — ${new Date().toLocaleString("en-IN", { month: "long", year: "numeric" })}`}
             icon={Target}
           />
@@ -422,7 +423,7 @@ export default function DashboardPage() {
 
         {/* ── KPI CARDS ─────────────────────────────────────────────────────── */}
         <section>
-          <SectionHeader title="Key Metrics" subtitle="Financial year and current month overview" icon={BarChart3} />
+          <SectionHeader title={t("home.key_metrics")} subtitle={t("home.key_metrics_subtitle")} icon={BarChart3} />
           {loading ? (
             <div className="space-y-4">
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}</div>
@@ -430,16 +431,16 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-4">
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-                <KpiCard title="Total FY Donations" value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} color="text-orange-500" highlight />
-                <KpiCard title="This Month" value={stats ? fmt(stats.donationsThisMonth) : "—"} icon={TrendingUp} color="text-blue-600" />
-                <KpiCard title="Total Donors" value={totalDonors > 0 ? totalDonors.toString() : (stats?.activeDonors?.toString() ?? "—")} icon={Users} color="text-violet-600" />
-                <KpiCard title="Monthly Donors" value={monthlyTarget ? monthlyTarget.totalMonthlyDonors.toString() : "—"} icon={Repeat} color="text-teal-600" />
+                <KpiCard title={t("home.total_fy_donations")} value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} color="text-orange-500" highlight />
+                <KpiCard title={t("home.donations_this_month")} value={stats ? fmt(stats.donationsThisMonth) : "—"} icon={TrendingUp} color="text-blue-600" />
+                <KpiCard title={t("home.active_donors")} value={totalDonors > 0 ? totalDonors.toString() : (stats?.activeDonors?.toString() ?? "—")} icon={Users} color="text-violet-600" />
+                <KpiCard title={t("home.monthly_donors")} value={monthlyTarget ? monthlyTarget.totalMonthlyDonors.toString() : "—"} icon={Repeat} color="text-teal-600" />
               </div>
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-                <KpiCard title="Beneficiaries" value={stats?.totalBeneficiaries?.toString() ?? "—"} icon={HandHeart} color="text-rose-600" />
-                <KpiCard title="Active Sponsors" value={sponsoredCount > 0 ? sponsoredCount.toString() : "—"} icon={Heart} color="text-pink-600" />
-                <KpiCard title="Retention Rate" value={retentionPct > 0 ? `${retentionPct.toFixed(1)}%` : "—"} icon={Repeat} color="text-emerald-600" />
-                <KpiCard title="Pending Follow-ups" value={followUpCount > 0 ? followUpCount.toString() : "—"} icon={Bell} color="text-amber-600" />
+                <KpiCard title={t("home.total_beneficiaries")} value={stats?.totalBeneficiaries?.toString() ?? "—"} icon={HandHeart} color="text-rose-600" />
+                <KpiCard title={t("home.active_sponsors")} value={sponsoredCount > 0 ? sponsoredCount.toString() : "—"} icon={Heart} color="text-pink-600" />
+                <KpiCard title={t("home.retention_rate")} value={retentionPct > 0 ? `${retentionPct.toFixed(1)}%` : "—"} icon={Repeat} color="text-emerald-600" />
+                <KpiCard title={t("home.pending_followups")} value={followUpCount > 0 ? followUpCount.toString() : "—"} icon={Bell} color="text-amber-600" />
               </div>
             </div>
           )}
@@ -449,7 +450,7 @@ export default function DashboardPage() {
         {/* ── CHARTS ────────────────────────────────────────────────────────── */}
         {(loading || trends.length > 0 || modeSplit.length > 0) && (
           <section>
-            <SectionHeader title="Donation Analytics" subtitle="Trends and payment distribution" icon={BarChart3} />
+            <SectionHeader title={t("home.donation_analytics")} subtitle={t("home.donation_analytics_subtitle")} icon={BarChart3} />
             {loading ? (
               <div className="grid gap-5 lg:grid-cols-3">
                 <div className="lg:col-span-2"><Skeleton className="h-72 rounded-xl" /></div>
@@ -458,7 +459,7 @@ export default function DashboardPage() {
             ) : (
               <div className="grid gap-5 lg:grid-cols-3">
                 <div className="lg:col-span-2">
-                  <ChartCard title="Monthly Donation Trend" subtitle="Last 12 months">
+                  <ChartCard title={t("home.monthly_trend_chart")} subtitle={t("home.last_12_months")}>
                     {trends.length > 0 ? (
                       <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
@@ -480,7 +481,7 @@ export default function DashboardPage() {
                     )}
                   </ChartCard>
                 </div>
-                <ChartCard title="Payment Modes" subtitle="Current FY distribution">
+                <ChartCard title={t("home.payment_modes")} subtitle={t("home.fy_distribution")}>
                   {modeSplit.length > 0 ? (
                     <div className="h-64">
                       <ResponsiveContainer width="100%" height="100%">
@@ -508,12 +509,12 @@ export default function DashboardPage() {
         {/* ── HOME-WISE PERFORMANCE ─────────────────────────────────────────── */}
         {loading || slowLoading ? (
           <section>
-            <SectionHeader title="Home-wise Performance" subtitle="Impact across all homes" icon={Building2} />
+            <SectionHeader title={t("home.home_performance")} subtitle={t("home.home_performance_subtitle")} icon={Building2} />
             <div className="grid gap-4 md:grid-cols-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-44 rounded-xl" />)}</div>
           </section>
         ) : impactData && impactData.homeMetrics.length > 0 ? (
           <section data-testid="section-home-performance">
-            <SectionHeader title="Home-wise Performance" subtitle="Impact and donations across all Asha Kuteer homes this FY" icon={Building2} />
+            <SectionHeader title={t("home.home_performance")} subtitle={t("home.home_performance_subtitle")} icon={Building2} />
             <div className="grid gap-4 md:grid-cols-3">
               {impactData.homeMetrics.map((home) => {
                 const color = HOME_COLORS[home.homeType] ?? "#6366f1";
@@ -570,7 +571,7 @@ export default function DashboardPage() {
           <section>
             <div className="grid gap-5 lg:grid-cols-2">
               <div>
-                <SectionHeader title="Donor Intelligence" subtitle="Retention and engagement" icon={Repeat} />
+                <SectionHeader title={t("home.donor_intelligence")} subtitle={t("home.donor_intelligence_subtitle")} icon={Repeat} />
                 {loading || slowLoading ? (
                   <div className="space-y-3">{[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>
                 ) : (
@@ -578,14 +579,14 @@ export default function DashboardPage() {
                     {retentionData && (
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { label: "Repeat Donors", value: retentionData.summary.repeatDonorCount, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
-                          { label: "Lapsed Donors", value: retentionData.summary.lapsedDonorCount, color: "text-red-500", bg: "bg-red-50 dark:bg-red-950/30" },
-                          { label: "One-time Only", value: retentionData.summary.oneTimeDonorCount, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/30" },
-                          { label: "Active (6 mo)", value: retentionData.summary.activeLast6Months, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30" },
-                        ].map(({ label, value, color, bg }) => (
-                          <div key={label} className={`rounded-xl p-3.5 ${bg}`}>
+                          { labelKey: "home.repeat_donors_count", value: retentionData.summary.repeatDonorCount, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
+                          { labelKey: "home.lapsed_donors_count", value: retentionData.summary.lapsedDonorCount, color: "text-red-500", bg: "bg-red-50 dark:bg-red-950/30" },
+                          { labelKey: "home.one_time_only", value: retentionData.summary.oneTimeDonorCount, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/30" },
+                          { labelKey: "home.active_6mo", value: retentionData.summary.activeLast6Months, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30" },
+                        ].map(({ labelKey, value, color, bg }) => (
+                          <div key={labelKey} className={`rounded-xl p-3.5 ${bg}`}>
                             <p className={`text-xl font-bold ${color}`}>{value}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{t(labelKey)}</p>
                           </div>
                         ))}
                       </div>
@@ -612,7 +613,7 @@ export default function DashboardPage() {
               </div>
 
               <div>
-                <SectionHeader title="Smart Insights" subtitle="AI-powered observations for action" icon={Lightbulb} />
+                <SectionHeader title={t("home.smart_insights")} subtitle={t("home.smart_insights_subtitle")} icon={Lightbulb} />
                 {loading ? (
                   <div className="space-y-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>
                 ) : (
@@ -645,7 +646,7 @@ export default function DashboardPage() {
         {/* ── FOLLOW-UPS DUE ────────────────────────────────────────────────── */}
         {dueReminders.length > 0 && (
           <section data-testid="section-followups">
-            <SectionHeader title="Follow-ups Due" subtitle={`${dueReminders.length} scheduled follow-ups need action`} icon={Bell} />
+            <SectionHeader title={t("home.followups_due")} subtitle={`${dueReminders.length} scheduled follow-ups need action`} icon={Bell} />
             <div className="space-y-2.5">
               {dueReminders.slice(0, 6).map((r) => {
                 const overdue = daysOverdue(r.dueDate);

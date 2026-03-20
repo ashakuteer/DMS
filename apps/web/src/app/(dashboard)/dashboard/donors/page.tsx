@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Download, Plus, Upload } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { fetchWithAuth, authStorage } from "@/lib/auth"
@@ -19,6 +20,7 @@ import { Donor } from "./types"
 export default function DonorsPage() {
 
   const router = useRouter()
+  const { t } = useTranslation()
 
   const user = authStorage.getUser()
   const canCreate = hasPermission(user?.role, "donors", "create")
@@ -82,13 +84,13 @@ export default function DonorsPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Donors</h1>
+          <h1 className="text-3xl font-bold text-foreground">{t("donors.title")}</h1>
           <p className="text-muted-foreground mt-1">
             {loading
-              ? "Loading donors…"
+              ? t("common.loading")
               : total > 0
-                ? `${total} donor${total === 1 ? "" : "s"} total`
-                : "No donors yet"}
+                ? `${total} ${t("donors.title").toLowerCase()}`
+                : t("donors.no_donors")}
           </p>
         </div>
 
@@ -100,7 +102,7 @@ export default function DonorsPage() {
               data-testid="button-export"
             >
               <Download className="h-4 w-4 mr-2" />
-              Export
+              {t("common.export")}
             </Button>
           )}
 
@@ -111,7 +113,7 @@ export default function DonorsPage() {
               data-testid="button-import"
             >
               <Upload className="h-4 w-4 mr-2" />
-              Import
+              {t("common.import")}
             </Button>
           )}
 
@@ -121,7 +123,7 @@ export default function DonorsPage() {
               data-testid="button-add-donor"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Donor
+              {t("donors.add_donor")}
             </Button>
           )}
         </div>
@@ -139,7 +141,7 @@ export default function DonorsPage() {
         </div>
       ) : donors.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
-          <p>No donors found</p>
+          <p>{t("donors.no_donors")}</p>
           {canCreate && (
             <Button
               className="mt-4"
@@ -147,7 +149,7 @@ export default function DonorsPage() {
               data-testid="button-add-donor-empty"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add your first donor
+              {t("donors.add_donor")}
             </Button>
           )}
         </div>

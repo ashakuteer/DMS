@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { Calendar, Gift, IndianRupee, Users } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "../utils";
@@ -23,12 +24,13 @@ export default function DonorStatsCards({
   specialOccasionsCount,
   familyMembersCount,
 }: DonorStatsCardsProps) {
+  const { t } = useTranslation();
   return (
     <div className="grid gap-4 md:grid-cols-4">
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Total Donations
+            {t("donor_profile.total_donations")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -39,10 +41,10 @@ export default function DonorStatsCards({
             </span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {donationsCount} donation(s)
+            {t("donor_profile.donations_count", { count: donationsCount })}
             {averageDonation && averageDonation > 0 && (
               <span className="ml-1 text-muted-foreground">
-                · avg {formatCurrency(averageDonation.toString())}
+                · {t("donor_profile.avg")} {formatCurrency(averageDonation.toString())}
               </span>
             )}
           </p>
@@ -52,7 +54,7 @@ export default function DonorStatsCards({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Pending Pledges
+            {t("donor_profile.pending_pledges")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -61,7 +63,7 @@ export default function DonorStatsCards({
             <span className="text-2xl font-bold">{pendingPledges}</span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {totalPledges} total pledge(s)
+            {t("donor_profile.total_pledges", { count: totalPledges })}
           </p>
         </CardContent>
       </Card>
@@ -69,7 +71,7 @@ export default function DonorStatsCards({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Special Days
+            {t("donor_profile.tab_special_days")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -78,7 +80,7 @@ export default function DonorStatsCards({
             <span className="text-2xl font-bold">{specialOccasionsCount}</span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Birthdays, anniversaries, etc.
+            {t("donor_profile.special_days_hint")}
           </p>
         </CardContent>
       </Card>
@@ -86,7 +88,7 @@ export default function DonorStatsCards({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium text-muted-foreground">
-            Family Members
+            {t("donor_profile.family_members")}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -95,7 +97,7 @@ export default function DonorStatsCards({
             <span className="text-2xl font-bold">{familyMembersCount}</span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Spouse, children, etc.
+            {t("donor_profile.family_members_hint")}
           </p>
         </CardContent>
       </Card>

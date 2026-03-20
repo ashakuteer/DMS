@@ -4,8 +4,10 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "lucide-react"
 import { isToday, isPast } from "date-fns"
+import { useTranslation } from "react-i18next"
 
 export default function TodaySummary({ followUps }: any) {
+  const { t } = useTranslation()
 
   const dueTodayCount =
     followUps.filter((f: any) =>
@@ -37,20 +39,20 @@ export default function TodaySummary({ followUps }: any) {
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">
-              Today's Summary
+              {t("follow_ups.todays_summary")}
             </span>
           </div>
 
           <Badge className="bg-orange-100 text-orange-800">
-            {dueTodayCount} due today
+            {t("follow_ups.due_today_count", { count: dueTodayCount })}
           </Badge>
 
           <Badge className="bg-red-100 text-red-800">
-            {overdueCount} overdue
+            {t("follow_ups.overdue_count", { count: overdueCount })}
           </Badge>
 
           <Badge className="bg-green-100 text-green-800">
-            {completedTodayCount} completed today
+            {t("follow_ups.completed_today_count", { count: completedTodayCount })}
           </Badge>
 
         </div>

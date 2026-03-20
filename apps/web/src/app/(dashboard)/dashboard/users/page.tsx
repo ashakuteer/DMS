@@ -54,6 +54,7 @@ import { canAccessModule, ALL_ROLES, ROLE_LABELS } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 interface SystemUser {
   id: string;
@@ -79,6 +80,7 @@ async function fetchUsers(): Promise<{ items: SystemUser[]; total: number }> {
 }
 
 export default function UsersPage() {
+  const { t } = useTranslation();
   const currentUser = authStorage.getUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -278,14 +280,12 @@ export default function UsersPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">User Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage staff accounts, roles, and access permissions
-          </p>
+          <h1 className="text-3xl font-bold text-foreground">{t("users.title")}</h1>
+          <p className="text-muted-foreground mt-1">{t("users.subtitle")}</p>
         </div>
         <Button data-testid="button-add-user" onClick={() => setAddDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          Add User
+          {t("admin.add_user")}
         </Button>
       </div>
 
@@ -296,7 +296,7 @@ export default function UsersPage() {
               <Users className="h-8 w-8 text-blue-500" />
               <div>
                 <p className="text-2xl font-bold">{users.length}</p>
-                <p className="text-sm text-muted-foreground">Total Users</p>
+                <p className="text-sm text-muted-foreground">{t("users.total_users")}</p>
               </div>
             </div>
           </CardContent>
@@ -307,7 +307,7 @@ export default function UsersPage() {
               <ShieldCheck className="h-8 w-8 text-green-500" />
               <div>
                 <p className="text-2xl font-bold">{activeCount}</p>
-                <p className="text-sm text-muted-foreground">Active</p>
+                <p className="text-sm text-muted-foreground">{t("users.active_users")}</p>
               </div>
             </div>
           </CardContent>
@@ -318,7 +318,7 @@ export default function UsersPage() {
               <ShieldOff className="h-8 w-8 text-red-400" />
               <div>
                 <p className="text-2xl font-bold">{inactiveCount}</p>
-                <p className="text-sm text-muted-foreground">Inactive</p>
+                <p className="text-sm text-muted-foreground">{t("users.inactive_users")}</p>
               </div>
             </div>
           </CardContent>
@@ -329,15 +329,15 @@ export default function UsersPage() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
             <div>
-              <CardTitle>System Users</CardTitle>
-              <CardDescription>All users with system access ({filtered.length} shown)</CardDescription>
+              <CardTitle>{t("users.system_users")}</CardTitle>
+              <CardDescription>{t("users.system_users_desc", { count: filtered.length })}</CardDescription>
             </div>
             <div className="flex gap-2">
               <div className="relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   data-testid="input-search-users"
-                  placeholder="Search name, email, phone…"
+                  placeholder={t("users.search_placeholder")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-9 w-64"
@@ -348,7 +348,7 @@ export default function UsersPage() {
                   <SelectValue placeholder="All roles" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ALL">All roles</SelectItem>
+                  <SelectItem value="ALL">{t("users.all_roles")}</SelectItem>
                   {ALL_ROLES.map((r) => (
                     <SelectItem key={r} value={r}>{ROLE_LABELS[r]}</SelectItem>
                   ))}
@@ -365,26 +365,26 @@ export default function UsersPage() {
           ) : error ? (
             <div className="flex flex-col items-center justify-center h-48 text-destructive gap-2">
               <UserCog className="h-10 w-10 opacity-40" />
-              <p>Failed to load users. Please refresh.</p>
+              <p>{t("users.failed_to_load")}</p>
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-2">
               <UserCog className="h-10 w-10 opacity-40" />
-              <p className="text-lg font-medium">No users found</p>
-              <p className="text-sm">Adjust your search or filters</p>
+              <p className="text-lg font-medium">{t("admin.no_users")}</p>
+              <p className="text-sm">{t("common.try_adjusting_filters")}</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Joined</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("admin.user_name")}</TableHead>
+                    <TableHead>{t("admin.user_email")}</TableHead>
+                    <TableHead>{t("admin.user_phone")}</TableHead>
+                    <TableHead>{t("admin.user_role")}</TableHead>
+                    <TableHead>{t("users.status")}</TableHead>
+                    <TableHead>{t("users.joined")}</TableHead>
+                    <TableHead className="text-right">{t("common.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -416,7 +416,7 @@ export default function UsersPage() {
                           variant={user.isActive ? "default" : "secondary"}
                           className={user.isActive ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}
                         >
-                          {user.isActive ? "Active" : "Inactive"}
+                          {user.isActive ? t("users.active") : t("users.inactive")}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
@@ -440,14 +440,14 @@ export default function UsersPage() {
                               onClick={() => openEditDialog(user)}
                             >
                               <Pencil className="mr-2 h-4 w-4" />
-                              Edit Details
+                              {t("users.edit_details")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               data-testid={`menu-reset-password-${user.id}`}
                               onClick={() => openResetDialog(user)}
                             >
                               <KeyRound className="mr-2 h-4 w-4" />
-                              Reset Password
+                              {t("users.reset_password")}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
@@ -459,12 +459,12 @@ export default function UsersPage() {
                               {user.isActive ? (
                                 <>
                                   <ShieldOff className="mr-2 h-4 w-4" />
-                                  Deactivate
+                                  {t("users.deactivate")}
                                 </>
                               ) : (
                                 <>
                                   <ShieldCheck className="mr-2 h-4 w-4" />
-                                  Activate
+                                  {t("users.activate")}
                                 </>
                               )}
                             </DropdownMenuItem>
@@ -483,12 +483,12 @@ export default function UsersPage() {
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add New User</DialogTitle>
-            <DialogDescription>Create a new staff account with system access.</DialogDescription>
+            <DialogTitle>{t("users.add_dialog_title")}</DialogTitle>
+            <DialogDescription>{t("users.add_dialog_desc")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="new-name">Full Name *</Label>
+              <Label htmlFor="new-name">{t("users.full_name_required")}</Label>
               <Input
                 id="new-name"
                 data-testid="input-new-name"
@@ -498,7 +498,7 @@ export default function UsersPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="new-email">Email Address *</Label>
+              <Label htmlFor="new-email">{t("users.email_required")}</Label>
               <Input
                 id="new-email"
                 data-testid="input-new-email"
@@ -509,7 +509,7 @@ export default function UsersPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="new-phone">Phone Number</Label>
+              <Label htmlFor="new-phone">{t("users.phone_number")}</Label>
               <Input
                 id="new-phone"
                 data-testid="input-new-phone"
@@ -519,7 +519,7 @@ export default function UsersPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="new-role">Role *</Label>
+              <Label htmlFor="new-role">{t("users.role_required")}</Label>
               <Select
                 value={newUser.role}
                 onValueChange={(v) => setNewUser({ ...newUser, role: v })}
@@ -535,7 +535,7 @@ export default function UsersPage() {
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="new-password">Password *</Label>
+              <Label htmlFor="new-password">{t("users.password_required")}</Label>
               <Input
                 id="new-password"
                 data-testid="input-new-password"
@@ -546,7 +546,7 @@ export default function UsersPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="new-confirm-password">Confirm Password *</Label>
+              <Label htmlFor="new-confirm-password">{t("users.confirm_password_required")}</Label>
               <Input
                 id="new-confirm-password"
                 data-testid="input-new-confirm-password"
@@ -559,7 +559,7 @@ export default function UsersPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAddDialogOpen(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               data-testid="button-confirm-add-user"
@@ -567,7 +567,7 @@ export default function UsersPage() {
               disabled={createMutation.isPending}
             >
               {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create User
+              {t("users.create_user")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -576,14 +576,14 @@ export default function UsersPage() {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
+            <DialogTitle>{t("users.edit_dialog_title")}</DialogTitle>
             <DialogDescription>
-              Update details for <strong>{selectedUser?.name}</strong>
+              {t("users.edit_dialog_desc", { name: selectedUser?.name ?? "" })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="edit-name">Full Name</Label>
+              <Label htmlFor="edit-name">{t("users.full_name")}</Label>
               <Input
                 id="edit-name"
                 data-testid="input-edit-name"
@@ -592,7 +592,7 @@ export default function UsersPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-phone">Phone Number</Label>
+              <Label htmlFor="edit-phone">{t("users.phone_number")}</Label>
               <Input
                 id="edit-phone"
                 data-testid="input-edit-phone"
@@ -602,7 +602,7 @@ export default function UsersPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-role">Role</Label>
+              <Label htmlFor="edit-role">{t("admin.user_role")}</Label>
               <Select
                 value={editData.role}
                 onValueChange={(v) => setEditData({ ...editData, role: v })}
@@ -618,13 +618,13 @@ export default function UsersPage() {
                 </SelectContent>
               </Select>
               {selectedUser?.id === currentUser?.id && (
-                <p className="text-xs text-muted-foreground">You cannot change your own role.</p>
+                <p className="text-xs text-muted-foreground">{t("users.cannot_change_own_role")}</p>
               )}
             </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               data-testid="button-confirm-edit-user"
@@ -632,7 +632,7 @@ export default function UsersPage() {
               disabled={editMutation.isPending}
             >
               {editMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Changes
+              {t("common.save_changes")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -641,14 +641,14 @@ export default function UsersPage() {
       <Dialog open={resetPwDialogOpen} onOpenChange={setResetPwDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Reset Password</DialogTitle>
+            <DialogTitle>{t("users.reset_dialog_title")}</DialogTitle>
             <DialogDescription>
-              Set a new password for <strong>{selectedUser?.name}</strong>. They will be logged out automatically.
+              {t("users.reset_dialog_desc", { name: selectedUser?.name ?? "" })}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="reset-password">New Password</Label>
+              <Label htmlFor="reset-password">{t("users.new_password")}</Label>
               <Input
                 id="reset-password"
                 data-testid="input-reset-password"
@@ -659,7 +659,7 @@ export default function UsersPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="reset-confirm-password">Confirm New Password</Label>
+              <Label htmlFor="reset-confirm-password">{t("users.confirm_new_password")}</Label>
               <Input
                 id="reset-confirm-password"
                 data-testid="input-reset-confirm-password"
@@ -672,7 +672,7 @@ export default function UsersPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setResetPwDialogOpen(false)}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               data-testid="button-confirm-reset-password"
@@ -681,7 +681,7 @@ export default function UsersPage() {
               variant="destructive"
             >
               {resetPasswordMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Reset Password
+              {t("users.reset_password")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -47,74 +47,74 @@ const navGroups: NavGroup[] = [
   {
     pinned: true,
     items: [
-      { title: "Dashboard", tKey: "dashboard", href: "/dashboard", icon: LayoutDashboard, permissionModule: "dashboard" },
-      { title: "Daily Actions", tKey: "daily_actions", href: "/dashboard/daily-actions", icon: Inbox, permissionModule: "dailyActions" },
+      { title: "Dashboard", tKey: "nav.dashboard", href: "/dashboard", icon: LayoutDashboard, permissionModule: "dashboard" },
+      { title: "Daily Actions", tKey: "nav.daily_actions", href: "/dashboard/daily-actions", icon: Inbox, permissionModule: "dailyActions" },
     ],
   },
   {
     label: "Core",
-    labelKey: "group_core",
+    labelKey: "nav.group_core",
     items: [
-      { title: "Donors", tKey: "donors", href: "/dashboard/donors", icon: Users, permissionModule: "donors" },
-      { title: "Donations", tKey: "donations", href: "/dashboard/donations", icon: IndianRupee, permissionModule: "donations" },
-      { title: "Beneficiaries", tKey: "beneficiaries", href: "/dashboard/beneficiaries", icon: HandHeart, permissionModule: "beneficiaries" },
-      { title: "Campaigns", tKey: "campaigns", href: "/dashboard/campaigns", icon: Target, permissionModule: "campaigns" },
+      { title: "Donors", tKey: "nav.donors", href: "/dashboard/donors", icon: Users, permissionModule: "donors" },
+      { title: "Donations", tKey: "nav.donations", href: "/dashboard/donations", icon: IndianRupee, permissionModule: "donations" },
+      { title: "Beneficiaries", tKey: "nav.beneficiaries", href: "/dashboard/beneficiaries", icon: HandHeart, permissionModule: "beneficiaries" },
+      { title: "Campaigns", tKey: "nav.campaigns", href: "/dashboard/campaigns", icon: Target, permissionModule: "campaigns" },
     ],
   },
   {
     label: "Reports & Analytics",
-    labelKey: "group_reports_analytics",
+    labelKey: "nav.group_reports_analytics",
     items: [
-      { title: "Analytics", tKey: "analytics", href: "/dashboard/analytics", icon: BarChart3, permissionModule: "analytics" },
-      { title: "Impact Dashboard", tKey: "impact_dashboard", href: "/dashboard/impact", icon: TrendingUp, permissionModule: "impact" },
-      { title: "Retention", tKey: "retention", href: "/dashboard/retention", icon: Repeat, permissionModule: "retention" },
-      { title: "Reports", tKey: "reports", href: "/dashboard/reports", icon: FileText, permissionModule: "reports" },
-      { title: "Donor Reports", tKey: "donor_reports", href: "/dashboard/donor-reports", icon: FileBarChart, permissionModule: "donorReports" },
-      { title: "Report Campaigns", tKey: "report_campaigns", href: "/dashboard/report-campaigns", icon: Megaphone, permissionModule: "reportCampaigns" },
-      { title: "Progress Reports", tKey: "progress_reports", href: "/dashboard/progress-reports", icon: ClipboardList, permissionModule: "progressReports" },
-      { title: "Home Summary", tKey: "home_summary", href: "/dashboard/home-summary", icon: Building2, permissionModule: "homeSummary" },
+      { title: "Analytics", tKey: "nav.analytics", href: "/dashboard/analytics", icon: BarChart3, permissionModule: "analytics" },
+      { title: "Impact Dashboard", tKey: "nav.impact_dashboard", href: "/dashboard/impact", icon: TrendingUp, permissionModule: "impact" },
+      { title: "Retention", tKey: "nav.retention", href: "/dashboard/retention", icon: Repeat, permissionModule: "retention" },
+      { title: "Reports", tKey: "nav.reports", href: "/dashboard/reports", icon: FileText, permissionModule: "reports" },
+      { title: "Donor Reports", tKey: "nav.donor_reports", href: "/dashboard/donor-reports", icon: FileBarChart, permissionModule: "donorReports" },
+      { title: "Report Campaigns", tKey: "nav.report_campaigns", href: "/dashboard/report-campaigns", icon: Megaphone, permissionModule: "reportCampaigns" },
+      { title: "Progress Reports", tKey: "nav.progress_reports", href: "/dashboard/progress-reports", icon: ClipboardList, permissionModule: "progressReports" },
+      { title: "Home Summary", tKey: "nav.home_summary", href: "/dashboard/home-summary", icon: Building2, permissionModule: "homeSummary" },
     ],
   },
   {
     label: "Communication",
-    labelKey: "group_communication",
+    labelKey: "nav.group_communication",
     items: [
-      { title: "Send Message", tKey: "send_message", href: "/dashboard/send-message", icon: MessageSquarePlus, permissionModule: "broadcasting" },
-      { title: "Templates", tKey: "templates", href: "/dashboard/comm-templates", icon: MessageSquareText, permissionModule: "templates" },
-      { title: "Broadcasting", tKey: "broadcasting", href: "/dashboard/broadcasting", icon: Radio, permissionModule: "broadcasting" },
-      { title: "Donor Updates", tKey: "donor_updates", href: "/dashboard/donor-updates", icon: Send, permissionModule: "donorUpdates" },
-      { title: "Birthday Wishes", tKey: "birthday_wishes", href: "/dashboard/birthday-wishes", icon: Cake, permissionModule: "birthdayWishes" },
-      { title: "Reminders", tKey: "reminders", href: "/dashboard/reminders", icon: Bell, permissionModule: "reminders" },
-      { title: "Follow-ups", tKey: "follow_ups", href: "/dashboard/follow-ups", icon: ArrowUpRight, permissionModule: "followUps" },
+      { title: "Send Message", tKey: "nav.send_message", href: "/dashboard/send-message", icon: MessageSquarePlus, permissionModule: "broadcasting" },
+      { title: "Templates", tKey: "nav.templates", href: "/dashboard/comm-templates", icon: MessageSquareText, permissionModule: "templates" },
+      { title: "Broadcasting", tKey: "nav.broadcasting", href: "/dashboard/broadcasting", icon: Radio, permissionModule: "broadcasting" },
+      { title: "Donor Updates", tKey: "nav.donor_updates", href: "/dashboard/donor-updates", icon: Send, permissionModule: "donorUpdates" },
+      { title: "Birthday Wishes", tKey: "nav.birthday_wishes", href: "/dashboard/birthday-wishes", icon: Cake, permissionModule: "birthdayWishes" },
+      { title: "Reminders", tKey: "nav.reminders", href: "/dashboard/reminders", icon: Bell, permissionModule: "reminders" },
+      { title: "Follow-ups", tKey: "nav.follow_ups", href: "/dashboard/follow-ups", icon: ArrowUpRight, permissionModule: "followUps" },
     ],
   },
   {
     label: "Staff",
-    labelKey: "group_staff",
+    labelKey: "nav.group_staff",
     items: [
-      { title: "Staff & Tasks", tKey: "staff_tasks", href: "/dashboard/staff-tasks", icon: ListChecks, permissionModule: "staffTasks" },
-      { title: "Staff Contacts", tKey: "staff_contacts", href: "/dashboard/staff-management", icon: Phone, permissionModule: "users" },
+      { title: "Staff & Tasks", tKey: "nav.staff_tasks", href: "/dashboard/staff-tasks", icon: ListChecks, permissionModule: "staffTasks" },
+      { title: "Staff Contacts", tKey: "nav.staff_contacts", href: "/dashboard/staff-management", icon: Phone, permissionModule: "users" },
     ],
   },
   {
     label: "Admin Tools",
-    labelKey: "group_admin_tools",
+    labelKey: "nav.group_admin_tools",
     items: [
-      { title: "Users", tKey: "users", href: "/dashboard/users", icon: UserCog, permissionModule: "users" },
-      { title: "Permissions", tKey: "permissions", href: "/dashboard/permissions", icon: Lock, permissionModule: "permissions" },
-      { title: "Document Vault", tKey: "document_vault", href: "/dashboard/ngo-documents", icon: FolderLock, permissionModule: "ngoDocuments" },
-      { title: "Audit Log", tKey: "audit_log", href: "/dashboard/audit-log", icon: ShieldCheck, permissionModule: "auditLog" },
-      { title: "Backup & Restore", tKey: "backup_restore", href: "/dashboard/backup", icon: DatabaseBackup, permissionModule: "backup" },
-      { title: "Archive", tKey: "archive", href: "/dashboard/admin/archive", icon: ArchiveRestore, permissionModule: "archive" },
+      { title: "Users", tKey: "nav.users", href: "/dashboard/users", icon: UserCog, permissionModule: "users" },
+      { title: "Permissions", tKey: "nav.permissions", href: "/dashboard/permissions", icon: Lock, permissionModule: "permissions" },
+      { title: "Document Vault", tKey: "nav.document_vault", href: "/dashboard/ngo-documents", icon: FolderLock, permissionModule: "ngoDocuments" },
+      { title: "Audit Log", tKey: "nav.audit_log", href: "/dashboard/audit-log", icon: ShieldCheck, permissionModule: "auditLog" },
+      { title: "Backup & Restore", tKey: "nav.backup_restore", href: "/dashboard/backup", icon: DatabaseBackup, permissionModule: "backup" },
+      { title: "Archive", tKey: "nav.archive", href: "/dashboard/admin/archive", icon: ArchiveRestore, permissionModule: "archive" },
     ],
   },
   {
     label: "System",
-    labelKey: "group_system",
+    labelKey: "nav.group_system",
     items: [
-      { title: "Time Machine", tKey: "time_machine", href: "/dashboard/time-machine", icon: Clock, permissionModule: "timeMachine" },
-      { title: "Milestones", tKey: "milestones", href: "/dashboard/milestones", icon: Milestone, permissionModule: "milestones" },
-      { title: "Settings", tKey: "settings", href: "/dashboard/settings", icon: Settings, permissionModule: "settings" },
+      { title: "Time Machine", tKey: "nav.time_machine", href: "/dashboard/time-machine", icon: Clock, permissionModule: "timeMachine" },
+      { title: "Milestones", tKey: "nav.milestones", href: "/dashboard/milestones", icon: Milestone, permissionModule: "milestones" },
+      { title: "Settings", tKey: "nav.settings", href: "/dashboard/settings", icon: Settings, permissionModule: "settings" },
     ],
   },
 ];
@@ -335,7 +335,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           data-testid="button-theme-toggle"
         >
           {theme === "dark" ? <Sun className="h-4 w-4 flex-shrink-0" /> : <Moon className="h-4 w-4 flex-shrink-0" />}
-          {!collapsed && <span className="text-xs">{theme === "dark" ? t("light_mode") : t("dark_mode")}</span>}
+          {!collapsed && <span className="text-xs">{theme === "dark" ? t("nav.light_mode") : t("nav.dark_mode")}</span>}
         </button>
 
         <DropdownMenu>
@@ -374,7 +374,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               data-testid="button-logout"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              <span>{t("log_out")}</span>
+              <span>{t("nav.log_out")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

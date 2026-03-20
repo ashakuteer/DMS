@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -30,35 +31,35 @@ export default function CancelPledgeDialog({
   pledgeActionLoading,
   onConfirm,
 }: CancelPledgeDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid="dialog-cancel-pledge">
         <DialogHeader>
-          <DialogTitle>Cancel Pledge</DialogTitle>
+          <DialogTitle>{t("donor_profile.cancel_pledge")}</DialogTitle>
           <DialogDescription>
-            Are you sure you want to cancel this pledge? This action cannot be
-            undone.
+            {t("donor_profile.cancel_pledge_confirm_desc")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="cancel-reason" className="text-right">
-              Reason *
+              {t("donor_profile.cancel_reason")} *
             </Label>
             <Textarea
               id="cancel-reason"
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
               className="col-span-3"
-              placeholder="Why is this pledge being cancelled?"
+              placeholder={t("donor_profile.cancel_reason_placeholder")}
               data-testid="input-cancel-reason"
             />
           </div>
 
           <p className="text-sm text-destructive">
-            This action cannot be undone. The pledge will be permanently marked
-            as cancelled.
+            {t("donor_profile.cancel_permanent_warning")}
           </p>
         </div>
 
@@ -69,7 +70,7 @@ export default function CancelPledgeDialog({
             onClick={() => onOpenChange(false)}
             data-testid="button-cancel-dismiss"
           >
-            Go Back
+            {t("donor_profile.go_back")}
           </Button>
 
           <Button
@@ -81,10 +82,10 @@ export default function CancelPledgeDialog({
             {pledgeActionLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Cancelling...
+                {t("donor_profile.cancelling")}
               </>
             ) : (
-              "Confirm Cancel"
+              t("donor_profile.confirm_cancel")
             )}
           </Button>
         </DialogFooter>

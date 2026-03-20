@@ -2,6 +2,7 @@
 
 import { Check, Copy, ExternalLink, Mail, MessageSquare, MessageSquareText } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,15 +49,17 @@ export default function DonorCommunicationTab({
   openWhatsApp,
   openEmailComposer,
 }: DonorCommunicationTabProps) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
           <MessageSquareText className="h-5 w-5 text-primary" />
-          <CardTitle>Communication Templates</CardTitle>
+          <CardTitle>{t("donor_profile.comm_templates")}</CardTitle>
         </div>
         <CardDescription>
-          Copy personalized messages to send via WhatsApp or Email. No messages are sent automatically.
+          {t("donor_profile.comm_templates_description")}
         </CardDescription>
       </CardHeader>
 
@@ -64,25 +67,25 @@ export default function DonorCommunicationTab({
         {templates.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <MessageSquare className="h-12 w-12 mx-auto mb-2 opacity-50" />
-            <p>No templates available</p>
+            <p>{t("donor_profile.no_templates")}</p>
           </div>
         ) : (
           <div className="space-y-6">
             {donations.length > 0 && (
               <div className="bg-muted/50 rounded-lg p-4 border mb-4">
                 <p className="text-sm font-medium mb-2">
-                  Latest Donation Details (used for placeholders):
+                  {t("donor_profile.latest_donation_details")}
                 </p>
                 <div className="flex flex-wrap gap-3 text-sm">
                   <Badge variant="outline">
-                    Amount: {formatCurrency(donations[0].donationAmount)}
+                    {t("donor_profile.amount")}: {formatCurrency(donations[0].donationAmount)}
                   </Badge>
                   <Badge variant="outline">
-                    Date: {formatDate(donations[0].donationDate)}
+                    {t("donor_profile.date")}: {formatDate(donations[0].donationDate)}
                   </Badge>
                   {donations[0].receiptNumber && (
                     <Badge variant="outline">
-                      Receipt: {donations[0].receiptNumber}
+                      {t("donor_profile.receipt")}: {donations[0].receiptNumber}
                     </Badge>
                   )}
                 </div>
@@ -124,7 +127,7 @@ export default function DonorCommunicationTab({
                       <div>
                         <Label className="text-xs font-medium flex items-center gap-1 mb-1">
                           <MessageSquare className="h-3 w-3" />
-                          WhatsApp Message
+                          {t("donor_profile.whatsapp_message")}
                         </Label>
 
                         <div className="bg-muted/50 rounded p-2 text-xs max-h-24 overflow-y-auto whitespace-pre-wrap border">
@@ -143,11 +146,11 @@ export default function DonorCommunicationTab({
                           >
                             {copiedField === `wa-${template.id}` ? (
                               <>
-                                <Check className="h-3 w-3 mr-1" /> Copied
+                                <Check className="h-3 w-3 mr-1" /> {t("common.copied")}
                               </>
                             ) : (
                               <>
-                                <Copy className="h-3 w-3 mr-1" /> Copy
+                                <Copy className="h-3 w-3 mr-1" /> {t("common.copy")}
                               </>
                             )}
                           </Button>
@@ -181,7 +184,7 @@ export default function DonorCommunicationTab({
                                     data-testid={`button-send-whatsapp-${template.type.toLowerCase()}`}
                                   >
                                     <SiWhatsapp className="h-3 w-3 mr-1" />
-                                    Send
+                                    {t("common.send")}
                                     <ExternalLink className="h-3 w-3 ml-1" />
                                   </Button>
                                 </span>
@@ -189,7 +192,7 @@ export default function DonorCommunicationTab({
 
                               {!hasWhatsAppNumber && (
                                 <TooltipContent>
-                                  <p>No phone number available for this donor</p>
+                                  <p>{t("donor_profile.no_phone_available")}</p>
                                 </TooltipContent>
                               )}
                             </Tooltip>
@@ -200,12 +203,12 @@ export default function DonorCommunicationTab({
                       <div>
                         <Label className="text-xs font-medium flex items-center gap-1 mb-1">
                           <Mail className="h-3 w-3" />
-                          Email
+                          {t("donor_profile.field_email")}
                         </Label>
 
                         <div className="space-y-1">
                           <div className="bg-muted/50 rounded p-2 text-xs border">
-                            <span className="text-muted-foreground">Subject: </span>
+                            <span className="text-muted-foreground">{t("donor_profile.subject")}: </span>
                             {emailSubjectResolved}
                           </div>
 
@@ -226,11 +229,11 @@ export default function DonorCommunicationTab({
                           >
                             {copiedField === `subj-${template.id}` ? (
                               <>
-                                <Check className="h-3 w-3 mr-1" /> Copied
+                                <Check className="h-3 w-3 mr-1" /> {t("common.copied")}
                               </>
                             ) : (
                               <>
-                                <Copy className="h-3 w-3 mr-1" /> Subject
+                                <Copy className="h-3 w-3 mr-1" /> {t("donor_profile.subject")}
                               </>
                             )}
                           </Button>
@@ -246,11 +249,11 @@ export default function DonorCommunicationTab({
                           >
                             {copiedField === `body-${template.id}` ? (
                               <>
-                                <Check className="h-3 w-3 mr-1" /> Copied
+                                <Check className="h-3 w-3 mr-1" /> {t("common.copied")}
                               </>
                             ) : (
                               <>
-                                <Copy className="h-3 w-3 mr-1" /> Body
+                                <Copy className="h-3 w-3 mr-1" /> {t("donor_profile.body")}
                               </>
                             )}
                           </Button>
@@ -268,14 +271,14 @@ export default function DonorCommunicationTab({
                                     data-testid={`button-send-email-${template.type.toLowerCase()}`}
                                   >
                                     <Mail className="h-3 w-3 mr-1" />
-                                    Send
+                                    {t("common.send")}
                                   </Button>
                                 </span>
                               </TooltipTrigger>
 
                               {!hasEmail && (
                                 <TooltipContent>
-                                  <p>No email address available for this donor</p>
+                                  <p>{t("donor_profile.no_email_available")}</p>
                                 </TooltipContent>
                               )}
                             </Tooltip>

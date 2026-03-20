@@ -17,6 +17,7 @@ import {
   X,
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -60,15 +61,62 @@ export default function DonorTimelineTab({
   setTimelineTypeFilter,
   fetchTimeline,
 }: DonorTimelineTabProps) {
+  const { t } = useTranslation();
+
+  const typeFilters = [
+    {
+      key: "DONATION",
+      label: t("donor_profile.tab_donations"),
+      icon: IndianRupee,
+      color: "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300",
+    },
+    {
+      key: "VISIT",
+      label: t("donor_profile.timeline_visits"),
+      icon: Eye,
+      color: "bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300",
+    },
+    {
+      key: "COMMUNICATION",
+      label: t("donor_profile.timeline_messages"),
+      icon: MessageSquare,
+      color: "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300",
+    },
+    {
+      key: "BIRTHDAY_WISH",
+      label: t("donor_profile.timeline_wishes"),
+      icon: Cake,
+      color: "bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300",
+    },
+    {
+      key: "PLEDGE",
+      label: t("donor_profile.tab_pledges"),
+      icon: Gift,
+      color: "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300",
+    },
+    {
+      key: "FOLLOW_UP",
+      label: t("donor_profile.timeline_follow_ups"),
+      icon: CalendarClock,
+      color: "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300",
+    },
+    {
+      key: "SPONSORSHIP",
+      label: t("donor_profile.tab_sponsorships"),
+      icon: Handshake,
+      color: "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300",
+    },
+  ];
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center gap-2">
           <History className="h-5 w-5 text-primary" />
-          <CardTitle>Engagement Timeline</CardTitle>
+          <CardTitle>{t("donor_profile.engagement_timeline")}</CardTitle>
         </div>
         <CardDescription>
-          Complete history of all interactions with this donor
+          {t("donor_profile.timeline_description")}
         </CardDescription>
       </CardHeader>
 
@@ -82,7 +130,7 @@ export default function DonorTimelineTab({
               className="w-[140px]"
               data-testid="input-timeline-start-date"
             />
-            <span className="text-sm text-muted-foreground">to</span>
+            <span className="text-sm text-muted-foreground">{t("donor_profile.to")}</span>
             <Input
               type="date"
               value={timelineEndDate}
@@ -119,62 +167,12 @@ export default function DonorTimelineTab({
             data-testid="button-apply-timeline-filter"
           >
             <Filter className="h-4 w-4 mr-1" />
-            Apply
+            {t("common.apply")}
           </Button>
         </div>
 
         <div className="flex flex-wrap gap-2" data-testid="timeline-type-filters">
-          {[
-            {
-              key: "DONATION",
-              label: "Donations",
-              icon: IndianRupee,
-              color:
-                "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300",
-            },
-            {
-              key: "VISIT",
-              label: "Visits",
-              icon: Eye,
-              color:
-                "bg-teal-100 dark:bg-teal-900 text-teal-700 dark:text-teal-300",
-            },
-            {
-              key: "COMMUNICATION",
-              label: "Messages",
-              icon: MessageSquare,
-              color:
-                "bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300",
-            },
-            {
-              key: "BIRTHDAY_WISH",
-              label: "Wishes",
-              icon: Cake,
-              color:
-                "bg-pink-100 dark:bg-pink-900 text-pink-700 dark:text-pink-300",
-            },
-            {
-              key: "PLEDGE",
-              label: "Pledges",
-              icon: Gift,
-              color:
-                "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300",
-            },
-            {
-              key: "FOLLOW_UP",
-              label: "Follow-ups",
-              icon: CalendarClock,
-              color:
-                "bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300",
-            },
-            {
-              key: "SPONSORSHIP",
-              label: "Sponsorships",
-              icon: Handshake,
-              color:
-                "bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300",
-            },
-          ].map(({ key, label, icon: Icon, color }) => {
+          {typeFilters.map(({ key, label, icon: Icon, color }) => {
             const isActive = timelineTypeFilter.includes(key);
             const count = timelineTypeCounts[key] || 0;
 
@@ -185,7 +183,7 @@ export default function DonorTimelineTab({
                 className={`cursor-pointer ${!isActive ? color : ""}`}
                 onClick={() => {
                   const newFilter = isActive
-                    ? timelineTypeFilter.filter((t) => t !== key)
+                    ? timelineTypeFilter.filter((f) => f !== key)
                     : [...timelineTypeFilter, key];
                   setTimelineTypeFilter(newFilter);
                   fetchTimeline(
@@ -215,7 +213,7 @@ export default function DonorTimelineTab({
               data-testid="badge-clear-filters"
             >
               <X className="h-3 w-3 mr-1" />
-              Clear
+              {t("common.clear")}
             </Badge>
           )}
         </div>
@@ -227,17 +225,17 @@ export default function DonorTimelineTab({
         ) : timelineItems.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
-            <p className="font-medium">No activities found</p>
+            <p className="font-medium">{t("donor_profile.no_activities")}</p>
             <p className="text-sm mt-1">
               {timelineTypeFilter.length > 0 || timelineStartDate || timelineEndDate
-                ? "Try adjusting your filters"
-                : "No interactions have been recorded yet"}
+                ? t("donor_profile.adjust_filters")
+                : t("donor_profile.no_interactions")}
             </p>
           </div>
         ) : (
           <>
             <div className="text-sm text-muted-foreground">
-              Showing {timelineItems.length} of {timelineTotal} activities
+              {t("donor_profile.showing_activities", { shown: timelineItems.length, total: timelineTotal })}
             </div>
 
             <div className="relative">
@@ -326,19 +324,19 @@ export default function DonorTimelineTab({
 
                             {item.metadata?.assignedTo && (
                               <span className="text-xs text-muted-foreground ml-2">
-                                Assigned to {item.metadata.assignedTo}
+                                {t("donor_profile.assigned_to")} {item.metadata.assignedTo}
                               </span>
                             )}
 
                             {item.metadata?.beneficiaryName && (
                               <span className="text-xs text-muted-foreground ml-2">
-                                for {item.metadata.beneficiaryName}
+                                {t("donor_profile.for_beneficiary")} {item.metadata.beneficiaryName}
                               </span>
                             )}
 
                             {item.metadata?.completedNote && (
                               <p className="text-xs text-muted-foreground mt-1 italic">
-                                Completion: {item.metadata.completedNote}
+                                {t("donor_profile.completion")}: {item.metadata.completedNote}
                               </p>
                             )}
                           </div>
@@ -400,11 +398,11 @@ export default function DonorTimelineTab({
                   data-testid="button-timeline-prev"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
+                  {t("common.previous")}
                 </Button>
 
                 <span className="text-sm text-muted-foreground">
-                  Page {timelinePage} of {timelineTotalPages}
+                  {t("common.page_of", { page: timelinePage, total: timelineTotalPages })}
                 </span>
 
                 <Button
@@ -421,7 +419,7 @@ export default function DonorTimelineTab({
                   }
                   data-testid="button-timeline-next"
                 >
-                  Next
+                  {t("common.next")}
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>

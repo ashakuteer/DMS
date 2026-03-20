@@ -1,5 +1,8 @@
+"use client"
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import { useTranslation } from "react-i18next"
 
 export default function FollowUpsTabs({
   activeTab,
@@ -7,6 +10,7 @@ export default function FollowUpsTabs({
   stats,
   children
 }:any){
+  const { t } = useTranslation()
 
   return(
 
@@ -15,7 +19,7 @@ export default function FollowUpsTabs({
       <TabsList>
 
         <TabsTrigger value="upcoming">
-          Upcoming
+          {t("follow_ups.tab_upcoming")}
           {stats.pending > 0 &&
             <Badge className="ml-1 bg-muted text-muted-foreground">
               {stats.pending}
@@ -23,11 +27,11 @@ export default function FollowUpsTabs({
         </TabsTrigger>
 
         <TabsTrigger value="completed">
-          Completed
+          {t("follow_ups.tab_completed")}
         </TabsTrigger>
 
         <TabsTrigger value="all">
-          All
+          {t("follow_ups.tab_all")}
         </TabsTrigger>
 
       </TabsList>

@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { AlertTriangle, Calendar, Clock, CheckCircle2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 interface Stats {
   overdue: number
@@ -11,6 +12,7 @@ interface Stats {
 }
 
 export default function StatsCards({ stats }: { stats: Stats }) {
+  const { t } = useTranslation()
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -23,7 +25,7 @@ export default function StatsCards({ stats }: { stats: Stats }) {
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.overdue}</p>
-              <p className="text-xs text-muted-foreground">Overdue</p>
+              <p className="text-xs text-muted-foreground">{t("follow_ups.overdue")}</p>
             </div>
           </div>
         </CardContent>
@@ -37,7 +39,7 @@ export default function StatsCards({ stats }: { stats: Stats }) {
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.dueToday}</p>
-              <p className="text-xs text-muted-foreground">Due Today</p>
+              <p className="text-xs text-muted-foreground">{t("follow_ups.due_today")}</p>
             </div>
           </div>
         </CardContent>
@@ -51,7 +53,7 @@ export default function StatsCards({ stats }: { stats: Stats }) {
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.dueThisWeek}</p>
-              <p className="text-xs text-muted-foreground">This Week</p>
+              <p className="text-xs text-muted-foreground">{t("follow_ups.this_week")}</p>
             </div>
           </div>
         </CardContent>
@@ -65,7 +67,7 @@ export default function StatsCards({ stats }: { stats: Stats }) {
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.completed}</p>
-              <p className="text-xs text-muted-foreground">Completed</p>
+              <p className="text-xs text-muted-foreground">{t("follow_ups.completed")}</p>
             </div>
           </div>
         </CardContent>

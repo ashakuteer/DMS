@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { authStorage } from "@/lib/auth";
 import { canAccessModule, hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
+import { useTranslation } from "react-i18next";
 
 import { useStaffTasks } from "./hooks/useStaffTasks";
 
@@ -24,6 +25,7 @@ import TaskDetailDialog from "./dialogs/TaskDetailDialog";
 
 export default function StaffTasksPage() {
 
+const { t } = useTranslation();
 const { toast } = useToast();
 
 const [user, setUser] = useState<any>(null);
@@ -110,10 +112,8 @@ return ( <div className="p-6 space-y-6 max-w-7xl mx-auto">
   <div className="flex items-center justify-between flex-wrap gap-4">
 
     <div>
-      <h1 className="text-2xl font-bold">Staff & Tasks</h1>
-      <p className="text-muted-foreground">
-        Manage tasks, staff performance and tracking
-      </p>
+      <h1 className="text-2xl font-bold">{t("staff_tasks.title")}</h1>
+      <p className="text-muted-foreground">{t("staff_tasks.subtitle")}</p>
     </div>
 
     <div className="flex gap-2">
@@ -128,7 +128,7 @@ return ( <div className="p-6 space-y-6 max-w-7xl mx-auto">
 
       {canCreate && (
         <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="h-4 w-4 mr-1"/> New Task
+          <Plus className="h-4 w-4 mr-1"/> {t("staff_tasks.new_task")}
         </Button>
       )}
 
@@ -142,20 +142,20 @@ return ( <div className="p-6 space-y-6 max-w-7xl mx-auto">
 
       <TabsTrigger value="tasks">
         <ClipboardList className="h-4 w-4 mr-1"/>
-        Tasks
+        {t("staff_tasks.tab_tasks")}
       </TabsTrigger>
 
       {isAdminOrManager && (
         <TabsTrigger value="staff">
           <Users className="h-4 w-4 mr-1"/>
-          Staff
+          {t("staff_tasks.tab_staff")}
         </TabsTrigger>
       )}
 
       {isAdminOrManager && (
         <TabsTrigger value="performance">
           <BarChart3 className="h-4 w-4 mr-1"/>
-          Performance
+          {t("staff_tasks.tab_performance")}
         </TabsTrigger>
       )}
 

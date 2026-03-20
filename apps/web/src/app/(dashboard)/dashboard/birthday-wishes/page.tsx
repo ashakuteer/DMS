@@ -46,6 +46,7 @@ import { authStorage, fetchWithAuth } from "@/lib/auth";
 import { canAccessModule, hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface DonorBirthday {
   donorId: string;
@@ -140,6 +141,7 @@ export default function BirthdayWishesPage() {
   const [editingTemplate, setEditingTemplate] = useState<string | null>(null);
   const [editSubject, setEditSubject] = useState("");
   const [editBody, setEditBody] = useState("");
+  const { t } = useTranslation();
   const { toast } = useToast();
   const user = authStorage.getUser();
 
@@ -328,12 +330,12 @@ export default function BirthdayWishesPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div>
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">Birthday Wishes</h1>
-          <p className="text-muted-foreground">Manage birthday greetings for donors and beneficiaries</p>
+          <h1 className="text-2xl font-bold" data-testid="text-page-title">{t("birthday.title")}</h1>
+          <p className="text-muted-foreground">{t("birthday.subtitle")}</p>
         </div>
         <Button variant="outline" onClick={loadAll} data-testid="button-refresh">
           <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
+          {t("common.refresh")}
         </Button>
       </div>
 
@@ -341,29 +343,29 @@ export default function BirthdayWishesPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-              <Users className="h-3 w-3" /> Donor Birthdays
+              <Users className="h-3 w-3" /> {t("birthday.donor_birthdays")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" data-testid="text-donor-count">{donorBirthdays.length}</div>
-            <p className="text-xs text-muted-foreground">{todayDonors} today</p>
+            <p className="text-xs text-muted-foreground">{t("birthday.today_count", { count: todayDonors })}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-              <HandHeart className="h-3 w-3" /> Beneficiary Birthdays
+              <HandHeart className="h-3 w-3" /> {t("birthday.beneficiary_birthdays")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" data-testid="text-ben-count">{beneficiaryBirthdays.length}</div>
-            <p className="text-xs text-muted-foreground">{todayBeneficiaries} today</p>
+            <p className="text-xs text-muted-foreground">{t("birthday.today_count", { count: todayBeneficiaries })}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-              <Cake className="h-3 w-3" /> Today Total
+              <Cake className="h-3 w-3" /> {t("birthday.today_total")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -373,7 +375,7 @@ export default function BirthdayWishesPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-              <Mail className="h-3 w-3" /> Messages Sent
+              <Mail className="h-3 w-3" /> {t("birthday.messages_sent")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -386,20 +388,20 @@ export default function BirthdayWishesPage() {
         <TabsList data-testid="tabs-birthday">
           <TabsTrigger value="donors" data-testid="tab-donors">
             <Users className="mr-2 h-4 w-4" />
-            Donor Birthdays ({donorBirthdays.length})
+            {t("birthday.donor_birthdays")} ({donorBirthdays.length})
           </TabsTrigger>
           <TabsTrigger value="beneficiaries" data-testid="tab-beneficiaries">
             <HandHeart className="mr-2 h-4 w-4" />
-            Beneficiary Birthdays ({beneficiaryBirthdays.length})
+            {t("birthday.beneficiary_birthdays")} ({beneficiaryBirthdays.length})
           </TabsTrigger>
           <TabsTrigger value="log" data-testid="tab-log">
             <FileText className="mr-2 h-4 w-4" />
-            Sent Log
+            {t("birthday.sent_log")}
           </TabsTrigger>
           {isAdmin && (
             <TabsTrigger value="templates" data-testid="tab-templates">
               <FileText className="mr-2 h-4 w-4" />
-              Templates
+              {t("birthday.templates")}
             </TabsTrigger>
           )}
         </TabsList>
@@ -407,22 +409,22 @@ export default function BirthdayWishesPage() {
         <TabsContent value="donors">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Upcoming Donor Birthdays (Next 7 Days)</CardTitle>
+              <CardTitle className="text-lg">{t("birthday.upcoming_donor_birthdays")}</CardTitle>
             </CardHeader>
             <CardContent>
               {donorBirthdays.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">No donor birthdays in the next 7 days</div>
+                <div className="text-center py-8 text-muted-foreground">{t("birthday.no_donor_birthdays")}</div>
               ) : (
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Donor</TableHead>
-                        <TableHead>Birthday</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Sponsorships</TableHead>
-                        <TableHead>Contact</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead>{t("birthday.col_donor")}</TableHead>
+                        <TableHead>{t("birthday.col_birthday")}</TableHead>
+                        <TableHead>{t("users.status")}</TableHead>
+                        <TableHead>{t("birthday.col_sponsorships")}</TableHead>
+                        <TableHead>{t("birthday.col_contact")}</TableHead>
+                        <TableHead className="text-right">{t("common.actions")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -435,9 +437,9 @@ export default function BirthdayWishesPage() {
                           <TableCell className="text-muted-foreground">{formatDate(item.dobMonth, item.dobDay)}</TableCell>
                           <TableCell>
                             {item.isToday ? (
-                              <Badge variant="default">Today</Badge>
+                              <Badge variant="default">{t("birthday.today")}</Badge>
                             ) : (
-                              <span className="text-muted-foreground">{item.daysUntil}d away</span>
+                              <span className="text-muted-foreground">{t("birthday.days_away", { count: item.daysUntil })}</span>
                             )}
                           </TableCell>
                           <TableCell>
@@ -455,12 +457,12 @@ export default function BirthdayWishesPage() {
                                 </TooltipContent>
                               </Tooltip>
                             ) : (
-                              <span className="text-xs text-muted-foreground">None</span>
+                              <span className="text-xs text-muted-foreground">{t("birthday.none")}</span>
                             )}
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-1 flex-wrap">
-                              {item.hasEmail && <Badge variant="secondary">Email</Badge>}
+                              {item.hasEmail && <Badge variant="secondary">{t("birthday.email")}</Badge>}
                               {item.hasWhatsApp && <Badge variant="secondary">WA</Badge>}
                             </div>
                           </TableCell>
@@ -474,7 +476,7 @@ export default function BirthdayWishesPage() {
                                     </Button>
                                   </Link>
                                 </TooltipTrigger>
-                                <TooltipContent>View Profile</TooltipContent>
+                                <TooltipContent>{t("birthday.view_profile")}</TooltipContent>
                               </Tooltip>
                               {item.hasWhatsApp && (
                                 <Tooltip>
@@ -488,7 +490,7 @@ export default function BirthdayWishesPage() {
                                       <Copy className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Copy & Open WhatsApp</TooltipContent>
+                                  <TooltipContent>{t("birthday.copy_whatsapp")}</TooltipContent>
                                 </Tooltip>
                               )}
                               {item.hasEmail && (
@@ -508,7 +510,7 @@ export default function BirthdayWishesPage() {
                                       )}
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Queue Birthday Email</TooltipContent>
+                                  <TooltipContent>{t("birthday.queue_email")}</TooltipContent>
                                 </Tooltip>
                               )}
                             </div>
@@ -526,22 +528,22 @@ export default function BirthdayWishesPage() {
         <TabsContent value="beneficiaries">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Upcoming Beneficiary Birthdays (Next 7 Days)</CardTitle>
+              <CardTitle className="text-lg">{t("birthday.upcoming_ben_birthdays")}</CardTitle>
             </CardHeader>
             <CardContent>
               {beneficiaryBirthdays.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">No beneficiary birthdays in the next 7 days</div>
+                <div className="text-center py-8 text-muted-foreground">{t("birthday.no_ben_birthdays")}</div>
               ) : (
                 <div className="rounded-md border">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Beneficiary</TableHead>
-                        <TableHead>Home</TableHead>
-                        <TableHead>Birthday</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Sponsors</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
+                        <TableHead>{t("birthday.col_beneficiary")}</TableHead>
+                        <TableHead>{t("birthday.col_home")}</TableHead>
+                        <TableHead>{t("birthday.col_birthday")}</TableHead>
+                        <TableHead>{t("users.status")}</TableHead>
+                        <TableHead>{t("birthday.col_sponsors")}</TableHead>
+                        <TableHead className="text-right">{t("common.actions")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -557,9 +559,9 @@ export default function BirthdayWishesPage() {
                           <TableCell className="text-muted-foreground">{formatDate(item.dobMonth, item.dobDay)}</TableCell>
                           <TableCell>
                             {item.isToday ? (
-                              <Badge variant="default">Today</Badge>
+                              <Badge variant="default">{t("birthday.today")}</Badge>
                             ) : (
-                              <span className="text-muted-foreground">{item.daysUntil}d away</span>
+                              <span className="text-muted-foreground">{t("birthday.days_away", { count: item.daysUntil })}</span>
                             )}
                           </TableCell>
                           <TableCell>
@@ -567,7 +569,7 @@ export default function BirthdayWishesPage() {
                               <Tooltip>
                                 <TooltipTrigger>
                                   <Badge variant="outline">
-                                    {item.sponsors.length} sponsor{item.sponsors.length > 1 ? "s" : ""}
+                                    {t("birthday.sponsor_count", { count: item.sponsors.length })}
                                   </Badge>
                                 </TooltipTrigger>
                                 <TooltipContent>
@@ -581,7 +583,7 @@ export default function BirthdayWishesPage() {
                                 </TooltipContent>
                               </Tooltip>
                             ) : (
-                              <span className="text-xs text-muted-foreground">No sponsors</span>
+                              <span className="text-xs text-muted-foreground">{t("birthday.no_sponsors")}</span>
                             )}
                           </TableCell>
                           <TableCell className="text-right">
@@ -594,7 +596,7 @@ export default function BirthdayWishesPage() {
                                     </Button>
                                   </Link>
                                 </TooltipTrigger>
-                                <TooltipContent>View Profile</TooltipContent>
+                                <TooltipContent>{t("birthday.view_profile")}</TooltipContent>
                               </Tooltip>
                               {item.sponsors.length > 0 && (
                                 <Tooltip>
@@ -613,7 +615,7 @@ export default function BirthdayWishesPage() {
                                       )}
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Email All Sponsors</TooltipContent>
+                                  <TooltipContent>{t("birthday.email_sponsors")}</TooltipContent>
                                 </Tooltip>
                               )}
                             </div>
@@ -631,23 +633,23 @@ export default function BirthdayWishesPage() {
         <TabsContent value="log">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Sent Birthday Messages Log</CardTitle>
+              <CardTitle className="text-lg">{t("birthday.sent_log_title")}</CardTitle>
             </CardHeader>
             <CardContent>
               {!sentLog || sentLog.logs.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">No birthday messages sent yet</div>
+                <div className="text-center py-8 text-muted-foreground">{t("birthday.no_messages_sent")}</div>
               ) : (
                 <>
                   <div className="rounded-md border">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Donor</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Channel</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Sent By</TableHead>
+                          <TableHead>{t("birthday.col_date")}</TableHead>
+                          <TableHead>{t("birthday.col_donor")}</TableHead>
+                          <TableHead>{t("birthday.col_type")}</TableHead>
+                          <TableHead>{t("birthday.col_channel")}</TableHead>
+                          <TableHead>{t("users.status")}</TableHead>
+                          <TableHead>{t("birthday.col_sent_by")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -670,7 +672,7 @@ export default function BirthdayWishesPage() {
                             </TableCell>
                             <TableCell>
                               <Badge variant={log.type === "BENEFICIARY_BIRTHDAY" ? "outline" : "secondary"}>
-                                {log.type === "BENEFICIARY_BIRTHDAY" ? "Beneficiary" : "Donor"}
+                                {log.type === "BENEFICIARY_BIRTHDAY" ? t("birthday.col_beneficiary") : t("birthday.col_donor")}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -688,7 +690,7 @@ export default function BirthdayWishesPage() {
                   {sentLog.totalPages > 1 && (
                     <div className="flex items-center justify-between mt-4">
                       <p className="text-sm text-muted-foreground">
-                        Page {sentLog.page} of {sentLog.totalPages} ({sentLog.total} total)
+                        {t("birthday.pagination", { page: sentLog.page, totalPages: sentLog.totalPages, total: sentLog.total })}
                       </p>
                       <div className="flex gap-2">
                         <Button
@@ -722,31 +724,31 @@ export default function BirthdayWishesPage() {
           <TabsContent value="templates">
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Birthday Wish Templates</CardTitle>
+                <CardTitle className="text-lg">{t("birthday.templates_title")}</CardTitle>
               </CardHeader>
               <CardContent>
                 {templates.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">No birthday templates found</div>
+                  <div className="text-center py-8 text-muted-foreground">{t("birthday.no_templates")}</div>
                 ) : (
                   <div className="space-y-4">
-                    {templates.map((t) => (
-                      <Card key={t.id} data-testid={`template-${t.id}`}>
+                    {templates.map((tmpl) => (
+                      <Card key={tmpl.id} data-testid={`template-${tmpl.id}`}>
                         <CardHeader className="pb-2">
                           <div className="flex items-center justify-between flex-wrap gap-2">
                             <div>
-                              <CardTitle className="text-base">{t.name}</CardTitle>
+                              <CardTitle className="text-base">{tmpl.name}</CardTitle>
                               <p className="text-xs text-muted-foreground mt-1">
-                                Channel: {t.channel} | Variables: {Array.isArray(t.variables) && t.variables.length > 0 ? t.variables.join(", ") : "No variables"}
+                                {t("birthday.channel_label")}: {tmpl.channel} | {t("birthday.variables_label")}: {Array.isArray(tmpl.variables) && tmpl.variables.length > 0 ? tmpl.variables.join(", ") : t("birthday.no_variables")}
                               </p>
                             </div>
-                            {editingTemplate !== t.id ? (
+                            {editingTemplate !== tmpl.id ? (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => startEditTemplate(t)}
-                                data-testid={`button-edit-template-${t.id}`}
+                                onClick={() => startEditTemplate(tmpl)}
+                                data-testid={`button-edit-template-${tmpl.id}`}
                               >
-                                Edit
+                                {t("common.edit")}
                               </Button>
                             ) : (
                               <div className="flex gap-2">
@@ -754,61 +756,61 @@ export default function BirthdayWishesPage() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => setEditingTemplate(null)}
-                                  data-testid={`button-cancel-template-${t.id}`}
+                                  data-testid={`button-cancel-template-${tmpl.id}`}
                                 >
-                                  Cancel
+                                  {t("common.cancel")}
                                 </Button>
                                 <Button
                                   size="sm"
-                                  onClick={() => handleSaveTemplate(t.id)}
-                                  disabled={actionLoading === `save-template-${t.id}`}
-                                  data-testid={`button-save-template-${t.id}`}
+                                  onClick={() => handleSaveTemplate(tmpl.id)}
+                                  disabled={actionLoading === `save-template-${tmpl.id}`}
+                                  data-testid={`button-save-template-${tmpl.id}`}
                                 >
-                                  {actionLoading === `save-template-${t.id}` ? (
+                                  {actionLoading === `save-template-${tmpl.id}` ? (
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                   ) : (
                                     <Save className="mr-2 h-4 w-4" />
                                   )}
-                                  Save
+                                  {t("common.save")}
                                 </Button>
                               </div>
                             )}
                           </div>
                         </CardHeader>
                         <CardContent>
-                          {editingTemplate === t.id ? (
+                          {editingTemplate === tmpl.id ? (
                             <div className="space-y-3">
-                              {t.channel === "EMAIL" && (
+                              {tmpl.channel === "EMAIL" && (
                                 <div>
-                                  <Label>Subject</Label>
+                                  <Label>{t("birthday.subject_label")}</Label>
                                   <Input
                                     value={editSubject}
                                     onChange={(e) => setEditSubject(e.target.value)}
-                                    data-testid={`input-subject-${t.id}`}
+                                    data-testid={`input-subject-${tmpl.id}`}
                                   />
                                 </div>
                               )}
                               <div>
-                                <Label>Body</Label>
+                                <Label>{t("birthday.body_label")}</Label>
                                 <Textarea
                                   value={editBody}
                                   onChange={(e) => setEditBody(e.target.value)}
                                   rows={8}
                                   className="font-mono text-sm"
-                                  data-testid={`input-body-${t.id}`}
+                                  data-testid={`input-body-${tmpl.id}`}
                                 />
                               </div>
                             </div>
                           ) : (
                             <div className="space-y-2">
-                              {t.subject && (
+                              {tmpl.subject && (
                                 <div>
-                                  <span className="text-sm font-medium text-muted-foreground">Subject: </span>
-                                  <span className="text-sm">{t.subject}</span>
+                                  <span className="text-sm font-medium text-muted-foreground">{t("birthday.subject_label")}: </span>
+                                  <span className="text-sm">{tmpl.subject}</span>
                                 </div>
                               )}
                               <div className="text-sm bg-muted/50 p-3 rounded-md max-h-40 overflow-y-auto whitespace-pre-wrap font-mono">
-                                {t.body}
+                                {tmpl.body}
                               </div>
                             </div>
                           )}

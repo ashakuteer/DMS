@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Lightbulb } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface DonorSmartSummaryProps {
   totalDonations: number;
@@ -18,30 +19,31 @@ export default function DonorSmartSummary({
   pendingPledges,
   specialOccasionsCount,
 }: DonorSmartSummaryProps) {
+  const { t } = useTranslation();
   const insights: string[] = [];
 
   if (donationsCount === 0) {
-    insights.push("This donor has not made any donations yet.");
+    insights.push(t("donor_profile.insight_no_donations"));
   }
 
   if (donationsCount > 0 && totalDonations > 100000) {
-    insights.push("High value donor. Maintain regular engagement.");
+    insights.push(t("donor_profile.insight_high_value"));
   }
 
   if (pendingPledges > 0) {
-    insights.push(`${pendingPledges} pledge(s) pending follow-up.`);
+    insights.push(t("donor_profile.insight_pending_pledges", { count: pendingPledges }));
   }
 
   if (specialOccasionsCount > 0) {
-    insights.push("Special days available for relationship engagement.");
+    insights.push(t("donor_profile.insight_special_days"));
   }
 
   if (lastDonationDate) {
-    insights.push(`Last donation recorded on ${lastDonationDate}.`);
+    insights.push(t("donor_profile.insight_last_donation", { date: lastDonationDate }));
   }
 
   if (insights.length === 0) {
-    insights.push("No special insights available yet.");
+    insights.push(t("donor_profile.insight_none"));
   }
 
   return (
@@ -49,7 +51,7 @@ export default function DonorSmartSummary({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Lightbulb className="h-5 w-5 text-yellow-500" />
-          Smart Relationship Insights
+          {t("donor_profile.smart_insights")}
         </CardTitle>
       </CardHeader>
 

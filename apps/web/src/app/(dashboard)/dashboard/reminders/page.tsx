@@ -42,6 +42,7 @@ import { authStorage, fetchWithAuth } from "@/lib/auth";
 import { canAccessModule } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface Donor {
   id: string;
@@ -96,6 +97,7 @@ const typeLabels: Record<string, string> = {
 };
 
 export default function RemindersPage() {
+  const { t } = useTranslation();
   const [reminders, setReminders] = useState<ReminderTask[]>([]);
   const [stats, setStats] = useState<Stats>({ today: 0, week: 0, month: 0, overdue: 0 });
   const [activeTab, setActiveTab] = useState("today");
@@ -272,8 +274,8 @@ export default function RemindersPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold" data-testid="text-page-title">Reminders</h1>
-          <p className="text-muted-foreground">Manage birthday, anniversary, and follow-up reminders</p>
+          <h1 className="text-2xl font-bold" data-testid="text-page-title">{t("reminders.title")}</h1>
+          <p className="text-muted-foreground">{t("reminders.subtitle")}</p>
         </div>
         {isAdmin && (
           <Button
@@ -286,7 +288,7 @@ export default function RemindersPage() {
             ) : (
               <RefreshCw className="h-4 w-4 mr-2" />
             )}
-            Generate Reminders
+            {t("reminders.generate")}
           </Button>
         )}
       </div>
@@ -294,7 +296,7 @@ export default function RemindersPage() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("reminders.today")}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -303,7 +305,7 @@ export default function RemindersPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Next 7 Days</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("reminders.next_7_days")}</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -312,7 +314,7 @@ export default function RemindersPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Next 30 Days</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("reminders.next_30_days")}</CardTitle>
             <Bell className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -321,7 +323,7 @@ export default function RemindersPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Overdue</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("reminders.overdue")}</CardTitle>
             <AlertTriangle className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
@@ -332,10 +334,10 @@ export default function RemindersPage() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList>
-          <TabsTrigger value="today" data-testid="tab-today">Today ({stats.today})</TabsTrigger>
-          <TabsTrigger value="week" data-testid="tab-week">7 Days ({stats.week})</TabsTrigger>
-          <TabsTrigger value="month" data-testid="tab-month">30 Days ({stats.month})</TabsTrigger>
-          <TabsTrigger value="overdue" data-testid="tab-overdue">Overdue ({stats.overdue})</TabsTrigger>
+          <TabsTrigger value="today" data-testid="tab-today">{t("reminders.today")} ({stats.today})</TabsTrigger>
+          <TabsTrigger value="week" data-testid="tab-week">{t("reminders.tab_7_days")} ({stats.week})</TabsTrigger>
+          <TabsTrigger value="month" data-testid="tab-month">{t("reminders.tab_30_days")} ({stats.month})</TabsTrigger>
+          <TabsTrigger value="overdue" data-testid="tab-overdue">{t("reminders.overdue")} ({stats.overdue})</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-4">
@@ -348,18 +350,18 @@ export default function RemindersPage() {
               ) : reminders.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-8 text-muted-foreground">
                   <CheckCircle className="h-12 w-12 mb-2" />
-                  <p>No reminders in this category</p>
+                  <p>{t("reminders.no_reminders")}</p>
                 </div>
               ) : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Donor</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Reminder</TableHead>
-                      <TableHead>Due Date</TableHead>
-                      {activeTab === "overdue" && <TableHead>Days Overdue</TableHead>}
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t("analytics.donor")}</TableHead>
+                      <TableHead>{t("common.type")}</TableHead>
+                      <TableHead>{t("reminders.reminder")}</TableHead>
+                      <TableHead>{t("analytics.due_date")}</TableHead>
+                      {activeTab === "overdue" && <TableHead>{t("reminders.days_overdue")}</TableHead>}
+                      <TableHead className="text-right">{t("common.actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -437,21 +439,21 @@ export default function RemindersPage() {
                                     data-testid={`menu-done-${reminder.id}`}
                                   >
                                     <CheckCircle className="h-4 w-4 mr-2" />
-                                    Mark Done
+                                    {t("reminders.mark_done")}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() => handleSnooze(reminder.id, 7)}
                                     data-testid={`menu-snooze7-${reminder.id}`}
                                   >
                                     <Clock className="h-4 w-4 mr-2" />
-                                    Snooze 7 Days
+                                    {t("reminders.snooze_7")}
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
                                     onClick={() => handleSnooze(reminder.id, 30)}
                                     data-testid={`menu-snooze30-${reminder.id}`}
                                   >
                                     <Clock className="h-4 w-4 mr-2" />
-                                    Snooze 30 Days
+                                    {t("reminders.snooze_30")}
                                   </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>

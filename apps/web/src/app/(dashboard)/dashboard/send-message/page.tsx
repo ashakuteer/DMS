@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { fetchWithAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface Template {
   id: string;
@@ -65,10 +66,10 @@ function getDonorDisplayName(donor: Donor) {
   return [donor.firstName, donor.middleName, donor.lastName].filter(Boolean).join(" ") || donor.donorCode;
 }
 
-const STEPS = ["Select Template", "Select Recipients", "Preview", "Send"];
-
 export default function SendMessagePage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
+  const STEPS = [t("send_message.step_template"), t("send_message.step_recipients"), t("send_message.step_preview"), t("send_message.step_send")];
   const [currentStep, setCurrentStep] = useState(0);
 
   // Step 1: Template
@@ -112,7 +113,7 @@ export default function SendMessagePage() {
     }
   }, [toast]);
 
-  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId);
+  const selectedTemplate = templates.find((tmpl) => tmpl.id === selectedTemplateId);
   const recipients = recipientMode === "individual" ? selectedDonors : groupResults;
 
   // Load templates
@@ -185,8 +186,8 @@ export default function SendMessagePage() {
           <MessageSquarePlus className="h-5 w-5 text-orange-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold">Send Message</h1>
-          <p className="text-sm text-muted-foreground">Send WhatsApp or Email messages to donors using predefined templates</p>
+          <h1 className="text-2xl font-bold">{t("send_message.title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("send_message.subtitle")}</p>
         </div>
       </div>
 
@@ -225,37 +226,37 @@ export default function SendMessagePage() {
         {currentStep === 0 && (
           <>
             <CardHeader>
-              <CardTitle>Step 1 — Select a Template</CardTitle>
-              <CardDescription>Choose a message template. Variables like {`{{donor_name}}`} will be auto-filled.</CardDescription>
+              <CardTitle>{t("send_message.step1_title")}</CardTitle>
+              <CardDescription>{t("send_message.step1_desc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {loadingTemplates ? (
                 <div className="flex items-center justify-center py-10 text-muted-foreground">
-                  <Loader2 className="h-5 w-5 animate-spin mr-2" /> Loading templates…
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" /> {t("send_message.loading_templates")}
                 </div>
               ) : templates.length === 0 ? (
                 <div className="text-center py-10 text-muted-foreground">
-                  <p>No templates found. Go to Communication → Templates to create some.</p>
+                  <p>{t("send_message.no_templates")}</p>
                 </div>
               ) : (
                 <div className="grid gap-3 sm:grid-cols-2">
-                  {templates.map((t) => (
+                  {templates.map((tmpl) => (
                     <button
-                      key={t.id}
-                      onClick={() => setSelectedTemplateId(t.id)}
+                      key={tmpl.id}
+                      onClick={() => setSelectedTemplateId(tmpl.id)}
                       className={`text-left p-4 rounded-xl border-2 transition-all ${
-                        selectedTemplateId === t.id
+                        selectedTemplateId === tmpl.id
                           ? "border-orange-500 bg-orange-50 dark:bg-orange-900/20"
                           : "border-border hover:border-orange-300 hover:bg-muted/40"
                       }`}
-                      data-testid={`template-option-${t.type.toLowerCase()}`}
+                      data-testid={`template-option-${tmpl.type.toLowerCase()}`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm truncate">{t.name}</p>
-                          {t.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{t.description}</p>}
+                          <p className="font-semibold text-sm truncate">{tmpl.name}</p>
+                          {tmpl.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{tmpl.description}</p>}
                         </div>
-                        {selectedTemplateId === t.id && <CheckCircle2 className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />}
+                        {selectedTemplateId === tmpl.id && <CheckCircle2 className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />}
                       </div>
                       <div className="flex gap-1.5 mt-2">
                         <Badge variant="outline" className="text-[10px] py-0">
@@ -277,17 +278,17 @@ export default function SendMessagePage() {
         {currentStep === 1 && (
           <>
             <CardHeader>
-              <CardTitle>Step 2 — Select Recipients</CardTitle>
-              <CardDescription>Search for a specific donor or apply group filters.</CardDescription>
+              <CardTitle>{t("send_message.step2_title")}</CardTitle>
+              <CardDescription>{t("send_message.step2_desc")}</CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs value={recipientMode} onValueChange={(v) => setRecipientMode(v as "individual" | "group")}>
                 <TabsList className="mb-4">
                   <TabsTrigger value="individual" className="gap-1.5">
-                    <User className="h-4 w-4" /> Individual
+                    <User className="h-4 w-4" /> {t("send_message.individual")}
                   </TabsTrigger>
                   <TabsTrigger value="group" className="gap-1.5">
-                    <Users className="h-4 w-4" /> Group Filter
+                    <Users className="h-4 w-4" /> {t("send_message.group_filter")}
                   </TabsTrigger>
                 </TabsList>
 
@@ -297,7 +298,7 @@ export default function SendMessagePage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       className="pl-9"
-                      placeholder="Search by name, phone, or donor ID…"
+                      placeholder={t("send_message.search_donor_placeholder")}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       data-testid="input-donor-search"
@@ -307,7 +308,7 @@ export default function SendMessagePage() {
 
                   {selectedDonors.length > 0 && (
                     <div>
-                      <Label className="text-xs text-muted-foreground uppercase tracking-wide mb-2 block">Selected ({selectedDonors.length})</Label>
+                      <Label className="text-xs text-muted-foreground uppercase tracking-wide mb-2 block">{t("send_message.selected_count", { count: selectedDonors.length })}</Label>
                       <div className="flex flex-wrap gap-2">
                         {selectedDonors.map((d) => (
                           <Badge key={d.id} variant="secondary" className="gap-1 pl-2 pr-1 py-0.5">
@@ -348,7 +349,7 @@ export default function SendMessagePage() {
                     </div>
                   )}
                   {searchQuery && !searching && searchResults.length === 0 && (
-                    <p className="text-sm text-muted-foreground text-center py-4">No donors found for "{searchQuery}"</p>
+                    <p className="text-sm text-muted-foreground text-center py-4">{t("send_message.no_donors_found", { query: searchQuery })}</p>
                   )}
                 </TabsContent>
 
@@ -356,39 +357,39 @@ export default function SendMessagePage() {
                 <TabsContent value="group" className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <Label className="text-sm mb-1.5 block">City</Label>
+                      <Label className="text-sm mb-1.5 block">{t("donors.city")}</Label>
                       <Input placeholder="e.g. Hyderabad" value={groupCity} onChange={(e) => setGroupCity(e.target.value)} data-testid="input-group-city" />
                     </div>
                     <div>
-                      <Label className="text-sm mb-1.5 block">Gender</Label>
+                      <Label className="text-sm mb-1.5 block">{t("donors.gender")}</Label>
                       <Select value={groupGender} onValueChange={setGroupGender}>
                         <SelectTrigger data-testid="select-group-gender">
-                          <SelectValue placeholder="Any gender" />
+                          <SelectValue placeholder={t("send_message.any_gender")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="ALL">Any</SelectItem>
-                          <SelectItem value="MALE">Male</SelectItem>
-                          <SelectItem value="FEMALE">Female</SelectItem>
-                          <SelectItem value="OTHER">Other</SelectItem>
+                          <SelectItem value="ALL">{t("send_message.any")}</SelectItem>
+                          <SelectItem value="MALE">{t("common.male")}</SelectItem>
+                          <SelectItem value="FEMALE">{t("common.female")}</SelectItem>
+                          <SelectItem value="OTHER">{t("common.other")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
-                      <Label className="text-sm mb-1.5 block">Religion</Label>
+                      <Label className="text-sm mb-1.5 block">{t("donors.religion")}</Label>
                       <Input placeholder="e.g. Hindu, Muslim…" value={groupReligion} onChange={(e) => setGroupReligion(e.target.value)} data-testid="input-group-religion" />
                     </div>
                     <div>
-                      <Label className="text-sm mb-1.5 block">Donor Type</Label>
+                      <Label className="text-sm mb-1.5 block">{t("send_message.donor_type")}</Label>
                       <Select value={groupDonorType} onValueChange={setGroupDonorType}>
                         <SelectTrigger data-testid="select-group-donortype">
-                          <SelectValue placeholder="Any type" />
+                          <SelectValue placeholder={t("send_message.any_type")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="ALL">Any</SelectItem>
-                          <SelectItem value="MONTHLY">Monthly</SelectItem>
-                          <SelectItem value="ONE_TIME">One-time</SelectItem>
-                          <SelectItem value="QUARTERLY">Quarterly</SelectItem>
-                          <SelectItem value="ANNUAL">Annual</SelectItem>
+                          <SelectItem value="ALL">{t("send_message.any")}</SelectItem>
+                          <SelectItem value="MONTHLY">{t("donors.freq_monthly")}</SelectItem>
+                          <SelectItem value="ONE_TIME">{t("donors.freq_one_time")}</SelectItem>
+                          <SelectItem value="QUARTERLY">{t("donors.freq_quarterly")}</SelectItem>
+                          <SelectItem value="ANNUAL">{t("donors.freq_annual")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -396,13 +397,13 @@ export default function SendMessagePage() {
 
                   <Button onClick={doGroupSearch} disabled={loadingGroup} className="gap-2" data-testid="button-apply-group-filter">
                     {loadingGroup ? <Loader2 className="h-4 w-4 animate-spin" /> : <Filter className="h-4 w-4" />}
-                    Apply Filters & Find Donors
+                    {t("send_message.apply_filters")}
                   </Button>
 
                   {groupResults.length > 0 && (
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <Label className="text-sm text-muted-foreground">{groupResults.length} donors matched</Label>
+                        <Label className="text-sm text-muted-foreground">{t("send_message.donors_matched", { count: groupResults.length })}</Label>
                       </div>
                       <div className="border rounded-lg divide-y max-h-48 overflow-y-auto">
                         {groupResults.slice(0, 50).map((d) => (
@@ -422,7 +423,7 @@ export default function SendMessagePage() {
                         ))}
                         {groupResults.length > 50 && (
                           <div className="px-4 py-2 text-xs text-muted-foreground text-center">
-                            + {groupResults.length - 50} more donors
+                            {t("send_message.more_donors", { count: groupResults.length - 50 })}
                           </div>
                         )}
                       </div>
@@ -438,14 +439,14 @@ export default function SendMessagePage() {
         {currentStep === 2 && selectedTemplate && (
           <>
             <CardHeader>
-              <CardTitle>Step 3 — Preview Message</CardTitle>
+              <CardTitle>{t("send_message.step3_title")}</CardTitle>
               <CardDescription>
-                Showing preview for {recipients.length} recipient{recipients.length !== 1 ? "s" : ""}. Variables are replaced with actual donor data.
+                {t("send_message.step3_desc", { count: recipients.length })}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
               {recipients.length === 0 ? (
-                <p className="text-muted-foreground">No recipients selected.</p>
+                <p className="text-muted-foreground">{t("send_message.no_recipients")}</p>
               ) : (
                 recipients.slice(0, 3).map((donor, idx) => (
                   <div key={donor.id} className="border rounded-xl p-4 space-y-3">
@@ -485,7 +486,7 @@ export default function SendMessagePage() {
               )}
               {recipients.length > 3 && (
                 <p className="text-xs text-muted-foreground text-center">
-                  Showing 3 of {recipients.length} recipients. All will receive the personalized message.
+                  {t("send_message.showing_3_of", { count: recipients.length })}
                 </p>
               )}
             </CardContent>
@@ -496,9 +497,9 @@ export default function SendMessagePage() {
         {currentStep === 3 && selectedTemplate && (
           <>
             <CardHeader>
-              <CardTitle>Step 4 — Send</CardTitle>
+              <CardTitle>{t("send_message.step4_title")}</CardTitle>
               <CardDescription>
-                {recipients.length} recipient{recipients.length !== 1 ? "s" : ""} selected. Click the buttons below to open WhatsApp Web or your email client for each recipient.
+                {t("send_message.step4_desc", { count: recipients.length })}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -544,7 +545,7 @@ export default function SendMessagePage() {
                             }
                           </Button>
                         ) : (
-                          <Button size="sm" variant="ghost" disabled className="text-xs text-muted-foreground">No phone</Button>
+                          <Button size="sm" variant="ghost" disabled className="text-xs text-muted-foreground">{t("send_message.no_phone")}</Button>
                         )}
                         {email ? (
                           <Button
@@ -558,7 +559,7 @@ export default function SendMessagePage() {
                             <ExternalLink className="h-3 w-3" />
                           </Button>
                         ) : (
-                          <Button size="sm" variant="ghost" disabled className="text-xs text-muted-foreground">No email</Button>
+                          <Button size="sm" variant="ghost" disabled className="text-xs text-muted-foreground">{t("send_message.no_email")}</Button>
                         )}
                       </div>
                     </div>
@@ -569,7 +570,7 @@ export default function SendMessagePage() {
               <div className="pt-2 border-t">
                 <p className="text-xs text-muted-foreground flex items-center gap-1.5">
                   <Send className="h-3.5 w-3.5" />
-                  WhatsApp opens in a new tab via WhatsApp Web. Email opens your default mail client.
+                  {t("send_message.send_note")}
                 </p>
               </div>
             </CardContent>
@@ -586,7 +587,7 @@ export default function SendMessagePage() {
           className="gap-2"
           data-testid="button-step-back"
         >
-          <ChevronLeft className="h-4 w-4" /> Back
+          <ChevronLeft className="h-4 w-4" /> {t("common.back")}
         </Button>
 
         <div className="flex gap-2">
@@ -597,7 +598,7 @@ export default function SendMessagePage() {
               className="gap-2"
               data-testid="button-step-next"
             >
-              Next <ChevronRight className="h-4 w-4" />
+              {t("common.next")} <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
             <Button
@@ -611,7 +612,7 @@ export default function SendMessagePage() {
               }}
               data-testid="button-start-over"
             >
-              Start Over
+              {t("send_message.start_over")}
             </Button>
           )}
         </div>

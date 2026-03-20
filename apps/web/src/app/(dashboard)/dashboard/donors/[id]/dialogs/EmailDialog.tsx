@@ -1,6 +1,7 @@
 "use client";
 
 import { Mail, Receipt } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,54 +44,52 @@ export default function EmailDialog({
   receiptNumber,
   onSend,
 }: EmailDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
-          <DialogTitle>Compose Email</DialogTitle>
-          <DialogDescription>Send an email to {donorName}</DialogDescription>
+          <DialogTitle>{t("donor_profile.compose_email")}</DialogTitle>
+          <DialogDescription>
+            {t("donor_profile.send_email_to", { name: donorName })}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="toEmail">To *</Label>
+            <Label htmlFor="toEmail">{t("donor_profile.to_label")} *</Label>
             <Input
               id="toEmail"
               type="email"
-              placeholder="Recipient email"
+              placeholder={t("donor_profile.recipient_email")}
               value={emailForm.toEmail}
-              onChange={(e) =>
-                setEmailForm({ ...emailForm, toEmail: e.target.value })
-              }
+              onChange={(e) => setEmailForm({ ...emailForm, toEmail: e.target.value })}
               data-testid="input-email-to"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="emailSubject">Subject *</Label>
+            <Label htmlFor="emailSubject">{t("donor_profile.subject")} *</Label>
             <Input
               id="emailSubject"
-              placeholder="Email subject"
+              placeholder={t("donor_profile.email_subject_placeholder")}
               value={emailForm.subject}
-              onChange={(e) =>
-                setEmailForm({ ...emailForm, subject: e.target.value })
-              }
+              onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
               data-testid="input-email-subject"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="emailBody">Message *</Label>
+            <Label htmlFor="emailBody">{t("donor_profile.message_label")} *</Label>
             <Textarea
               id="emailBody"
-              placeholder="Email body"
+              placeholder={t("donor_profile.email_body_placeholder")}
               rows={6}
               value={emailForm.body}
-              onChange={(e) =>
-                setEmailForm({ ...emailForm, body: e.target.value })
-              }
+              onChange={(e) => setEmailForm({ ...emailForm, body: e.target.value })}
               data-testid="input-email-body"
               required
             />
@@ -103,17 +102,14 @@ export default function EmailDialog({
                 variant={emailForm.attachReceipt ? "default" : "outline"}
                 size="sm"
                 onClick={() =>
-                  setEmailForm({
-                    ...emailForm,
-                    attachReceipt: !emailForm.attachReceipt,
-                  })
+                  setEmailForm({ ...emailForm, attachReceipt: !emailForm.attachReceipt })
                 }
                 data-testid="button-toggle-receipt"
               >
                 <Receipt className="h-4 w-4 mr-1" />
                 {emailForm.attachReceipt
-                  ? "Receipt Attached"
-                  : "Attach Receipt PDF"}
+                  ? t("donor_profile.receipt_attached")
+                  : t("donor_profile.attach_receipt_pdf")}
               </Button>
 
               {emailForm.attachReceipt && (
@@ -130,20 +126,16 @@ export default function EmailDialog({
             onClick={() => onOpenChange(false)}
             disabled={sendingEmail}
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
 
-          <Button
-            onClick={onSend}
-            disabled={sendingEmail}
-            data-testid="button-send-email"
-          >
+          <Button onClick={onSend} disabled={sendingEmail} data-testid="button-send-email">
             {sendingEmail ? (
-              "Sending..."
+              t("donor_profile.sending")
             ) : (
               <>
                 <Mail className="h-4 w-4 mr-1" />
-                Send Email
+                {t("donor_profile.send_email")}
               </>
             )}
           </Button>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { fetchWithAuth } from "@/lib/auth";
 
 type StaffUser = { id: string; name: string; email: string; role: string };
@@ -13,6 +14,7 @@ export default function AssignDonorOwner({
   donorId: string;
   currentOwner: DonorOwner;
 }) {
+  const { t } = useTranslation();
   const [staff, setStaff] = useState<StaffUser[]>([]);
   const [selectedId, setSelectedId] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -70,7 +72,7 @@ export default function AssignDonorOwner({
       window.location.reload();
     } catch (err) {
       console.error("Assign donor failed:", err);
-      alert("Failed to assign donor. Please check console for details.");
+      alert(t("donor_profile.assign_failed"));
     } finally {
       setLoading(false);
     }
@@ -79,10 +81,10 @@ export default function AssignDonorOwner({
   return (
     <div className="rounded border p-4 space-y-2">
       <div>
-        <b>Owner:</b>{" "}
+        <b>{t("donor_profile.owner")}:</b>{" "}
         {currentOwner
           ? `${currentOwner.name} (${currentOwner.email})`
-          : "Unassigned"}
+          : t("donor_profile.unassigned")}
       </div>
 
       <div className="flex gap-2 items-center">
@@ -93,7 +95,7 @@ export default function AssignDonorOwner({
           disabled={loading || loadingStaff}
           data-testid="select-assign-owner"
         >
-          <option value="">Unassigned</option>
+          <option value="">{t("donor_profile.unassigned")}</option>
           {staff.map((u) => (
             <option key={u.id} value={u.id}>
               {u.name}
@@ -107,12 +109,12 @@ export default function AssignDonorOwner({
           className="bg-blue-600 text-white px-3 py-1 rounded"
           data-testid="button-save-assign"
         >
-          {loading ? "Saving..." : "Save"}
+          {loading ? t("common.saving") : t("common.save")}
         </button>
       </div>
 
       {loadingStaff && (
-        <div className="text-sm text-muted-foreground">Loading staff…</div>
+        <div className="text-sm text-muted-foreground">{t("donor_profile.loading_staff")}</div>
       )}
     </div>
   );

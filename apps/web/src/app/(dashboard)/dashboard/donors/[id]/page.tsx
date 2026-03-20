@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { authStorage, fetchWithAuth } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
@@ -36,6 +37,7 @@ export default function DonorProfilePage() {
   const params = useParams();
   const donorId = params.id as string;
 
+  const { t } = useTranslation();
   const user = authStorage.getUser();
   const canEdit = hasPermission(user?.role, "donors", "edit");
   const [requestingAccess, setRequestingAccess] = useState(false);
@@ -63,8 +65,8 @@ export default function DonorProfilePage() {
     donorData.donor?.whatsappPhone || donorData.donor?.primaryPhone,
   );
 
-  if (donorData.loading) return <div>Loading...</div>;
-  if (!donorData.donor) return <div>Donor not found</div>;
+  if (donorData.loading) return <div>{t("common.loading")}</div>;
+  if (!donorData.donor) return <div>{t("donor_profile.not_found")}</div>;
 
   const donor = donorData.donor;
 
@@ -108,14 +110,14 @@ export default function DonorProfilePage() {
       <Tabs defaultValue="overview">
 
         <TabsList className="flex-wrap h-auto gap-1">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="timeline">Timeline</TabsTrigger>
-          <TabsTrigger value="donations">Donations</TabsTrigger>
-          <TabsTrigger value="pledges">Pledges</TabsTrigger>
-          <TabsTrigger value="family">Family</TabsTrigger>
-          <TabsTrigger value="special-days">Special Days</TabsTrigger>
-          <TabsTrigger value="sponsorships">Sponsorships</TabsTrigger>
-          <TabsTrigger value="comm-log">Comm Log</TabsTrigger>
+          <TabsTrigger value="overview">{t("donor_profile.tab_overview")}</TabsTrigger>
+          <TabsTrigger value="timeline">{t("donor_profile.tab_timeline")}</TabsTrigger>
+          <TabsTrigger value="donations">{t("donor_profile.tab_donations")}</TabsTrigger>
+          <TabsTrigger value="pledges">{t("donor_profile.tab_pledges")}</TabsTrigger>
+          <TabsTrigger value="family">{t("donor_profile.tab_family")}</TabsTrigger>
+          <TabsTrigger value="special-days">{t("donor_profile.tab_special_days")}</TabsTrigger>
+          <TabsTrigger value="sponsorships">{t("donor_profile.tab_sponsorships")}</TabsTrigger>
+          <TabsTrigger value="comm-log">{t("donor_profile.tab_comm_log")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">

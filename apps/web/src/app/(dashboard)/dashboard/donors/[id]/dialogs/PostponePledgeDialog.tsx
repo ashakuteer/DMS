@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,20 +37,22 @@ export default function PostponePledgeDialog({
   pledgeActionLoading,
   onConfirm,
 }: PostponePledgeDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent data-testid="dialog-postpone-pledge">
         <DialogHeader>
-          <DialogTitle>Postpone Pledge</DialogTitle>
+          <DialogTitle>{t("donor_profile.postpone_pledge")}</DialogTitle>
           <DialogDescription>
-            Set a new expected fulfillment date for this pledge.
+            {t("donor_profile.postpone_pledge_desc")}
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="postpone-date" className="text-right">
-              New Date *
+              {t("donor_profile.new_date")} *
             </Label>
             <Input
               id="postpone-date"
@@ -65,7 +68,7 @@ export default function PostponePledgeDialog({
 
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="postpone-notes" className="text-right">
-              Reason
+              {t("donor_profile.postpone_reason")}
             </Label>
             <Textarea
               id="postpone-notes"
@@ -74,7 +77,7 @@ export default function PostponePledgeDialog({
                 setPostponeForm({ ...postponeForm, notes: e.target.value })
               }
               className="col-span-3"
-              placeholder="Reason for postponing (optional)"
+              placeholder={t("donor_profile.postpone_reason_placeholder")}
               data-testid="input-postpone-notes"
             />
           </div>
@@ -87,7 +90,7 @@ export default function PostponePledgeDialog({
             onClick={() => onOpenChange(false)}
             data-testid="button-postpone-cancel"
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
 
           <Button
@@ -98,10 +101,10 @@ export default function PostponePledgeDialog({
             {pledgeActionLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Postponing...
+                {t("donor_profile.postponing")}
               </>
             ) : (
-              "Confirm Postpone"
+              t("donor_profile.confirm_postpone")
             )}
           </Button>
         </DialogFooter>

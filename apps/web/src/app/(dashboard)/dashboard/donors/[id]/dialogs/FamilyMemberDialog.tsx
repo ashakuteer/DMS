@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -43,17 +44,21 @@ export default function FamilyMemberDialog({
   onSubmit,
   onCancel,
 }: FamilyMemberDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
-            {editingFamilyMember ? "Edit Family Member" : "Add Family Member"}
+            {editingFamilyMember
+              ? t("donor_profile.edit_family_member_title")
+              : t("donor_profile.add_family_member")}
           </DialogTitle>
           <DialogDescription>
             {editingFamilyMember
-              ? "Update family member details"
-              : "Add a new family member to this donor's profile"}
+              ? t("donor_profile.update_family_member_desc")
+              : t("donor_profile.add_family_member_desc")}
           </DialogDescription>
         </DialogHeader>
 
@@ -61,16 +66,13 @@ export default function FamilyMemberDialog({
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="fm-name" className="text-right">
-                Name *
+                {t("donor_profile.name")} *
               </Label>
               <Input
                 id="fm-name"
                 value={familyMemberForm.name}
                 onChange={(e) =>
-                  setFamilyMemberForm({
-                    ...familyMemberForm,
-                    name: e.target.value,
-                  })
+                  setFamilyMemberForm({ ...familyMemberForm, name: e.target.value })
                 }
                 className="col-span-3"
                 data-testid="input-family-member-name"
@@ -80,59 +82,45 @@ export default function FamilyMemberDialog({
 
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="fm-relation" className="text-right">
-                Relation *
+                {t("donor_profile.relation")} *
               </Label>
               <Select
                 value={familyMemberForm.relationType}
                 onValueChange={(value) =>
-                  setFamilyMemberForm({
-                    ...familyMemberForm,
-                    relationType: value,
-                  })
+                  setFamilyMemberForm({ ...familyMemberForm, relationType: value })
                 }
               >
-                <SelectTrigger
-                  className="col-span-3"
-                  data-testid="select-family-member-relation"
-                >
-                  <SelectValue placeholder="Select relation" />
+                <SelectTrigger className="col-span-3" data-testid="select-family-member-relation">
+                  <SelectValue placeholder={t("donor_profile.select_relation")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SPOUSE">Spouse</SelectItem>
-                  <SelectItem value="CHILD">Child</SelectItem>
-                  <SelectItem value="FATHER">Father</SelectItem>
-                  <SelectItem value="MOTHER">Mother</SelectItem>
-                  <SelectItem value="SIBLING">Sibling</SelectItem>
-                  <SelectItem value="IN_LAW">In-law</SelectItem>
-                  <SelectItem value="GRANDPARENT">Grandparent</SelectItem>
-                  <SelectItem value="OTHER">Other</SelectItem>
+                  <SelectItem value="SPOUSE">{t("donor_profile.relation_spouse")}</SelectItem>
+                  <SelectItem value="CHILD">{t("donor_profile.relation_child")}</SelectItem>
+                  <SelectItem value="FATHER">{t("donor_profile.relation_father")}</SelectItem>
+                  <SelectItem value="MOTHER">{t("donor_profile.relation_mother")}</SelectItem>
+                  <SelectItem value="SIBLING">{t("donor_profile.relation_sibling")}</SelectItem>
+                  <SelectItem value="IN_LAW">{t("donor_profile.relation_in_law")}</SelectItem>
+                  <SelectItem value="GRANDPARENT">{t("donor_profile.relation_grandparent")}</SelectItem>
+                  <SelectItem value="OTHER">{t("common.other")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right">Birthday (Day & Month)</Label>
+              <Label className="text-right">{t("donor_profile.birthday_day_month")}</Label>
               <div className="col-span-3 flex gap-2">
                 <Select
                   value={familyMemberForm.birthDay}
                   onValueChange={(value) =>
-                    setFamilyMemberForm({
-                      ...familyMemberForm,
-                      birthDay: value,
-                    })
+                    setFamilyMemberForm({ ...familyMemberForm, birthDay: value })
                   }
                 >
-                  <SelectTrigger
-                    className="w-[100px]"
-                    data-testid="select-family-member-day"
-                  >
-                    <SelectValue placeholder="Day" />
+                  <SelectTrigger className="w-[100px]" data-testid="select-family-member-day">
+                    <SelectValue placeholder={t("donor_profile.day")} />
                   </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
-                      <SelectItem key={day} value={String(day)}>
-                        {day}
-                      </SelectItem>
+                      <SelectItem key={day} value={String(day)}>{day}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -140,17 +128,11 @@ export default function FamilyMemberDialog({
                 <Select
                   value={familyMemberForm.birthMonth}
                   onValueChange={(value) =>
-                    setFamilyMemberForm({
-                      ...familyMemberForm,
-                      birthMonth: value,
-                    })
+                    setFamilyMemberForm({ ...familyMemberForm, birthMonth: value })
                   }
                 >
-                  <SelectTrigger
-                    className="flex-1"
-                    data-testid="select-family-member-month"
-                  >
-                    <SelectValue placeholder="Month" />
+                  <SelectTrigger className="flex-1" data-testid="select-family-member-month">
+                    <SelectValue placeholder={t("donor_profile.month")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="1">January</SelectItem>
@@ -169,65 +151,56 @@ export default function FamilyMemberDialog({
                 </Select>
               </div>
               <p className="col-span-4 text-right text-xs text-muted-foreground">
-                Year is intentionally not collected.
+                {t("donor_profile.year_not_collected")}
               </p>
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="fm-phone" className="text-right">
-                Phone
+                {t("donor_profile.phone")}
               </Label>
               <Input
                 id="fm-phone"
                 type="tel"
                 value={familyMemberForm.phone}
                 onChange={(e) =>
-                  setFamilyMemberForm({
-                    ...familyMemberForm,
-                    phone: e.target.value,
-                  })
+                  setFamilyMemberForm({ ...familyMemberForm, phone: e.target.value })
                 }
                 className="col-span-3"
-                placeholder="Optional"
+                placeholder={t("donor_profile.optional_label")}
                 data-testid="input-family-member-phone"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="fm-email" className="text-right">
-                Email
+                {t("donor_profile.field_email")}
               </Label>
               <Input
                 id="fm-email"
                 type="email"
                 value={familyMemberForm.email}
                 onChange={(e) =>
-                  setFamilyMemberForm({
-                    ...familyMemberForm,
-                    email: e.target.value,
-                  })
+                  setFamilyMemberForm({ ...familyMemberForm, email: e.target.value })
                 }
                 className="col-span-3"
-                placeholder="Optional"
+                placeholder={t("donor_profile.optional_label")}
                 data-testid="input-family-member-email"
               />
             </div>
 
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="fm-notes" className="text-right">
-                Notes
+                {t("donor_profile.notes")}
               </Label>
               <Textarea
                 id="fm-notes"
                 value={familyMemberForm.notes}
                 onChange={(e) =>
-                  setFamilyMemberForm({
-                    ...familyMemberForm,
-                    notes: e.target.value,
-                  })
+                  setFamilyMemberForm({ ...familyMemberForm, notes: e.target.value })
                 }
                 className="col-span-3"
-                placeholder="Optional notes"
+                placeholder={t("donor_profile.optional_notes")}
                 data-testid="input-family-member-notes"
               />
             </div>
@@ -235,22 +208,18 @@ export default function FamilyMemberDialog({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+              {t("common.cancel")}
             </Button>
-            <Button
-              type="submit"
-              disabled={savingFamilyMember}
-              data-testid="button-save-family-member"
-            >
+            <Button type="submit" disabled={savingFamilyMember} data-testid="button-save-family-member">
               {savingFamilyMember ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
+                  {t("common.saving")}
                 </>
               ) : editingFamilyMember ? (
-                "Update"
+                t("common.update")
               ) : (
-                "Add"
+                t("common.add")
               )}
             </Button>
           </DialogFooter>

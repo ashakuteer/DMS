@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Edit, Lock } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +38,7 @@ export default function DonorHeader({
   getDonorName,
   getInitials,
 }: DonorHeaderProps) {
+  const { t } = useTranslation();
   const profileImageUrl = resolveImageUrl(donor.profilePicUrl);
 
   return (
@@ -110,14 +112,14 @@ export default function DonorHeader({
               </TooltipTrigger>
               <TooltipContent>
                 <p>
-                  Relationship Health:{" "}
+                  {t("donor_profile.relationship_health")}:{" "}
                   {donor.healthStatus === "GREEN"
-                    ? "Healthy"
+                    ? t("donor_profile.health_healthy")
                     : donor.healthStatus === "YELLOW"
-                      ? "Needs Attention"
+                      ? t("donor_profile.health_needs_attention")
                       : donor.healthStatus === "RED"
-                        ? "At Risk"
-                        : "Unknown"}
+                        ? t("donor_profile.health_at_risk")
+                        : t("donor_profile.health_unknown")}
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -127,7 +129,7 @@ export default function DonorHeader({
             {donor.profession || "No profession specified"}
             {donor.city && ` • ${donor.city}`}
             {donor.state && `, ${donor.state}`}
-            {(donor.donorSince || donor.createdAt) && ` • Donor since ${new Date(donor.donorSince ?? donor.createdAt).getFullYear()}`}
+            {(donor.donorSince || donor.createdAt) && ` • ${t("donor_profile.donor_since", { year: new Date(donor.donorSince ?? donor.createdAt).getFullYear() })}`}
           </p>
         </div>
       </div>
@@ -141,14 +143,14 @@ export default function DonorHeader({
             data-testid="button-request-access"
           >
             <Lock className="mr-2 h-4 w-4" />
-            {requestingAccess ? "Requesting..." : "Request Full Access"}
+            {requestingAccess ? t("donor_profile.requesting") : t("donor_profile.request_full_access")}
           </Button>
         )}
 
         {canEdit && (
           <Button onClick={onEdit} data-testid="button-edit-donor">
             <Edit className="mr-2 h-4 w-4" />
-            Edit Donor
+            {t("donor_profile.edit_donor")}
           </Button>
         )}
       </div>

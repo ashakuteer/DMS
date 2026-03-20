@@ -2,6 +2,7 @@
 
 import { Edit, Loader2, Mail, Plus, Receipt, Send, Trash2 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,19 +68,21 @@ export default function DonorDonationsTab({
   submittingDonation,
   handleDonationSubmit,
 }: DonorDonationsTabProps) {
+  const { t } = useTranslation();
+
   return (
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
           <div>
-            <CardTitle>Donations</CardTitle>
-            <CardDescription>All donations from this donor</CardDescription>
+            <CardTitle>{t("donor_profile.tab_donations")}</CardTitle>
+            <CardDescription>{t("donor_profile.donations_description")}</CardDescription>
           </div>
 
           {isAdmin && (
             <Button onClick={onAddDonation} data-testid="button-add-donation">
               <Plus className="mr-2 h-4 w-4" />
-              Add Donation
+              {t("donor_profile.add_donation")}
             </Button>
           )}
         </CardHeader>
@@ -93,7 +96,7 @@ export default function DonorDonationsTab({
             <div className="space-y-3">
               {donations.map((donation) => {
                 const thankYouTemplate = templates.find(
-                  (t) => t.type === "THANK_YOU",
+                  (tmpl) => tmpl.type === "THANK_YOU",
                 );
 
                 const donationMessage = thankYouTemplate
@@ -163,8 +166,8 @@ export default function DonorDonationsTab({
                           </TooltipTrigger>
                           <TooltipContent>
                             {hasWhatsAppNumber
-                              ? "Send Thank You via WhatsApp"
-                              : "No phone number available"}
+                              ? t("donor_profile.send_thankyou_whatsapp")
+                              : t("donor_profile.no_phone_available")}
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -186,8 +189,8 @@ export default function DonorDonationsTab({
                           </TooltipTrigger>
                           <TooltipContent>
                             {hasEmail
-                              ? "Send Thank You via Email"
-                              : "No email address available"}
+                              ? t("donor_profile.send_thankyou_email")
+                              : t("donor_profile.no_email_available")}
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -215,8 +218,8 @@ export default function DonorDonationsTab({
                           </TooltipTrigger>
                           <TooltipContent>
                             {hasEmail
-                              ? "Re-send Receipt via Email"
-                              : "No email address available"}
+                              ? t("donor_profile.resend_receipt_email")
+                              : t("donor_profile.no_email_available")}
                           </TooltipContent>
                         </Tooltip>
                       )}
@@ -234,7 +237,7 @@ export default function DonorDonationsTab({
                                 <Edit className="h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Edit Donation</TooltipContent>
+                            <TooltipContent>{t("donor_profile.edit_donation")}</TooltipContent>
                           </Tooltip>
 
                           <Tooltip>
@@ -253,7 +256,7 @@ export default function DonorDonationsTab({
                                 )}
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Delete Donation</TooltipContent>
+                            <TooltipContent>{t("donor_profile.delete_donation")}</TooltipContent>
                           </Tooltip>
                         </>
                       )}
@@ -264,7 +267,7 @@ export default function DonorDonationsTab({
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              <p>No donations recorded</p>
+              <p>{t("donor_profile.no_donations")}</p>
             </div>
           )}
         </CardContent>

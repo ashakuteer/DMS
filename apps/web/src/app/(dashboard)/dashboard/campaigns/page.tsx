@@ -7,8 +7,10 @@ import { useCampaigns } from "./hooks/useCampaigns"
 import CampaignCard from "./components/CampaignCard"
 import { formatCurrency } from "./utils"
 import { Card, CardContent } from "@/components/ui/card"
+import { useTranslation } from "react-i18next"
 
 export default function CampaignsPage() {
+  const { t } = useTranslation();
 
   const { campaigns, loading, fetchCampaigns } = useCampaigns()
 
@@ -26,9 +28,9 @@ export default function CampaignsPage() {
       <div className="flex justify-between">
 
         <div>
-          <h1 className="text-2xl font-bold">Fundraising Campaigns</h1>
+          <h1 className="text-2xl font-bold">{t("campaigns.title")}</h1>
           <p className="text-muted-foreground">
-            Manage your fundraising campaigns
+            {t("campaigns.subtitle")}
           </p>
         </div>
 
@@ -39,7 +41,7 @@ export default function CampaignsPage() {
 
           <Button>
             <Plus className="h-4 w-4 mr-1" />
-            New Campaign
+            {t("campaigns.new_campaign")}
           </Button>
         </div>
 
@@ -49,18 +51,18 @@ export default function CampaignsPage() {
 
         <TabsList>
           <TabsTrigger value="active">
-            Active ({activeCampaigns.length})
+            {t("campaigns.active")} ({activeCampaigns.length})
           </TabsTrigger>
 
           <TabsTrigger value="closed">
-            Closed ({closedCampaigns.length})
+            {t("campaigns.closed")} ({closedCampaigns.length})
           </TabsTrigger>
         </TabsList>
 
         <TabsContent value="active">
 
           {loading ? (
-            <p>Loading...</p>
+            <p>{t("common.loading")}</p>
           ) : (
             <div className="grid md:grid-cols-3 gap-4">
 

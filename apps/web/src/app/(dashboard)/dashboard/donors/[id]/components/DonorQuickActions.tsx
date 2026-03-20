@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Receipt, MessageSquare, Mail, Send, ChevronDown, Loader2 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -58,6 +59,7 @@ export default function DonorQuickActions({
   templates,
   latestDonation,
 }: DonorQuickActionsProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [sendingReceipt, setSendingReceipt] = useState(false);
   const [whatsappDialogOpen, setWhatsappDialogOpen] = useState(false);
@@ -71,7 +73,7 @@ export default function DonorQuickActions({
 
   const handleResendReceipt = async (emailType: "GENERAL" | "TAX") => {
     if (!latestDonation) {
-      toast({ title: "No donation found", description: "This donor has no donations to send a receipt for.", variant: "destructive" });
+      toast({ title: t("donor_profile.no_donation_found"), description: t("donor_profile.no_donation_for_receipt"), variant: "destructive" });
       return;
     }
     setSendingReceipt(true);
@@ -82,13 +84,13 @@ export default function DonorQuickActions({
         body: JSON.stringify({ emailType }),
       });
       if (res.ok) {
-        toast({ title: emailType === "TAX" ? "Tax receipt sent!" : "Receipt sent!", description: `Receipt emailed to ${email || "donor"}.` });
+        toast({ title: emailType === "TAX" ? t("donor_profile.tax_receipt_sent") : t("donor_profile.receipt_sent"), description: t("donor_profile.receipt_emailed", { email: email || "donor" }) });
       } else {
         const data = await res.json().catch(() => ({}));
-        toast({ title: "Failed to send receipt", description: data.message || "Please try again.", variant: "destructive" });
+        toast({ title: t("donor_profile.failed_send_receipt"), description: data.message || t("common.try_again"), variant: "destructive" });
       }
     } catch {
-      toast({ title: "Error", description: "Could not send receipt.", variant: "destructive" });
+      toast({ title: t("common.error"), description: t("donor_profile.could_not_send_receipt"), variant: "destructive" });
     } finally {
       setSendingReceipt(false);
     }
@@ -97,7 +99,7 @@ export default function DonorQuickActions({
   const [sendingWhatsapp, setSendingWhatsapp] = useState(false);
 
   const handleSendWhatsApp = async () => {
-    const template = templates.find((t) => t.id === selectedTemplateId) || templates[0];
+    const template = templates.find((tmpl) => tmpl.id === selectedTemplateId) || templates[0];
     if (!template) return;
     const message = resolvePlaceholders(template.whatsappMessage, donor, latestDonation);
     const toE164 = donor.whatsappPhone || donor.primaryPhone || "";
@@ -110,17 +112,17 @@ export default function DonorQuickActions({
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.message || "Failed to send");
-      toast({ title: "WhatsApp Sent", description: "Message sent to donor." });
+      toast({ title: t("donor_profile.whatsapp_sent"), description: t("donor_profile.message_sent_to_donor") });
       setWhatsappDialogOpen(false);
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Could not send WhatsApp message.", variant: "destructive" });
+      toast({ title: t("common.error"), description: err.message || t("donor_profile.could_not_send_whatsapp"), variant: "destructive" });
     } finally {
       setSendingWhatsapp(false);
     }
   };
 
   const handleSendEmail = () => {
-    const template = templates.find((t) => t.id === selectedTemplateId) || templates[0];
+    const template = templates.find((tmpl) => tmpl.id === selectedTemplateId) || templates[0];
     if (!template) return;
     const subject = encodeURIComponent(resolvePlaceholders(template.emailSubject, donor, latestDonation));
     const body = encodeURIComponent(resolvePlaceholders(template.emailBody, donor, latestDonation));
@@ -128,31 +130,31 @@ export default function DonorQuickActions({
     setEmailDialogOpen(false);
   };
 
-  const selectedTemplate = templates.find((t) => t.id === selectedTemplateId) || templates[0];
+  const selectedTemplate = templates.find((tmpl) => tmpl.id === selectedTemplateId) || templates[0];
 
   return (
     <>
       <div className="flex items-center gap-2 flex-wrap p-4 bg-muted/30 rounded-xl border border-border/50">
-        <span className="text-sm font-medium text-muted-foreground mr-1">Quick Actions:</span>
+        <span className="text-sm font-medium text-muted-foreground mr-1">{t("donor_profile.quick_actions")}:</span>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" disabled={sendingReceipt || !hasEmail} data-testid="button-quick-receipt">
               {sendingReceipt ? <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" /> : <Receipt className="h-3.5 w-3.5 mr-1.5" />}
-              Receipt
+              {t("donor_profile.receipt")}
               <ChevronDown className="h-3 w-3 ml-1" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuLabel>Send Receipt</DropdownMenuLabel>
+            <DropdownMenuLabel>{t("donor_profile.send_receipt")}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => handleResendReceipt("GENERAL")} data-testid="button-resend-receipt">
               <Receipt className="h-4 w-4 mr-2" />
-              Resend Receipt
+              {t("donor_profile.resend_receipt")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleResendReceipt("TAX")} data-testid="button-send-tax-receipt">
               <Receipt className="h-4 w-4 mr-2 text-orange-500" />
-              Send Tax Receipt (80G)
+              {t("donor_profile.send_tax_receipt")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -183,43 +185,42 @@ export default function DonorQuickActions({
           data-testid="button-quick-email"
         >
           <Mail className="h-3.5 w-3.5 mr-1.5" />
-          Email
+          {t("donor_profile.field_email")}
         </Button>
 
         <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
           {latestDonation && (
             <Badge variant="outline" className="text-xs">
-              Latest: ₹{latestDonation.donationAmount} · {latestDonation.receiptNumber || "No receipt"}
+              {t("donor_profile.latest")}: ₹{latestDonation.donationAmount} · {latestDonation.receiptNumber || t("donor_profile.no_receipt")}
             </Badge>
           )}
-          {!hasEmail && <span className="text-orange-500">No email on file</span>}
-          {!hasPhone && <span className="text-orange-500">No phone on file</span>}
+          {!hasEmail && <span className="text-orange-500">{t("donor_profile.no_email_on_file")}</span>}
+          {!hasPhone && <span className="text-orange-500">{t("donor_profile.no_phone_on_file")}</span>}
         </div>
       </div>
 
-      {/* WhatsApp Dialog */}
       <Dialog open={whatsappDialogOpen} onOpenChange={setWhatsappDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <SiWhatsapp className="h-5 w-5 text-green-600" />
-              Send WhatsApp Message
+              {t("donor_profile.send_whatsapp_message")}
             </DialogTitle>
             <DialogDescription>
-              Select a template. Message will open in WhatsApp Web with donor details filled in.
+              {t("donor_profile.whatsapp_dialog_description")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium mb-1.5 block">Template</label>
+              <label className="text-sm font-medium mb-1.5 block">{t("donor_profile.template")}</label>
               <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
                 <SelectTrigger data-testid="select-whatsapp-template">
-                  <SelectValue placeholder="Select template" />
+                  <SelectValue placeholder={t("donor_profile.select_template")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {templates.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  {templates.map((tmpl) => (
+                    <SelectItem key={tmpl.id} value={tmpl.id}>{tmpl.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -227,7 +228,7 @@ export default function DonorQuickActions({
 
             {selectedTemplate && (
               <div>
-                <label className="text-sm font-medium mb-1.5 block text-muted-foreground">Preview</label>
+                <label className="text-sm font-medium mb-1.5 block text-muted-foreground">{t("donor_profile.preview")}</label>
                 <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-3 text-sm whitespace-pre-wrap text-green-900 dark:text-green-100 max-h-40 overflow-y-auto">
                   {resolvePlaceholders(selectedTemplate.whatsappMessage, donor, latestDonation)}
                 </div>
@@ -236,7 +237,7 @@ export default function DonorQuickActions({
 
             <div className="flex gap-2 pt-2">
               <Button variant="outline" className="flex-1" onClick={() => setWhatsappDialogOpen(false)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
@@ -248,36 +249,35 @@ export default function DonorQuickActions({
                   ? <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   : <Send className="h-4 w-4 mr-2" />
                 }
-                {sendingWhatsapp ? "Sending..." : "Send Message"}
+                {sendingWhatsapp ? t("donor_profile.sending") : t("donor_profile.send_message")}
               </Button>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Email Dialog */}
       <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Mail className="h-5 w-5 text-blue-600" />
-              Send Email
+              {t("donor_profile.send_email")}
             </DialogTitle>
             <DialogDescription>
-              Select a template. Your email client will open with donor details filled in.
+              {t("donor_profile.email_dialog_description")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div>
-              <label className="text-sm font-medium mb-1.5 block">Template</label>
+              <label className="text-sm font-medium mb-1.5 block">{t("donor_profile.template")}</label>
               <Select value={selectedTemplateId} onValueChange={setSelectedTemplateId}>
                 <SelectTrigger data-testid="select-email-template">
-                  <SelectValue placeholder="Select template" />
+                  <SelectValue placeholder={t("donor_profile.select_template")} />
                 </SelectTrigger>
                 <SelectContent>
-                  {templates.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  {templates.map((tmpl) => (
+                    <SelectItem key={tmpl.id} value={tmpl.id}>{tmpl.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -286,13 +286,13 @@ export default function DonorQuickActions({
             {selectedTemplate && (
               <div className="space-y-2">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Subject</label>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("donor_profile.subject")}</label>
                   <div className="bg-muted rounded px-3 py-2 text-sm mt-1">
                     {resolvePlaceholders(selectedTemplate.emailSubject, donor, latestDonation)}
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Body Preview</label>
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{t("donor_profile.body_preview")}</label>
                   <div className="bg-muted rounded px-3 py-2 text-sm mt-1 whitespace-pre-wrap max-h-32 overflow-y-auto">
                     {resolvePlaceholders(selectedTemplate.emailBody, donor, latestDonation)}
                   </div>
@@ -302,7 +302,7 @@ export default function DonorQuickActions({
 
             <div className="flex gap-2 pt-2">
               <Button variant="outline" className="flex-1" onClick={() => setEmailDialogOpen(false)}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 className="flex-1"
@@ -310,7 +310,7 @@ export default function DonorQuickActions({
                 data-testid="button-confirm-email"
               >
                 <Mail className="h-4 w-4 mr-2" />
-                Open Email Client
+                {t("donor_profile.open_email_client")}
               </Button>
             </div>
           </div>

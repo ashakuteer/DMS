@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from "react-i18next";
 import { Edit, Loader2, Plus, Trash2, Users } from "lucide-react";
 import type { FamilyMember, FamilyMemberFormData } from "../types";
 import { formatMonthDay, getRelationTypeLabel } from "../utils";
@@ -44,21 +45,23 @@ export default function DonorFamilyTab({
   handleFamilySubmit,
   handleFamilyCancel,
 }: DonorFamilyTabProps) {
+  const { t } = useTranslation();
+
   return (
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
           <div>
-            <CardTitle>Family Members</CardTitle>
+            <CardTitle>{t("donor_profile.family_members")}</CardTitle>
             <CardDescription>
-              Spouse, children, and other family members
+              {t("donor_profile.family_description")}
             </CardDescription>
           </div>
 
           {canEditFamilyAndSpecialDays && (
             <Button onClick={onAdd} data-testid="button-add-family-member">
               <Plus className="mr-2 h-4 w-4" />
-              Add Family Member
+              {t("donor_profile.add_family_member")}
             </Button>
           )}
         </CardHeader>
@@ -93,11 +96,11 @@ export default function DonorFamilyTab({
                       <div className="flex flex-wrap gap-2 mt-1 text-sm text-muted-foreground">
                         {member.birthMonth && member.birthDay && (
                           <span>
-                            Birthday: {formatMonthDay(member.birthMonth, member.birthDay)}
+                            {t("donor_profile.birthday")}: {formatMonthDay(member.birthMonth, member.birthDay)}
                           </span>
                         )}
-                        {member.phone && <span>Phone: {member.phone}</span>}
-                        {member.email && <span>Email: {member.email}</span>}
+                        {member.phone && <span>{t("donor_profile.phone")}: {member.phone}</span>}
+                        {member.email && <span>{t("donor_profile.field_email")}: {member.email}</span>}
                       </div>
 
                       {member.notes && (
@@ -140,7 +143,7 @@ export default function DonorFamilyTab({
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>No family members recorded</p>
+              <p>{t("donor_profile.no_family_members")}</p>
             </div>
           )}
         </CardContent>

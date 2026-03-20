@@ -1,6 +1,7 @@
 "use client";
 
 import { History, Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -41,20 +42,19 @@ export default function SponsorHistoryDialog({
   sponsorHistoryEntries,
   sponsorHistoryLoading,
 }: SponsorHistoryDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <History className="h-5 w-5" />
-            Sponsorship History
+            {t("donor_profile.sponsorship_history")}
           </DialogTitle>
           <DialogDescription>
             {sponsorHistoryTarget && (
-              <>
-                Change history for sponsorship of{" "}
-                {sponsorHistoryTarget.beneficiary.fullName}
-              </>
+              t("donor_profile.history_for", { name: sponsorHistoryTarget.beneficiary.fullName })
             )}
           </DialogDescription>
         </DialogHeader>
@@ -66,7 +66,7 @@ export default function SponsorHistoryDialog({
             </div>
           ) : sponsorHistoryEntries.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              No changes recorded yet
+              {t("donor_profile.no_changes_recorded")}
             </p>
           ) : (
             <div className="space-y-3">
@@ -78,21 +78,11 @@ export default function SponsorHistoryDialog({
                 >
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <div className="flex items-center gap-2">
-                      <Badge
-                        variant={getSponsorStatusBadgeVariant(entry.oldStatus)}
-                        className="text-xs"
-                      >
+                      <Badge variant={getSponsorStatusBadgeVariant(entry.oldStatus)} className="text-xs">
                         {entry.oldStatus}
                       </Badge>
-
-                      <span className="text-muted-foreground text-xs">
-                        &rarr;
-                      </span>
-
-                      <Badge
-                        variant={getSponsorStatusBadgeVariant(entry.newStatus)}
-                        className="text-xs"
-                      >
+                      <span className="text-muted-foreground text-xs">&rarr;</span>
+                      <Badge variant={getSponsorStatusBadgeVariant(entry.newStatus)} className="text-xs">
                         {entry.newStatus}
                       </Badge>
                     </div>
@@ -108,21 +98,20 @@ export default function SponsorHistoryDialog({
                     </span>
                   </div>
 
-                  {entry.oldAmount !== entry.newAmount &&
-                    entry.newAmount !== undefined && (
-                      <p className="text-sm text-muted-foreground">
-                        Amount: {entry.currency === "INR" ? "₹" : "$"}
-                        {(entry.oldAmount || 0).toLocaleString()} &rarr;{" "}
-                        {entry.currency === "INR" ? "₹" : "$"}
-                        {entry.newAmount.toLocaleString()}
-                      </p>
-                    )}
+                  {entry.oldAmount !== entry.newAmount && entry.newAmount !== undefined && (
+                    <p className="text-sm text-muted-foreground">
+                      {t("donor_profile.amount_label")}: {entry.currency === "INR" ? "₹" : "$"}
+                      {(entry.oldAmount || 0).toLocaleString()} &rarr;{" "}
+                      {entry.currency === "INR" ? "₹" : "$"}
+                      {entry.newAmount.toLocaleString()}
+                    </p>
+                  )}
 
                   {entry.note && <p className="text-sm">{entry.note}</p>}
 
                   {entry.changedBy && (
                     <p className="text-xs text-muted-foreground">
-                      By: {entry.changedBy.name}
+                      {t("donor_profile.by_label")}: {entry.changedBy.name}
                     </p>
                   )}
                 </div>

@@ -1,3 +1,5 @@
+"use client"
+
 import {
 Table,
 TableBody,
@@ -8,6 +10,7 @@ TableRow
 } from "@/components/ui/table"
 
 import { Card } from "@/components/ui/card"
+import { useTranslation } from "react-i18next"
 
 import { getPhoneClean } from "../utils/followups.utils"
 
@@ -15,6 +18,7 @@ export default function FollowUpsTable({
   items,
   actions
 }:any){
+  const { t } = useTranslation()
 
   return(
 
@@ -26,12 +30,12 @@ export default function FollowUpsTable({
 
           <TableHeader>
             <TableRow>
-              <TableHead>Donor</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Note</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Assigned</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t("follow_ups.col_donor")}</TableHead>
+              <TableHead>{t("follow_ups.col_phone")}</TableHead>
+              <TableHead>{t("follow_ups.col_note")}</TableHead>
+              <TableHead>{t("users.status")}</TableHead>
+              <TableHead>{t("follow_ups.col_assigned")}</TableHead>
+              <TableHead className="text-right">{t("common.actions")}</TableHead>
             </TableRow>
           </TableHeader>
 

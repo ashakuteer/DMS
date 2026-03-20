@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -45,24 +46,23 @@ export default function SponsorStatusDialog({
   sponsorStatusLoading,
   onConfirm,
 }: SponsorStatusDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Change Sponsorship Status</DialogTitle>
+          <DialogTitle>{t("donor_profile.change_status_title")}</DialogTitle>
           <DialogDescription>
             {sponsorStatusTarget && (
-              <>
-                Update sponsorship status for{" "}
-                {sponsorStatusTarget.beneficiary.fullName}
-              </>
+              t("donor_profile.update_status_for", { name: sponsorStatusTarget.beneficiary.fullName })
             )}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label>New Status</Label>
+            <Label>{t("donor_profile.new_status")}</Label>
             <Select
               value={sponsorStatusData.status}
               onValueChange={(v) =>
@@ -73,24 +73,21 @@ export default function SponsorStatusDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="ACTIVE">Active</SelectItem>
-                <SelectItem value="PAUSED">Paused</SelectItem>
-                <SelectItem value="COMPLETED">Completed</SelectItem>
-                <SelectItem value="STOPPED">Stopped</SelectItem>
+                <SelectItem value="ACTIVE">{t("donor_profile.status_active")}</SelectItem>
+                <SelectItem value="PAUSED">{t("donor_profile.status_paused")}</SelectItem>
+                <SelectItem value="COMPLETED">{t("donor_profile.status_completed")}</SelectItem>
+                <SelectItem value="STOPPED">{t("donor_profile.status_stopped")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>Note (optional)</Label>
+            <Label>{t("donor_profile.note_optional")}</Label>
             <Textarea
-              placeholder="Reason for status change..."
+              placeholder={t("donor_profile.status_change_reason")}
               value={sponsorStatusData.note}
               onChange={(e) =>
-                setSponsorStatusData({
-                  ...sponsorStatusData,
-                  note: e.target.value,
-                })
+                setSponsorStatusData({ ...sponsorStatusData, note: e.target.value })
               }
               data-testid="input-donor-sponsorship-status-note"
             />
@@ -103,7 +100,7 @@ export default function SponsorStatusDialog({
             onClick={() => onOpenChange(false)}
             data-testid="button-cancel-donor-sponsorship-status"
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
 
           <Button
@@ -114,7 +111,7 @@ export default function SponsorStatusDialog({
             {sponsorStatusLoading && (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             )}
-            Update Status
+            {t("donor_profile.update_status")}
           </Button>
         </DialogFooter>
       </DialogContent>

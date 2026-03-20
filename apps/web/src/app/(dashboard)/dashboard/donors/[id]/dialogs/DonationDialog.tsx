@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,33 +39,6 @@ function isInKind(donationType: string): boolean {
   return IN_KIND_TYPES.has(donationType);
 }
 
-const CATEGORY_OPTIONS = [
-  { group: "Financial Donations", items: [{ value: "CASH", label: "Cash Donation" }] },
-  {
-    group: "In-Kind Donations",
-    items: [
-      { value: "GROCERY", label: "Grocery" },
-      { value: "MEDICINES", label: "Medicines" },
-      { value: "PREPARED_FOOD", label: "Prepared Food" },
-      { value: "USED_ITEMS", label: "Used Items" },
-      { value: "KIND", label: "In Kind (Other)" },
-    ],
-  },
-];
-
-const RECEIPT_TYPE_OPTIONS: { value: DonationEmailType; label: string; description: string }[] = [
-  {
-    value: "GENERAL",
-    label: "General Thank You",
-    description: "Warm acknowledgement, no tax details",
-  },
-  {
-    value: "TAX",
-    label: "Tax Receipt (80G)",
-    description: "Formal receipt with Section 80G exemption",
-  },
-];
-
 export default function DonationDialog({
   open,
   onOpenChange,
@@ -75,7 +49,38 @@ export default function DonationDialog({
   submittingDonation,
   onSubmit,
 }: DonationDialogProps) {
+  const { t } = useTranslation();
   const kindDonation = isInKind(donationForm.donationType);
+
+  const CATEGORY_OPTIONS = [
+    {
+      group: t("donor_profile.financial_donations"),
+      items: [{ value: "CASH", label: t("donor_profile.cash_donation") }],
+    },
+    {
+      group: t("donor_profile.in_kind_donations"),
+      items: [
+        { value: "GROCERY", label: t("donor_profile.grocery") },
+        { value: "MEDICINES", label: t("donor_profile.medicines") },
+        { value: "PREPARED_FOOD", label: t("donor_profile.prepared_food") },
+        { value: "USED_ITEMS", label: t("donor_profile.used_items") },
+        { value: "KIND", label: t("donor_profile.in_kind_other") },
+      ],
+    },
+  ];
+
+  const RECEIPT_TYPE_OPTIONS: { value: DonationEmailType; label: string; description: string }[] = [
+    {
+      value: "GENERAL",
+      label: t("donor_profile.receipt_general_label"),
+      description: t("donor_profile.receipt_general_desc"),
+    },
+    {
+      value: "TAX",
+      label: t("donor_profile.receipt_tax_label"),
+      description: t("donor_profile.receipt_tax_desc"),
+    },
+  ];
 
   const handleCategoryChange = (value: string) => {
     const kind = isInKind(value);
@@ -91,24 +96,23 @@ export default function DonationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[540px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{editingDonation ? "Edit Donation" : "Add Donation"}</DialogTitle>
+          <DialogTitle>
+            {editingDonation ? t("donor_profile.edit_donation") : t("donor_profile.add_donation")}
+          </DialogTitle>
           <DialogDescription>
-            {editingDonation ? `Update donation details for ${donorName}` : `Record a new donation for ${donorName}`}
+            {editingDonation
+              ? t("donor_profile.dialog_donation_edit_desc", { name: donorName })
+              : t("donor_profile.dialog_donation_add_desc", { name: donorName })}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={onSubmit}>
           <div className="space-y-4 py-4">
-
-            {/* 1. PURPOSE / CATEGORY — FIRST */}
             <div className="space-y-2">
-              <Label htmlFor="donationType">Purpose / Category *</Label>
-              <Select
-                value={donationForm.donationType}
-                onValueChange={handleCategoryChange}
-              >
+              <Label htmlFor="donationType">{t("donor_profile.purpose_category")} *</Label>
+              <Select value={donationForm.donationType} onValueChange={handleCategoryChange}>
                 <SelectTrigger data-testid="select-donation-type">
-                  <SelectValue placeholder="Select donation category" />
+                  <SelectValue placeholder={t("donor_profile.select_donation_category")} />
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORY_OPTIONS.map((group) => (
@@ -126,7 +130,6 @@ export default function DonationDialog({
                 </SelectContent>
               </Select>
 
-              {/* Category indicator badge */}
               {donationForm.donationType && (
                 <div
                   className={[
@@ -142,14 +145,15 @@ export default function DonationDialog({
                       kindDonation ? "bg-amber-500" : "bg-blue-500",
                     ].join(" ")}
                   />
-                  {kindDonation ? "In-Kind Donation → Acknowledgement will be generated" : "Financial Donation → Receipt will be generated"}
+                  {kindDonation
+                    ? t("donor_profile.in_kind_indicator")
+                    : t("donor_profile.financial_indicator")}
                 </div>
               )}
             </div>
 
-            {/* 2. DESIGNATED HOME */}
             <div className="space-y-2">
-              <Label htmlFor="designatedHome">Designated Home</Label>
+              <Label htmlFor="designatedHome">{t("donor_profile.designated_home")}</Label>
               <Select
                 value={donationForm.designatedHome || "NONE"}
                 onValueChange={(value) =>
@@ -157,28 +161,26 @@ export default function DonationDialog({
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select home" />
+                  <SelectValue placeholder={t("donor_profile.select_home")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="NONE">None (General)</SelectItem>
-                  <SelectItem value="GIRLS_HOME">Girls Home</SelectItem>
-                  <SelectItem value="BLIND_BOYS_HOME">Blind Boys Home</SelectItem>
-                  <SelectItem value="OLD_AGE_HOME">Old Age Home</SelectItem>
-                  <SelectItem value="GENERAL">General</SelectItem>
+                  <SelectItem value="NONE">{t("donor_profile.home_none_general")}</SelectItem>
+                  <SelectItem value="GIRLS_HOME">{t("donor_profile.home_girls_home")}</SelectItem>
+                  <SelectItem value="BLIND_BOYS_HOME">{t("donor_profile.home_blind_boys")}</SelectItem>
+                  <SelectItem value="OLD_AGE_HOME">{t("donor_profile.home_old_age")}</SelectItem>
+                  <SelectItem value="GENERAL">{t("donor_profile.home_general")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* 3. DYNAMIC FIELDS BASED ON CATEGORY */}
             {!kindDonation ? (
-              /* FINANCIAL FIELDS */
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="donationAmount">Amount (INR) *</Label>
+                  <Label htmlFor="donationAmount">{t("donor_profile.donation_amount_inr")} *</Label>
                   <Input
                     id="donationAmount"
                     type="number"
-                    placeholder="Enter amount"
+                    placeholder={t("donor_profile.enter_amount")}
                     min="1"
                     value={donationForm.donationAmount}
                     onChange={(e) =>
@@ -190,7 +192,7 @@ export default function DonationDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="donationMode">Payment Mode *</Label>
+                  <Label htmlFor="donationMode">{t("donor_profile.payment_mode")} *</Label>
                   <Select
                     value={donationForm.donationMode}
                     onValueChange={(value) =>
@@ -198,35 +200,32 @@ export default function DonationDialog({
                     }
                   >
                     <SelectTrigger data-testid="select-donation-mode">
-                      <SelectValue placeholder="Select payment mode" />
+                      <SelectValue placeholder={t("donor_profile.select_payment_mode")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="CASH">Cash</SelectItem>
+                      <SelectItem value="CASH">{t("donor_profile.mode_cash")}</SelectItem>
                       <SelectItem value="UPI">UPI</SelectItem>
                       <SelectItem value="GPAY">Google Pay</SelectItem>
                       <SelectItem value="PHONEPE">PhonePe</SelectItem>
-                      <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
-                      <SelectItem value="CHEQUE">Cheque</SelectItem>
-                      <SelectItem value="ONLINE">Online</SelectItem>
+                      <SelectItem value="BANK_TRANSFER">{t("donor_profile.mode_bank_transfer")}</SelectItem>
+                      <SelectItem value="CHEQUE">{t("donor_profile.mode_cheque")}</SelectItem>
+                      <SelectItem value="ONLINE">{t("donor_profile.mode_online")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </>
             ) : (
-              /* IN-KIND FIELDS */
               <div className="space-y-2">
                 <Label htmlFor="donationAmount">
-                  Estimated Value / Worth{" "}
-                  <span className="text-muted-foreground font-normal">(Optional)</span>
+                  {t("donor_profile.estimated_value")}{" "}
+                  <span className="text-muted-foreground font-normal">({t("donor_profile.optional_label")})</span>
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                    ₹
-                  </span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">₹</span>
                   <Input
                     id="donationAmount"
                     type="number"
-                    placeholder="Estimated value in INR"
+                    placeholder={t("donor_profile.estimated_value_inr")}
                     min="0"
                     className="pl-7"
                     value={donationForm.donationAmount}
@@ -239,9 +238,8 @@ export default function DonationDialog({
               </div>
             )}
 
-            {/* 4. DATE */}
             <div className="space-y-2">
-              <Label htmlFor="donationDate">Date *</Label>
+              <Label htmlFor="donationDate">{t("donor_profile.date_label")} *</Label>
               <Input
                 id="donationDate"
                 type="date"
@@ -254,15 +252,14 @@ export default function DonationDialog({
               />
             </div>
 
-            {/* 5. NOTES */}
             <div className="space-y-2">
-              <Label htmlFor="remarks">Notes</Label>
+              <Label htmlFor="remarks">{t("donor_profile.notes")}</Label>
               <Textarea
                 id="remarks"
                 placeholder={
                   kindDonation
-                    ? "Describe the items, quantity, or any other details..."
-                    : "Optional notes about this donation"
+                    ? t("donor_profile.in_kind_notes_placeholder")
+                    : t("donor_profile.donation_notes_placeholder")
                 }
                 value={donationForm.remarks}
                 onChange={(e) =>
@@ -273,10 +270,9 @@ export default function DonationDialog({
               />
             </div>
 
-            {/* 6. RECEIPT TYPE — ONLY FOR FINANCIAL */}
             {!kindDonation && (
               <div className="space-y-2 pt-1">
-                <Label>Receipt Type</Label>
+                <Label>{t("donor_profile.receipt_type")}</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {RECEIPT_TYPE_OPTIONS.map((option) => {
                     const isSelected = (donationForm.emailType || "GENERAL") === option.value;
@@ -304,10 +300,10 @@ export default function DonationDialog({
               </div>
             )}
 
-            {/* IN-KIND: auto acknowledgement note */}
             {kindDonation && (
               <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800">
-                <span className="font-semibold">Acknowledgement</span> will be automatically generated and sent — no tax receipt or payment details required.
+                <span className="font-semibold">{t("donor_profile.acknowledgement")}</span>{" "}
+                {t("donor_profile.in_kind_auto_ack")}
               </div>
             )}
           </div>
@@ -319,14 +315,18 @@ export default function DonationDialog({
               onClick={() => onOpenChange(false)}
               disabled={submittingDonation}
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
               disabled={submittingDonation}
               data-testid="button-submit-donation"
             >
-              {submittingDonation ? "Saving..." : editingDonation ? "Update Donation" : "Save Donation"}
+              {submittingDonation
+                ? t("common.saving")
+                : editingDonation
+                  ? t("donor_profile.update_donation")
+                  : t("donor_profile.save_donation")}
             </Button>
           </DialogFooter>
         </form>

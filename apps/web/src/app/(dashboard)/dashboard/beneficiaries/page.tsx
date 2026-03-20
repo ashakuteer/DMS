@@ -48,6 +48,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { canAccessModule } from "@/lib/permissions";
+import { useTranslation } from "react-i18next";
 import { AccessDenied } from "@/components/access-denied";
 
 interface Beneficiary {
@@ -156,6 +157,7 @@ function formatAge(dobDay?: number, dobMonth?: number, approxAge?: number): stri
 export default function BeneficiariesPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   const [user, setUser] = useState<{ role: string } | null>(null);
   useEffect(() => {
@@ -390,14 +392,14 @@ export default function BeneficiariesPage() {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground" data-testid="heading-beneficiaries">Beneficiaries</h1>
+          <h1 className="text-3xl font-bold text-foreground" data-testid="heading-beneficiaries">{t("beneficiaries.title")}</h1>
           <p className="text-muted-foreground mt-1">
-            Manage children, elderly, and others you support across all homes
+            {t("beneficiaries.subtitle")}
           </p>
         </div>
         <Button onClick={() => setShowAddDialog(true)} data-testid="button-add-beneficiary">
           <Plus className="mr-2 h-4 w-4" />
-          Add Beneficiary
+          {t("beneficiaries.add_beneficiary")}
         </Button>
       </div>
 
@@ -408,7 +410,7 @@ export default function BeneficiariesPage() {
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search by name or code..."
+                  placeholder={t("beneficiaries.search_placeholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -417,7 +419,7 @@ export default function BeneficiariesPage() {
                 />
               </div>
               <Button variant="outline" onClick={handleSearch} data-testid="button-search">
-                Search
+                {t("common.search")}
               </Button>
             </div>
             <div className="flex items-center gap-2">
@@ -427,9 +429,9 @@ export default function BeneficiariesPage() {
                 data-testid="button-toggle-filters"
               >
                 <Filter className="h-4 w-4 mr-2" />
-                Filters
+                {t("common.filters")}
                 {hasActiveFilters && (
-                  <Badge variant="secondary" className="ml-2">Active</Badge>
+                  <Badge variant="secondary" className="ml-2">{t("common.active")}</Badge>
                 )}
               </Button>
               {hasActiveFilters && (
@@ -444,7 +446,7 @@ export default function BeneficiariesPage() {
             <div className="space-y-4 pt-4 border-t mt-4">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Home Type</Label>
+                  <Label>{t("beneficiaries.home")}</Label>
                   <Select value={homeType} onValueChange={(v) => { setHomeType(v); setPage(1); }}>
                     <SelectTrigger data-testid="select-home-type">
                       <SelectValue />
@@ -457,7 +459,7 @@ export default function BeneficiariesPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Status</Label>
+                  <Label>{t("beneficiaries.status")}</Label>
                   <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
                     <SelectTrigger data-testid="select-status">
                       <SelectValue />
@@ -470,7 +472,7 @@ export default function BeneficiariesPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Sponsored</Label>
+                  <Label>{t("beneficiaries.sponsored")}</Label>
                   <Select value={sponsored} onValueChange={(v) => { setSponsored(v); setPage(1); }}>
                     <SelectTrigger data-testid="select-sponsored">
                       <SelectValue />
@@ -485,7 +487,7 @@ export default function BeneficiariesPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Class / Grade</Label>
+                  <Label>{t("beneficiaries.class_role")}</Label>
                   <Input
                     placeholder="e.g. 8th Class"
                     value={classGrade}
@@ -494,7 +496,7 @@ export default function BeneficiariesPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>School / College</Label>
+                  <Label>{t("beneficiaries.school")}</Label>
                   <Input
                     placeholder="e.g. Kendriya Vidyalaya"
                     value={school}
@@ -503,7 +505,7 @@ export default function BeneficiariesPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Academic Year</Label>
+                  <Label>{t("beneficiaries.academic_year")}</Label>
                   <Input
                     placeholder="e.g. 2025-2026"
                     value={academicYear}
@@ -523,9 +525,9 @@ export default function BeneficiariesPage() {
           ) : beneficiaries.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
               <HandHeart className="h-12 w-12 mb-4 opacity-50" />
-              <p className="text-lg font-medium">No beneficiaries found</p>
+              <p className="text-lg font-medium">{t("beneficiaries.no_beneficiaries")}</p>
               <p className="text-sm">
-                {hasActiveFilters ? "Try adjusting your filters" : "Add beneficiaries to track who you're helping"}
+                {hasActiveFilters ? t("common.try_adjusting_filters") : t("beneficiaries.no_beneficiaries_description")}
               </p>
             </div>
           ) : (
@@ -534,13 +536,13 @@ export default function BeneficiariesPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12"></TableHead>
-                    <TableHead>Code</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Home</TableHead>
-                    <TableHead>Age/DOB</TableHead>
-                    <TableHead className="text-center">Sponsors</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("beneficiaries.code")}</TableHead>
+                    <TableHead>{t("beneficiaries.full_name")}</TableHead>
+                    <TableHead>{t("beneficiaries.home")}</TableHead>
+                    <TableHead>{t("beneficiaries.age")}</TableHead>
+                    <TableHead className="text-center">{t("beneficiaries.sponsors")}</TableHead>
+                    <TableHead>{t("beneficiaries.status")}</TableHead>
+                    <TableHead className="text-right">{t("common.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -608,7 +610,7 @@ export default function BeneficiariesPage() {
 
               <div className="flex items-center justify-between mt-4">
                 <p className="text-sm text-muted-foreground">
-                  Showing {(page - 1) * limit + 1} - {Math.min(page * limit, total)} of {total}
+                  {t("common.showing", { from: (page - 1) * limit + 1, to: Math.min(page * limit, total), total })}
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
@@ -621,7 +623,7 @@ export default function BeneficiariesPage() {
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <span className="text-sm">
-                    Page {page} of {totalPages}
+                    {t("common.page_of", { page, total: totalPages })}
                   </span>
                   <Button
                     variant="outline"
@@ -644,10 +646,10 @@ export default function BeneficiariesPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <HandHeart className="h-5 w-5" />
-              Add Beneficiary
+              {t("beneficiaries.add_beneficiary")}
             </DialogTitle>
             <DialogDescription>
-              Add a new beneficiary to track and support
+              {t("beneficiaries.add_beneficiary_desc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -691,19 +693,19 @@ export default function BeneficiariesPage() {
                 </div>
                 <div className="space-y-1">
                   <label htmlFor="add-photo-upload" className="cursor-pointer">
-                    <span className="text-sm font-medium text-primary">Upload Photo</span>
+                    <span className="text-sm font-medium text-primary">{t("beneficiaries.upload_photo")}</span>
                   </label>
-                  <p className="text-xs text-muted-foreground">JPG, PNG or WebP. Max 5MB.</p>
+                  <p className="text-xs text-muted-foreground">{t("beneficiaries.photo_hint")}</p>
                 </div>
               </div>
 
-              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">Basic Information</h4>
+              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">{t("beneficiaries.basic_information")}</h4>
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 space-y-2">
-                  <Label>Full Name *</Label>
+                  <Label>{t("beneficiaries.full_name")} *</Label>
                   <Input
-                    placeholder="Enter full name"
+                    placeholder={t("beneficiaries.full_name_placeholder")}
                     value={newBeneficiary.fullName}
                     onChange={(e) => setNewBeneficiary(prev => ({ ...prev, fullName: e.target.value }))}
                     data-testid="input-fullname"
@@ -711,7 +713,7 @@ export default function BeneficiariesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Home Type *</Label>
+                  <Label>{t("beneficiaries.home")} *</Label>
                   <Select 
                     value={newBeneficiary.homeType} 
                     onValueChange={(v) => setNewBeneficiary(prev => ({ ...prev, homeType: v }))}
@@ -727,18 +729,18 @@ export default function BeneficiariesPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Gender</Label>
+                  <Label>{t("beneficiaries.gender")}</Label>
                   <Select 
                     value={newBeneficiary.gender} 
                     onValueChange={(v) => setNewBeneficiary(prev => ({ ...prev, gender: v }))}
                   >
                     <SelectTrigger data-testid="select-gender">
-                      <SelectValue placeholder="Select gender" />
+                      <SelectValue placeholder={t("common.select_gender")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MALE">Male</SelectItem>
-                      <SelectItem value="FEMALE">Female</SelectItem>
-                      <SelectItem value="OTHER">Other</SelectItem>
+                      <SelectItem value="MALE">{t("common.male")}</SelectItem>
+                      <SelectItem value="FEMALE">{t("common.female")}</SelectItem>
+                      <SelectItem value="OTHER">{t("common.other")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -746,7 +748,7 @@ export default function BeneficiariesPage() {
 
               <div className="grid grid-cols-4 gap-4">
                 <div className="space-y-2">
-                  <Label>Birth Month</Label>
+                  <Label>{t("beneficiaries.birth_month")}</Label>
                   <Select 
                     value={newBeneficiary.dobMonth} 
                     onValueChange={(v) => setNewBeneficiary(prev => ({ ...prev, dobMonth: v }))}
@@ -763,7 +765,7 @@ export default function BeneficiariesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Birth Day</Label>
+                  <Label>{t("beneficiaries.birth_day")}</Label>
                   <Select 
                     value={newBeneficiary.dobDay} 
                     onValueChange={(v) => setNewBeneficiary(prev => ({ ...prev, dobDay: v }))}
@@ -780,10 +782,10 @@ export default function BeneficiariesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Birth Year</Label>
+                  <Label>{t("beneficiaries.birth_year")}</Label>
                   <Input
                     type="number"
-                    placeholder="Optional"
+                    placeholder={t("common.optional")}
                     value={newBeneficiary.dobYear}
                     onChange={(e) => setNewBeneficiary(prev => ({ ...prev, dobYear: e.target.value }))}
                     data-testid="input-dob-year"
@@ -791,10 +793,10 @@ export default function BeneficiariesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Approx Age</Label>
+                  <Label>{t("beneficiaries.approx_age")}</Label>
                   <Input
                     type="number"
-                    placeholder="If DOB unknown"
+                    placeholder={t("beneficiaries.approx_age_hint")}
                     value={newBeneficiary.approxAge}
                     onChange={(e) => setNewBeneficiary(prev => ({ ...prev, approxAge: e.target.value }))}
                     data-testid="input-approx-age"
@@ -803,7 +805,7 @@ export default function BeneficiariesPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Date of Joining Home</Label>
+                <Label>{t("beneficiaries.date_of_joining")}</Label>
                 <Input
                   type="date"
                   value={newBeneficiary.joinDate}
@@ -812,11 +814,11 @@ export default function BeneficiariesPage() {
                 />
               </div>
 
-              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide pt-2">Measurements at Joining</h4>
+              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide pt-2">{t("beneficiaries.measurements_at_joining")}</h4>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Height (cm)</Label>
+                  <Label>{t("beneficiaries.height_cm")}</Label>
                   <Input
                     type="number"
                     placeholder="Height in centimetres"
@@ -827,7 +829,7 @@ export default function BeneficiariesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Weight (kg)</Label>
+                  <Label>{t("beneficiaries.weight_kg")}</Label>
                   <Input
                     type="number"
                     step="0.1"
@@ -839,11 +841,11 @@ export default function BeneficiariesPage() {
                 </div>
               </div>
 
-              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide pt-2">Education</h4>
+              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide pt-2">{t("beneficiaries.education")}</h4>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Class / Role</Label>
+                  <Label>{t("beneficiaries.class_role")}</Label>
                   <Input
                     placeholder='e.g. "5th Class", "Retired"'
                     value={newBeneficiary.educationClassOrRole}
@@ -853,7 +855,7 @@ export default function BeneficiariesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>School / College</Label>
+                  <Label>{t("beneficiaries.school")}</Label>
                   <Input
                     placeholder="Educational institution"
                     value={newBeneficiary.schoolOrCollege}
@@ -863,11 +865,11 @@ export default function BeneficiariesPage() {
                 </div>
               </div>
 
-              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide pt-2">Health & Medical</h4>
+              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide pt-2">{t("beneficiaries.health_medical")}</h4>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Current Health Status</Label>
+                  <Label>{t("beneficiaries.current_health_status")}</Label>
                   <Select 
                     value={newBeneficiary.currentHealthStatus} 
                     onValueChange={(v) => setNewBeneficiary(prev => ({ ...prev, currentHealthStatus: v }))}
@@ -887,7 +889,7 @@ export default function BeneficiariesPage() {
               </div>
 
               <div className="space-y-2">
-                <Label>Medical Notes</Label>
+                <Label>{t("beneficiaries.medical_notes")}</Label>
                 <Textarea
                   placeholder="Any existing medical conditions, allergies, medications..."
                   value={newBeneficiary.healthNotes}
@@ -896,10 +898,10 @@ export default function BeneficiariesPage() {
                 />
               </div>
 
-              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide pt-2">Background</h4>
+              <h4 className="font-medium text-sm text-muted-foreground uppercase tracking-wide pt-2">{t("beneficiaries.background_section")}</h4>
 
               <div className="space-y-2">
-                <Label>Background</Label>
+                <Label>{t("beneficiaries.background")}</Label>
                 <Textarea
                   placeholder="Brief background or story..."
                   value={newBeneficiary.background}
@@ -918,7 +920,7 @@ export default function BeneficiariesPage() {
                   data-testid="checkbox-privacy"
                 />
                 <Label htmlFor="protectPrivacy" className="font-normal">
-                  Protect privacy (hide sensitive information in public views)
+                  {t("beneficiaries.protect_privacy_label")}
                 </Label>
               </div>
             </div>
@@ -926,11 +928,11 @@ export default function BeneficiariesPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAddDialog(false)} data-testid="button-cancel">
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleAddBeneficiary} disabled={addLoading} data-testid="button-submit">
               {addLoading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              Add Beneficiary
+              {t("beneficiaries.add_beneficiary")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -4,6 +4,7 @@ import { Calendar, Heart, Loader2, Plus, Trash2, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTranslation } from "react-i18next";
 import type { SpecialOccasion, SpecialOccasionFormData } from "../types";
 import { formatMonthDay, getOccasionTypeLabel } from "../utils";
 import SpecialOccasionDialog from "../dialogs/SpecialOccasionDialog";
@@ -47,6 +48,8 @@ export default function DonorSpecialDaysTab({
   savingSpecialOccasion,
   handleSpecialOccasionSubmit,
 }: DonorSpecialDaysTabProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
       {upcomingOccasions.length > 0 && (
@@ -54,7 +57,7 @@ export default function DonorSpecialDaysTab({
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Calendar className="h-4 w-4 text-amber-600" />
-              Upcoming in Next 30 Days
+              {t("donor_profile.upcoming_30_days")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -67,8 +70,8 @@ export default function DonorSpecialDaysTab({
                 >
                   {getOccasionTypeLabel(occasion.type)} -{" "}
                   {occasion.daysUntil === 0
-                    ? "Today!"
-                    : `${occasion.daysUntil} days`}
+                    ? t("donor_profile.today")
+                    : t("donor_profile.days_count", { count: occasion.daysUntil })}
                   {occasion.relatedPersonName && ` (${occasion.relatedPersonName})`}
                 </Badge>
               ))}
@@ -80,16 +83,16 @@ export default function DonorSpecialDaysTab({
       <Card>
         <CardHeader className="flex flex-row items-center justify-between gap-2 flex-wrap">
           <div>
-            <CardTitle>Special Days</CardTitle>
+            <CardTitle>{t("donor_profile.tab_special_days")}</CardTitle>
             <CardDescription>
-              Birthdays, anniversaries, and other important dates
+              {t("donor_profile.special_days_description")}
             </CardDescription>
           </div>
 
           {canEditFamilyAndSpecialDays && (
             <Button onClick={onAdd} data-testid="button-add-special-day">
               <Plus className="mr-2 h-4 w-4" />
-              Add Special Day
+              {t("donor_profile.add_special_day")}
             </Button>
           )}
         </CardHeader>
@@ -171,7 +174,7 @@ export default function DonorSpecialDaysTab({
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>No special days recorded</p>
+              <p>{t("donor_profile.no_special_days")}</p>
             </div>
           )}
         </CardContent>
