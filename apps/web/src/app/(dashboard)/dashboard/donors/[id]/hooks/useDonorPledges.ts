@@ -24,6 +24,7 @@ export function useDonorPledges(donorId: string) {
   const [editingPledgeId, setEditingPledgeId] = useState<string | null>(null);
   const [pledgeForm, setPledgeForm] = useState<PledgeFormData>(EMPTY_PLEDGE_FORM);
   const [savingPledge, setSavingPledge] = useState(false);
+  const [deletingPledgeId, setDeletingPledgeId] = useState<string | null>(null);
 
   const user = authStorage.getUser();
   const canEdit = hasPermission(user?.role, "donors", "edit");
@@ -117,6 +118,20 @@ export function useDonorPledges(donorId: string) {
   const onWhatsApp = useCallback((_pledgeId: string) => {}, []);
   const onEmail = useCallback((_pledgeId: string) => {}, []);
 
+  const onDeletePledge = useCallback(async (pledgeId: string) => {
+    if (!confirm("Are you sure you want to permanently delete this pledge? This cannot be undone.")) return;
+    setDeletingPledgeId(pledgeId);
+    try {
+      await apiClient(`/api/pledges/${pledgeId}`, { method: "DELETE" });
+      await fetchPledges();
+      toast({ title: "Pledge Deleted", description: "The pledge has been permanently removed." });
+    } catch {
+      toast({ title: "Delete Failed", description: "Could not delete the pledge. Please try again.", variant: "destructive" });
+    } finally {
+      setDeletingPledgeId(null);
+    }
+  }, [fetchPledges, toast]);
+
   return {
     pledges,
     pledgesLoading,
@@ -131,6 +146,8 @@ export function useDonorPledges(donorId: string) {
     onCancel,
     onWhatsApp,
     onEmail,
+    onDeletePledge,
+    deletingPledgeId,
     showPledgeDialog,
     setShowPledgeDialog,
     editingPledge,

@@ -92,7 +92,7 @@ const SUPPORT_TYPES = [
 const DONOR_TAGS = [
   "Champion Donor", "Regular Donor", "Festival Donor", "Anniversary Donor",
   "Birthday Donor", "Corporate Link", "Social Connector", "Event Organizer",
-  "Food Donor", "Education Patron", "Health Patron", "Spiritual Donor",
+  "Food Donor", "Education Patron", "Health Patron", "Spiritual Donor", "Sponsorship",
 ];
 
 const COMM_CHANNELS = [
@@ -169,17 +169,14 @@ const MEETING_STATUSES = [
 ];
 
 const RELIGIONS = [
-  { value: "Hindu", label: "Hindu" },
-  { value: "Muslim", label: "Muslim" },
-  { value: "Christian", label: "Christian" },
-  { value: "Sikh", label: "Sikh" },
-  { value: "Buddhist", label: "Buddhist" },
-  { value: "Jain", label: "Jain" },
-  { value: "Zoroastrian", label: "Zoroastrian / Parsi" },
-  { value: "Jewish", label: "Jewish" },
-  { value: "Secular", label: "No Religion / Secular" },
-  { value: "Other", label: "Other" },
-  { value: "Prefer Not to Say", label: "Prefer Not to Say" },
+  { value: "Hinduism", label: "Hinduism" },
+  { value: "Islam", label: "Islam" },
+  { value: "Christianity", label: "Christianity" },
+  { value: "Buddhism", label: "Buddhism" },
+  { value: "Sikhism", label: "Sikhism" },
+  { value: "Atheist", label: "Atheist" },
+  { value: "Unknown", label: "Unknown" },
+  { value: "Not interested to disclose", label: "Not interested to disclose" },
 ];
 
 export default function EditDonorPage() {
@@ -198,6 +195,7 @@ export default function EditDonorPage() {
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [existingPhotoUrl, setExistingPhotoUrl] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("individual");
+  const [idType, setIdType] = useState<"PAN" | "AADHAR">("PAN");
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -350,6 +348,8 @@ export default function EditDonorPage() {
           isSingleParent: donor.isSingleParent ?? false,
           isDisabled: donor.isDisabled ?? false,
         });
+        if (donor.pan && /^\d{12}$/.test(donor.pan)) setIdType("AADHAR");
+        else setIdType("PAN");
 
         if (donor.individualProfile) {
           setIndividualProfile({
@@ -1376,28 +1376,46 @@ export default function EditDonorPage() {
                 ))}
               </div>
             </div>
-            <div>
-              <Label htmlFor="pan">PAN Number</Label>
-              <Input
-                id="pan"
-                value={formData.pan}
-                onChange={(e) => handleChange("pan", e.target.value.toUpperCase())}
-                placeholder="ABCDE1234F"
-                maxLength={10}
-                data-testid="input-pan"
-                className={
-                  formData.pan && formData.pan.length > 0
-                    ? /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan)
-                      ? "border-green-500 focus-visible:ring-green-500"
-                      : "border-red-400 focus-visible:ring-red-400"
-                    : ""
-                }
-              />
+            <div className="space-y-2">
+              <Label>ID Proof</Label>
+              <div className="flex gap-2">
+                <Select value={idType} onValueChange={(v) => { setIdType(v as "PAN" | "AADHAR"); handleChange("pan", ""); }}>
+                  <SelectTrigger className="w-28" data-testid="select-id-type"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PAN">PAN</SelectItem>
+                    <SelectItem value="AADHAR">Aadhar</SelectItem>
+                  </SelectContent>
+                </Select>
+                {idType === "PAN" ? (
+                  <Input
+                    value={formData.pan}
+                    onChange={(e) => handleChange("pan", e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase())}
+                    placeholder="ABCDE1234F"
+                    maxLength={10}
+                    data-testid="input-pan"
+                    className={formData.pan && formData.pan.length > 0 ? (/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan) ? "border-green-500 focus-visible:ring-green-500" : "border-red-400 focus-visible:ring-red-400") : ""}
+                  />
+                ) : (
+                  <Input
+                    value={formData.pan}
+                    onChange={(e) => handleChange("pan", e.target.value.replace(/\D/g, "").slice(0, 12))}
+                    placeholder="123456789012"
+                    maxLength={12}
+                    data-testid="input-aadhar"
+                    className={formData.pan && formData.pan.length > 0 ? (/^\d{12}$/.test(formData.pan) ? "border-green-500 focus-visible:ring-green-500" : "border-red-400 focus-visible:ring-red-400") : ""}
+                  />
+                )}
+              </div>
               {formData.pan && formData.pan.length > 0 && (
-                <p className={`text-xs mt-1 ${/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan) ? "text-green-600" : "text-red-500"}`}>
-                  {/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan)
-                    ? "Valid PAN format"
-                    : "Invalid format — must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)"}
+                <p className={`text-xs ${
+                  (idType === "PAN" && /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan)) ||
+                  (idType === "AADHAR" && /^\d{12}$/.test(formData.pan))
+                    ? "text-green-600"
+                    : "text-red-500"
+                }`}>
+                  {idType === "PAN"
+                    ? (/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan) ? "Valid PAN format" : "Invalid — must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)")
+                    : (/^\d{12}$/.test(formData.pan) ? "Valid Aadhar number" : `${formData.pan.length}/12 digits — must be exactly 12 digits`)}
                 </p>
               )}
             </div>

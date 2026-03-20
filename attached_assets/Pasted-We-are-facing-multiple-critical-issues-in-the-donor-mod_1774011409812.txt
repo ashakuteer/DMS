@@ -1,0 +1,122 @@
+We are facing multiple critical issues in the donor module. Fix everything end-to-end. Do NOT partially fix.
+
+PART 1 — FRONTEND UI FIXES
+
+1. Change title:
+"Add New Person" → "Add New Donor"
+
+2. Religion field:
+Convert to dropdown with options:
+- Hinduism
+- Islam
+- Christianity
+- Buddhism
+- Sikhism
+- Atheist
+- Unknown
+- Not interested to disclose
+
+3. Add ID Proof section:
+Field: ID Type (Dropdown: PAN / Aadhar)
+
+If PAN selected:
+- Input validation: exactly 10 characters
+- Format: 5 letters + 4 numbers + 1 letter (e.g., ALQPG1783M)
+
+If Aadhar selected:
+- Only numbers allowed
+- Exactly 12 digits
+
+4. Add "Sponsorship" in:
+- Support Type
+- Donor Tags
+
+---
+
+PART 2 — DONOR DETAILS PAGE FIXES
+
+For the following sections:
+- Donations
+- Pledges
+- Family Members
+- Special Days
+
+DO THE FOLLOWING:
+
+1. Add Edit button (pencil icon)
+2. Add Delete button (trash icon)
+3. Ensure buttons are clickable and working
+
+---
+
+PART 3 — BACKEND API VERIFICATION
+
+Ensure these APIs exist and work:
+
+Donations:
+- PUT /api/donations/:id
+- DELETE /api/donations/:id
+
+Family Members:
+- PUT /api/family-members/:id
+- DELETE /api/family-members/:id
+
+Pledges:
+- PUT /api/pledges/:id
+- DELETE /api/pledges/:id
+
+Special Days:
+- PUT /api/special-days/:id
+- DELETE /api/special-days/:id
+
+Donor:
+- PUT /api/donors/:id
+
+---
+
+PART 4 — FIX EDIT NOT SAVING ISSUE
+
+1. Ensure frontend is calling correct API URL:
+Use:
+process.env.NEXT_PUBLIC_API_URL
+
+2. Ensure payload is correctly sent in PUT request
+
+3. After successful update:
+- Refresh donor data
+OR
+- Update state immediately
+
+---
+
+PART 5 — FIX DELETE BUTTONS
+
+1. Ensure DELETE API is called
+2. After delete:
+- Remove item from UI immediately
+
+---
+
+PART 6 — FIX DEPLOYMENT ISSUE
+
+Ensure changes reflect in Vercel:
+- Commit all changes
+- Push to GitHub
+- Trigger fresh Vercel deployment
+
+---
+
+FINAL CHECK
+
+Verify ALL:
+
+- Add Donor page updated UI
+- Religion dropdown works
+- PAN/Aadhar validation works
+- Edit donor updates data
+- Delete works in all sections
+- Edit works in all sections
+- Donations section has edit/delete
+- UI reflects changes instantly
+
+DO NOT STOP until everything is working.

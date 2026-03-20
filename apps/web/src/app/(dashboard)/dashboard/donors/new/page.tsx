@@ -101,7 +101,18 @@ const SUPPORT_TYPES = [
 const DONOR_TAGS = [
   "Champion Donor", "Regular Donor", "Festival Donor", "Anniversary Donor",
   "Birthday Donor", "Corporate Link", "Social Connector", "Event Organizer",
-  "Food Donor", "Education Patron", "Health Patron", "Spiritual Donor",
+  "Food Donor", "Education Patron", "Health Patron", "Spiritual Donor", "Sponsorship",
+];
+
+const RELIGIONS = [
+  { value: "Hinduism", label: "Hinduism" },
+  { value: "Islam", label: "Islam" },
+  { value: "Christianity", label: "Christianity" },
+  { value: "Buddhism", label: "Buddhism" },
+  { value: "Sikhism", label: "Sikhism" },
+  { value: "Atheist", label: "Atheist" },
+  { value: "Unknown", label: "Unknown" },
+  { value: "Not interested to disclose", label: "Not interested to disclose" },
 ];
 
 const COMM_CHANNELS = [
@@ -187,6 +198,7 @@ export default function NewDonorPage() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("individual");
+  const [idType, setIdType] = useState<"PAN" | "AADHAR">("PAN");
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -517,7 +529,7 @@ export default function NewDonorPage() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Add New Person</h1>
+          <h1 className="text-3xl font-bold text-foreground">Add New Donor</h1>
           <p className="text-muted-foreground mt-1">
             Create a new donor profile (name, phone, or email required)
           </p>
@@ -612,7 +624,10 @@ export default function NewDonorPage() {
             </div>
             <div>
               <Label htmlFor="religion">Religion</Label>
-              <Input id="religion" value={formData.religion} onChange={(e) => handleChange("religion", e.target.value)} placeholder="Religion" data-testid="input-religion" />
+              <Select value={formData.religion} onValueChange={(v) => handleChange("religion", v)}>
+                <SelectTrigger data-testid="select-religion"><SelectValue placeholder="Select religion" /></SelectTrigger>
+                <SelectContent>{RELIGIONS.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}</SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="incomeSpectrum">Income Spectrum</Label>
@@ -777,9 +792,48 @@ export default function NewDonorPage() {
                       <SelectContent>{DONATION_FREQUENCIES.map((f) => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
-                  <div>
-                    <Label className="mb-1 block">PAN Number</Label>
-                    <Input value={formData.pan} onChange={(e) => handleChange("pan", e.target.value.toUpperCase())} placeholder="ABCDE1234F" maxLength={10} data-testid="input-pan" />
+                  <div className="space-y-2">
+                    <Label>ID Proof</Label>
+                    <div className="flex gap-2">
+                      <Select value={idType} onValueChange={(v) => { setIdType(v as "PAN" | "AADHAR"); handleChange("pan", ""); }}>
+                        <SelectTrigger className="w-28" data-testid="select-id-type"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PAN">PAN</SelectItem>
+                          <SelectItem value="AADHAR">Aadhar</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {idType === "PAN" ? (
+                        <Input
+                          value={formData.pan}
+                          onChange={(e) => handleChange("pan", e.target.value.replace(/[^A-Za-z0-9]/g, "").toUpperCase())}
+                          placeholder="ABCDE1234F"
+                          maxLength={10}
+                          data-testid="input-pan"
+                          className={formData.pan && formData.pan.length > 0 ? (/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan) ? "border-green-500 focus-visible:ring-green-500" : "border-red-400 focus-visible:ring-red-400") : ""}
+                        />
+                      ) : (
+                        <Input
+                          value={formData.pan}
+                          onChange={(e) => handleChange("pan", e.target.value.replace(/\D/g, "").slice(0, 12))}
+                          placeholder="123456789012"
+                          maxLength={12}
+                          data-testid="input-aadhar"
+                          className={formData.pan && formData.pan.length > 0 ? (/^\d{12}$/.test(formData.pan) ? "border-green-500 focus-visible:ring-green-500" : "border-red-400 focus-visible:ring-red-400") : ""}
+                        />
+                      )}
+                    </div>
+                    {formData.pan && formData.pan.length > 0 && (
+                      <p className={`text-xs ${
+                        (idType === "PAN" && /^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan)) ||
+                        (idType === "AADHAR" && /^\d{12}$/.test(formData.pan))
+                          ? "text-green-600"
+                          : "text-red-500"
+                      }`}>
+                        {idType === "PAN"
+                          ? (/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(formData.pan) ? "Valid PAN format" : "Invalid — must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)")
+                          : (/^\d{12}$/.test(formData.pan) ? "Valid Aadhar number" : `${formData.pan.length}/12 digits — must be exactly 12 digits`)}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div>

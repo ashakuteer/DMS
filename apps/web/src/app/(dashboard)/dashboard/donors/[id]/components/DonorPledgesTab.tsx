@@ -13,6 +13,7 @@ import {
   Plus,
   Receipt,
   Copy,
+  Trash2,
 } from "lucide-react";
 import type { Pledge, PledgeFormData } from "../types";
 import { formatCurrency, formatDate, getPledgeStatusColor, getPledgeTypeLabel } from "../utils";
@@ -30,6 +31,8 @@ interface DonorPledgesTabProps {
   onCancel: (pledgeId: string) => void;
   onWhatsApp: (pledgeId: string) => void;
   onEmail: (pledgeId: string) => void;
+  onDeletePledge: (pledgeId: string) => void;
+  deletingPledgeId: string | null;
   showPledgeDialog: boolean;
   setShowPledgeDialog: (open: boolean) => void;
   editingPledge: boolean;
@@ -51,6 +54,8 @@ export default function DonorPledgesTab({
   onCancel,
   onWhatsApp,
   onEmail,
+  onDeletePledge,
+  deletingPledgeId,
   showPledgeDialog,
   setShowPledgeDialog,
   editingPledge,
@@ -206,6 +211,22 @@ export default function DonorPledgesTab({
                           <Edit className="h-4 w-4" />
                         </Button>
                       )}
+                    {canEdit && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onDeletePledge(pledge.id)}
+                        disabled={deletingPledgeId === pledge.id}
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        data-testid={`button-delete-pledge-${pledge.id}`}
+                      >
+                        {deletingPledgeId === pledge.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
