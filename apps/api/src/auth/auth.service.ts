@@ -212,7 +212,7 @@ export class AuthService {
         },
       });
 
-      const appUrl = process.env.APP_URL || 'http://localhost:5000';
+      const appUrl = process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:5000';
       const resetLink = `${appUrl}/reset-password?token=${rawToken}`;
       const adminEmail = process.env.SMTP_USER || 'ashakuteer@gmail.com';
 
