@@ -28,7 +28,11 @@ export class StaffProfilesService {
   async findOne(id: string) {
     const staff = await this.prisma.staff.findUnique({
       where: { id },
-      include: { home: true, documents: { orderBy: { createdAt: 'desc' } } },
+      include: {
+        home: true,
+        documents: { orderBy: { createdAt: 'desc' } },
+        bankDetails: true,
+      },
     });
     if (!staff) throw new NotFoundException('Staff member not found');
     return staff;
@@ -42,6 +46,7 @@ export class StaffProfilesService {
     designation?: string;
     homeId?: string;
     status?: StaffStatus;
+    profilePhotoUrl?: string;
     bloodGroup?: string;
     emergencyContact1Name?: string;
     emergencyContact1Phone?: string;
@@ -62,6 +67,7 @@ export class StaffProfilesService {
     designation: string;
     homeId: string;
     status: StaffStatus;
+    profilePhotoUrl: string;
     bloodGroup: string;
     emergencyContact1Name: string;
     emergencyContact1Phone: string;
@@ -72,7 +78,7 @@ export class StaffProfilesService {
     return this.prisma.staff.update({
       where: { id },
       data,
-      include: { home: true },
+      include: { home: true, bankDetails: true },
     });
   }
 
@@ -81,11 +87,22 @@ export class StaffProfilesService {
     return this.prisma.staff.delete({ where: { id } });
   }
 
-  async uploadDocument(
-    staffId: string,
-    file: Express.Multer.File,
-    docType: string,
-  ) {
+  async uploadPhoto(staffId: string, file: Express.Multer.File) {
+    await this.findOne(staffId);
+    const { url } = await this.storage.uploadStaffPhoto(
+      staffId,
+      file.buffer,
+      file.mimetype,
+      file.originalname,
+    );
+    return this.prisma.staff.update({
+      where: { id: staffId },
+      data: { profilePhotoUrl: url },
+      select: { id: true, profilePhotoUrl: true },
+    });
+  }
+
+  async uploadDocument(staffId: string, file: Express.Multer.File, docType: string) {
     await this.findOne(staffId);
     const { url } = await this.storage.uploadStaffDocument(
       staffId,
@@ -112,6 +129,28 @@ export class StaffProfilesService {
 
   async deleteDocument(docId: string) {
     return this.prisma.staffDocument.delete({ where: { id: docId } });
+  }
+
+  async getBankDetails(staffId: string) {
+    return this.prisma.staffBankDetails.findUnique({ where: { staffId } });
+  }
+
+  async upsertBankDetails(
+    staffId: string,
+    data: {
+      bankName?: string;
+      accountHolderName?: string;
+      accountNumber?: string;
+      ifsc?: string;
+      branch?: string;
+    },
+  ) {
+    await this.findOne(staffId);
+    return this.prisma.staffBankDetails.upsert({
+      where: { staffId },
+      create: { staffId, ...data },
+      update: data,
+    });
   }
 
   async findAllHomes() {

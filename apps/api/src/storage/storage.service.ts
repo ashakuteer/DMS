@@ -218,6 +218,35 @@ export class StorageService {
     return { url: urlData.publicUrl };
   }
 
+  // Staff photo upload
+  async uploadStaffPhoto(
+    staffId: string,
+    buffer: Buffer,
+    mimetype: string,
+    originalname: string,
+  ) {
+    const supabase = this.requireSupabase();
+    const fileExt = originalname.split('.').pop();
+    const filePath = `staff/${staffId}/photo.${fileExt}`;
+
+    const { error } = await supabase.storage
+      .from(this.donorBucketName)
+      .upload(filePath, buffer, {
+        contentType: mimetype,
+        upsert: true,
+      });
+
+    if (error) {
+      throw new Error(`Failed to upload staff photo: ${error.message}`);
+    }
+
+    const { data: urlData } = supabase.storage
+      .from(this.donorBucketName)
+      .getPublicUrl(filePath);
+
+    return { url: urlData.publicUrl };
+  }
+
   // Staff document upload
   async uploadStaffDocument(
     staffId: string,

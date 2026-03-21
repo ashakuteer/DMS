@@ -18,6 +18,8 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { StaffProfilesService } from './staff-profiles.service';
 
+const FILE_LIMIT = { limits: { fileSize: 5 * 1024 * 1024 } };
+
 @Controller()
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class StaffProfilesController {
@@ -37,7 +39,7 @@ export class StaffProfilesController {
     return this.service.createHome(body);
   }
 
-  // ─── Staff ────────────────────────────────────────────────────────────────
+  // ─── Staff — fixed-path routes first ─────────────────────────────────────
 
   @Get('staff-profiles')
   @Roles(Role.ADMIN, Role.STAFF)
@@ -50,9 +52,25 @@ export class StaffProfilesController {
     return this.service.findAll({ roleType, homeId, designation, status });
   }
 
+  @Post('staff-profiles')
+  @Roles(Role.ADMIN)
+  create(@Body() body: any) {
+    return this.service.create(body);
+  }
+
+  @Post('staff-profiles/upload-photo')
+  @Roles(Role.ADMIN, Role.STAFF)
+  @UseInterceptors(FileInterceptor('file', FILE_LIMIT))
+  uploadPhoto(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('staffId') staffId: string,
+  ) {
+    return this.service.uploadPhoto(staffId, file);
+  }
+
   @Post('staff-profiles/upload-document')
   @Roles(Role.ADMIN, Role.STAFF)
-  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 } }))
+  @UseInterceptors(FileInterceptor('file', FILE_LIMIT))
   uploadDocument(
     @UploadedFile() file: Express.Multer.File,
     @Body('staffId') staffId: string,
@@ -61,22 +79,12 @@ export class StaffProfilesController {
     return this.service.uploadDocument(staffId, file, type);
   }
 
-  @Get('staff-profiles/:id/documents')
-  @Roles(Role.ADMIN, Role.STAFF)
-  getDocuments(@Param('id') id: string) {
-    return this.service.getDocuments(id);
-  }
+  // ─── Staff — param routes ─────────────────────────────────────────────────
 
   @Get('staff-profiles/:id')
   @Roles(Role.ADMIN, Role.STAFF)
   findOne(@Param('id') id: string) {
     return this.service.findOne(id);
-  }
-
-  @Post('staff-profiles')
-  @Roles(Role.ADMIN)
-  create(@Body() body: any) {
-    return this.service.create(body);
   }
 
   @Patch('staff-profiles/:id')
@@ -85,15 +93,33 @@ export class StaffProfilesController {
     return this.service.update(id, body);
   }
 
+  @Delete('staff-profiles/:id')
+  @Roles(Role.ADMIN)
+  remove(@Param('id') id: string) {
+    return this.service.remove(id);
+  }
+
+  @Get('staff-profiles/:id/documents')
+  @Roles(Role.ADMIN, Role.STAFF)
+  getDocuments(@Param('id') id: string) {
+    return this.service.getDocuments(id);
+  }
+
   @Delete('staff-profiles/documents/:docId')
   @Roles(Role.ADMIN)
   deleteDocument(@Param('docId') docId: string) {
     return this.service.deleteDocument(docId);
   }
 
-  @Delete('staff-profiles/:id')
+  @Get('staff-profiles/:id/bank-details')
+  @Roles(Role.ADMIN, Role.STAFF)
+  getBankDetails(@Param('id') id: string) {
+    return this.service.getBankDetails(id);
+  }
+
+  @Post('staff-profiles/:id/bank-details')
   @Roles(Role.ADMIN)
-  remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  upsertBankDetails(@Param('id') id: string, @Body() body: any) {
+    return this.service.upsertBankDetails(id, body);
   }
 }

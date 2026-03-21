@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, UserPlus, Search, Users, Phone, Mail, Building2 } from "lucide-react";
+import { Loader2, UserPlus, Search, Users, Phone, Mail, Building2, User } from "lucide-react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
+import Image from "next/image";
 
 interface Home {
   id: string;
@@ -25,6 +26,7 @@ interface StaffMember {
   roleType: "ADMIN" | "TELECALLER" | "HOME_STAFF";
   designation?: string;
   status: "ACTIVE" | "INACTIVE";
+  profilePhotoUrl?: string;
   home?: Home;
   createdAt: string;
 }
@@ -170,22 +172,31 @@ export default function StaffProfilesPage() {
             <Link key={s.id} href={`/dashboard/staff-profiles/${s.id}`} data-testid={`card-staff-${s.id}`}>
               <Card className="h-full hover:border-orange-500/40 transition-colors cursor-pointer">
                 <CardHeader className="pb-2">
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-3">
+                    <div className="relative h-10 w-10 rounded-full border bg-muted overflow-hidden shrink-0 flex items-center justify-center">
+                      {s.profilePhotoUrl ? (
+                        <Image src={s.profilePhotoUrl} alt={s.name} fill className="object-cover" />
+                      ) : (
+                        <User className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base font-semibold truncate" data-testid={`text-staff-name-${s.id}`}>
-                        {s.name}
-                      </CardTitle>
+                      <div className="flex items-start justify-between gap-2">
+                        <CardTitle className="text-base font-semibold truncate" data-testid={`text-staff-name-${s.id}`}>
+                          {s.name}
+                        </CardTitle>
+                        <Badge
+                          variant={s.status === "ACTIVE" ? "default" : "secondary"}
+                          className="text-xs shrink-0"
+                          data-testid={`badge-status-${s.id}`}
+                        >
+                          {s.status === "ACTIVE" ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
                       {s.designation && (
                         <p className="text-sm text-muted-foreground truncate">{s.designation}</p>
                       )}
                     </div>
-                    <Badge
-                      variant={s.status === "ACTIVE" ? "default" : "secondary"}
-                      className="text-xs shrink-0"
-                      data-testid={`badge-status-${s.id}`}
-                    >
-                      {s.status === "ACTIVE" ? "Active" : "Inactive"}
-                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-2 pt-0">

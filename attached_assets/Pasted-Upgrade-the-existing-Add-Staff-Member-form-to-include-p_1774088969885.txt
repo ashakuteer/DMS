@@ -1,0 +1,164 @@
+Upgrade the existing "Add Staff Member" form to include photo upload, predefined designations, documents, and bank details.
+
+---
+
+1. ADD PHOTO UPLOAD (IMPORTANT)
+
+---
+
+Add profile photo upload at the top of the form (like donor/beneficiary).
+
+* Field: Profile Photo
+* Upload to Supabase Storage
+* Show preview after upload
+* Save URL in Staff table as:
+  profilePhotoUrl
+
+---
+
+2. DESIGNATION DROPDOWN (FOR HOME STAFF)
+
+---
+
+Replace free-text designation with dropdown.
+
+Options:
+
+* Supervisor
+* Home Incharge
+* Care Taker
+* Nurse
+* Cook
+* Kitchen Helper
+* Maid
+* Cleaner
+* Driver
+
+Also allow:
+
+* Telecaller
+* Admin
+
+---
+
+3. ADD DOCUMENT UPLOAD SECTION
+
+---
+
+Below Medical section, add new section:
+
+### "Documents"
+
+Allow upload for:
+
+* Photo (already above)
+* Aadhar Card
+* PAN Card
+* Appointment Letter
+* Experience Certificate
+* Other Documents
+
+Each should:
+
+* Upload file (PDF/Image)
+* Store in Supabase Storage
+* Save in StaffDocuments table
+
+---
+
+4. ADD BANK DETAILS SECTION
+
+---
+
+Add new section:
+
+### "Bank Details"
+
+Fields:
+
+* Bank Name
+* Account Holder Name
+* Account Number
+* IFSC Code
+* Branch Name
+
+Create new table:
+
+StaffBankDetails:
+
+* id
+* staffId
+* bankName
+* accountHolderName
+* accountNumber
+* ifsc
+* branch
+
+---
+
+5. UPDATE STAFF PROFILE PAGE
+
+---
+
+Add sections:
+
+### Profile Photo
+
+* Display at top
+
+### Documents
+
+* Show uploaded files
+* Allow download/view
+
+### Bank Details
+
+* Display properly formatted
+
+---
+
+6. BACKEND APIs
+
+---
+
+Add:
+
+* POST /staff/upload-photo
+
+* POST /staff/upload-document
+
+* GET /staff/:id/documents
+
+* POST /staff/bank-details
+
+* GET /staff/:id/bank-details
+
+---
+
+7. UI REQUIREMENTS
+
+---
+
+* Keep same dark + orange theme
+* Clean layout (sections separated)
+* Show upload progress (optional)
+* Allow replacing files
+
+---
+
+8. VALIDATION
+
+---
+
+* Phone required
+* Name required
+* Role type required
+* File size limit (e.g., 5MB)
+
+---
+
+## GOAL
+
+* Complete staff profile like donor profile
+* All documents stored safely
+* Bank + emergency + medical info in one place

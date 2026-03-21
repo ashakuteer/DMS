@@ -2101,6 +2101,7 @@ enum StaffDocumentType {
   PAN
   APPOINTMENT
   EXPERIENCE
+  OTHER
 }
 
 model Home {
@@ -2113,24 +2114,41 @@ model Home {
 }
 
 model Staff {
-  id                     String            @id @default(uuid())
+  id                     String             @id @default(uuid())
   name                   String
   phone                  String?
   email                  String?
   roleType               StaffRoleType
   designation            String?
   homeId                 String?
-  home                   Home?             @relation(fields: [homeId], references: [id])
-  status                 StaffStatus       @default(ACTIVE)
+  home                   Home?              @relation(fields: [homeId], references: [id])
+  status                 StaffStatus        @default(ACTIVE)
+  profilePhotoUrl        String?
   bloodGroup             String?
   emergencyContact1Name  String?
   emergencyContact1Phone String?
   emergencyContact2Name  String?
   emergencyContact2Phone String?
-  createdAt              DateTime          @default(now())
+  createdAt              DateTime           @default(now())
   documents              StaffDocument[]
+  bankDetails            StaffBankDetails?
 
   @@map("staff_profiles")
+}
+
+model StaffBankDetails {
+  id                String   @id @default(uuid())
+  staffId           String   @unique
+  staff             Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  bankName          String?
+  accountHolderName String?
+  accountNumber     String?
+  ifsc              String?
+  branch            String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("staff_bank_details")
 }
 
 model StaffDocument {
