@@ -362,17 +362,28 @@ export class StaffTasksService {
     };
   }
 
-  async updateTaskStatus(id: string, newStatus: TaskStatus, userId: string) {
+  async updateTaskStatus(id: string, newStatus: TaskStatus, userId: string, extra?: { minutesTaken?: number; startedAt?: string; completedAt?: string }) {
     const existing = await this.findOne(id);
 
     const updateData: any = { status: newStatus };
 
     if (newStatus === TaskStatus.IN_PROGRESS && !existing.startedAt) {
-      updateData.startedAt = new Date();
+      updateData.startedAt = extra?.startedAt ? new Date(extra.startedAt) : new Date();
     }
     if (newStatus === TaskStatus.COMPLETED) {
-      if (!existing.startedAt) updateData.startedAt = new Date();
-      updateData.completedAt = new Date();
+      if (!existing.startedAt) updateData.startedAt = extra?.startedAt ? new Date(extra.startedAt) : new Date();
+      updateData.completedAt = extra?.completedAt ? new Date(extra.completedAt) : new Date();
+
+      // Auto-compute minutesTaken if we have start+end
+      if (extra?.minutesTaken) {
+        updateData.minutesTaken = extra.minutesTaken;
+      } else if (updateData.startedAt && updateData.completedAt) {
+        const mins = Math.round((updateData.completedAt.getTime() - updateData.startedAt.getTime()) / 60000);
+        if (mins > 0) updateData.minutesTaken = mins;
+      } else if (existing.startedAt && updateData.completedAt) {
+        const mins = Math.round((updateData.completedAt.getTime() - existing.startedAt.getTime()) / 60000);
+        if (mins > 0) updateData.minutesTaken = mins;
+      }
     }
 
     return this.prisma.staffTask.update({

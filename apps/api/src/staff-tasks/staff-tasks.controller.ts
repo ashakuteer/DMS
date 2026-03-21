@@ -143,7 +143,11 @@ export class StaffTasksController {
         throw new ForbiddenException('You can only update tasks assigned to you');
       }
     }
-    return this.staffTasksService.updateTaskStatus(id, body.status, req.user.id);
+    return this.staffTasksService.updateTaskStatus(id, body.status, req.user.id, {
+      minutesTaken: body.minutesTaken,
+      startedAt: body.startedAt,
+      completedAt: body.completedAt,
+    });
   }
 
   @Delete(':id')

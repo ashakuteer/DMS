@@ -43,6 +43,7 @@ import { StaffProfilesModule } from "./staff-profiles/staff-profiles.module";
 import { StaffSalaryModule } from "./staff-salary/staff-salary.module";
 import { StaffLeavesModule } from "./staff-leaves/staff-leaves.module";
 import { StaffAttendanceModule } from "./staff-attendance/staff-attendance.module";
+import { TaskTemplatesModule } from "./task-templates/task-templates.module";
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { StaffAttendanceModule } from "./staff-attendance/staff-attendance.modul
     StaffSalaryModule,
     StaffLeavesModule,
     StaffAttendanceModule,
+    TaskTemplatesModule,
   ],
 })
 export class AppModule {}

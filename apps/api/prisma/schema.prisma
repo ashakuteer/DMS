@@ -1797,6 +1797,7 @@ enum TaskStatus {
   IN_PROGRESS
   COMPLETED
   OVERDUE
+  MISSED
 }
 
 enum TaskPriority {
@@ -1843,6 +1844,28 @@ enum RecurrenceType {
   DAILY
   WEEKLY
   MONTHLY
+  QUARTERLY
+  HALF_YEARLY
+  ANNUAL
+}
+
+model TaskTemplate {
+  id              String         @id @default(uuid())
+  title           String
+  description     String?
+  recurrenceType  String         @default("DAILY")
+  category        String         @default("GENERAL")
+  priority        String         @default("MEDIUM")
+  assignedToRole  String?
+  assignedToId    String?
+  isActive        Boolean        @default(true)
+  createdById     String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  tasks           StaffTask[]    @relation("TemplateTasks")
+
+  @@map("task_templates")
 }
 
 model StaffTask {
@@ -1863,6 +1886,8 @@ model StaffTask {
   recurrenceType  RecurrenceType @default(NONE)
   parentTaskId    String?
   checklist       Json?
+  templateId      String?
+  minutesTaken    Int?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   deletedAt       DateTime?
@@ -1872,6 +1897,7 @@ model StaffTask {
   linkedDonor     Donor?         @relation("TaskLinkedDonor", fields: [linkedDonorId], references: [id])
   parentTask      StaffTask?     @relation("RecurringTasks", fields: [parentTaskId], references: [id])
   childTasks      StaffTask[]    @relation("RecurringTasks")
+  template        TaskTemplate?  @relation("TemplateTasks", fields: [templateId], references: [id])
 
   @@index([assignedToId])
   @@index([status])

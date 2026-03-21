@@ -1,5 +1,39 @@
 # NGO Donor Management System
 
+## Recent Changes (Advanced Task Management — Mar 2026)
+
+### Database
+- Extended `TaskStatus` enum: added `MISSED`
+- Extended `RecurrenceType` enum: added `QUARTERLY`, `HALF_YEARLY`, `ANNUAL`
+- Created `task_templates` table (id, title, description, recurrenceType, category, priority, assignedToRole, assignedToId, isActive, createdById, timestamps)
+- Added `templateId` (FK → task_templates) and `minutesTaken` (INT) columns to `staff_tasks`
+
+### Backend (`apps/api/src/task-templates/`)
+New `TaskTemplatesModule` with 8 routes:
+- `GET /api/task-templates` — list all templates (FOUNDER/ADMIN/STAFF)
+- `GET /api/task-templates/accountability/:userId` — accountability score 0–100 with grade A–F (all roles)
+- `GET /api/task-templates/:id` — single template (all roles)
+- `POST /api/task-templates` — create template (FOUNDER/ADMIN)
+- `POST /api/task-templates/:id/generate` — generate tasks from template (FOUNDER/ADMIN)
+- `POST /api/task-templates/mark-missed` — mark overdue tasks as MISSED (FOUNDER/ADMIN)
+- `PATCH /api/task-templates/:id` — update template (FOUNDER/ADMIN)
+- `DELETE /api/task-templates/:id` — delete template (FOUNDER/ADMIN)
+
+Updated `StaffTasksService.updateTaskStatus` to:
+- Auto-set `startedAt` when transitioning to IN_PROGRESS or COMPLETED
+- Auto-compute `minutesTaken` from start/end timestamps
+- Accept optional `minutesTaken`, `startedAt`, `completedAt` from client
+
+### Frontend (`apps/web`)
+New components in `dashboard/staff-tasks/components/`:
+- `TemplatesTab.tsx` — admin UI for managing templates: create/edit/delete form, generate tasks with date picker, "Mark Overdue as Missed" button, template cards with recurrence badge and task counts
+- `MyTasksView.tsx` — staff checklist UI: accountability score card (score/100 + grade A–F + stats), mini stat row, status filter, task list with one-click Start/Complete, inline time-tracking form (start time, end time, minutes taken) when completing
+
+Updated `page.tsx`:
+- Staff default tab → "My Tasks"; Admin/Founder default → "All Tasks"
+- New tabs: "My Tasks" (all roles), "Templates" (FOUNDER/ADMIN only)
+- Added `MISSED` status display throughout
+
 ## Overview
 
 This project is a comprehensive donor management system for NGOs, designed to streamline the tracking of donors, donations, and beneficiaries. It provides a robust platform for fundraising, financial reporting, and donor engagement, incorporating features like role-based access control, detailed audit logging, and AI-powered insights. The system supports various donor categories, donation types, and payment modes, with automated receipt generation and email delivery. The business vision is to empower non-profits with a scalable and secure tool to efficiently manage their operations, enhance donor relationships, and maximize their impact.
