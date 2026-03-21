@@ -80,7 +80,7 @@ export class OtpService {
   async verifyOtp(
     phone: string,
     code: string,
-  ): Promise<{ userId: string; email: string; role: string; name: string }> {
+  ): Promise<{ id: string; email: string; role: string; name: string }> {
     const normalizedPhone = this.normalizePhone(phone);
 
     const otp = await this.prisma.otp.findFirst({
