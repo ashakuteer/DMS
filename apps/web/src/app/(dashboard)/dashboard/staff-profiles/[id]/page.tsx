@@ -11,9 +11,7 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -25,24 +23,13 @@ import {
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
-// ─── Designation groups ───────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-const OFFICE_DESIGNATIONS = ["Admin", "Office Assistant", "Accountant"];
-const TELECALLER_DESIGNATIONS = ["Telecaller"];
-const HOME_STAFF_DESIGNATIONS = [
+const DESIGNATIONS = [
+  "Admin", "Office Assistant", "Accountant", "Telecaller",
   "Supervisor", "Home Incharge", "Care Taker", "Nurse",
   "Cook", "Kitchen Helper", "Maid", "Cleaner", "Driver",
 ];
-const ADMIN_HOME_DESIGNATIONS = [...OFFICE_DESIGNATIONS, ...TELECALLER_DESIGNATIONS];
-
-function getHomeRule(designation: string): "admin" | "required" | "none" {
-  if (!designation) return "none";
-  if (ADMIN_HOME_DESIGNATIONS.includes(designation)) return "admin";
-  if (HOME_STAFF_DESIGNATIONS.includes(designation)) return "required";
-  return "none";
-}
-
-// ─── Constants ────────────────────────────────────────────────────────────────
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
@@ -64,41 +51,34 @@ const DOC_TYPE_LABELS: Record<string, string> = {
   OTHER: "Other Document",
 };
 
+const HOME_DISPLAY_LABELS: Record<string, string> = {
+  Admin: "Administration",
+  "Blind Home Begumpet": "Blind Home",
+  "Girls Home Uppal": "Girls Home",
+  "Old Age Home Peerzadiguda": "Old Age Home",
+};
+
+function homeLabel(name: string): string {
+  return HOME_DISPLAY_LABELS[name] || name;
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Home { id: string; name: string }
-
-interface StaffDocument {
-  id: string; type: string; fileUrl: string; createdAt: string;
-}
-
+interface StaffDocument { id: string; type: string; fileUrl: string; createdAt: string }
 interface BankDetails {
   bankName?: string; accountHolderName?: string; accountNumber?: string;
   ifsc?: string; branch?: string;
 }
-
 interface StaffProfile {
-  id: string;
-  name: string;
-  phone?: string;
-  email?: string;
-  designation: string;
-  status: string;
-  profilePhotoUrl?: string;
-  bloodGroup?: string;
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  state?: string;
-  pincode?: string;
-  emergencyContact1Name?: string;
-  emergencyContact1Phone?: string;
-  emergencyContact2Name?: string;
-  emergencyContact2Phone?: string;
-  home?: Home;
-  documents: StaffDocument[];
-  bankDetails?: BankDetails | null;
-  createdAt: string;
+  id: string; name: string; phone?: string; email?: string;
+  designation: string; status: string; profilePhotoUrl?: string;
+  bloodGroup?: string; addressLine1?: string; addressLine2?: string;
+  city?: string; state?: string; pincode?: string;
+  emergencyContact1Name?: string; emergencyContact1Phone?: string;
+  emergencyContact2Name?: string; emergencyContact2Phone?: string;
+  home?: Home; documents: StaffDocument[];
+  bankDetails?: BankDetails | null; createdAt: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -112,7 +92,6 @@ export default function StaffProfilePage() {
 
   const [profile, setProfile] = useState<StaffProfile | null>(null);
   const [homes, setHomes] = useState<Home[]>([]);
-  const [adminHomeId, setAdminHomeId] = useState("");
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -122,6 +101,7 @@ export default function StaffProfilePage() {
   const [savingBank, setSavingBank] = useState(false);
   const [selectedDocType, setSelectedDocType] = useState("AADHAR");
   const [editingBank, setEditingBank] = useState(false);
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
 
   const photoInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
@@ -141,10 +121,7 @@ export default function StaffProfilePage() {
       const profileData = await profileRes.json();
       const homesData = await homesRes.json();
       setProfile(profileData);
-      const homeList: Home[] = Array.isArray(homesData) ? homesData : [];
-      setHomes(homeList);
-      const admin = homeList.find((h) => h.name === "Admin");
-      if (admin) setAdminHomeId(admin.id);
+      setHomes(Array.isArray(homesData) ? homesData : []);
       setBankForm(profileData.bankDetails || {});
     } catch {
       toast({ title: "Error", description: "Failed to load staff profile", variant: "destructive" });
@@ -157,6 +134,7 @@ export default function StaffProfilePage() {
 
   const startEdit = () => {
     if (!profile) return;
+    setEditErrors({});
     setEditForm({
       name: profile.name,
       phone: profile.phone || "",
@@ -178,33 +156,29 @@ export default function StaffProfilePage() {
     setEditing(true);
   };
 
-  const setDesignationEdit = (d: string) => {
-    const rule = getHomeRule(d);
-    setEditForm((p: any) => ({
-      ...p,
-      designation: d,
-      homeId: rule === "admin" ? adminHomeId : "",
-    }));
+  const setE = (f: string, v: string) => {
+    setEditForm((p: any) => ({ ...p, [f]: v }));
+    if (editErrors[f]) setEditErrors((e) => { const n = { ...e }; delete n[f]; return n; });
+  };
+  const setBF = (f: string, v: string) => setBankForm((p) => ({ ...p, [f]: v }));
+
+  const validateEdit = () => {
+    const errs: Record<string, string> = {};
+    if (!editForm.name?.trim()) errs.name = "Name is required";
+    if (!editForm.designation) errs.designation = "Designation is required";
+    if (!editForm.homeId) errs.homeId = "Home is required";
+    setEditErrors(errs);
+    return Object.keys(errs).length === 0;
   };
 
-  const homeRule = getHomeRule(editForm.designation || "");
-  const visibleHomes = homes.filter((h) =>
-    homeRule === "admin" ? h.name === "Admin" : h.name !== "Admin",
-  );
-
   const handleSave = async () => {
-    if (!editForm.name?.trim() || !editForm.designation) {
-      toast({ title: "Required", description: "Name and Designation are required", variant: "destructive" });
-      return;
-    }
-    if (getHomeRule(editForm.designation) === "required" && !editForm.homeId) {
-      toast({ title: "Required", description: "Home is required for home staff", variant: "destructive" });
+    if (!validateEdit()) {
+      toast({ title: "Please fix the errors below", variant: "destructive" });
       return;
     }
     setSaving(true);
     try {
       const payload: any = { ...editForm };
-      if (!payload.homeId) delete payload.homeId;
       const res = await fetchWithAuth(`/api/staff-profiles/${id}`, {
         method: "PATCH",
         body: JSON.stringify(payload),
@@ -329,8 +303,7 @@ export default function StaffProfilePage() {
     }
   };
 
-  const setE = (f: string, v: string) => setEditForm((p: any) => ({ ...p, [f]: v }));
-  const setBF = (f: string, v: string) => setBankForm((p) => ({ ...p, [f]: v }));
+  // ─── Render ─────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -391,16 +364,13 @@ export default function StaffProfilePage() {
               <h1 className="text-2xl font-bold text-foreground" data-testid="text-profile-name">
                 {profile.name}
               </h1>
-              <Badge
-                variant={profile.status === "ACTIVE" ? "default" : "secondary"}
-                data-testid="badge-status"
-              >
+              <Badge variant={profile.status === "ACTIVE" ? "default" : "secondary"} data-testid="badge-status">
                 {profile.status}
               </Badge>
             </div>
             <p className="text-muted-foreground text-sm mt-0.5">
               {profile.designation}
-              {profile.home ? ` · ${profile.home.name}` : ""}
+              {profile.home ? ` · ${homeLabel(profile.home.name)}` : ""}
             </p>
           </div>
         </div>
@@ -413,7 +383,7 @@ export default function StaffProfilePage() {
                   {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                   {saving ? "Saving..." : "Save"}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setEditing(false)} data-testid="button-cancel-edit">
+                <Button variant="outline" size="sm" onClick={() => { setEditing(false); setEditErrors({}); }} data-testid="button-cancel-edit">
                   <X className="mr-2 h-4 w-4" />Cancel
                 </Button>
               </>
@@ -443,7 +413,8 @@ export default function StaffProfilePage() {
             <>
               <div className="space-y-1.5">
                 <Label>Full Name *</Label>
-                <Input value={editForm.name || ""} onChange={(e) => setE("name", e.target.value)} data-testid="input-edit-name" />
+                <Input value={editForm.name || ""} onChange={(e) => setE("name", e.target.value)} className={editErrors.name ? "border-destructive" : ""} data-testid="input-edit-name" />
+                {editErrors.name && <p className="text-xs text-destructive">{editErrors.name}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label>Phone</Label>
@@ -457,54 +428,36 @@ export default function StaffProfilePage() {
               {/* Designation */}
               <div className="space-y-1.5">
                 <Label>Designation *</Label>
-                <Select value={editForm.designation || ""} onValueChange={setDesignationEdit}>
-                  <SelectTrigger data-testid="select-edit-designation">
+                <Select value={editForm.designation || ""} onValueChange={(v) => setE("designation", v)}>
+                  <SelectTrigger className={editErrors.designation ? "border-destructive" : ""} data-testid="select-edit-designation">
                     <SelectValue placeholder="Select designation" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel className="text-xs text-muted-foreground">Admin / Office</SelectLabel>
-                      {OFFICE_DESIGNATIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                    </SelectGroup>
-                    <SelectGroup>
-                      <SelectLabel className="text-xs text-muted-foreground">Telecallers</SelectLabel>
-                      {TELECALLER_DESIGNATIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                    </SelectGroup>
-                    <SelectGroup>
-                      <SelectLabel className="text-xs text-muted-foreground">Home Staff</SelectLabel>
-                      {HOME_STAFF_DESIGNATIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                    </SelectGroup>
+                    {DESIGNATIONS.map((d) => (
+                      <SelectItem key={d} value={d}>{d}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+                {editErrors.designation && <p className="text-xs text-destructive">{editErrors.designation}</p>}
               </div>
 
-              {/* Home — conditional */}
-              {homeRule === "admin" ? (
-                <div className="space-y-1.5">
-                  <Label>Home</Label>
-                  <div className="flex h-9 items-center rounded-md border border-border bg-muted/50 px-3 text-sm text-muted-foreground">
-                    Admin (auto-assigned)
-                  </div>
-                </div>
-              ) : homeRule === "required" ? (
-                <div className="space-y-1.5">
-                  <Label>Home *</Label>
-                  <Select value={editForm.homeId || ""} onValueChange={(v) => setE("homeId", v)}>
-                    <SelectTrigger data-testid="select-edit-home"><SelectValue placeholder="Select home" /></SelectTrigger>
-                    <SelectContent>
-                      {visibleHomes.map((h) => <SelectItem key={h.id} value={h.id}>{h.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <Label>Home</Label>
-                  <div className="flex h-9 items-center rounded-md border border-border bg-muted/20 px-3 text-sm text-muted-foreground italic">
-                    Select a designation first
-                  </div>
-                </div>
-              )}
+              {/* Home */}
+              <div className="space-y-1.5">
+                <Label>Home *</Label>
+                <Select value={editForm.homeId || ""} onValueChange={(v) => setE("homeId", v)}>
+                  <SelectTrigger className={editErrors.homeId ? "border-destructive" : ""} data-testid="select-edit-home">
+                    <SelectValue placeholder="Select home" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {homes.map((h) => (
+                      <SelectItem key={h.id} value={h.id}>{homeLabel(h.name)}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {editErrors.homeId && <p className="text-xs text-destructive">{editErrors.homeId}</p>}
+              </div>
 
+              {/* Status */}
               <div className="space-y-1.5">
                 <Label>Status</Label>
                 <Select value={editForm.status || "ACTIVE"} onValueChange={(v) => setE("status", v)}>
@@ -515,6 +468,8 @@ export default function StaffProfilePage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Blood Group */}
               <div className="space-y-1.5">
                 <Label>Blood Group</Label>
                 <Select value={editForm.bloodGroup || ""} onValueChange={(v) => setE("bloodGroup", v)}>
@@ -529,7 +484,7 @@ export default function StaffProfilePage() {
             <>
               <InfoRow icon={<Phone className="h-4 w-4" />} label="Phone" value={profile.phone} testId="text-phone" />
               <InfoRow icon={<Mail className="h-4 w-4" />} label="Email" value={profile.email} testId="text-email" />
-              <InfoRow icon={<Building2 className="h-4 w-4" />} label="Home" value={profile.home?.name} testId="text-home" />
+              <InfoRow icon={<Building2 className="h-4 w-4" />} label="Home" value={profile.home ? homeLabel(profile.home.name) : undefined} testId="text-home" />
               <InfoRow label="Blood Group" value={profile.bloodGroup} testId="text-blood-group" />
               <div>
                 <p className="text-xs text-muted-foreground mb-1">Member since</p>
@@ -575,22 +530,13 @@ export default function StaffProfilePage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Pincode</Label>
-                <Input
-                  value={editForm.pincode || ""}
-                  onChange={(e) => setE("pincode", e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="6-digit pincode"
-                  data-testid="input-edit-pincode"
-                />
+                <Input value={editForm.pincode || ""} onChange={(e) => setE("pincode", e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6-digit pincode" data-testid="input-edit-pincode" />
               </div>
             </>
           ) : hasAddress ? (
             <div className="sm:col-span-2 space-y-1">
-              {profile.addressLine1 && (
-                <p className="text-sm" data-testid="text-addr1">{profile.addressLine1}</p>
-              )}
-              {profile.addressLine2 && (
-                <p className="text-sm text-muted-foreground" data-testid="text-addr2">{profile.addressLine2}</p>
-              )}
+              {profile.addressLine1 && <p className="text-sm" data-testid="text-addr1">{profile.addressLine1}</p>}
+              {profile.addressLine2 && <p className="text-sm text-muted-foreground" data-testid="text-addr2">{profile.addressLine2}</p>}
               {(profile.city || profile.state || profile.pincode) && (
                 <p className="text-sm" data-testid="text-city-state">
                   {[profile.city, profile.state, profile.pincode].filter(Boolean).join(", ")}
@@ -621,22 +567,14 @@ export default function StaffProfilePage() {
         <CardContent className="grid gap-4 sm:grid-cols-2">
           {editing ? (
             <>
-              <div className="space-y-1.5">
-                <Label>EC1 — Name</Label>
-                <Input value={editForm.emergencyContact1Name || ""} onChange={(e) => setE("emergencyContact1Name", e.target.value)} data-testid="input-edit-ec1-name" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>EC1 — Phone</Label>
-                <Input value={editForm.emergencyContact1Phone || ""} onChange={(e) => setE("emergencyContact1Phone", e.target.value)} data-testid="input-edit-ec1-phone" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>EC2 — Name</Label>
-                <Input value={editForm.emergencyContact2Name || ""} onChange={(e) => setE("emergencyContact2Name", e.target.value)} data-testid="input-edit-ec2-name" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>EC2 — Phone</Label>
-                <Input value={editForm.emergencyContact2Phone || ""} onChange={(e) => setE("emergencyContact2Phone", e.target.value)} data-testid="input-edit-ec2-phone" />
-              </div>
+              <div className="space-y-1.5"><Label>EC1 — Name</Label>
+                <Input value={editForm.emergencyContact1Name || ""} onChange={(e) => setE("emergencyContact1Name", e.target.value)} data-testid="input-edit-ec1-name" /></div>
+              <div className="space-y-1.5"><Label>EC1 — Phone</Label>
+                <Input value={editForm.emergencyContact1Phone || ""} onChange={(e) => setE("emergencyContact1Phone", e.target.value)} data-testid="input-edit-ec1-phone" /></div>
+              <div className="space-y-1.5"><Label>EC2 — Name</Label>
+                <Input value={editForm.emergencyContact2Name || ""} onChange={(e) => setE("emergencyContact2Name", e.target.value)} data-testid="input-edit-ec2-name" /></div>
+              <div className="space-y-1.5"><Label>EC2 — Phone</Label>
+                <Input value={editForm.emergencyContact2Phone || ""} onChange={(e) => setE("emergencyContact2Phone", e.target.value)} data-testid="input-edit-ec2-phone" /></div>
             </>
           ) : (
             <>
@@ -731,8 +669,7 @@ export default function StaffProfilePage() {
             </CardTitle>
             {canEdit && !editingBank && (
               <Button variant="outline" size="sm" onClick={() => setEditingBank(true)} data-testid="button-edit-bank">
-                <Pencil className="mr-2 h-4 w-4" />
-                {profile.bankDetails ? "Edit" : "Add"}
+                <Pencil className="mr-2 h-4 w-4" />{profile.bankDetails ? "Edit" : "Add"}
               </Button>
             )}
           </div>
@@ -741,26 +678,16 @@ export default function StaffProfilePage() {
           {editingBank ? (
             <div className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-1.5">
-                  <Label>Bank Name</Label>
-                  <Input value={bankForm.bankName || ""} onChange={(e) => setBF("bankName", e.target.value)} placeholder="e.g. State Bank of India" data-testid="input-bank-name" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Account Holder Name</Label>
-                  <Input value={bankForm.accountHolderName || ""} onChange={(e) => setBF("accountHolderName", e.target.value)} placeholder="As per bank records" data-testid="input-account-holder" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Account Number</Label>
-                  <Input value={bankForm.accountNumber || ""} onChange={(e) => setBF("accountNumber", e.target.value)} data-testid="input-account-number" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>IFSC Code</Label>
-                  <Input value={bankForm.ifsc || ""} onChange={(e) => setBF("ifsc", e.target.value.toUpperCase())} placeholder="e.g. SBIN0001234" data-testid="input-ifsc" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Branch Name</Label>
-                  <Input value={bankForm.branch || ""} onChange={(e) => setBF("branch", e.target.value)} data-testid="input-branch" />
-                </div>
+                <div className="space-y-1.5"><Label>Bank Name</Label>
+                  <Input value={bankForm.bankName || ""} onChange={(e) => setBF("bankName", e.target.value)} placeholder="e.g. State Bank of India" data-testid="input-bank-name" /></div>
+                <div className="space-y-1.5"><Label>Account Holder Name</Label>
+                  <Input value={bankForm.accountHolderName || ""} onChange={(e) => setBF("accountHolderName", e.target.value)} placeholder="As per bank records" data-testid="input-account-holder" /></div>
+                <div className="space-y-1.5"><Label>Account Number</Label>
+                  <Input value={bankForm.accountNumber || ""} onChange={(e) => setBF("accountNumber", e.target.value)} data-testid="input-account-number" /></div>
+                <div className="space-y-1.5"><Label>IFSC Code</Label>
+                  <Input value={bankForm.ifsc || ""} onChange={(e) => setBF("ifsc", e.target.value.toUpperCase())} placeholder="e.g. SBIN0001234" data-testid="input-ifsc" /></div>
+                <div className="space-y-1.5"><Label>Branch Name</Label>
+                  <Input value={bankForm.branch || ""} onChange={(e) => setBF("branch", e.target.value)} data-testid="input-branch" /></div>
               </div>
               <div className="flex gap-2">
                 <Button size="sm" onClick={handleSaveBank} disabled={savingBank} data-testid="button-save-bank">
@@ -797,13 +724,9 @@ export default function StaffProfilePage() {
   );
 }
 
-// ─── Helper sub-components ────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
-function InfoRow({
-  icon, label, value, testId,
-}: {
-  icon?: React.ReactNode; label: string; value?: string | null; testId?: string;
-}) {
+function InfoRow({ icon, label, value, testId }: { icon?: React.ReactNode; label: string; value?: string | null; testId?: string }) {
   return (
     <div>
       <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">{icon}{label}</p>
@@ -814,11 +737,7 @@ function InfoRow({
   );
 }
 
-function BankRow({
-  label, value, testId, masked,
-}: {
-  label: string; value?: string | null; testId?: string; masked?: boolean;
-}) {
+function BankRow({ label, value, testId, masked }: { label: string; value?: string | null; testId?: string; masked?: boolean }) {
   const display = masked && value
     ? `${"•".repeat(Math.max(0, value.length - 4))}${value.slice(-4)}`
     : value;
@@ -832,11 +751,7 @@ function BankRow({
   );
 }
 
-function EmergencyRow({
-  label, name, phone, prefix,
-}: {
-  label: string; name?: string | null; phone?: string | null; prefix: string;
-}) {
+function EmergencyRow({ label, name, phone, prefix }: { label: string; name?: string | null; phone?: string | null; prefix: string }) {
   if (!name && !phone) {
     return (
       <div>
