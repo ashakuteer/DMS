@@ -39,6 +39,7 @@ import { StaffTasksModule } from "./staff-tasks/staff-tasks.module";
 import { CommunicationsModule } from "./communications/communications.module";
 import { BroadcastingModule } from "./broadcasting/broadcasting.module";
 import { TimeMachineModule } from "./time-machine/time-machine.module";
+import { StaffProfilesModule } from "./staff-profiles/staff-profiles.module";
 
 @Module({
   imports: [
@@ -83,6 +84,7 @@ import { TimeMachineModule } from "./time-machine/time-machine.module";
     CommunicationsModule,
     BroadcastingModule,
     TimeMachineModule,
+    StaffProfilesModule,
   ],
 })
 export class AppModule {}

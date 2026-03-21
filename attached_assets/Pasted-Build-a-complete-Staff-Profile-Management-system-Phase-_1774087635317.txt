@@ -1,0 +1,212 @@
+Build a complete Staff Profile Management system (Phase 1 only).
+
+Do NOT include tasks, performance, or analytics.
+
+---
+
+1. STAFF TYPES
+
+---
+
+Support 3 categories:
+
+* ADMIN
+* TELECALLER
+* HOME_STAFF
+
+---
+
+2. DATABASE (PRISMA)
+
+---
+
+Create models:
+
+Staff:
+
+* id
+
+* name
+
+* phone
+
+* email
+
+* roleType (ADMIN / TELECALLER / HOME_STAFF)
+
+* designation (Supervisor, Cook, Telecaller, etc.)
+
+* homeId (relation to Home)
+
+* status (ACTIVE / INACTIVE)
+
+* bloodGroup
+
+* emergencyContact1Name
+
+* emergencyContact1Phone
+
+* emergencyContact2Name
+
+* emergencyContact2Phone
+
+* createdAt
+
+---
+
+Home:
+
+* id
+* name (Uppal, Begumpet, etc.)
+* address
+
+---
+
+StaffDocuments:
+
+* id
+* staffId
+* type (PHOTO, AADHAR, PAN, APPOINTMENT, EXPERIENCE)
+* fileUrl
+* createdAt
+
+---
+
+3. BACKEND (NESTJS)
+
+---
+
+Create APIs:
+
+Staff:
+
+* GET /staff
+* GET /staff/:id
+* POST /staff
+* PATCH /staff/:id
+* DELETE /staff/:id
+
+Documents:
+
+* POST /staff/upload-document
+* GET /staff/:id/documents
+
+Homes:
+
+* GET /homes
+* POST /homes
+
+---
+
+4. FRONTEND (NEXT.JS)
+
+---
+
+A. Staff List Page
+
+* Display all staff
+* Filters:
+
+  * Role Type
+  * Home
+  * Designation
+
+---
+
+B. Add Staff Form
+
+Fields:
+
+* Name
+* Phone
+* Email
+* Role Type (dropdown)
+* Designation
+* Home (dropdown)
+* Blood Group
+* Emergency Contact 1 (name + phone)
+* Emergency Contact 2 (name + phone)
+
+---
+
+C. Staff Profile Page
+
+Sections:
+
+1. Basic Info
+
+* Name
+* Role Type
+* Designation
+* Home
+
+2. Medical & Emergency
+
+* Blood Group
+* Emergency Contacts
+
+3. Documents
+
+* Upload and view:
+
+  * Photo
+  * Aadhar
+  * PAN
+  * Appointment Letter
+  * Experience Certificate
+
+---
+
+5. FILE STORAGE
+
+---
+
+Use Supabase Storage for:
+
+* Staff photos
+* Documents
+
+---
+
+6. ROLE ACCESS
+
+---
+
+FOUNDER / ADMIN:
+
+* Can create, edit, delete staff
+
+STAFF:
+
+* View only (optional)
+
+---
+
+7. UI REQUIREMENTS
+
+---
+
+* Use existing theme (dark + orange)
+* Clean layout
+* Simple navigation
+
+---
+
+8. IMPORTANT
+
+---
+
+* Do NOT implement:
+
+  * Tasks
+  * Performance tracking
+  * Salary system
+
+---
+
+## GOAL:
+
+* Fully working staff profiles
+* Documents upload + view
+* Emergency data saved
+* Home-wise staff mapping ready

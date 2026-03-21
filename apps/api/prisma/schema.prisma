@@ -2081,3 +2081,65 @@ model TimeMachineEntry {
   @@index([home])
   @@map("time_machine_entries")
 }
+
+// ─── Staff Profile Management ─────────────────────────────────────────────────
+
+enum StaffRoleType {
+  ADMIN
+  TELECALLER
+  HOME_STAFF
+}
+
+enum StaffStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum StaffDocumentType {
+  PHOTO
+  AADHAR
+  PAN
+  APPOINTMENT
+  EXPERIENCE
+}
+
+model Home {
+  id      String  @id @default(uuid())
+  name    String
+  address String?
+  staff   Staff[]
+
+  @@map("homes")
+}
+
+model Staff {
+  id                     String            @id @default(uuid())
+  name                   String
+  phone                  String?
+  email                  String?
+  roleType               StaffRoleType
+  designation            String?
+  homeId                 String?
+  home                   Home?             @relation(fields: [homeId], references: [id])
+  status                 StaffStatus       @default(ACTIVE)
+  bloodGroup             String?
+  emergencyContact1Name  String?
+  emergencyContact1Phone String?
+  emergencyContact2Name  String?
+  emergencyContact2Phone String?
+  createdAt              DateTime          @default(now())
+  documents              StaffDocument[]
+
+  @@map("staff_profiles")
+}
+
+model StaffDocument {
+  id        String            @id @default(uuid())
+  staffId   String
+  staff     Staff             @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  type      StaffDocumentType
+  fileUrl   String
+  createdAt DateTime          @default(now())
+
+  @@map("staff_documents")
+}

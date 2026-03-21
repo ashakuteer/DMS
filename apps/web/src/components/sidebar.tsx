@@ -92,6 +92,7 @@ const navGroups: NavGroup[] = [
     label: "Staff",
     labelKey: "nav.group_staff",
     items: [
+      { title: "Staff Profiles", tKey: "nav.staff_profiles", href: "/dashboard/staff-profiles", icon: Users, permissionModule: "users" },
       { title: "Staff & Tasks", tKey: "nav.staff_tasks", href: "/dashboard/staff-tasks", icon: ListChecks, permissionModule: "staffTasks" },
       { title: "Staff Contacts", tKey: "nav.staff_contacts", href: "/dashboard/staff-management", icon: Phone, permissionModule: "users" },
     ],
