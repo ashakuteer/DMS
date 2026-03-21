@@ -23,6 +23,7 @@ export class TaskTemplatesService {
       where: includeInactive ? {} : { isActive: true },
       include: {
         tasks: { where: { deletedAt: null }, select: { id: true, status: true, createdAt: true } },
+        items: { orderBy: { orderIndex: 'asc' }, select: { id: true, itemText: true, orderIndex: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -38,6 +39,7 @@ export class TaskTemplatesService {
           orderBy: { createdAt: 'desc' },
           take: 20,
         },
+        items: { orderBy: { orderIndex: 'asc' } },
       },
     });
     if (!t) throw new NotFoundException('Task template not found');
@@ -84,6 +86,34 @@ export class TaskTemplatesService {
   async delete(id: string) {
     await this.findOne(id);
     return this.prisma.taskTemplate.delete({ where: { id } });
+  }
+
+  // ─── Template checklist items ─────────────────────────────────────────────
+
+  async addItem(templateId: string, itemText: string, orderIndex?: number) {
+    await this.findOne(templateId);
+    const maxOrder = await this.prisma.taskTemplateItem.findMany({
+      where: { templateId },
+      orderBy: { orderIndex: 'desc' },
+      take: 1,
+      select: { orderIndex: true },
+    });
+    const nextOrder = orderIndex ?? ((maxOrder[0]?.orderIndex ?? -1) + 1);
+    return this.prisma.taskTemplateItem.create({
+      data: { templateId, itemText, orderIndex: nextOrder },
+    });
+  }
+
+  async updateItem(itemId: string, data: { itemText?: string; orderIndex?: number }) {
+    const item = await this.prisma.taskTemplateItem.findUnique({ where: { id: itemId } });
+    if (!item) throw new NotFoundException('Item not found');
+    return this.prisma.taskTemplateItem.update({ where: { id: itemId }, data });
+  }
+
+  async deleteItem(itemId: string) {
+    const item = await this.prisma.taskTemplateItem.findUnique({ where: { id: itemId } });
+    if (!item) throw new NotFoundException('Item not found');
+    return this.prisma.taskTemplateItem.delete({ where: { id: itemId } });
   }
 
   // ─── Generate tasks from template ─────────────────────────────────────────
@@ -139,6 +169,10 @@ export class TaskTemplatesService {
       });
       if (existing) continue;
 
+      const checklist = (template as any).items?.length > 0
+        ? (template as any).items.map((item: any) => ({ id: item.id, text: item.itemText, done: false }))
+        : null;
+
       const task = await this.prisma.staffTask.create({
         data: {
           title: template.title,
@@ -152,6 +186,7 @@ export class TaskTemplatesService {
           isRecurring: true,
           recurrenceType: template.recurrenceType as any,
           templateId,
+          checklist,
         },
         select: { id: true },
       });

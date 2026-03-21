@@ -1,6 +1,6 @@
 import {
   Controller, Get, Post, Patch, Delete,
-  Param, Body, Query, UseGuards, Request,
+  Param, Body, Query, UseGuards, Request, HttpCode,
 } from '@nestjs/common';
 import { TaskTemplatesService } from './task-templates.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -75,5 +75,36 @@ export class TaskTemplatesController {
   @Roles(Role.FOUNDER, Role.ADMIN)
   delete(@Param('id') id: string) {
     return this.service.delete(id);
+  }
+
+  // ─── Template checklist items ────────────────────────────────────────────
+
+  @Post(':id/items')
+  @Roles(Role.FOUNDER, Role.ADMIN)
+  addItem(
+    @Param('id') id: string,
+    @Body() body: { itemText: string; orderIndex?: number },
+  ) {
+    return this.service.addItem(id, body.itemText, body.orderIndex);
+  }
+
+  @Patch(':id/items/:itemId')
+  @Roles(Role.FOUNDER, Role.ADMIN)
+  updateItem(
+    @Param('id') _id: string,
+    @Param('itemId') itemId: string,
+    @Body() body: { itemText?: string; orderIndex?: number },
+  ) {
+    return this.service.updateItem(itemId, body);
+  }
+
+  @Delete(':id/items/:itemId')
+  @HttpCode(204)
+  @Roles(Role.FOUNDER, Role.ADMIN)
+  deleteItem(
+    @Param('id') _id: string,
+    @Param('itemId') itemId: string,
+  ) {
+    return this.service.deleteItem(itemId);
   }
 }

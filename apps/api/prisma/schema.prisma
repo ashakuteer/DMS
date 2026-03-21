@@ -1863,9 +1863,23 @@ model TaskTemplate {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
-  tasks           StaffTask[]    @relation("TemplateTasks")
+  tasks           StaffTask[]         @relation("TemplateTasks")
+  items           TaskTemplateItem[]  @relation("TemplateItems")
 
   @@map("task_templates")
+}
+
+model TaskTemplateItem {
+  id          String       @id @default(uuid())
+  templateId  String
+  itemText    String
+  orderIndex  Int          @default(0)
+  createdAt   DateTime     @default(now())
+
+  template    TaskTemplate @relation("TemplateItems", fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@map("task_template_items")
 }
 
 model StaffTask {
