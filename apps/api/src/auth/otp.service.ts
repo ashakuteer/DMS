@@ -44,22 +44,23 @@ export class OtpService {
       data: { phone: normalizedPhone, code, expiresAt },
     });
 
-    // Send OTP via WhatsApp only
-    // from: whatsapp:+14155238886 (Twilio Sandbox)
-    // to:   whatsapp:+91XXXXXXXXXX
-    const sent = await this.whatsappService.sendWhatsApp(
-      normalizedPhone,
-      `Your login OTP is: ${code}`,
-    );
+    // Send OTP via WhatsApp approved template:
+    //   Template : otp_login
+    //   Body     : Your Asha Kuteer login OTP is {{1}}. It is valid for 5 minutes.
+    //   from     : whatsapp:+919700711700  (TWILIO_PHONE)
+    //   to       : whatsapp:+91XXXXXXXXXX
+    const sent = await this.whatsappService.sendOtpTemplate(normalizedPhone, code);
 
     if (!sent) {
-      this.logger.warn(`[OTP][FALLBACK] OTP for ${normalizedPhone}: ${code}`);
+      // Fallback already logged inside sendOtpTemplate — still return success
+      // so the user can retrieve the OTP from server logs during testing
+      this.logger.warn(`[OtpService] WhatsApp delivery failed. Check logs for OTP.`);
     }
 
     return { message: 'OTP sent successfully' };
   }
 
-  // Verification logic unchanged
+  // Verification logic — unchanged
   async verifyOtp(
     phone: string,
     code: string,

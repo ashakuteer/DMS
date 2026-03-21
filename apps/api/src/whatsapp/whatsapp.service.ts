@@ -1,25 +1,18 @@
 import { Injectable, Logger } from "@nestjs/common";
 import twilio, { Twilio } from "twilio";
 
-// Twilio WhatsApp Sandbox number — used when TWILIO_WHATSAPP_NUMBER is not set
-const TWILIO_WHATSAPP_SANDBOX = "whatsapp:+14155238886";
-
-export type MessageType = "OTP" | "WHATSAPP";
-
 @Injectable()
 export class WhatsappService {
   private readonly logger = new Logger(WhatsappService.name);
   private client: Twilio | null = null;
-  private whatsappFrom: string = "";
   private disabled = false;
 
   constructor() {
     const accountSid = (process.env.TWILIO_ACCOUNT_SID || "").trim();
     const authToken = (process.env.TWILIO_AUTH_TOKEN || "").trim();
-    const rawWhatsappNumber = (process.env.TWILIO_WHATSAPP_NUMBER || "").replace(/\s+/g, "").trim();
 
     if (!accountSid || !authToken) {
-      this.logger.warn("Twilio NOT configured — missing TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN. All messaging disabled.");
+      this.logger.warn("Twilio NOT configured — TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN missing. Messaging disabled.");
       this.disabled = true;
       return;
     }
@@ -31,18 +24,7 @@ export class WhatsappService {
     }
 
     this.client = twilio(accountSid, authToken);
-
-    // WhatsApp from: use configured number or fall back to Twilio Sandbox
-    if (rawWhatsappNumber) {
-      // Accept either plain E.164 (+14155238886) or whatsapp:+... format
-      this.whatsappFrom = rawWhatsappNumber.startsWith("whatsapp:")
-        ? rawWhatsappNumber
-        : `whatsapp:${rawWhatsappNumber}`;
-      this.logger.log(`WhatsApp from: ${this.whatsappFrom} (TWILIO_WHATSAPP_NUMBER)`);
-    } else {
-      this.whatsappFrom = TWILIO_WHATSAPP_SANDBOX;
-      this.logger.warn(`TWILIO_WHATSAPP_NUMBER not set — using Twilio Sandbox (${TWILIO_WHATSAPP_SANDBOX}). Recipient must opt-in at https://wa.me/14155238886 first.`);
-    }
+    this.logger.log("Twilio client initialized");
   }
 
   private normalizeToE164(phone: string): string | null {
@@ -56,14 +38,84 @@ export class WhatsappService {
   }
 
   /**
-   * Send a WhatsApp message.
-   * from: whatsapp:<number>  to: whatsapp:<E.164>
+   * Send OTP via WhatsApp using approved template.
+   *
+   * Template name : otp_login
+   * Template body : Your Asha Kuteer login OTP is {{1}}. It is valid for 5 minutes.
+   *
+   * from : whatsapp:+919700711700  (TWILIO_PHONE with whatsapp: prefix)
+   * to   : whatsapp:+91XXXXXXXXXX
+   */
+  async sendOtpTemplate(to: string, otp: string): Promise<boolean> {
+    const rawPhone = (process.env.TWILIO_PHONE || "").trim();
+    const fromPhone = rawPhone.startsWith("+")
+      ? `whatsapp:${rawPhone}`
+      : rawPhone.startsWith("whatsapp:")
+        ? rawPhone
+        : null;
+
+    if (!this.client || this.disabled) {
+      this.logger.warn(`[OTP-WA][NO-CLIENT] OTP for ${to}: ${otp}`);
+      return false;
+    }
+
+    if (!fromPhone) {
+      this.logger.warn(`[OTP-WA] TWILIO_PHONE not set or invalid — cannot send. OTP for ${to}: ${otp}`);
+      return false;
+    }
+
+    const e164 = this.normalizeToE164(to);
+    if (!e164) {
+      this.logger.warn(`[OTP-WA] Invalid phone number: ${to}. OTP: ${otp}`);
+      return false;
+    }
+
+    // Template body with {{1}} replaced by OTP
+    const body = `Your Asha Kuteer login OTP is ${otp}. It is valid for 5 minutes.`;
+
+    try {
+      const params: Record<string, any> = {
+        body,
+        from: fromPhone,              // whatsapp:+919700711700
+        to: `whatsapp:${e164}`,       // whatsapp:+91XXXXXXXXXX
+      };
+
+      // If a Content API template SID is configured, prefer that over body text
+      const contentSid = (process.env.TWILIO_OTP_CONTENT_SID || "").trim();
+      if (contentSid.startsWith("HX")) {
+        delete params.body;
+        params.contentSid = contentSid;
+        params.contentVariables = JSON.stringify({ "1": otp });
+        this.logger.log(`[OTP-WA] Using Content SID: ${contentSid.substring(0, 8)}...`);
+      }
+
+      const result = await this.client.messages.create(params as any);
+      this.logger.log(`[OTP-WA] Sent to ${e164} | SID: ${result.sid}`);
+      return true;
+    } catch (error: any) {
+      this.logger.error(`[OTP-WA] FAILED to ${e164} | Code: ${error?.code} | ${error?.message}`);
+      this.logger.warn(`[OTP-WA][FALLBACK] OTP for ${e164}: ${otp}`);
+      return false;
+    }
+  }
+
+  /**
+   * Send a freeform WhatsApp message (for non-OTP use cases).
+   * Only works within the 24-hour customer service window.
+   *
+   * from : whatsapp: + TWILIO_WHATSAPP_NUMBER (or sandbox)
+   * to   : whatsapp:+91XXXXXXXXXX
    */
   async sendWhatsApp(to: string, message: string): Promise<boolean> {
     if (!this.client || this.disabled) {
-      this.logger.warn(`[WhatsApp] Client not available — logging message for ${to}: ${message}`);
+      this.logger.warn(`[WhatsApp] Client not available — message for ${to}: ${message}`);
       return false;
     }
+
+    const rawWa = (process.env.TWILIO_WHATSAPP_NUMBER || "").replace(/\s+/g, "").trim();
+    const waFrom = rawWa
+      ? (rawWa.startsWith("whatsapp:") ? rawWa : `whatsapp:${rawWa}`)
+      : "whatsapp:+14155238886"; // Twilio Sandbox fallback
 
     const e164 = this.normalizeToE164(to);
     if (!e164) {
@@ -74,49 +126,13 @@ export class WhatsappService {
     try {
       const response = await this.client.messages.create({
         body: message,
-        from: this.whatsappFrom,        // whatsapp:+14155238886
-        to: `whatsapp:${e164}`,         // whatsapp:+91XXXXXXXXXX
+        from: waFrom,
+        to: `whatsapp:${e164}`,
       });
       this.logger.log(`[WhatsApp] Sent to ${e164} | SID: ${response.sid}`);
       return true;
     } catch (error: any) {
       this.logger.error(`[WhatsApp] FAILED to ${e164} | Code: ${error?.code} | ${error?.message}`);
-      return false;
-    }
-  }
-
-  /**
-   * Send an SMS message (for OTP and text-only use cases).
-   * from: TWILIO_PHONE (plain E.164)   to: plain E.164
-   */
-  async sendSms(to: string, message: string): Promise<boolean> {
-    if (!this.client || this.disabled) {
-      this.logger.warn(`[SMS] Client not available — logging message for ${to}: ${message}`);
-      return false;
-    }
-
-    const smsFrom = (process.env.TWILIO_PHONE || "").trim();
-    if (!smsFrom) {
-      this.logger.warn(`[SMS] TWILIO_PHONE not set — cannot send SMS to ${to}`);
-      return false;
-    }
-
-    const e164 = this.normalizeToE164(to);
-    if (!e164) {
-      this.logger.warn(`[SMS] Invalid phone number: ${to}`);
-      return false;
-    }
-
-    try {
-      const response = await this.client.messages.create({
-        body: message,
-        from: smsFrom,   // plain E.164 e.g. +1415XXXXXXX
-        to: e164,        // plain E.164 e.g. +91XXXXXXXXXX
-      });
-      this.logger.log(`[SMS] Sent to ${e164} | SID: ${response.sid}`);
-      return true;
-    } catch (error: any) {
-      this.logger.error(`[SMS] FAILED to ${e164} | Code: ${error?.code} | ${error?.message}`);
       return false;
     }
   }
