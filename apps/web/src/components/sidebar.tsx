@@ -29,16 +29,17 @@ import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-const SIDEBAR_BG = "#2F3E46";
-const TEXT_DEFAULT = "#CBD5E1";
+const SIDEBAR_BG = "#344E52";
+const TEXT_DEFAULT = "#A7C7C7";
+const TEXT_LABEL  = "#CFE8E8";
 const TEXT_ACTIVE = "#ffffff";
 const TEAL = "#5FA8A8";
-const ICON_COLOR = "#A7F3D0";
-const ACTIVE_BG = "#5FA8A8";
-const ACTIVE_BORDER = `4px solid ${TEAL}`;
-const HOVER_BG = "rgba(255,255,255,0.05)";
+const ICON_COLOR = "#9FE3D8";
+const ACTIVE_BG = "linear-gradient(90deg, #5FA8A8, #7FAFD4)";
+const ACTIVE_BORDER = "none";
+const HOVER_BG = "rgba(255,255,255,0.06)";
 const BORDER_COLOR = "rgba(255,255,255,0.10)";
-const GROUP_LABEL_COLOR = "rgba(203,213,225,0.45)";
+const GROUP_LABEL_COLOR = "#7FAFD4";
 
 interface NavItem {
   title: string;
@@ -205,7 +206,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             <img src="/brand/logo.jpg" alt="Asha Kuteer" className="h-7 w-7 rounded-lg object-cover flex-shrink-0 shadow-sm" data-testid="img-sidebar-logo" />
             <div className="min-w-0">
               <span className="font-bold text-sm truncate block" style={{ color: TEXT_ACTIVE }}>Asha Kuteer</span>
-              <span className="text-xs truncate block" style={{ color: TEXT_DEFAULT }}>Foundation</span>
+              <span className="text-xs truncate block" style={{ color: TEXT_LABEL }}>Foundation</span>
             </div>
           </div>
         )}
@@ -446,7 +447,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               {!collapsed && (
                 <div className="flex flex-col items-start text-left min-w-0 flex-1">
                   <span className="text-xs font-semibold truncate max-w-[120px]" style={{ color: TEXT_ACTIVE }}>{user?.name || "User"}</span>
-                  <span className="text-xs truncate max-w-[120px]" style={{ color: TEXT_DEFAULT }}>{user?.role || "Role"}</span>
+                  <span className="text-xs truncate max-w-[120px]" style={{ color: TEXT_LABEL }}>{user?.role || "Role"}</span>
                 </div>
               )}
             </button>
