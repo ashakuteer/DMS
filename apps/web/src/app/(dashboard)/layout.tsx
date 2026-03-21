@@ -33,7 +33,7 @@ export default function DashboardLayout({
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
+          <div className="h-8 w-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: "#5FA8A8", borderTopColor: "transparent" }} />
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -43,10 +43,10 @@ export default function DashboardLayout({
   return (
     <PermissionProvider>
       <TooltipProvider>
-        <div className="flex h-screen bg-background">
+        <div className="flex h-screen" style={{ background: "#F5F7FA" }}>
           <Sidebar collapsed={collapsed} setCollapsed={setCollapsed} />
           <div className="flex-1 flex flex-col overflow-hidden">
-            <header className="shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-30 h-14">
+            <header className="shrink-0 border-b sticky top-0 z-30 h-14" style={{ background: "#ffffff", borderColor: "#E2E8F0" }}>
               <div className="flex items-center gap-4 px-4 h-full sm:px-6">
                 <div className="flex-1 max-w-md">
                   <GlobalSearchTrigger />
