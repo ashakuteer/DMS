@@ -25,6 +25,12 @@ type Step = "phone" | "otp" | "admin";
 
 const RESEND_SECONDS = 30;
 
+const TEAL_GRADIENT = "linear-gradient(135deg, #5FA8A8, #7FAFD4)";
+const TEAL = "#5FA8A8";
+const PRIMARY_TEXT = "#0F172A";
+const SECONDARY_TEXT = "#64748B";
+const RIGHT_BG = "#F5F7FA";
+
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -36,7 +42,6 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
 
-  // Admin fallback
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -50,14 +55,12 @@ export default function LoginPage() {
     }
   }, [toast]);
 
-  // Countdown timer for resend
   useEffect(() => {
     if (countdown <= 0) return;
     const timer = setInterval(() => setCountdown((c) => c - 1), 1000);
     return () => clearInterval(timer);
   }, [countdown]);
 
-  // ── Step 1: Send OTP ─────────────────────────────────────────
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phone.trim()) return;
@@ -75,7 +78,6 @@ export default function LoginPage() {
     }
   };
 
-  // ── Step 2: Verify OTP ───────────────────────────────────────
   const handleVerifyOtp = async (e?: React.FormEvent) => {
     e?.preventDefault();
     const code = otp.join("");
@@ -97,7 +99,6 @@ export default function LoginPage() {
     }
   };
 
-  // ── Resend OTP ───────────────────────────────────────────────
   const handleResend = async () => {
     if (countdown > 0) return;
     setIsLoading(true);
@@ -114,16 +115,12 @@ export default function LoginPage() {
     }
   };
 
-  // ── OTP digit input handling ─────────────────────────────────
   const handleOtpChange = (index: number, value: string) => {
     const digit = value.replace(/\D/g, "").slice(-1);
     const next = [...otp];
     next[index] = digit;
     setOtp(next);
-    if (digit && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-    // Auto-submit when all 6 digits entered
+    if (digit && index < 5) otpRefs.current[index + 1]?.focus();
     if (digit && index === 5 && next.every(Boolean)) {
       setTimeout(() => handleVerifyOtp(), 50);
     }
@@ -143,12 +140,9 @@ export default function LoginPage() {
     setOtp(next);
     const focusIdx = Math.min(pasted.length, 5);
     otpRefs.current[focusIdx]?.focus();
-    if (pasted.length === 6) {
-      setTimeout(() => handleVerifyOtp(), 50);
-    }
+    if (pasted.length === 6) setTimeout(() => handleVerifyOtp(), 50);
   };
 
-  // ── Admin email/password fallback ────────────────────────────
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -175,56 +169,63 @@ export default function LoginPage() {
       {/* ── Left panel ── */}
       <div
         className="hidden lg:flex lg:w-1/2 relative flex-col justify-between p-12 overflow-hidden"
-        style={{ background: "linear-gradient(135deg, #0f2847 0%, #1a4480 45%, #1d4ed8 100%)" }}
+        style={{ background: TEAL_GRADIENT }}
       >
+        {/* Decorative blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-white opacity-[0.03]" />
-          <div className="absolute top-1/2 -translate-y-1/2 left-1/3 w-[500px] h-[500px] rounded-full bg-blue-400 opacity-[0.04]" />
-          <div className="absolute -bottom-16 right-0 w-72 h-72 rounded-full bg-white opacity-[0.03] translate-x-1/4 translate-y-1/4" />
-          <div className="absolute top-8 right-24 w-2 h-2 rounded-full bg-orange-400 opacity-40" />
-          <div className="absolute bottom-12 left-20 w-1.5 h-1.5 rounded-full bg-orange-300 opacity-30" />
+          <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-white opacity-[0.06]" />
+          <div className="absolute top-1/2 -translate-y-1/2 left-1/3 w-[500px] h-[500px] rounded-full bg-white opacity-[0.04]" />
+          <div className="absolute -bottom-16 right-0 w-72 h-72 rounded-full bg-white opacity-[0.05] translate-x-1/4 translate-y-1/4" />
+          <div className="absolute top-8 right-24 w-2 h-2 rounded-full bg-white opacity-30" />
+          <div className="absolute bottom-12 left-20 w-1.5 h-1.5 rounded-full bg-white opacity-25" />
         </div>
 
+        {/* Logo */}
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
             <img src="/brand/logo.jpg" alt="Asha Kuteer" className="h-12 w-12 rounded-xl object-cover shadow-lg" />
             <div>
               <h2 className="text-white font-bold text-xl leading-tight">Asha Kuteer</h2>
-              <p className="text-blue-200 text-sm">Foundation</p>
+              <p className="text-white/70 text-sm">Foundation</p>
             </div>
           </div>
         </div>
 
+        {/* Hero copy */}
         <div className="relative z-10 space-y-6">
           <div>
             <h1 className="text-4xl font-bold text-white leading-tight">
               Empowering Compassion Through Smart Donor Management
             </h1>
-            <p className="text-blue-100 mt-4 text-lg leading-relaxed">
+            <p className="text-white/80 mt-4 text-lg leading-relaxed">
               Manage donors, campaigns, and impact — all in one place.
             </p>
           </div>
           <div className="space-y-3">
             {features.map(({ icon: Icon, key }) => (
               <div key={key} className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/15 flex items-center justify-center">
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
                   <Icon className="h-4 w-4 text-white" />
                 </div>
-                <p className="text-blue-50 text-sm">{t(key)}</p>
+                <p className="text-white/90 text-sm">{t(key)}</p>
               </div>
             ))}
           </div>
         </div>
 
+        {/* Footer */}
         <div className="relative z-10">
-          <p className="text-blue-300 text-xs">
+          <p className="text-white/50 text-xs">
             © {new Date().getFullYear()} {t("login.org_name")}. All rights reserved.
           </p>
         </div>
       </div>
 
       {/* ── Right panel ── */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gray-50 dark:bg-gray-950">
+      <div
+        className="flex-1 flex flex-col items-center justify-center p-8"
+        style={{ background: RIGHT_BG }}
+      >
         <div className="w-full max-w-sm">
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
@@ -234,31 +235,43 @@ export default function LoginPage() {
               className="mx-auto h-16 w-16 rounded-xl object-cover shadow-md mb-3"
               data-testid="img-login-logo"
             />
-            <h1 className="text-2xl font-bold text-foreground">Asha Kuteer</h1>
-            <p className="text-muted-foreground text-sm mt-1">{t("login.subtitle")}</p>
+            <h1 className="text-2xl font-bold" style={{ color: PRIMARY_TEXT }}>Asha Kuteer</h1>
+            <p className="text-sm mt-1" style={{ color: SECONDARY_TEXT }}>{t("login.subtitle")}</p>
           </div>
 
-          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8">
-
+          {/* Card */}
+          <div
+            className="bg-white"
+            style={{
+              borderRadius: 16,
+              boxShadow: "0 4px 24px rgba(0,0,0,0.08)",
+              padding: 32,
+            }}
+          >
             {/* ── Phone Step ── */}
             {step === "phone" && (
               <>
-                <div className="mb-8">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                      <Phone className="h-4 w-4 text-orange-500" />
+                <div className="mb-7">
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <div
+                      className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                      style={{ background: "rgba(95,168,168,0.12)" }}
+                    >
+                      <Phone className="h-4 w-4" style={{ color: TEAL }} />
                     </div>
-                    <h2 className="text-2xl font-bold text-foreground">Sign In</h2>
+                    <h2 className="text-2xl font-bold" style={{ color: PRIMARY_TEXT }}>Sign In</h2>
                   </div>
-                  <p className="text-muted-foreground text-sm">
+                  <p className="text-sm" style={{ color: SECONDARY_TEXT }}>
                     Enter your registered mobile number to receive a one-time password.
                   </p>
                 </div>
 
                 <form onSubmit={handleSendOtp} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-sm font-medium">Mobile Number</Label>
-                    <Input
+                  <div className="space-y-1.5">
+                    <Label htmlFor="phone" className="text-sm font-medium" style={{ color: PRIMARY_TEXT }}>
+                      Mobile Number
+                    </Label>
+                    <input
                       id="phone"
                       type="tel"
                       placeholder="+91 98765 43210"
@@ -266,16 +279,24 @@ export default function LoginPage() {
                       onChange={(e) => setPhone(e.target.value)}
                       required
                       disabled={isLoading}
-                      className="h-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-orange-500"
+                      className="w-full h-11 px-3 text-sm rounded-xl border outline-none transition-all disabled:opacity-50"
+                      style={{
+                        borderColor: "#E2E8F0",
+                        color: PRIMARY_TEXT,
+                        background: "#fff",
+                      }}
+                      onFocus={e => { e.currentTarget.style.borderColor = TEAL; e.currentTarget.style.boxShadow = `0 0 0 3px rgba(95,168,168,0.15)`; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = "#E2E8F0"; e.currentTarget.style.boxShadow = "none"; }}
                       data-testid="input-phone"
                     />
-                    <p className="text-xs text-muted-foreground">Include country code, e.g. +91 for India</p>
+                    <p className="text-xs" style={{ color: SECONDARY_TEXT }}>Include country code, e.g. +91 for India</p>
                   </div>
 
-                  <Button
+                  <button
                     type="submit"
-                    className="w-full h-11 rounded-xl text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/30 transition-all"
                     disabled={isLoading}
+                    className="w-full h-11 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-60 flex items-center justify-center"
+                    style={{ background: TEAL_GRADIENT }}
                     data-testid="button-send-otp"
                   >
                     {isLoading ? (
@@ -283,14 +304,17 @@ export default function LoginPage() {
                     ) : (
                       "Send OTP"
                     )}
-                  </Button>
+                  </button>
                 </form>
 
-                <div className="mt-6 pt-5 border-t border-gray-100 dark:border-gray-800 text-center">
+                <div className="mt-6 pt-5 text-center" style={{ borderTop: "1px solid #F1F5F9" }}>
                   <button
                     type="button"
                     onClick={() => setStep("admin")}
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-xs transition-colors"
+                    style={{ color: SECONDARY_TEXT }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = PRIMARY_TEXT; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = SECONDARY_TEXT; }}
                     data-testid="link-admin-login"
                   >
                     Admin login (email & password)
@@ -302,26 +326,29 @@ export default function LoginPage() {
             {/* ── OTP Step ── */}
             {step === "otp" && (
               <>
-                <div className="mb-8">
+                <div className="mb-7">
                   <button
                     type="button"
                     onClick={() => { setStep("phone"); setOtp(["", "", "", "", "", ""]); }}
-                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
+                    className="flex items-center gap-1 text-sm mb-4 transition-colors"
+                    style={{ color: SECONDARY_TEXT }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = PRIMARY_TEXT; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = SECONDARY_TEXT; }}
                     data-testid="button-back-to-phone"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Change number
                   </button>
-                  <h2 className="text-2xl font-bold text-foreground">Enter OTP</h2>
-                  <p className="text-muted-foreground text-sm mt-1">
+                  <h2 className="text-2xl font-bold" style={{ color: PRIMARY_TEXT }}>Enter OTP</h2>
+                  <p className="text-sm mt-1" style={{ color: SECONDARY_TEXT }}>
                     We sent a 6-digit code to{" "}
-                    <span className="font-semibold text-foreground">{phone}</span>
+                    <span className="font-semibold" style={{ color: PRIMARY_TEXT }}>{phone}</span>
                   </p>
                 </div>
 
                 <form onSubmit={handleVerifyOtp} className="space-y-6">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium">6-digit OTP</Label>
+                    <Label className="text-sm font-medium" style={{ color: PRIMARY_TEXT }}>6-digit OTP</Label>
                     <div className="flex gap-2 justify-between" onPaste={handleOtpPaste}>
                       {otp.map((digit, i) => (
                         <input
@@ -334,17 +361,25 @@ export default function LoginPage() {
                           onChange={(e) => handleOtpChange(i, e.target.value)}
                           onKeyDown={(e) => handleOtpKeyDown(i, e)}
                           disabled={isLoading}
-                          className="w-11 h-13 text-center text-xl font-bold border-2 rounded-xl border-gray-200 dark:border-gray-700 bg-transparent focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all disabled:opacity-50"
+                          className="w-11 h-12 text-center text-xl font-bold rounded-xl border-2 outline-none transition-all disabled:opacity-50"
+                          style={{
+                            borderColor: digit ? TEAL : "#E2E8F0",
+                            color: PRIMARY_TEXT,
+                            background: digit ? "rgba(95,168,168,0.06)" : "#fff",
+                          }}
+                          onFocus={e => { e.currentTarget.style.borderColor = TEAL; e.currentTarget.style.boxShadow = `0 0 0 3px rgba(95,168,168,0.15)`; }}
+                          onBlur={e => { e.currentTarget.style.boxShadow = "none"; if (!digit) e.currentTarget.style.borderColor = "#E2E8F0"; }}
                           data-testid={`input-otp-${i}`}
                         />
                       ))}
                     </div>
                   </div>
 
-                  <Button
+                  <button
                     type="submit"
-                    className="w-full h-11 rounded-xl text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/30 transition-all"
                     disabled={isLoading || otp.join("").length < 6}
+                    className="w-full h-11 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-60 flex items-center justify-center"
+                    style={{ background: TEAL_GRADIENT }}
                     data-testid="button-verify-otp"
                   >
                     {isLoading ? (
@@ -352,20 +387,23 @@ export default function LoginPage() {
                     ) : (
                       "Verify & Sign In"
                     )}
-                  </Button>
+                  </button>
 
                   <div className="text-center">
                     {countdown > 0 ? (
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm" style={{ color: SECONDARY_TEXT }}>
                         Resend OTP in{" "}
-                        <span className="font-semibold text-foreground tabular-nums">{countdown}s</span>
+                        <span className="font-semibold tabular-nums" style={{ color: PRIMARY_TEXT }}>{countdown}s</span>
                       </p>
                     ) : (
                       <button
                         type="button"
                         onClick={handleResend}
                         disabled={isLoading}
-                        className="flex items-center gap-1.5 text-sm text-orange-500 hover:text-orange-600 font-medium mx-auto transition-colors disabled:opacity-50"
+                        className="flex items-center gap-1.5 text-sm font-medium mx-auto transition-colors disabled:opacity-50"
+                        style={{ color: TEAL }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
                         data-testid="button-resend-otp"
                       >
                         <RefreshCw className="h-3.5 w-3.5" />
@@ -377,29 +415,34 @@ export default function LoginPage() {
               </>
             )}
 
-            {/* ── Admin Email/Password Fallback ── */}
+            {/* ── Admin Email/Password ── */}
             {step === "admin" && (
               <>
-                <div className="mb-8">
+                <div className="mb-7">
                   <button
                     type="button"
                     onClick={() => setStep("phone")}
-                    className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors"
+                    className="flex items-center gap-1 text-sm mb-4 transition-colors"
+                    style={{ color: SECONDARY_TEXT }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = PRIMARY_TEXT; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = SECONDARY_TEXT; }}
                     data-testid="button-back-to-otp"
                   >
                     <ChevronLeft className="h-4 w-4" />
                     Back to OTP login
                   </button>
-                  <h2 className="text-2xl font-bold text-foreground">Admin Login</h2>
-                  <p className="text-muted-foreground text-sm mt-1">
+                  <h2 className="text-2xl font-bold" style={{ color: PRIMARY_TEXT }}>Admin Login</h2>
+                  <p className="text-sm mt-1" style={{ color: SECONDARY_TEXT }}>
                     Sign in with your email and password.
                   </p>
                 </div>
 
                 <form onSubmit={handleAdminLogin} className="space-y-5">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="text-sm font-medium">{t("login.email_label")}</Label>
-                    <Input
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email" className="text-sm font-medium" style={{ color: PRIMARY_TEXT }}>
+                      {t("login.email_label")}
+                    </Label>
+                    <input
                       id="email"
                       type="email"
                       placeholder={t("login.email_placeholder")}
@@ -407,15 +450,20 @@ export default function LoginPage() {
                       onChange={(e) => setAdminEmail(e.target.value)}
                       required
                       disabled={isLoading}
-                      className="h-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-orange-500"
+                      className="w-full h-11 px-3 text-sm rounded-xl border outline-none transition-all disabled:opacity-50"
+                      style={{ borderColor: "#E2E8F0", color: PRIMARY_TEXT, background: "#fff" }}
+                      onFocus={e => { e.currentTarget.style.borderColor = TEAL; e.currentTarget.style.boxShadow = `0 0 0 3px rgba(95,168,168,0.15)`; }}
+                      onBlur={e => { e.currentTarget.style.borderColor = "#E2E8F0"; e.currentTarget.style.boxShadow = "none"; }}
                       data-testid="input-email"
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium">{t("login.password_label")}</Label>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="password" className="text-sm font-medium" style={{ color: PRIMARY_TEXT }}>
+                      {t("login.password_label")}
+                    </Label>
                     <div className="relative">
-                      <Input
+                      <input
                         id="password"
                         type={showPassword ? "text" : "password"}
                         placeholder={t("login.password_placeholder")}
@@ -423,12 +471,18 @@ export default function LoginPage() {
                         onChange={(e) => setAdminPassword(e.target.value)}
                         required
                         disabled={isLoading}
-                        className="h-11 pr-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-orange-500"
+                        className="w-full h-11 pl-3 pr-11 text-sm rounded-xl border outline-none transition-all disabled:opacity-50"
+                        style={{ borderColor: "#E2E8F0", color: PRIMARY_TEXT, background: "#fff" }}
+                        onFocus={e => { e.currentTarget.style.borderColor = TEAL; e.currentTarget.style.boxShadow = `0 0 0 3px rgba(95,168,168,0.15)`; }}
+                        onBlur={e => { e.currentTarget.style.borderColor = "#E2E8F0"; e.currentTarget.style.boxShadow = "none"; }}
                         data-testid="input-password"
                       />
                       <button
                         type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
+                        style={{ color: "#94A3B8" }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = SECONDARY_TEXT; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "#94A3B8"; }}
                         onClick={() => setShowPassword(!showPassword)}
                         data-testid="button-toggle-password"
                       >
@@ -437,10 +491,11 @@ export default function LoginPage() {
                     </div>
                   </div>
 
-                  <Button
+                  <button
                     type="submit"
-                    className="w-full h-11 rounded-xl text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/30 transition-all"
                     disabled={isLoading}
+                    className="w-full h-11 rounded-xl text-sm font-semibold text-white transition-opacity disabled:opacity-60 flex items-center justify-center"
+                    style={{ background: TEAL_GRADIENT }}
                     data-testid="button-login"
                   >
                     {isLoading ? (
@@ -448,14 +503,14 @@ export default function LoginPage() {
                     ) : (
                       t("login.sign_in")
                     )}
-                  </Button>
+                  </button>
                 </form>
               </>
             )}
           </div>
 
           <div className="hidden lg:block mt-6 text-center">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs" style={{ color: SECONDARY_TEXT }}>
               {t("login.org_name")} · {t("login.subtitle")}
             </p>
           </div>
