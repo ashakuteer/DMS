@@ -40,8 +40,8 @@ interface ImpactData { summary: { totalBeneficiaries: number; totalDonors: numbe
 interface RetentionData { summary: { totalDonors: number; repeatDonorCount: number; oneTimeDonorCount: number; lapsedDonorCount: number; overallRetentionPct: number; activeLast6Months: number }; }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const CHART_COLORS = ["#f97316", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b"];
-const HOME_COLORS: Record<string, string> = { ORPHAN_GIRLS: "#f97316", BLIND_BOYS: "#3b82f6", OLD_AGE: "#10b981" };
+const CHART_COLORS = ["#5FA8A8", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899", "#7FAFD4"];
+const HOME_COLORS: Record<string, string> = { ORPHAN_GIRLS: "#5FA8A8", BLIND_BOYS: "#3b82f6", OLD_AGE: "#10b981" };
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
@@ -92,13 +92,13 @@ function KpiCard({ title, value, icon: Icon, color, highlight }: {
   title: string; value: string; icon: React.ElementType; color: string; highlight?: boolean;
 }) {
   return (
-    <Card className={highlight ? "border-0 shadow-md bg-gradient-to-br from-orange-500 to-orange-600" : "border-0 shadow-sm"}>
+    <Card className={highlight ? "border-0 shadow-md" : "border-0 shadow-sm"} style={highlight ? { background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)" } : undefined}>
       <CardContent className="p-5">
         <div className={`inline-flex p-2 rounded-xl mb-3 ${highlight ? "bg-white/20" : "bg-muted/60"}`}>
           <Icon className={`h-4 w-4 ${highlight ? "text-white" : color}`} />
         </div>
         <p className={`text-2xl font-bold leading-tight ${highlight ? "text-white" : "text-foreground"}`}>{value}</p>
-        <p className={`text-xs mt-1 font-medium ${highlight ? "text-orange-100" : "text-muted-foreground"}`}>{title}</p>
+        <p className={`text-xs mt-1 font-medium ${highlight ? "text-white/80" : "text-muted-foreground"}`}>{title}</p>
       </CardContent>
     </Card>
   );
@@ -107,7 +107,7 @@ function KpiCard({ title, value, icon: Icon, color, highlight }: {
 function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitle?: string; icon?: React.ElementType }) {
   return (
     <div className="flex items-start gap-3 mb-5">
-      {Icon && <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/30 mt-0.5 flex-shrink-0"><Icon className="h-4 w-4 text-orange-500" /></div>}
+      {Icon && <div className="p-2 rounded-xl mt-0.5 flex-shrink-0" style={{ background: "rgba(95,168,168,0.12)" }}><Icon className="h-4 w-4" style={{ color: "#5FA8A8" }} /></div>}
       <div>
         <h2 className="text-lg font-bold text-foreground">{title}</h2>
         {subtitle && <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>}
@@ -151,13 +151,13 @@ function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; load
 
   return (
     <Card className="border-0 shadow-md overflow-hidden" data-testid="monthly-target-card">
-      <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to right, rgba(95,168,168,0.05), transparent)" }} />
       <CardContent className="p-6">
         <div className="flex items-start justify-between gap-4 mb-5">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <div className="p-1.5 rounded-lg bg-orange-100 dark:bg-orange-950/40">
-                <Target className="h-4 w-4 text-orange-600" />
+              <div className="p-1.5 rounded-lg" style={{ background: "rgba(95,168,168,0.12)" }}>
+                <Target className="h-4 w-4" style={{ color: "#5FA8A8" }} />
               </div>
               <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t("home.monthly_target_label")}</span>
             </div>
@@ -168,7 +168,7 @@ function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; load
               <CheckCircle2 className="h-3 w-3" /> {t("home.target_achieved")}
             </Badge>
           ) : (
-            <Badge variant="outline" className="text-orange-600 border-orange-300 bg-orange-50 flex-shrink-0">
+            <Badge variant="outline" className="flex-shrink-0" style={{ color: "#5FA8A8", borderColor: "#5FA8A8", background: "rgba(95,168,168,0.08)" }}>
               {progressPct}% of goal
             </Badge>
           )}
@@ -177,7 +177,7 @@ function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; load
         {/* Big numbers row */}
         <div className="grid grid-cols-3 gap-4 mb-5">
           <div>
-            <p className="text-2xl font-black text-orange-600">{fmt(raised)}</p>
+            <p className="text-2xl font-black" style={{ color: "#5FA8A8" }}>{fmt(raised)}</p>
             <p className="text-xs text-muted-foreground mt-0.5">Raised this month</p>
           </div>
           <div>
@@ -198,8 +198,8 @@ function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; load
           </div>
           <div className="h-3 rounded-full bg-muted overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all duration-700 ${achieved ? "bg-emerald-500" : "bg-gradient-to-r from-orange-400 to-orange-600"}`}
-              style={{ width: `${progressPct}%` }}
+              className={`h-full rounded-full transition-all duration-700 ${achieved ? "bg-emerald-500" : ""}`}
+              style={!achieved ? { width: `${progressPct}%`, background: "linear-gradient(to right, #5FA8A8, #7FAFD4)" } : { width: `${progressPct}%` }}
             />
           </div>
         </div>
@@ -211,7 +211,7 @@ function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; load
             <span className="text-xs text-muted-foreground"><strong className="text-foreground">{count}</strong> of <strong className="text-foreground">{totalMonthlyDonors}</strong> monthly donors paid</span>
           </div>
           {pendingDonors > 0 && (
-            <Link href="/dashboard/donors?frequency=MONTHLY" className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 font-medium ml-auto">
+            <Link href="/dashboard/donors?frequency=MONTHLY" className="flex items-center gap-1 text-xs font-medium ml-auto" style={{ color: "#5FA8A8" }}>
               {pendingDonors} still pending <ChevronRight className="h-3 w-3" />
             </Link>
           )}
@@ -396,7 +396,7 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-4">
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-                <KpiCard title={t("home.total_fy_donations")} value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} color="text-orange-500" highlight />
+                <KpiCard title={t("home.total_fy_donations")} value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} color="text-teal-500" highlight />
                 <KpiCard title={t("home.donations_this_month")} value={stats ? fmt(stats.donationsThisMonth) : "—"} icon={TrendingUp} color="text-blue-600" />
                 <KpiCard title={t("home.active_donors")} value={totalDonors > 0 ? totalDonors.toString() : (stats?.activeDonors?.toString() ?? "—")} icon={Users} color="text-violet-600" />
                 <KpiCard title={t("home.monthly_donors")} value={monthlyTarget ? monthlyTarget.totalMonthlyDonors.toString() : "—"} icon={Repeat} color="text-teal-600" />
@@ -433,7 +433,7 @@ export default function DashboardPage() {
                             <XAxis dataKey="month" tick={{ fontSize: 10 }} className="text-muted-foreground" />
                             <YAxis tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 10 }} width={45} />
                             <Tooltip formatter={(v: number) => [fmt(v), "Amount"]} contentStyle={{ borderRadius: "10px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", fontSize: "12px" }} />
-                            <Line type="monotone" dataKey="amount" stroke="#f97316" strokeWidth={2.5} dot={{ fill: "#f97316", strokeWidth: 0, r: 3 }} activeDot={{ r: 5, fill: "#ea580c" }} />
+                            <Line type="monotone" dataKey="amount" stroke="#5FA8A8" strokeWidth={2.5} dot={{ fill: "#5FA8A8", strokeWidth: 0, r: 3 }} activeDot={{ r: 5, fill: "#7FAFD4" }} />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
@@ -621,7 +621,7 @@ export default function DashboardPage() {
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-xl bg-orange-50 dark:bg-orange-950/30"><Bell className="h-4 w-4 text-orange-500" /></div>
+                          <div className="p-2 rounded-xl" style={{ background: "rgba(95,168,168,0.12)" }}><Bell className="h-4 w-4" style={{ color: "#5FA8A8" }} /></div>
                           <div>
                             <p className="text-sm font-semibold">{name}</p>
                             <p className="text-xs text-muted-foreground">{r.donor.donorCode} · {r.title}</p>
@@ -697,8 +697,8 @@ export default function DashboardPage() {
                         <Link key={d.id} href={`/dashboard/donors/${d.donorId}`}>
                           <div className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer group" data-testid={`donation-row-${d.id}`}>
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-950/40 flex items-center justify-center flex-shrink-0">
-                                <IndianRupee className="h-3.5 w-3.5 text-orange-600" />
+                              <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "rgba(95,168,168,0.12)" }}>
+                                <IndianRupee className="h-3.5 w-3.5" style={{ color: "#5FA8A8" }} />
                               </div>
                               <div className="min-w-0">
                                 <p className="text-sm font-medium truncate">{d.donorName}</p>
@@ -713,7 +713,7 @@ export default function DashboardPage() {
                         </Link>
                       ))}
                       <Link href="/dashboard/donations">
-                        <div className="flex items-center justify-center gap-1.5 py-2.5 text-xs text-orange-600 hover:text-orange-700 cursor-pointer font-medium rounded-lg hover:bg-orange-50/50 transition-colors">
+                        <div className="flex items-center justify-center gap-1.5 py-2.5 text-xs cursor-pointer font-medium rounded-lg transition-colors hover:bg-muted/50" style={{ color: "#5FA8A8" }}>
                           View all donations <ChevronRight className="h-3.5 w-3.5" />
                         </div>
                       </Link>
@@ -731,17 +731,17 @@ export default function DashboardPage() {
                       {topDonors.slice(0, 7).map((d, idx) => (
                         <Link key={d.donorId} href={`/dashboard/donors/${d.donorId}`}>
                           <div className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer group" data-testid={`top-donor-${d.donorId}`}>
-                            <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${idx === 0 ? "bg-amber-100 text-amber-700" : idx === 1 ? "bg-gray-100 text-gray-600" : idx === 2 ? "bg-orange-100 text-orange-700" : "bg-muted text-muted-foreground"}`}>{idx + 1}</div>
+                            <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${idx === 0 ? "bg-amber-100 text-amber-700" : idx === 1 ? "bg-gray-100 text-gray-600" : idx === 2 ? "bg-muted text-muted-foreground" : "bg-muted text-muted-foreground"}`}>{idx + 1}</div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{d.name}</p>
                               <p className="text-xs text-muted-foreground">{d.donorCode} · {d.donationCount} donation{d.donationCount !== 1 ? "s" : ""}</p>
                             </div>
-                            <p className="text-sm font-semibold text-orange-600 flex-shrink-0">{fmt(d.totalAmount)}</p>
+                            <p className="text-sm font-semibold flex-shrink-0" style={{ color: "#5FA8A8" }}>{fmt(d.totalAmount)}</p>
                           </div>
                         </Link>
                       ))}
                       <Link href="/dashboard/donors">
-                        <div className="flex items-center justify-center gap-1.5 py-2.5 text-xs text-orange-600 hover:text-orange-700 cursor-pointer font-medium rounded-lg hover:bg-orange-50/50 transition-colors">
+                        <div className="flex items-center justify-center gap-1.5 py-2.5 text-xs cursor-pointer font-medium rounded-lg transition-colors hover:bg-muted/50" style={{ color: "#5FA8A8" }}>
                           View all donors <ChevronRight className="h-3.5 w-3.5" />
                         </div>
                       </Link>
