@@ -2,6 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─── Brand Design Tokens ──────────────────────────────────────── */
+:root {
+  /* PRIMARY BRAND */
+  --primary-hex:   #5FA8A8;
+  --primary-light: #7FAFD4;
+
+  /* BACKGROUNDS */
+  --bg-page:       #F5F7FA;
+  --bg-card:       #FFFFFF;
+  --bg-soft-teal:  #E6F4F4;
+  --bg-soft-blue:  #EAF2FB;
+
+  /* TEXT */
+  --text-primary:   #0F172A;
+  --text-secondary: #475569;
+  --text-muted:     #64748B;
+
+  /* BORDERS */
+  --border-light: #E2E8F0;
+
+  /* STATUS */
+  --success-bg:   #D1FAE5;
+  --success-text: #065F46;
+
+  /* SIDEBAR */
+  --sidebar-bg:   #2F3E46;
+  --sidebar-text: #CBD5E1;
+}
+
+/* ─── Shadcn / Tailwind HSL Tokens ─────────────────────────────── */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -81,5 +111,95 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* ─── Reusable Component Classes ───────────────────────────────── */
+@layer components {
+
+  /* Page background */
+  .page-bg {
+    background-color: var(--bg-page);
+  }
+
+  /* Cards */
+  .card-white {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .card-soft-teal {
+    background: var(--bg-soft-teal);
+    border: 1px solid #D1E3E3;
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .card-soft-blue {
+    background: var(--bg-soft-blue);
+    border: 1px solid #D6E4F5;
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .card-primary {
+    background: linear-gradient(135deg, var(--primary-hex), var(--primary-light));
+    color: white;
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary-hex), var(--primary-light));
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+  }
+
+  .btn-secondary {
+    background: #E2E8F0;
+    color: #334155;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Badges */
+  .badge-success {
+    background: var(--success-bg);
+    color: var(--success-text);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+  }
+
+  .sidebar-item {
+    padding: 10px 14px;
+    border-radius: 8px;
+    color: var(--sidebar-text);
+    transition: background 150ms ease;
+  }
+
+  .sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .sidebar-item.active {
+    background: var(--primary-hex);
+    color: white;
   }
 }

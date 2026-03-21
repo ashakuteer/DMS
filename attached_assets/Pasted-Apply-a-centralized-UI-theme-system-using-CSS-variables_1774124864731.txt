@@ -1,0 +1,190 @@
+Apply a centralized UI theme system using CSS variables + Tailwind + reusable classes across the entire project.
+
+IMPORTANT:
+Do NOT break existing functionality.
+Only update styling and shared UI system.
+
+---
+
+## STEP 1: CREATE / UPDATE GLOBAL CSS
+
+File: app/globals.css (or styles/globals.css)
+
+Add this at the top:
+
+:root {
+--primary: #5FA8A8;
+--primary-light: #7FAFD4;
+
+--bg-page: #F5F7FA;
+--bg-card: #FFFFFF;
+--bg-soft-teal: #E6F4F4;
+--bg-soft-blue: #EAF2FB;
+
+--text-primary: #0F172A;
+--text-secondary: #475569;
+--text-muted: #64748B;
+
+--border-light: #E2E8F0;
+
+--success-bg: #D1FAE5;
+--success-text: #065F46;
+
+--sidebar-bg: #2F3E46;
+--sidebar-text: #CBD5E1;
+}
+
+---
+
+## STEP 2: ADD REUSABLE CLASSES
+
+In same globals.css, add:
+
+.page-bg {
+background-color: var(--bg-page);
+}
+
+.card {
+background: var(--bg-card);
+border: 1px solid var(--border-light);
+border-radius: 12px;
+padding: 16px;
+}
+
+.card-soft-teal {
+background: var(--bg-soft-teal);
+border: 1px solid #D1E3E3;
+border-radius: 12px;
+padding: 16px;
+}
+
+.card-soft-blue {
+background: var(--bg-soft-blue);
+border: 1px solid #D6E4F5;
+border-radius: 12px;
+padding: 16px;
+}
+
+.card-primary {
+background: linear-gradient(135deg, var(--primary), var(--primary-light));
+color: white;
+border-radius: 12px;
+padding: 16px;
+}
+
+.btn-primary {
+background: linear-gradient(135deg, var(--primary), var(--primary-light));
+color: white;
+padding: 10px 16px;
+border-radius: 8px;
+}
+
+.btn-secondary {
+background: #E2E8F0;
+color: #334155;
+padding: 10px 16px;
+border-radius: 8px;
+}
+
+.badge-success {
+background: var(--success-bg);
+color: var(--success-text);
+padding: 4px 10px;
+border-radius: 999px;
+font-size: 12px;
+}
+
+.sidebar {
+background: var(--sidebar-bg);
+color: var(--sidebar-text);
+}
+
+.sidebar-item {
+padding: 10px 14px;
+border-radius: 8px;
+color: var(--sidebar-text);
+}
+
+.sidebar-item:hover {
+background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-item.active {
+background: var(--primary);
+color: white;
+}
+
+---
+
+## STEP 3: UPDATE TAILWIND CONFIG
+
+File: tailwind.config.js
+
+Inside extend.colors add:
+
+primary: "var(--primary)",
+primaryLight: "var(--primary-light)",
+page: "var(--bg-page)",
+card: "var(--bg-card)",
+softTeal: "var(--bg-soft-teal)",
+softBlue: "var(--bg-soft-blue)",
+textPrimary: "var(--text-primary)",
+textSecondary: "var(--text-secondary)",
+textMuted: "var(--text-muted)",
+borderLight: "var(--border-light)",
+successBg: "var(--success-bg)",
+successText: "var(--success-text)",
+sidebar: "var(--sidebar-bg)",
+sidebarText: "var(--sidebar-text)"
+
+---
+
+## STEP 4: APPLY USAGE (DO NOT MISS)
+
+Update UI components:
+
+* Replace ALL inline colors and orange styles
+* Use these classes instead:
+
+Cards:
+card-primary (top highlight cards)
+card-soft-teal
+card-soft-blue
+card (default white)
+
+Buttons:
+btn-primary
+btn-secondary
+
+Badges:
+badge-success
+
+Sidebar:
+sidebar + sidebar-item + active state
+
+---
+
+## STEP 5: APPLY TO ALL PAGES
+
+Apply across:
+
+* Dashboard
+* Donor Engagement Analytics
+* NGO Impact Dashboard
+* Donor Retention
+* Home-wise Summary
+* Donor Updates
+* Staff pages
+* Tables
+
+---
+
+## GOAL
+
+* Remove ALL orange colors
+* Ensure consistent teal-blue design
+* Use reusable classes everywhere
+* Do NOT leave mixed styles
+
+After completion, confirm:
+"theme system applied"

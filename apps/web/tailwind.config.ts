@@ -10,6 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        /* ── Shadcn / Radix HSL tokens (do not remove) ── */
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -60,6 +61,22 @@ const config: Config = {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+
+        /* ── Brand design tokens (CSS-var backed) ── */
+        brand:         "var(--primary-hex)",
+        brandLight:    "var(--primary-light)",
+        bgPage:        "var(--bg-page)",
+        bgCard:        "var(--bg-card)",
+        softTeal:      "var(--bg-soft-teal)",
+        softBlue:      "var(--bg-soft-blue)",
+        textPrimary:   "var(--text-primary)",
+        textSecondary: "var(--text-secondary)",
+        textMuted:     "var(--text-muted)",
+        borderLight:   "var(--border-light)",
+        successBg:     "var(--success-bg)",
+        successText:   "var(--success-text)",
+        sidebarBg:     "var(--sidebar-bg)",
+        sidebarText:   "var(--sidebar-text)",
       },
       borderRadius: {
         lg: "var(--radius)",
