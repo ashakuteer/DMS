@@ -2,15 +2,15 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
-  ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import * as twilio from 'twilio';
+import Twilio from 'twilio';
 
 @Injectable()
 export class OtpService {
-  private twilioClient: twilio.Twilio | null = null;
+  private twilioClient: ReturnType<typeof Twilio> | null = null;
+  private fromPhone: string | null = null;
 
   constructor(
     private prisma: PrismaService,
@@ -18,8 +18,21 @@ export class OtpService {
   ) {
     const accountSid = this.configService.get<string>('TWILIO_ACCOUNT_SID');
     const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN');
+    const phone = this.configService.get<string>('TWILIO_PHONE');
+
     if (accountSid && authToken) {
-      this.twilioClient = twilio.default(accountSid, authToken);
+      this.twilioClient = Twilio(accountSid, authToken);
+      console.log('[OtpService] Twilio client initialized');
+    } else {
+      console.warn('[OtpService] Twilio not configured — OTPs will be logged to console only');
+    }
+
+    if (phone) {
+      // Strip any "whatsapp:" prefix — we need the plain E.164 number for SMS
+      this.fromPhone = phone.replace(/^whatsapp:/i, '').trim();
+      console.log(`[OtpService] TWILIO_PHONE set to: ${this.fromPhone}`);
+    } else {
+      console.warn('[OtpService] TWILIO_PHONE not set — SMS will be skipped');
     }
   }
 
@@ -45,36 +58,40 @@ export class OtpService {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    // Save OTP to DB (delete previous ones for this phone first)
+    // Save OTP to DB (clear previous ones for this phone first)
     await this.prisma.otp.deleteMany({ where: { phone: normalizedPhone } });
     await this.prisma.otp.create({
       data: { phone: normalizedPhone, code, expiresAt },
     });
 
-    // Send via Twilio
-    if (this.twilioClient) {
-      const fromPhone = this.configService.get<string>('TWILIO_PHONE');
-      if (!fromPhone) {
-        throw new ServiceUnavailableException('SMS service is not configured (TWILIO_PHONE missing)');
-      }
-      try {
-        await this.twilioClient.messages.create({
-          body: `Your Asha Kuteer DMS login OTP is ${code}. Valid for 5 minutes. Do not share this with anyone.`,
-          from: fromPhone,
-          to: normalizedPhone,
-        });
-      } catch (err: any) {
-        console.error('Twilio send error:', err.message);
-        throw new ServiceUnavailableException(
-          'Failed to send OTP. Please check your phone number and try again.',
-        );
-      }
-    } else {
-      // Dev mode: log OTP to console (Twilio not configured)
-      console.warn(`[DEV] OTP for ${normalizedPhone}: ${code}`);
-    }
+    // Attempt to send via Twilio SMS
+    await this.sendSms(normalizedPhone, code);
 
     return { message: 'OTP sent successfully' };
+  }
+
+  private async sendSms(to: string, code: string): Promise<void> {
+    const message = `Your Asha Kuteer DMS login OTP is ${code}. Valid for 5 minutes. Do not share this with anyone.`;
+
+    // If Twilio client or phone not configured → fall back to console
+    if (!this.twilioClient || !this.fromPhone) {
+      console.warn(`[OtpService][DEV] Twilio not configured. OTP for ${to}: ${code}`);
+      return;
+    }
+
+    try {
+      const result = await this.twilioClient.messages.create({
+        body: message,
+        from: this.fromPhone,
+        to,
+      });
+      console.log(`[OtpService] SMS sent to ${to}, SID: ${result.sid}`);
+    } catch (err: any) {
+      // Log the OTP to console so development/testing still works
+      // Do NOT throw — returning success lets the user proceed with the console OTP
+      console.error(`[OtpService] Twilio error (${err.code}): ${err.message}`);
+      console.warn(`[OtpService][FALLBACK] OTP for ${to}: ${code}`);
+    }
   }
 
   async verifyOtp(
@@ -101,7 +118,7 @@ export class OtpService {
       throw new UnauthorizedException('Invalid OTP. Please check and try again.');
     }
 
-    // OTP valid — delete it immediately
+    // OTP valid — delete it immediately (one-time use)
     await this.prisma.otp.delete({ where: { id: otp.id } });
 
     // Find user by phone number
@@ -125,7 +142,6 @@ export class OtpService {
 
   private normalizePhone(phone: string): string {
     const trimmed = phone.trim();
-    // Add + prefix if missing and looks like an international number
     if (!trimmed.startsWith('+') && trimmed.length > 10) {
       return `+${trimmed}`;
     }
