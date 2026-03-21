@@ -114,6 +114,47 @@
   }
 }
 
+/* ─── Sidebar Animations & Effects ─────────────────────────────── */
+
+/* Active item: teal glow pill on left edge */
+.active-item {
+  position: relative;
+  overflow: visible;
+}
+.active-item::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: 6px;
+  bottom: 6px;
+  width: 4px;
+  border-radius: 4px;
+  background: #5FA8A8;
+  box-shadow: 0 0 10px rgba(95, 168, 168, 0.65);
+}
+
+/* Icon hover: slide right + teal tint */
+.menu-item:hover .icon {
+  transform: translateX(2px);
+  color: #5FA8A8 !important;
+}
+.icon {
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* Sidebar text fade on collapse */
+.sidebar-text {
+  opacity: 1;
+  transition: opacity 0.15s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sidebar-collapsed .sidebar-text {
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+}
+
 /* ─── Reusable Component Classes ───────────────────────────────── */
 @layer components {
 

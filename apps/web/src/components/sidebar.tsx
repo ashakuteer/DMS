@@ -190,8 +190,8 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   return (
     <div
       className={cn(
-        "flex flex-col h-full transition-all duration-300 ease-in-out",
-        collapsed ? "w-16" : "w-60"
+        "sidebar flex flex-col h-full transition-all duration-300 ease-in-out",
+        collapsed ? "sidebar-collapsed w-16" : "w-60"
       )}
       style={{ background: SIDEBAR_BG, borderRight: `1px solid ${BORDER_COLOR}` }}
     >
@@ -262,7 +262,8 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                       <Link key={item.href} href={item.href}>
                         <div
                           className={cn(
-                            "flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-all duration-200 cursor-pointer select-none rounded-[10px]",
+                            "menu-item flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-all duration-200 cursor-pointer select-none rounded-[10px]",
+                            active && "active-item",
                             collapsed && "justify-center px-2"
                           )}
                           style={
@@ -283,7 +284,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                           data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                         >
                           <item.icon
-                            className="h-4 w-4 flex-shrink-0"
+                            className="icon h-4 w-4 flex-shrink-0"
                             style={{ color: active ? ICON_ACTIVE : ICON_COLOR }}
                           />
                           {!collapsed && <span className="truncate flex-1">{t(item.tKey)}</span>}
@@ -308,7 +309,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                     return (
                       <Link key={item.href} href={item.href}>
                         <div
-                          className="flex items-center justify-center rounded-lg p-2 transition-all cursor-pointer"
+                          className={cn("menu-item flex items-center justify-center rounded-[10px] p-2 transition-all duration-200 cursor-pointer", active && "active-item")}
                           style={
                             active
                               ? { background: ACTIVE_BG, color: TEXT_ACTIVE }
@@ -324,7 +325,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                           data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                         >
                           <item.icon
-                            className="h-4 w-4"
+                            className="icon h-4 w-4"
                             style={{ color: active ? ICON_ACTIVE : ICON_COLOR }}
                           />
                         </div>
@@ -367,7 +368,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                       return (
                         <Link key={item.href} href={item.href}>
                           <div
-                            className="flex items-center gap-2.5 px-3.5 py-2.5 text-xs transition-all duration-200 cursor-pointer select-none rounded-[10px]"
+                            className={cn("menu-item flex items-center gap-2.5 px-3.5 py-2.5 text-xs transition-all duration-200 cursor-pointer select-none rounded-[10px]", active && "active-item")}
                             style={
                               active
                                 ? {
@@ -386,7 +387,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                             data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                           >
                             <item.icon
-                              className="h-3.5 w-3.5 flex-shrink-0"
+                              className="icon h-3.5 w-3.5 flex-shrink-0"
                               style={{ color: active ? ICON_ACTIVE : ICON_COLOR }}
                             />
                             <span className="truncate">{t(item.tKey)}</span>

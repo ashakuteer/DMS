@@ -1,0 +1,109 @@
+Improve sidebar UX with premium interactions and animations.
+
+-------------------------------------
+STEP 1: SIDEBAR STRUCTURE
+-------------------------------------
+Locate sidebar component (e.g. Sidebar.tsx or layout).
+
+Ensure sidebar container has class:
+
+className="sidebar bg-[#2F3E46] text-[#AAB4BE] transition-all duration-300"
+
+-------------------------------------
+STEP 2: ACTIVE ITEM GLOW INDICATOR
+-------------------------------------
+Add a custom class for active menu item:
+
+className:
+"menu-item relative flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200"
+
+For ACTIVE state:
+
+"bg-[rgba(95,168,168,0.25)] text-white active-item"
+
+-------------------------------------
+Add this CSS (global.css or module.css):
+
+.active-item::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 6px;
+  bottom: 6px;
+  width: 4px;
+  border-radius: 4px;
+  background: #5FA8A8;
+  box-shadow: 0 0 10px rgba(95,168,168,0.6);
+}
+
+-------------------------------------
+STEP 3: HOVER + DEFAULT STATES
+-------------------------------------
+Default:
+
+"text-[#AAB4BE]"
+
+Hover:
+
+"hover:bg-white/5 hover:text-[#E2E8F0]"
+
+-------------------------------------
+STEP 4: ICON TRANSITIONS
+-------------------------------------
+Add class to all icons:
+
+"className='icon transition-all duration-200'"
+
+Default icon:
+text-[#AAB4BE]
+
+Active icon:
+text-[#5FA8A8]
+
+Hover effect:
+
+.menu-item:hover .icon {
+  transform: translateX(2px);
+  color: #5FA8A8;
+}
+
+-------------------------------------
+STEP 5: SIDEBAR COLLAPSE ANIMATION
+-------------------------------------
+Sidebar container:
+
+.sidebar {
+  width: 240px;
+  transition: width 0.25s ease;
+}
+
+.sidebar.collapsed {
+  width: 72px;
+}
+
+-------------------------------------
+STEP 6: TEXT FADE ON COLLAPSE
+-------------------------------------
+.sidebar.collapsed span {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+-------------------------------------
+STEP 7: REMOVE OLD UI
+-------------------------------------
+Remove:
+- border-left highlights
+- orange colors
+- bg-slate-900 / black backgrounds
+
+-------------------------------------
+FINAL RESULT
+-------------------------------------
+Sidebar should:
+- have soft grey background
+- show teal glow on active item
+- animate smoothly when collapsing
+- icons should animate slightly on hover
+
+Goal: Premium SaaS-level sidebar experience
