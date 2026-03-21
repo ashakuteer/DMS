@@ -7,8 +7,6 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 
-export type MessageType = 'OTP' | 'WHATSAPP';
-
 @Injectable()
 export class OtpService {
   private readonly logger = new Logger(OtpService.name);
@@ -46,46 +44,22 @@ export class OtpService {
       data: { phone: normalizedPhone, code, expiresAt },
     });
 
-    // Route by message type — OTP always goes via SMS (plain E.164 format)
-    await this.dispatch({
-      messageType: 'OTP',
-      to: normalizedPhone,
-      code,
-    });
+    // Send OTP via WhatsApp only
+    // from: whatsapp:+14155238886 (Twilio Sandbox)
+    // to:   whatsapp:+91XXXXXXXXXX
+    const sent = await this.whatsappService.sendWhatsApp(
+      normalizedPhone,
+      `Your login OTP is: ${code}`,
+    );
+
+    if (!sent) {
+      this.logger.warn(`[OTP][FALLBACK] OTP for ${normalizedPhone}: ${code}`);
+    }
 
     return { message: 'OTP sent successfully' };
   }
 
-  /**
-   * Central dispatch — routes message based on type:
-   *   OTP      → SMS via TWILIO_PHONE (plain E.164, no "whatsapp:" prefix)
-   *   WHATSAPP → WhatsApp via TWILIO_WHATSAPP_NUMBER or Twilio Sandbox
-   */
-  private async dispatch(opts: {
-    messageType: MessageType;
-    to: string;
-    code: string;
-  }): Promise<void> {
-    const { messageType, to, code } = opts;
-    const body = `Your Asha Kuteer DMS login OTP is ${code}. Valid for 5 minutes. Do not share this with anyone.`;
-
-    if (messageType === 'OTP') {
-      // SMS: from TWILIO_PHONE (E.164), to E.164 — no whatsapp: prefix
-      const sent = await this.whatsappService.sendSms(to, body);
-      if (!sent) {
-        // Fallback: log OTP so testing still works without a valid Twilio SMS number
-        this.logger.warn(`[OTP][FALLBACK] OTP for ${to}: ${code}`);
-      }
-    } else {
-      // WhatsApp: from whatsapp:+14155238886 (sandbox) or TWILIO_WHATSAPP_NUMBER
-      //           to whatsapp:+91XXXXXXXXXX — DO NOT mix channels
-      const sent = await this.whatsappService.sendWhatsApp(to, body);
-      if (!sent) {
-        this.logger.warn(`[WhatsApp][FALLBACK] OTP for ${to}: ${code}`);
-      }
-    }
-  }
-
+  // Verification logic unchanged
   async verifyOtp(
     phone: string,
     code: string,
@@ -115,7 +89,6 @@ export class OtpService {
     // OTP valid — delete immediately (one-time use)
     await this.prisma.otp.delete({ where: { id: otp.id } });
 
-    // Find user by phone number
     const user = await this.prisma.user.findUnique({
       where: { phone: normalizedPhone },
       select: { id: true, email: true, name: true, role: true, isActive: true },
