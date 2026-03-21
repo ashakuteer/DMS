@@ -23,7 +23,7 @@ import {
   Cake, Send, FileBarChart, ClipboardList, Building2, ArrowUpRight,
   FolderLock, Lock, Repeat, ListChecks, Phone, Clock, ChevronDown,
   ChevronRight, MessageSquarePlus, Banknote, CalendarOff, ClipboardCheck,
-  AlertTriangle,
+  AlertTriangle, Trophy,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
@@ -99,6 +99,7 @@ const navGroups: NavGroup[] = [
       { title: "Attendance", tKey: "nav.attendance", href: "/dashboard/attendance", icon: ClipboardCheck, permissionModule: "users" },
       { title: "Staff & Tasks", tKey: "nav.staff_tasks", href: "/dashboard/staff-tasks", icon: ListChecks, permissionModule: "staffTasks" },
       { title: "Missed Tasks", tKey: "nav.missed_tasks", href: "/dashboard/missed-tasks", icon: AlertTriangle, permissionModule: "staffTasks" },
+      { title: "Performance", tKey: "nav.performance", href: "/dashboard/performance", icon: Trophy, permissionModule: "staffTasks" },
       { title: "Staff Contacts", tKey: "nav.staff_contacts", href: "/dashboard/staff-management", icon: Phone, permissionModule: "users" },
     ],
   },

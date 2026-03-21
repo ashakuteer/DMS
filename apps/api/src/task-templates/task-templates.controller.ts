@@ -19,6 +19,15 @@ export class TaskTemplatesController {
     return this.service.findAll(includeInactive === 'true');
   }
 
+  @Get('performance-all')
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  getPerformanceAll(
+    @Query('days') days?: string,
+    @Request() req?: any,
+  ) {
+    return this.service.getPerformanceAll(days ? parseInt(days) : 30);
+  }
+
   @Get('accountability/:userId')
   @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   getAccountabilityScore(
