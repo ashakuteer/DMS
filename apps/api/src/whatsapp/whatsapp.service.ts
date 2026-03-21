@@ -24,7 +24,14 @@ export class WhatsappService {
     }
 
     this.client = twilio(accountSid, authToken);
-    this.logger.log("Twilio client initialized");
+
+    // Debug: print the raw TWILIO_PHONE value so Railway logs confirm the right env var is loaded
+    const twilioPhone = (process.env.TWILIO_PHONE || "").trim();
+    const resolvedSender = twilioPhone
+      ? (twilioPhone.startsWith("whatsapp:") ? twilioPhone : `whatsapp:${twilioPhone}`)
+      : "(NOT SET — OTP sending will fail)";
+    console.log("Using TWILIO_PHONE:", twilioPhone || "(NOT SET)");
+    this.logger.log(`Twilio client initialized | OTP sender: ${resolvedSender}`);
   }
 
   private normalizeToE164(phone: string): string | null {
@@ -43,26 +50,30 @@ export class WhatsappService {
    * Template name : otp_login
    * Template body : Your Asha Kuteer login OTP is {{1}}. It is valid for 5 minutes.
    *
-   * from : whatsapp:+919700711700  (TWILIO_PHONE with whatsapp: prefix)
+   * from : whatsapp:+919700711700  (TWILIO_PHONE — must be set in environment)
    * to   : whatsapp:+91XXXXXXXXXX
+   *
+   * NO sandbox fallback. If TWILIO_PHONE is not set, the send is aborted.
    */
   async sendOtpTemplate(to: string, otp: string): Promise<boolean> {
-    const rawPhone = (process.env.TWILIO_PHONE || "").trim();
-    const fromPhone = rawPhone.startsWith("+")
-      ? `whatsapp:${rawPhone}`
-      : rawPhone.startsWith("whatsapp:")
-        ? rawPhone
-        : null;
-
     if (!this.client || this.disabled) {
       this.logger.warn(`[OTP-WA][NO-CLIENT] OTP for ${to}: ${otp}`);
       return false;
     }
 
-    if (!fromPhone) {
-      this.logger.warn(`[OTP-WA] TWILIO_PHONE not set or invalid — cannot send. OTP for ${to}: ${otp}`);
+    const rawPhone = (process.env.TWILIO_PHONE || "").trim();
+
+    // Debug log every time — visible in Railway logs
+    console.log("Using TWILIO_PHONE:", rawPhone || "(NOT SET)");
+
+    if (!rawPhone) {
+      this.logger.error(`[OTP-WA] TWILIO_PHONE is not set — cannot send OTP. Set TWILIO_PHONE=+919700711700 in Railway environment variables.`);
       return false;
     }
+
+    const fromPhone = rawPhone.startsWith("whatsapp:")
+      ? rawPhone
+      : `whatsapp:${rawPhone}`;
 
     const e164 = this.normalizeToE164(to);
     if (!e164) {
@@ -70,17 +81,17 @@ export class WhatsappService {
       return false;
     }
 
-    // Template body with {{1}} replaced by OTP
+    // Template body with {{1}} substituted
     const body = `Your Asha Kuteer login OTP is ${otp}. It is valid for 5 minutes.`;
 
     try {
       const params: Record<string, any> = {
         body,
-        from: fromPhone,              // whatsapp:+919700711700
-        to: `whatsapp:${e164}`,       // whatsapp:+91XXXXXXXXXX
+        from: fromPhone,             // whatsapp:+919700711700
+        to: `whatsapp:${e164}`,      // whatsapp:+91XXXXXXXXXX
       };
 
-      // If a Content API template SID is configured, prefer that over body text
+      // If a Content API template SID is configured, use it instead of body text
       const contentSid = (process.env.TWILIO_OTP_CONTENT_SID || "").trim();
       if (contentSid.startsWith("HX")) {
         delete params.body;
@@ -89,6 +100,7 @@ export class WhatsappService {
         this.logger.log(`[OTP-WA] Using Content SID: ${contentSid.substring(0, 8)}...`);
       }
 
+      this.logger.log(`[OTP-WA] Sending from ${fromPhone} → ${`whatsapp:${e164}`}`);
       const result = await this.client.messages.create(params as any);
       this.logger.log(`[OTP-WA] Sent to ${e164} | SID: ${result.sid}`);
       return true;
@@ -103,7 +115,7 @@ export class WhatsappService {
    * Send a freeform WhatsApp message (for non-OTP use cases).
    * Only works within the 24-hour customer service window.
    *
-   * from : whatsapp: + TWILIO_WHATSAPP_NUMBER (or sandbox)
+   * from : whatsapp: + TWILIO_WHATSAPP_NUMBER  (must be set — NO sandbox fallback)
    * to   : whatsapp:+91XXXXXXXXXX
    */
   async sendWhatsApp(to: string, message: string): Promise<boolean> {
@@ -113,9 +125,12 @@ export class WhatsappService {
     }
 
     const rawWa = (process.env.TWILIO_WHATSAPP_NUMBER || "").replace(/\s+/g, "").trim();
-    const waFrom = rawWa
-      ? (rawWa.startsWith("whatsapp:") ? rawWa : `whatsapp:${rawWa}`)
-      : "whatsapp:+14155238886"; // Twilio Sandbox fallback
+    if (!rawWa) {
+      this.logger.error(`[WhatsApp] TWILIO_WHATSAPP_NUMBER is not set — refusing to send freeform message. No sandbox fallback.`);
+      return false;
+    }
+
+    const waFrom = rawWa.startsWith("whatsapp:") ? rawWa : `whatsapp:${rawWa}`;
 
     const e164 = this.normalizeToE164(to);
     if (!e164) {
