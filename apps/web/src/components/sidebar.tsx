@@ -29,13 +29,14 @@ import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-const SIDEBAR_BG = "#334155";
+const SIDEBAR_BG = "#2F4F4F";
 const TEXT_DEFAULT = "#CBD5E1";
 const TEXT_ACTIVE = "#ffffff";
 const TEAL = "#5FA8A8";
-const ACTIVE_BG = "rgba(95,168,168,0.2)";
+const ICON_COLOR = "#A7F3D0";
+const ACTIVE_BG = "rgba(95,168,168,0.25)";
 const ACTIVE_BORDER = `4px solid ${TEAL}`;
-const HOVER_BG = "rgba(255,255,255,0.07)";
+const HOVER_BG = "rgba(95,168,168,0.15)";
 const BORDER_COLOR = "rgba(255,255,255,0.10)";
 const GROUP_LABEL_COLOR = "rgba(203,213,225,0.45)";
 
@@ -273,16 +274,16 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                               : { color: TEXT_DEFAULT }
                           }
                           onMouseEnter={e => {
-                            if (!active) (e.currentTarget as HTMLElement).style.background = HOVER_BG;
+                            if (!active) { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }
                           }}
                           onMouseLeave={e => {
-                            if (!active) (e.currentTarget as HTMLElement).style.background = "transparent";
+                            if (!active) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }
                           }}
                           data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                         >
                           <item.icon
                             className="h-4 w-4 flex-shrink-0"
-                            style={{ color: active ? TEAL : TEXT_DEFAULT }}
+                            style={{ color: active ? "#ffffff" : ICON_COLOR }}
                           />
                           {!collapsed && <span className="truncate flex-1">{t(item.tKey)}</span>}
                           {!collapsed && active && (
@@ -313,17 +314,17 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                               : { color: TEXT_DEFAULT }
                           }
                           onMouseEnter={e => {
-                            if (!active) (e.currentTarget as HTMLElement).style.background = HOVER_BG;
+                            if (!active) { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }
                           }}
                           onMouseLeave={e => {
-                            if (!active) (e.currentTarget as HTMLElement).style.background = "transparent";
+                            if (!active) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }
                           }}
                           title={t(item.tKey)}
                           data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                         >
                           <item.icon
                             className="h-4 w-4"
-                            style={{ color: active ? TEAL : TEXT_DEFAULT }}
+                            style={{ color: active ? "#ffffff" : ICON_COLOR }}
                           />
                         </div>
                       </Link>
@@ -378,16 +379,16 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                                 : { color: TEXT_DEFAULT }
                             }
                             onMouseEnter={e => {
-                              if (!active) (e.currentTarget as HTMLElement).style.background = HOVER_BG;
+                              if (!active) { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }
                             }}
                             onMouseLeave={e => {
-                              if (!active) (e.currentTarget as HTMLElement).style.background = "transparent";
+                              if (!active) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }
                             }}
                             data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                           >
                             <item.icon
                               className="h-3.5 w-3.5 flex-shrink-0"
-                              style={{ color: active ? TEAL : TEXT_DEFAULT }}
+                              style={{ color: active ? "#ffffff" : ICON_COLOR }}
                             />
                             <span className="truncate">{t(item.tKey)}</span>
                           </div>

@@ -20,7 +20,7 @@ function getHealthBadge(healthStatus?: string, healthScore?: number) {
   if (!healthStatus) return null
   const score = healthScore ?? 100
   if (healthStatus === "GREEN")
-    return <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 text-xs">{score}</Badge>
+    return <Badge className="bg-[#D1FAE5] text-[#065F46] dark:bg-[#065F46]/30 dark:text-[#A7F3D0] text-xs">{score}</Badge>
   if (healthStatus === "YELLOW")
     return <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 text-xs">{score}</Badge>
   if (healthStatus === "RED")

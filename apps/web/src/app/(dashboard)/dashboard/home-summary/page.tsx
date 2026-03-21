@@ -273,64 +273,64 @@ export default function HomeSummaryPage() {
       ) : data ? (
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <Card data-testid="card-total-beneficiaries">
+            <Card data-testid="card-total-beneficiaries" className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)", boxShadow: "0 4px 12px rgba(95,168,168,0.25)" }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Total Beneficiaries</p>
+                  <Users className="h-4 w-4 text-white/80" />
+                  <p className="text-sm text-white/80">Total Beneficiaries</p>
                 </div>
-                <p className="text-2xl font-bold">{data.totals.totalBeneficiaries}</p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-2xl font-bold text-white">{data.totals.totalBeneficiaries}</p>
+                <p className="text-xs text-white/70 mt-1">
                   {data.totals.totalActive} active, {data.totals.totalInactive} inactive
                 </p>
               </CardContent>
             </Card>
-            <Card data-testid="card-health-normal">
+            <Card data-testid="card-health-normal" className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)", boxShadow: "0 4px 12px rgba(95,168,168,0.25)" }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <HeartPulse className="h-4 w-4 text-green-600" />
-                  <p className="text-sm text-muted-foreground">Health Normal</p>
+                  <HeartPulse className="h-4 w-4 text-white/80" />
+                  <p className="text-sm text-white/80">Health Normal</p>
                 </div>
-                <p className="text-2xl font-bold text-green-600">{data.totals.totalHealthNormal}</p>
+                <p className="text-2xl font-bold text-white">{data.totals.totalHealthNormal}</p>
               </CardContent>
             </Card>
-            <Card data-testid="card-health-sick">
+            <Card data-testid="card-health-sick" className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <HeartPulse className="h-4 w-4 text-[#5FA8A8]" />
-                  <p className="text-sm text-muted-foreground">Sick</p>
+                  <p className="text-sm text-[#475569]">Sick</p>
                 </div>
-                <p className="text-2xl font-bold text-[#5FA8A8]">{data.totals.totalHealthSick}</p>
+                <p className="text-2xl font-bold text-[#0F172A]">{data.totals.totalHealthSick}</p>
               </CardContent>
             </Card>
-            <Card data-testid="card-education">
+            <Card data-testid="card-education" className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <GraduationCap className="h-4 w-4 text-blue-600" />
-                  <p className="text-sm text-muted-foreground">Education</p>
+                  <GraduationCap className="h-4 w-4 text-[#7FAFD4]" />
+                  <p className="text-sm text-[#475569]">Education</p>
                 </div>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-2xl font-bold text-[#0F172A]">
                   {data.totals.totalSchoolGoing + data.totals.totalCollegeGoing}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-[#64748B] mt-1">
                   {data.totals.totalSchoolGoing} school, {data.totals.totalCollegeGoing} college
                 </p>
               </CardContent>
             </Card>
-            <Card data-testid="card-movement">
+            <Card data-testid="card-movement" className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <UserPlus className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">Movement</p>
+                  <UserPlus className="h-4 w-4 text-[#5FA8A8]" />
+                  <p className="text-sm text-[#475569]">Movement</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div>
-                    <p className="text-lg font-bold text-green-600">+{data.totals.totalNewJoinings}</p>
-                    <p className="text-xs text-muted-foreground">Joined</p>
+                    <p className="text-lg font-bold text-emerald-600">+{data.totals.totalNewJoinings}</p>
+                    <p className="text-xs text-[#64748B]">Joined</p>
                   </div>
                   <div>
-                    <p className="text-lg font-bold text-red-600">-{data.totals.totalExits}</p>
-                    <p className="text-xs text-muted-foreground">Exited</p>
+                    <p className="text-lg font-bold text-red-500">-{data.totals.totalExits}</p>
+                    <p className="text-xs text-[#64748B]">Exited</p>
                   </div>
                 </div>
               </CardContent>

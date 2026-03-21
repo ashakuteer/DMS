@@ -77,7 +77,7 @@ function HeroIllustration() {
       {/* Floating heart badge */}
       <div
         className="absolute top-3 right-3 flex items-center justify-center rounded-full shadow-lg z-10"
-        style={{ width: 44, height: 44, background: "linear-gradient(135deg, #f97316, #ea580c)" }}
+        style={{ width: 44, height: 44, background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)" }}
       >
         <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white" aria-hidden="true">
           <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
@@ -93,13 +93,19 @@ function KpiCard({ title, value, icon: Icon, color, gradient }: {
 }) {
   const hasGradient = !!gradient;
   return (
-    <Card className={`border-0 ${hasGradient ? "shadow-md" : "shadow-sm"}`} style={hasGradient ? { background: gradient } : { background: "#ffffff" }}>
+    <Card
+      className="border-0 transition-shadow hover:shadow-md"
+      style={hasGradient
+        ? { background: gradient, boxShadow: "0 4px 12px rgba(95,168,168,0.25)" }
+        : { background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }
+      }
+    >
       <CardContent className="p-5">
-        <div className={`inline-flex p-2 rounded-xl mb-3 ${hasGradient ? "bg-white/20" : "bg-muted/60"}`}>
+        <div className={`inline-flex p-2 rounded-xl mb-3 ${hasGradient ? "bg-white/20" : "bg-white/70"}`}>
           <Icon className={`h-4 w-4 ${hasGradient ? "text-white" : color}`} />
         </div>
-        <p className={`text-2xl font-bold leading-tight ${hasGradient ? "text-white" : "text-foreground"}`}>{value}</p>
-        <p className={`text-xs mt-1 font-medium ${hasGradient ? "text-white/80" : "text-muted-foreground"}`}>{title}</p>
+        <p className={`text-2xl font-bold leading-tight ${hasGradient ? "text-white" : "text-[#0F172A]"}`}>{value}</p>
+        <p className={`text-xs mt-1 font-medium ${hasGradient ? "text-white/80" : "text-[#64748B]"}`}>{title}</p>
       </CardContent>
     </Card>
   );
@@ -396,8 +402,8 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-4">
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-                <KpiCard title={t("home.total_fy_donations")} value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} color="text-teal-500" gradient="linear-gradient(135deg, #A8D5D1, #5FA8A8)" />
-                <KpiCard title={t("home.donations_this_month")} value={stats ? fmt(stats.donationsThisMonth) : "—"} icon={TrendingUp} color="text-blue-600" gradient="linear-gradient(135deg, #B6CCFE, #7FAFD4)" />
+                <KpiCard title={t("home.total_fy_donations")} value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} color="text-teal-500" gradient="linear-gradient(135deg, #5FA8A8, #7FAFD4)" />
+                <KpiCard title={t("home.donations_this_month")} value={stats ? fmt(stats.donationsThisMonth) : "—"} icon={TrendingUp} color="text-blue-600" gradient="linear-gradient(135deg, #5FA8A8, #7FAFD4)" />
                 <KpiCard title={t("home.active_donors")} value={totalDonors > 0 ? totalDonors.toString() : (stats?.activeDonors?.toString() ?? "—")} icon={Users} color="text-violet-600" />
                 <KpiCard title={t("home.monthly_donors")} value={monthlyTarget ? monthlyTarget.totalMonthlyDonors.toString() : "—"} icon={Repeat} color="text-teal-600" />
               </div>
