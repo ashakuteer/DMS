@@ -219,9 +219,15 @@ export default function NgoDocumentsPage() {
         setTotalPages(data.totalPages);
         setPage(data.page);
         setStats(data.stats);
+      } else if (res.status === 401) {
+        toast({ title: "Session Expired", description: "Please log in again.", variant: "destructive" });
+      } else if (res.status === 403) {
+        toast({ title: "Access Denied", description: "You do not have permission to view documents.", variant: "destructive" });
+      } else {
+        toast({ title: "Error", description: `Failed to load documents (${res.status})`, variant: "destructive" });
       }
     } catch (error) {
-      toast({ title: "Error", description: "Failed to load documents", variant: "destructive" });
+      toast({ title: "Network Error", description: "Unable to reach the server. Check your connection.", variant: "destructive" });
     } finally {
       setLoading(false);
     }

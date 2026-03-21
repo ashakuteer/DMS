@@ -2,17 +2,16 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { RefreshCw, Plus } from "lucide-react"
+import { RefreshCw, Plus, AlertCircle } from "lucide-react"
 import { useCampaigns } from "./hooks/useCampaigns"
 import CampaignCard from "./components/CampaignCard"
-import { formatCurrency } from "./utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { useTranslation } from "react-i18next"
 
 export default function CampaignsPage() {
   const { t } = useTranslation();
 
-  const { campaigns, loading, fetchCampaigns } = useCampaigns()
+  const { campaigns, loading, error, fetchCampaigns } = useCampaigns()
 
   const activeCampaigns = campaigns.filter((c) =>
     ["ACTIVE", "DRAFT"].includes(c.status)
@@ -35,17 +34,26 @@ export default function CampaignsPage() {
         </div>
 
         <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={fetchCampaigns}>
+          <Button variant="outline" size="icon" onClick={fetchCampaigns} data-testid="button-refresh-campaigns">
             <RefreshCw className="h-4 w-4" />
           </Button>
 
-          <Button>
+          <Button data-testid="button-new-campaign">
             <Plus className="h-4 w-4 mr-1" />
             {t("campaigns.new_campaign")}
           </Button>
         </div>
 
       </div>
+
+      {error && (
+        <Card className="border-destructive">
+          <CardContent className="flex items-center gap-3 p-4 text-destructive">
+            <AlertCircle className="h-5 w-5 shrink-0" />
+            <span data-testid="text-campaigns-error">{error}</span>
+          </CardContent>
+        </Card>
+      )}
 
       <Tabs defaultValue="active">
 
@@ -62,10 +70,15 @@ export default function CampaignsPage() {
         <TabsContent value="active">
 
           {loading ? (
-            <p>{t("common.loading")}</p>
+            <p data-testid="text-campaigns-loading">{t("common.loading")}</p>
+          ) : activeCampaigns.length === 0 && !error ? (
+            <Card>
+              <CardContent className="p-8 text-center text-muted-foreground">
+                No active campaigns found.
+              </CardContent>
+            </Card>
           ) : (
             <div className="grid md:grid-cols-3 gap-4">
-
               {activeCampaigns.map((campaign) => (
                 <CampaignCard
                   key={campaign.id}
@@ -73,7 +86,6 @@ export default function CampaignsPage() {
                   onClick={() => console.log("open campaign", campaign.id)}
                 />
               ))}
-
             </div>
           )}
 
@@ -81,17 +93,23 @@ export default function CampaignsPage() {
 
         <TabsContent value="closed">
 
-          <div className="grid md:grid-cols-3 gap-4">
-
-            {closedCampaigns.map((campaign) => (
-              <CampaignCard
-                key={campaign.id}
-                campaign={campaign}
-                onClick={() => console.log("open campaign", campaign.id)}
-              />
-            ))}
-
-          </div>
+          {closedCampaigns.length === 0 && !error ? (
+            <Card>
+              <CardContent className="p-8 text-center text-muted-foreground">
+                No closed campaigns found.
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid md:grid-cols-3 gap-4">
+              {closedCampaigns.map((campaign) => (
+                <CampaignCard
+                  key={campaign.id}
+                  campaign={campaign}
+                  onClick={() => console.log("open campaign", campaign.id)}
+                />
+              ))}
+            </div>
+          )}
 
         </TabsContent>
 

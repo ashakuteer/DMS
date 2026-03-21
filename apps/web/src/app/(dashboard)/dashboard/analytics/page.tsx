@@ -286,55 +286,60 @@ export default function AnalyticsPage() {
   const [exportHome, setExportHome] = useState("all");
   const [exportType, setExportType] = useState("all");
 
-  useEffect(() => {
-    fetchSummary();
-    fetchCharts();
-  }, []);
-
-  useEffect(() => {
-    fetchSegment(activeTab);
-  }, [activeTab]);
-
-  if (user && !canAccessModule(user?.role, 'analytics')) return <AccessDenied />;
-
-  const fetchSummary = async () => {
+  // Fetch functions defined with useCallback before useEffect so closure captures them correctly
+  const fetchSummary = useCallback(async () => {
     setLoadingSummary(true);
     try {
       const res = await fetchWithAuth("/api/analytics/summary");
-      if (!res.ok) throw new Error("Failed to fetch summary");
+      if (res.status === 401) throw new Error("Session expired. Please log in again.");
+      if (res.status === 403) throw new Error("You do not have permission to view analytics.");
+      if (!res.ok) throw new Error(`Failed to fetch summary (${res.status})`);
       setSummary(await res.json());
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Error", description: err.message });
+      toast({ variant: "destructive", title: "Analytics Error", description: err.message });
     } finally {
       setLoadingSummary(false);
     }
-  };
+  }, [toast]);
 
-  const fetchCharts = async () => {
+  const fetchCharts = useCallback(async () => {
     setLoadingCharts(true);
     try {
       const res = await fetchWithAuth("/api/analytics/charts");
-      if (!res.ok) throw new Error("Failed to fetch charts");
+      if (res.status === 401) throw new Error("Session expired. Please log in again.");
+      if (res.status === 403) throw new Error("You do not have permission to view analytics.");
+      if (!res.ok) throw new Error(`Failed to fetch charts (${res.status})`);
       setCharts(await res.json());
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Error", description: err.message });
+      toast({ variant: "destructive", title: "Analytics Error", description: err.message });
     } finally {
       setLoadingCharts(false);
     }
-  };
+  }, [toast]);
 
-  const fetchSegment = async (segment: string) => {
+  const fetchSegment = useCallback(async (segment: string) => {
     setLoadingSegment(true);
     try {
       const res = await fetchWithAuth(`/api/analytics/segments?segment=${segment}`);
-      if (!res.ok) throw new Error("Failed to fetch data");
+      if (!res.ok) throw new Error(`Failed to fetch segment data (${res.status})`);
       setSegmentData(await res.json());
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Error", description: err.message });
+      toast({ variant: "destructive", title: "Analytics Error", description: err.message });
     } finally {
       setLoadingSegment(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchSummary();
+    fetchCharts();
+  }, [fetchSummary, fetchCharts]);
+
+  useEffect(() => {
+    fetchSegment(activeTab);
+  }, [activeTab, fetchSegment]);
+
+  if (user && !canAccessModule(user?.role, 'analytics')) return <AccessDenied />;
 
   const handleExport = async (type: string) => {
     setExporting(type);
