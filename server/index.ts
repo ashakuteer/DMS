@@ -33,16 +33,20 @@ killByName("nest start");
 killPort(3001);
 killPort(5000);
 
+const rootBin = path.join(rootDir, "node_modules", ".bin");
+
 function startWeb() {
   console.log("Starting Next.js frontend on port 5000...");
-  webProcess = spawn("npx", ["next", "dev", "-p", "5000", "-H", "0.0.0.0"], {
-    cwd: path.join(rootDir, "apps", "web"),
+  const nextBin = path.join(rootBin, "next");
+  const webDir = path.join(rootDir, "apps", "web");
+  webProcess = spawn(nextBin, ["dev", webDir, "-p", "5000", "-H", "0.0.0.0"], {
+    cwd: rootDir,
     stdio: "inherit",
-    shell: true,
     env: {
       ...process.env,
       PORT: "5000",
       NEXT_TELEMETRY_DISABLED: "1",
+      PATH: `${rootBin}:${process.env.PATH}`,
     }
   });
   webProcess.on("error", (err) => console.error("Web error:", err));
@@ -51,11 +55,16 @@ function startWeb() {
 
 function startAPI() {
   console.log("Starting NestJS API on port 3001...");
-  apiProcess = spawn("npx", ["nest", "start", "--watch"], {
+  const nestBin = path.join(rootBin, "nest");
+  apiProcess = spawn(nestBin, ["start", "--watch"], {
     cwd: path.join(rootDir, "apps", "api"),
     stdio: "inherit",
-    shell: true,
-    env: { ...process.env, API_PORT: "3001" }
+    env: {
+      ...process.env,
+      API_PORT: "3001",
+      DATABASE_URL: process.env.DATABASE_URL || "",
+      PATH: `${path.join(rootDir, "apps", "api", "node_modules", ".bin")}:${rootBin}:${process.env.PATH}`,
+    }
   });
   apiProcess.on("error", (err) => console.error("API error:", err));
   apiProcess.on("close", (code) => console.log(`API process exited with code ${code}`));
