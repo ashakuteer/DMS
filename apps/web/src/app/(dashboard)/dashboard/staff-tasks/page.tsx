@@ -240,12 +240,14 @@ return ( <div className="p-6 space-y-6 max-w-7xl mx-auto">
   <CreateTaskDialog
     open={showCreateDialog}
     setOpen={setShowCreateDialog}
+    onSuccess={fetchTasks}
   />
 
   <EditTaskDialog
     open={showEditDialog}
     setOpen={setShowEditDialog}
     task={selectedTask}
+    onSuccess={fetchTasks}
   />
 
   <TaskDetailDialog
