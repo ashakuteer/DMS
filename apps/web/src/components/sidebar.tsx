@@ -29,6 +29,16 @@ import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
+const SIDEBAR_BG = "#2F3E46";
+const TEXT_DEFAULT = "#94A3B8";
+const TEXT_ACTIVE = "#ffffff";
+const TEAL = "#5FA8A8";
+const ACTIVE_BG = "rgba(95,168,168,0.15)";
+const ACTIVE_BORDER = `4px solid ${TEAL}`;
+const HOVER_BG = "rgba(255,255,255,0.06)";
+const BORDER_COLOR = "rgba(255,255,255,0.08)";
+const GROUP_LABEL_COLOR = "rgba(148,163,184,0.55)";
+
 interface NavItem {
   title: string;
   tKey: string;
@@ -174,21 +184,27 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   if (!mounted) return null;
 
   return (
-    <div className={cn(
-      "flex flex-col h-full bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out",
-      collapsed ? "w-16" : "w-60"
-    )}>
+    <div
+      className={cn(
+        "flex flex-col h-full transition-all duration-300 ease-in-out",
+        collapsed ? "w-16" : "w-60"
+      )}
+      style={{ background: SIDEBAR_BG, borderRight: `1px solid ${BORDER_COLOR}` }}
+    >
       {/* Header */}
-      <div className={cn(
-        "flex items-center border-b border-sidebar-border h-14 flex-shrink-0",
-        collapsed ? "justify-center px-3" : "justify-between px-4"
-      )}>
+      <div
+        className={cn(
+          "flex items-center h-14 flex-shrink-0",
+          collapsed ? "justify-center px-3" : "justify-between px-4"
+        )}
+        style={{ borderBottom: `1px solid ${BORDER_COLOR}` }}
+      >
         {!collapsed && (
           <div className="flex items-center gap-2.5 min-w-0">
             <img src="/brand/logo.jpg" alt="Asha Kuteer" className="h-7 w-7 rounded-lg object-cover flex-shrink-0 shadow-sm" data-testid="img-sidebar-logo" />
             <div className="min-w-0">
-              <span className="font-bold text-foreground text-sm truncate block">Asha Kuteer</span>
-              <span className="text-xs text-muted-foreground truncate block">Foundation</span>
+              <span className="font-bold text-sm truncate block" style={{ color: TEXT_ACTIVE }}>Asha Kuteer</span>
+              <span className="text-xs truncate block" style={{ color: TEXT_DEFAULT }}>Foundation</span>
             </div>
           </div>
         )}
@@ -198,7 +214,10 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         {!collapsed && (
           <button
             onClick={() => setCollapsed(true)}
-            className="h-6 w-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors flex-shrink-0"
+            className="h-6 w-6 rounded-md flex items-center justify-center transition-colors flex-shrink-0"
+            style={{ color: TEXT_DEFAULT }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }}
             data-testid="button-toggle-sidebar"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
@@ -208,10 +227,13 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
 
       {/* Expand button when collapsed */}
       {collapsed && (
-        <div className="flex justify-center py-2 border-b border-sidebar-border flex-shrink-0">
+        <div className="flex justify-center py-2 flex-shrink-0" style={{ borderBottom: `1px solid ${BORDER_COLOR}` }}>
           <button
             onClick={() => setCollapsed(false)}
-            className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="h-7 w-7 rounded-lg flex items-center justify-center transition-colors"
+            style={{ color: TEXT_DEFAULT }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }}
             data-testid="button-expand-sidebar"
           >
             <Menu className="h-4 w-4" />
@@ -226,7 +248,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             const items = getFilteredItems(group);
             if (items.length === 0) return null;
 
-            /* Pinned items (Dashboard, Daily Actions) */
+            /* Pinned items */
             if (group.pinned) {
               return (
                 <div key={groupIdx} className="mb-2">
@@ -236,27 +258,46 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                       <Link key={item.href} href={item.href}>
                         <div
                           className={cn(
-                            "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm transition-all cursor-pointer select-none",
-                            active
-                              ? "bg-orange-500 text-white font-medium shadow-sm shadow-orange-200"
-                              : "text-foreground/70 hover:text-foreground hover:bg-muted",
+                            "flex items-center gap-2.5 px-2.5 py-2 text-sm transition-all cursor-pointer select-none rounded-lg",
                             collapsed && "justify-center px-2"
                           )}
+                          style={
+                            active
+                              ? {
+                                  background: ACTIVE_BG,
+                                  borderLeft: collapsed ? "none" : ACTIVE_BORDER,
+                                  paddingLeft: collapsed ? undefined : "calc(0.625rem - 4px)",
+                                  color: TEXT_ACTIVE,
+                                  fontWeight: 500,
+                                }
+                              : { color: TEXT_DEFAULT }
+                          }
+                          onMouseEnter={e => {
+                            if (!active) (e.currentTarget as HTMLElement).style.background = HOVER_BG;
+                          }}
+                          onMouseLeave={e => {
+                            if (!active) (e.currentTarget as HTMLElement).style.background = "transparent";
+                          }}
                           data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                         >
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          <item.icon
+                            className="h-4 w-4 flex-shrink-0"
+                            style={{ color: active ? TEAL : TEXT_DEFAULT }}
+                          />
                           {!collapsed && <span className="truncate flex-1">{t(item.tKey)}</span>}
-                          {!collapsed && active && <ChevronRight className="ml-auto h-3 w-3 flex-shrink-0 text-orange-200" />}
+                          {!collapsed && active && (
+                            <ChevronRight className="ml-auto h-3 w-3 flex-shrink-0" style={{ color: TEAL }} />
+                          )}
                         </div>
                       </Link>
                     );
                   })}
-                  <div className="mt-2 mx-1 border-t border-sidebar-border" />
+                  <div className="mt-2 mx-1" style={{ borderTop: `1px solid ${BORDER_COLOR}` }} />
                 </div>
               );
             }
 
-            /* Collapsed: show icons only */
+            /* Collapsed: icons only */
             if (collapsed) {
               return (
                 <div key={groupIdx} className="py-0.5">
@@ -265,14 +306,25 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                     return (
                       <Link key={item.href} href={item.href}>
                         <div
-                          className={cn(
-                            "flex items-center justify-center rounded-lg p-2 transition-all cursor-pointer",
-                            active ? "bg-orange-500 text-white shadow-sm" : "text-foreground/50 hover:text-foreground hover:bg-muted"
-                          )}
+                          className="flex items-center justify-center rounded-lg p-2 transition-all cursor-pointer"
+                          style={
+                            active
+                              ? { background: ACTIVE_BG, color: TEXT_ACTIVE }
+                              : { color: TEXT_DEFAULT }
+                          }
+                          onMouseEnter={e => {
+                            if (!active) (e.currentTarget as HTMLElement).style.background = HOVER_BG;
+                          }}
+                          onMouseLeave={e => {
+                            if (!active) (e.currentTarget as HTMLElement).style.background = "transparent";
+                          }}
                           title={t(item.tKey)}
                           data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                         >
-                          <item.icon className="h-4 w-4" />
+                          <item.icon
+                            className="h-4 w-4"
+                            style={{ color: active ? TEAL : TEXT_DEFAULT }}
+                          />
                         </div>
                       </Link>
                     );
@@ -289,15 +341,21 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               <div key={groupIdx} className="pt-1">
                 <button
                   onClick={() => toggleGroup(group.label!)}
-                  className={cn(
-                    "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer",
-                    hasActive ? "text-orange-600" : "text-muted-foreground hover:text-foreground/70"
-                  )}
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                  style={{ color: hasActive ? TEAL : GROUP_LABEL_COLOR }}
+                  onMouseEnter={e => {
+                    if (!hasActive) (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT;
+                  }}
+                  onMouseLeave={e => {
+                    if (!hasActive) (e.currentTarget as HTMLElement).style.color = GROUP_LABEL_COLOR;
+                  }}
                 >
                   <span className="truncate flex-1 text-left">
                     {group.labelKey ? t(group.labelKey) : group.label}
                   </span>
-                  <ChevronDown className={cn("h-3 w-3 flex-shrink-0 transition-transform duration-200", isExpanded && "rotate-180")} />
+                  <ChevronDown
+                    className={cn("h-3 w-3 flex-shrink-0 transition-transform duration-200", isExpanded && "rotate-180")}
+                  />
                 </button>
 
                 {isExpanded && (
@@ -307,15 +365,30 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                       return (
                         <Link key={item.href} href={item.href}>
                           <div
-                            className={cn(
-                              "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs transition-all cursor-pointer select-none",
+                            className="flex items-center gap-2.5 px-2.5 py-1.5 text-xs transition-all cursor-pointer select-none rounded-lg"
+                            style={
                               active
-                                ? "bg-orange-500 text-white font-medium shadow-sm shadow-orange-200"
-                                : "text-foreground/60 hover:text-foreground hover:bg-muted"
-                            )}
+                                ? {
+                                    background: ACTIVE_BG,
+                                    borderLeft: ACTIVE_BORDER,
+                                    paddingLeft: "calc(0.625rem - 4px)",
+                                    color: TEXT_ACTIVE,
+                                    fontWeight: 500,
+                                  }
+                                : { color: TEXT_DEFAULT }
+                            }
+                            onMouseEnter={e => {
+                              if (!active) (e.currentTarget as HTMLElement).style.background = HOVER_BG;
+                            }}
+                            onMouseLeave={e => {
+                              if (!active) (e.currentTarget as HTMLElement).style.background = "transparent";
+                            }}
                             data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, "-")}`}
                           >
-                            <item.icon className="h-3.5 w-3.5 flex-shrink-0" />
+                            <item.icon
+                              className="h-3.5 w-3.5 flex-shrink-0"
+                              style={{ color: active ? TEAL : TEXT_DEFAULT }}
+                            />
                             <span className="truncate">{t(item.tKey)}</span>
                           </div>
                         </Link>
@@ -330,16 +403,22 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       </ScrollArea>
 
       {/* Footer */}
-      <div className={cn(
-        "border-t border-sidebar-border p-2 space-y-1 flex-shrink-0 bg-sidebar",
-        collapsed && "flex flex-col items-center"
-      )}>
+      <div
+        className={cn(
+          "p-2 space-y-1 flex-shrink-0",
+          collapsed && "flex flex-col items-center"
+        )}
+        style={{ borderTop: `1px solid ${BORDER_COLOR}`, background: SIDEBAR_BG }}
+      >
         <button
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           className={cn(
-            "flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer w-full",
+            "flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm transition-colors cursor-pointer w-full",
             collapsed && "justify-center w-10 px-0"
           )}
+          style={{ color: TEXT_DEFAULT }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }}
           data-testid="button-theme-toggle"
         >
           {theme === "dark" ? <Sun className="h-4 w-4 flex-shrink-0" /> : <Moon className="h-4 w-4 flex-shrink-0" />}
@@ -350,20 +429,23 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           <DropdownMenuTrigger asChild>
             <button
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-2 py-1.5 w-full text-foreground/70 hover:text-foreground hover:bg-muted transition-colors cursor-pointer",
+                "flex items-center gap-2.5 rounded-lg px-2 py-1.5 w-full transition-colors cursor-pointer",
                 collapsed && "justify-center"
               )}
+              style={{ color: TEXT_DEFAULT }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }}
               data-testid="button-user-menu"
             >
               <Avatar className="h-7 w-7 flex-shrink-0">
-                <AvatarFallback className="bg-orange-500 text-white text-xs font-semibold">
+                <AvatarFallback className="text-white text-xs font-semibold" style={{ background: TEAL }}>
                   {user ? getInitials(user.name) : "??"}
                 </AvatarFallback>
               </Avatar>
               {!collapsed && (
                 <div className="flex flex-col items-start text-left min-w-0 flex-1">
-                  <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">{user?.name || "User"}</span>
-                  <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user?.role || "Role"}</span>
+                  <span className="text-xs font-semibold truncate max-w-[120px]" style={{ color: TEXT_ACTIVE }}>{user?.name || "User"}</span>
+                  <span className="text-xs truncate max-w-[120px]" style={{ color: TEXT_DEFAULT }}>{user?.role || "Role"}</span>
                 </div>
               )}
             </button>
