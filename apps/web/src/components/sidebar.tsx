@@ -29,15 +29,15 @@ import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-const SIDEBAR_BG = "#2F3E46";
-const TEXT_DEFAULT = "#94A3B8";
+const SIDEBAR_BG = "#334155";
+const TEXT_DEFAULT = "#CBD5E1";
 const TEXT_ACTIVE = "#ffffff";
 const TEAL = "#5FA8A8";
-const ACTIVE_BG = "rgba(95,168,168,0.15)";
+const ACTIVE_BG = "rgba(95,168,168,0.2)";
 const ACTIVE_BORDER = `4px solid ${TEAL}`;
-const HOVER_BG = "rgba(255,255,255,0.06)";
-const BORDER_COLOR = "rgba(255,255,255,0.08)";
-const GROUP_LABEL_COLOR = "rgba(148,163,184,0.55)";
+const HOVER_BG = "rgba(255,255,255,0.07)";
+const BORDER_COLOR = "rgba(255,255,255,0.10)";
+const GROUP_LABEL_COLOR = "rgba(203,213,225,0.45)";
 
 interface NavItem {
   title: string;
