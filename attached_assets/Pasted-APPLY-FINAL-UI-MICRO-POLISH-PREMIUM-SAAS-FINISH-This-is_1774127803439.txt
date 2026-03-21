@@ -1,0 +1,159 @@
+APPLY FINAL UI MICRO-POLISH (PREMIUM SAAS FINISH)
+
+This is the FINAL design refinement.
+Do NOT change colors or structure.
+Only improve spacing, typography, and visual polish.
+
+-------------------------------------
+1. GLOBAL SPACING SYSTEM
+-------------------------------------
+
+Apply consistent spacing everywhere:
+
+Page padding:
+padding: 24px;
+
+Between sections:
+margin-bottom: 24px;
+
+Between cards:
+gap: 16px;
+
+Inside cards:
+padding: 16px;
+
+-------------------------------------
+2. CARD REFINEMENT
+-------------------------------------
+
+All cards:
+
+border-radius: 12px;
+transition: all 0.2s ease;
+
+Hover effect:
+transform: translateY(-2px);
+box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+
+Remove:
+- harsh shadows
+- uneven spacing
+
+-------------------------------------
+3. TYPOGRAPHY SYSTEM
+-------------------------------------
+
+Headings:
+
+Page Title:
+font-size: 20px;
+font-weight: 600;
+color: #0F172A;
+
+Section Titles:
+font-size: 16px;
+font-weight: 600;
+color: #1E293B;
+
+-------------------------------------
+
+Card Numbers (VERY IMPORTANT):
+
+font-size: 22px;
+font-weight: 700;
+color: #0F172A;
+
+-------------------------------------
+
+Labels / Small text:
+
+font-size: 13px;
+color: #64748B;
+
+-------------------------------------
+
+Remove:
+- bold everywhere
+- inconsistent sizes
+
+-------------------------------------
+4. ICON SYSTEM
+-------------------------------------
+
+All icons:
+
+size: 18px;
+
+Inside cards:
+background: #F1F5F9;
+padding: 6px;
+border-radius: 8px;
+
+color: #5FA8A8;
+
+-------------------------------------
+5. BUTTON POLISH
+-------------------------------------
+
+All buttons:
+
+padding: 8px 14px;
+font-size: 14px;
+font-weight: 500;
+border-radius: 8px;
+
+Hover:
+slight brightness increase
+
+-------------------------------------
+6. TABLE CLEANUP
+-------------------------------------
+
+Table cells:
+padding: 12px;
+
+Text:
+font-size: 14px;
+
+Row hover:
+background: #F8FAFC;
+
+-------------------------------------
+7. ALIGNMENT FIX (VERY IMPORTANT)
+-------------------------------------
+
+Ensure:
+
+- All card titles aligned left
+- Numbers aligned consistently
+- Icons aligned with text
+- No jumping layouts
+
+-------------------------------------
+8. REMOVE CLUTTER
+-------------------------------------
+
+Remove:
+
+- extra borders
+- unnecessary shadows
+- inconsistent padding
+- visual noise
+
+-------------------------------------
+FINAL RESULT
+-------------------------------------
+
+UI must feel:
+
+- clean
+- airy
+- balanced
+- premium
+- easy to read
+
+Like:
+Stripe / Notion / Linear style
+
+NO redesign.
+ONLY polish.
