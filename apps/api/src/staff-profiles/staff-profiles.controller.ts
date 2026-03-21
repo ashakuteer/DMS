@@ -44,12 +44,11 @@ export class StaffProfilesController {
   @Get('staff-profiles')
   @Roles(Role.ADMIN, Role.STAFF)
   findAll(
-    @Query('roleType') roleType?: string,
     @Query('homeId') homeId?: string,
     @Query('designation') designation?: string,
     @Query('status') status?: string,
   ) {
-    return this.service.findAll({ roleType, homeId, designation, status });
+    return this.service.findAll({ homeId, designation, status });
   }
 
   @Post('staff-profiles')

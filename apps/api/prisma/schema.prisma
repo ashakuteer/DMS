@@ -2084,12 +2084,6 @@ model TimeMachineEntry {
 
 // ─── Staff Profile Management ─────────────────────────────────────────────────
 
-enum StaffRoleType {
-  ADMIN
-  TELECALLER
-  HOME_STAFF
-}
-
 enum StaffStatus {
   ACTIVE
   INACTIVE
@@ -2114,22 +2108,26 @@ model Home {
 }
 
 model Staff {
-  id                     String             @id @default(uuid())
+  id                     String            @id @default(uuid())
   name                   String
   phone                  String?
   email                  String?
-  roleType               StaffRoleType
-  designation            String?
+  designation            String
   homeId                 String?
-  home                   Home?              @relation(fields: [homeId], references: [id])
-  status                 StaffStatus        @default(ACTIVE)
+  home                   Home?             @relation(fields: [homeId], references: [id])
+  status                 StaffStatus       @default(ACTIVE)
   profilePhotoUrl        String?
   bloodGroup             String?
+  addressLine1           String?
+  addressLine2           String?
+  city                   String?
+  state                  String?
+  pincode                String?
   emergencyContact1Name  String?
   emergencyContact1Phone String?
   emergencyContact2Name  String?
   emergencyContact2Phone String?
-  createdAt              DateTime           @default(now())
+  createdAt              DateTime          @default(now())
   documents              StaffDocument[]
   bankDetails            StaffBankDetails?
 

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
-import { StaffRoleType, StaffStatus, StaffDocumentType } from '@prisma/client';
+import { StaffStatus, StaffDocumentType } from '@prisma/client';
 
 @Injectable()
 export class StaffProfilesService {
@@ -10,9 +10,8 @@ export class StaffProfilesService {
     private storage: StorageService,
   ) {}
 
-  async findAll(params: { roleType?: string; homeId?: string; designation?: string; status?: string }) {
+  async findAll(params: { homeId?: string; designation?: string; status?: string }) {
     const where: any = {};
-    if (params.roleType) where.roleType = params.roleType as StaffRoleType;
     if (params.homeId) where.homeId = params.homeId;
     if (params.status) where.status = params.status as StaffStatus;
     if (params.designation) {
@@ -42,12 +41,16 @@ export class StaffProfilesService {
     name: string;
     phone?: string;
     email?: string;
-    roleType: StaffRoleType;
-    designation?: string;
+    designation: string;
     homeId?: string;
     status?: StaffStatus;
     profilePhotoUrl?: string;
     bloodGroup?: string;
+    addressLine1?: string;
+    addressLine2?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
     emergencyContact1Name?: string;
     emergencyContact1Phone?: string;
     emergencyContact2Name?: string;
@@ -59,21 +62,28 @@ export class StaffProfilesService {
     });
   }
 
-  async update(id: string, data: Partial<{
-    name: string;
-    phone: string;
-    email: string;
-    roleType: StaffRoleType;
-    designation: string;
-    homeId: string;
-    status: StaffStatus;
-    profilePhotoUrl: string;
-    bloodGroup: string;
-    emergencyContact1Name: string;
-    emergencyContact1Phone: string;
-    emergencyContact2Name: string;
-    emergencyContact2Phone: string;
-  }>) {
+  async update(
+    id: string,
+    data: Partial<{
+      name: string;
+      phone: string;
+      email: string;
+      designation: string;
+      homeId: string;
+      status: StaffStatus;
+      profilePhotoUrl: string;
+      bloodGroup: string;
+      addressLine1: string;
+      addressLine2: string;
+      city: string;
+      state: string;
+      pincode: string;
+      emergencyContact1Name: string;
+      emergencyContact1Phone: string;
+      emergencyContact2Name: string;
+      emergencyContact2Phone: string;
+    }>,
+  ) {
     await this.findOne(id);
     return this.prisma.staff.update({
       where: { id },
@@ -102,7 +112,11 @@ export class StaffProfilesService {
     });
   }
 
-  async uploadDocument(staffId: string, file: Express.Multer.File, docType: string) {
+  async uploadDocument(
+    staffId: string,
+    file: Express.Multer.File,
+    docType: string,
+  ) {
     await this.findOne(staffId);
     const { url } = await this.storage.uploadStaffDocument(
       staffId,
