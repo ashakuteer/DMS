@@ -91,21 +91,21 @@ function HeroIllustration() {
 function KpiCard({ title, value, icon: Icon, color, gradient }: {
   title: string; value: string; icon: React.ElementType; color: string; gradient?: string;
 }) {
-  const hasGradient = !!gradient;
+  const isHighlight = !!gradient;
   return (
     <Card
-      className="border-0 transition-shadow hover:shadow-md"
-      style={hasGradient
+      className={`transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] ${isHighlight ? "border-0" : ""}`}
+      style={isHighlight
         ? { background: gradient, boxShadow: "0 4px 12px rgba(95,168,168,0.25)" }
-        : { background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }
+        : { background: "#FFFFFF", borderColor: "#E2E8F0" }
       }
     >
       <CardContent className="p-5">
-        <div className={`inline-flex p-2 rounded-xl mb-3 ${hasGradient ? "bg-white/20" : "bg-white/70"}`}>
-          <Icon className={`h-4 w-4 ${hasGradient ? "text-white" : color}`} />
+        <div className={`inline-flex p-2 rounded-xl mb-3 ${isHighlight ? "bg-white/20" : "bg-[#F1F5F9]"}`}>
+          <Icon className={`h-4 w-4 ${isHighlight ? "text-white" : "text-[#5FA8A8]"}`} />
         </div>
-        <p className={`text-2xl font-bold leading-tight ${hasGradient ? "text-white" : "text-[#0F172A]"}`}>{value}</p>
-        <p className={`text-xs mt-1 font-medium ${hasGradient ? "text-white/80" : "text-[#64748B]"}`}>{title}</p>
+        <p className={`text-2xl font-bold leading-tight ${isHighlight ? "text-white" : "text-[#1E293B]"}`}>{value}</p>
+        <p className={`text-xs mt-1 font-medium ${isHighlight ? "text-white/80" : "text-[#64748B]"}`}>{title}</p>
       </CardContent>
     </Card>
   );
