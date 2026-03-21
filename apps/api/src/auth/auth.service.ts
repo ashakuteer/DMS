@@ -342,6 +342,20 @@ export class AuthService {
     return { message: 'Password reset successfully. Please log in with your new password.' };
   }
 
+  // Public wrapper used by OTP verify flow in AuthController
+  async generateTokensPublic(userId: string, email: string, role: Role) {
+    return this.generateTokens(userId, email, role);
+  }
+
+  async logOtpLogin(userId: string) {
+    await this.auditService.log({
+      userId,
+      action: AuditAction.LOGIN,
+      entityType: 'USER',
+      entityId: userId,
+    });
+  }
+
   private async generateTokens(userId: string, email: string, role: Role) {
     const payload = { sub: userId, email, role };
 

@@ -59,6 +59,39 @@ export const authStorage = {
   },
 };
 
+export async function sendOtp(phone: string): Promise<{ message: string }> {
+  const res = await fetch(`${API_URL}/api/auth/send-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to send OTP');
+  }
+
+  return res.json();
+}
+
+export async function verifyOtp(phone: string, code: string): Promise<AuthResponse> {
+  const res = await fetch(`${API_URL}/api/auth/verify-otp`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone, code }),
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || 'OTP verification failed');
+  }
+
+  const data: AuthResponse = await res.json();
+  authStorage.setTokens(data.tokens);
+  authStorage.setUser(data.user);
+  return data;
+}
+
 export async function login(email: string, password: string): Promise<AuthResponse> {
   const res = await fetch(`${API_URL}/api/auth/login`, {
     method: 'POST',

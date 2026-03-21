@@ -68,6 +68,17 @@ model User {
 
   @@map("users")
 }
+
+model Otp {
+  id        String   @id @default(uuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("otps")
+}
+
 model Donor {
   id                 String                 @id @default(uuid())
   donorCode          String                 @unique
