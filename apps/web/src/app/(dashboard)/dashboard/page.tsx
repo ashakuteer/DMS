@@ -88,17 +88,18 @@ function HeroIllustration() {
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
-function KpiCard({ title, value, icon: Icon, color, highlight }: {
-  title: string; value: string; icon: React.ElementType; color: string; highlight?: boolean;
+function KpiCard({ title, value, icon: Icon, color, gradient }: {
+  title: string; value: string; icon: React.ElementType; color: string; gradient?: string;
 }) {
+  const hasGradient = !!gradient;
   return (
-    <Card className={highlight ? "border-0 shadow-md" : "border-0 shadow-sm"} style={highlight ? { background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)" } : undefined}>
+    <Card className={`border-0 ${hasGradient ? "shadow-md" : "shadow-sm"}`} style={hasGradient ? { background: gradient } : { background: "#ffffff" }}>
       <CardContent className="p-5">
-        <div className={`inline-flex p-2 rounded-xl mb-3 ${highlight ? "bg-white/20" : "bg-muted/60"}`}>
-          <Icon className={`h-4 w-4 ${highlight ? "text-white" : color}`} />
+        <div className={`inline-flex p-2 rounded-xl mb-3 ${hasGradient ? "bg-white/20" : "bg-muted/60"}`}>
+          <Icon className={`h-4 w-4 ${hasGradient ? "text-white" : color}`} />
         </div>
-        <p className={`text-2xl font-bold leading-tight ${highlight ? "text-white" : "text-foreground"}`}>{value}</p>
-        <p className={`text-xs mt-1 font-medium ${highlight ? "text-white/80" : "text-muted-foreground"}`}>{title}</p>
+        <p className={`text-2xl font-bold leading-tight ${hasGradient ? "text-white" : "text-foreground"}`}>{value}</p>
+        <p className={`text-xs mt-1 font-medium ${hasGradient ? "text-white/80" : "text-muted-foreground"}`}>{title}</p>
       </CardContent>
     </Card>
   );
@@ -396,8 +397,8 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-4">
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-                <KpiCard title={t("home.total_fy_donations")} value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} color="text-teal-500" highlight />
-                <KpiCard title={t("home.donations_this_month")} value={stats ? fmt(stats.donationsThisMonth) : "—"} icon={TrendingUp} color="text-blue-600" />
+                <KpiCard title={t("home.total_fy_donations")} value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} color="text-teal-500" gradient="linear-gradient(135deg, #A8D5D1, #5FA8A8)" />
+                <KpiCard title={t("home.donations_this_month")} value={stats ? fmt(stats.donationsThisMonth) : "—"} icon={TrendingUp} color="text-blue-600" gradient="linear-gradient(135deg, #B6CCFE, #7FAFD4)" />
                 <KpiCard title={t("home.active_donors")} value={totalDonors > 0 ? totalDonors.toString() : (stats?.activeDonors?.toString() ?? "—")} icon={Users} color="text-violet-600" />
                 <KpiCard title={t("home.monthly_donors")} value={monthlyTarget ? monthlyTarget.totalMonthlyDonors.toString() : "—"} icon={Repeat} color="text-teal-600" />
               </div>
