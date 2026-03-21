@@ -29,17 +29,19 @@ import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-const SIDEBAR_BG = "#344E52";
-const TEXT_DEFAULT = "#A7C7C7";
-const TEXT_LABEL  = "#CFE8E8";
-const TEXT_ACTIVE = "#ffffff";
+const SIDEBAR_BG = "#2F3E46";
+const TEXT_DEFAULT = "#AAB4BE";
+const TEXT_HOVER   = "#E2E8F0";
+const TEXT_LABEL   = "#E2E8F0";
+const TEXT_ACTIVE  = "#ffffff";
 const TEAL = "#5FA8A8";
-const ICON_COLOR = "#9FE3D8";
-const ACTIVE_BG = "linear-gradient(90deg, #5FA8A8, #7FAFD4)";
+const ICON_COLOR   = "#AAB4BE";
+const ICON_ACTIVE  = "#5FA8A8";
+const ACTIVE_BG = "rgba(95,168,168,0.25)";
 const ACTIVE_BORDER = "none";
-const HOVER_BG = "rgba(255,255,255,0.06)";
-const BORDER_COLOR = "rgba(255,255,255,0.10)";
-const GROUP_LABEL_COLOR = "#7FAFD4";
+const HOVER_BG = "rgba(255,255,255,0.05)";
+const BORDER_COLOR = "rgba(255,255,255,0.08)";
+const GROUP_LABEL_COLOR = "#6B7280";
 
 interface NavItem {
   title: string;
@@ -218,7 +220,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             onClick={() => setCollapsed(true)}
             className="h-6 w-6 rounded-md flex items-center justify-center transition-colors flex-shrink-0"
             style={{ color: TEXT_DEFAULT }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_HOVER; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }}
             data-testid="button-toggle-sidebar"
           >
@@ -234,7 +236,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             onClick={() => setCollapsed(false)}
             className="h-7 w-7 rounded-lg flex items-center justify-center transition-colors"
             style={{ color: TEXT_DEFAULT }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_HOVER; }}
             onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }}
             data-testid="button-expand-sidebar"
           >
@@ -284,7 +286,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                         >
                           <item.icon
                             className="h-4 w-4 flex-shrink-0"
-                            style={{ color: active ? "#ffffff" : ICON_COLOR }}
+                            style={{ color: active ? ICON_ACTIVE : ICON_COLOR }}
                           />
                           {!collapsed && <span className="truncate flex-1">{t(item.tKey)}</span>}
                           {!collapsed && active && (
@@ -325,7 +327,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                         >
                           <item.icon
                             className="h-4 w-4"
-                            style={{ color: active ? "#ffffff" : ICON_COLOR }}
+                            style={{ color: active ? ICON_ACTIVE : ICON_COLOR }}
                           />
                         </div>
                       </Link>
@@ -389,7 +391,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                           >
                             <item.icon
                               className="h-3.5 w-3.5 flex-shrink-0"
-                              style={{ color: active ? "#ffffff" : ICON_COLOR }}
+                              style={{ color: active ? ICON_ACTIVE : ICON_COLOR }}
                             />
                             <span className="truncate">{t(item.tKey)}</span>
                           </div>
@@ -419,7 +421,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             collapsed && "justify-center w-10 px-0"
           )}
           style={{ color: TEXT_DEFAULT }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_HOVER; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }}
           data-testid="button-theme-toggle"
         >
@@ -435,7 +437,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                 collapsed && "justify-center"
               )}
               style={{ color: TEXT_DEFAULT }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_HOVER; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }}
               data-testid="button-user-menu"
             >
