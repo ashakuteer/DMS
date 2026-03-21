@@ -2,39 +2,21 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import Twilio from 'twilio';
+import { WhatsappService } from '../whatsapp/whatsapp.service';
+
+export type MessageType = 'OTP' | 'WHATSAPP';
 
 @Injectable()
 export class OtpService {
-  private twilioClient: ReturnType<typeof Twilio> | null = null;
-  private fromPhone: string | null = null;
+  private readonly logger = new Logger(OtpService.name);
 
   constructor(
     private prisma: PrismaService,
-    private configService: ConfigService,
-  ) {
-    const accountSid = this.configService.get<string>('TWILIO_ACCOUNT_SID');
-    const authToken = this.configService.get<string>('TWILIO_AUTH_TOKEN');
-    const phone = this.configService.get<string>('TWILIO_PHONE');
-
-    if (accountSid && authToken) {
-      this.twilioClient = Twilio(accountSid, authToken);
-      console.log('[OtpService] Twilio client initialized');
-    } else {
-      console.warn('[OtpService] Twilio not configured — OTPs will be logged to console only');
-    }
-
-    if (phone) {
-      // Strip any "whatsapp:" prefix — we need the plain E.164 number for SMS
-      this.fromPhone = phone.replace(/^whatsapp:/i, '').trim();
-      console.log(`[OtpService] TWILIO_PHONE set to: ${this.fromPhone}`);
-    } else {
-      console.warn('[OtpService] TWILIO_PHONE not set — SMS will be skipped');
-    }
-  }
+    private whatsappService: WhatsappService,
+  ) {}
 
   async sendOtp(phone: string): Promise<{ message: string }> {
     const normalizedPhone = this.normalizePhone(phone);
@@ -64,33 +46,43 @@ export class OtpService {
       data: { phone: normalizedPhone, code, expiresAt },
     });
 
-    // Attempt to send via Twilio SMS
-    await this.sendSms(normalizedPhone, code);
+    // Route by message type — OTP always goes via SMS (plain E.164 format)
+    await this.dispatch({
+      messageType: 'OTP',
+      to: normalizedPhone,
+      code,
+    });
 
     return { message: 'OTP sent successfully' };
   }
 
-  private async sendSms(to: string, code: string): Promise<void> {
-    const message = `Your Asha Kuteer DMS login OTP is ${code}. Valid for 5 minutes. Do not share this with anyone.`;
+  /**
+   * Central dispatch — routes message based on type:
+   *   OTP      → SMS via TWILIO_PHONE (plain E.164, no "whatsapp:" prefix)
+   *   WHATSAPP → WhatsApp via TWILIO_WHATSAPP_NUMBER or Twilio Sandbox
+   */
+  private async dispatch(opts: {
+    messageType: MessageType;
+    to: string;
+    code: string;
+  }): Promise<void> {
+    const { messageType, to, code } = opts;
+    const body = `Your Asha Kuteer DMS login OTP is ${code}. Valid for 5 minutes. Do not share this with anyone.`;
 
-    // If Twilio client or phone not configured → fall back to console
-    if (!this.twilioClient || !this.fromPhone) {
-      console.warn(`[OtpService][DEV] Twilio not configured. OTP for ${to}: ${code}`);
-      return;
-    }
-
-    try {
-      const result = await this.twilioClient.messages.create({
-        body: message,
-        from: this.fromPhone,
-        to,
-      });
-      console.log(`[OtpService] SMS sent to ${to}, SID: ${result.sid}`);
-    } catch (err: any) {
-      // Log the OTP to console so development/testing still works
-      // Do NOT throw — returning success lets the user proceed with the console OTP
-      console.error(`[OtpService] Twilio error (${err.code}): ${err.message}`);
-      console.warn(`[OtpService][FALLBACK] OTP for ${to}: ${code}`);
+    if (messageType === 'OTP') {
+      // SMS: from TWILIO_PHONE (E.164), to E.164 — no whatsapp: prefix
+      const sent = await this.whatsappService.sendSms(to, body);
+      if (!sent) {
+        // Fallback: log OTP so testing still works without a valid Twilio SMS number
+        this.logger.warn(`[OTP][FALLBACK] OTP for ${to}: ${code}`);
+      }
+    } else {
+      // WhatsApp: from whatsapp:+14155238886 (sandbox) or TWILIO_WHATSAPP_NUMBER
+      //           to whatsapp:+91XXXXXXXXXX — DO NOT mix channels
+      const sent = await this.whatsappService.sendWhatsApp(to, body);
+      if (!sent) {
+        this.logger.warn(`[WhatsApp][FALLBACK] OTP for ${to}: ${code}`);
+      }
     }
   }
 
@@ -106,7 +98,9 @@ export class OtpService {
     });
 
     if (!otp) {
-      throw new UnauthorizedException('No OTP found for this phone number. Please request a new one.');
+      throw new UnauthorizedException(
+        'No OTP found for this phone number. Please request a new one.',
+      );
     }
 
     if (new Date() > otp.expiresAt) {
@@ -118,7 +112,7 @@ export class OtpService {
       throw new UnauthorizedException('Invalid OTP. Please check and try again.');
     }
 
-    // OTP valid — delete it immediately (one-time use)
+    // OTP valid — delete immediately (one-time use)
     await this.prisma.otp.delete({ where: { id: otp.id } });
 
     // Find user by phone number
@@ -134,7 +128,9 @@ export class OtpService {
     }
 
     if (!user.isActive) {
-      throw new UnauthorizedException('Your account is deactivated. Please contact your administrator.');
+      throw new UnauthorizedException(
+        'Your account is deactivated. Please contact your administrator.',
+      );
     }
 
     return user;

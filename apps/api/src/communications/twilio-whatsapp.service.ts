@@ -55,12 +55,15 @@ export class TwilioWhatsAppService {
     }
 
     if (rawFrom && !rawFrom.startsWith("whatsapp:+")) {
-      this.logger.error(
-        `TWILIO_WHATSAPP_NUMBER must start with "whatsapp:+" but got "${rawFrom.substring(0, 15)}...". WhatsApp sending DISABLED.`,
-      );
-      this.disabled = true;
-      this.disableReason = `TWILIO_WHATSAPP_NUMBER invalid (expected "whatsapp:+..." format)`;
-      return;
+      // Accept plain E.164 format by adding the prefix
+      if (rawFrom.startsWith("+")) {
+        this.logger.warn(`TWILIO_WHATSAPP_NUMBER "${rawFrom}" missing "whatsapp:" prefix — adding it automatically.`);
+      } else {
+        this.logger.error(`TWILIO_WHATSAPP_NUMBER invalid format: "${rawFrom.substring(0, 15)}...". WhatsApp DISABLED.`);
+        this.disabled = true;
+        this.disableReason = `TWILIO_WHATSAPP_NUMBER invalid (expected "whatsapp:+..." or "+..." format)`;
+        return;
+      }
     }
 
     if (rawMsgSid && !rawMsgSid.startsWith("MG")) {
@@ -72,18 +75,20 @@ export class TwilioWhatsAppService {
       this.logger.log(`Messaging Service SID: ${rawMsgSid.substring(0, 6)}...`);
     }
 
-    if (rawFrom.startsWith("whatsapp:+")) {
-      this.fromNumber = rawFrom;
-      this.logger.log(`WhatsApp from number: ${rawFrom}`);
+    if (rawFrom) {
+      // Normalise to whatsapp:+... format
+      this.fromNumber = rawFrom.startsWith("whatsapp:")
+        ? rawFrom
+        : `whatsapp:${rawFrom}`;
+      this.logger.log(`WhatsApp from number: ${this.fromNumber}`);
     }
 
     if (!this.fromNumber && !this.messagingServiceSid) {
-      this.logger.error(
-        "Neither a valid TWILIO_WHATSAPP_NUMBER nor TWILIO_MESSAGING_SERVICE_SID is configured. WhatsApp sending DISABLED.",
+      // Fall back to Twilio WhatsApp Sandbox
+      this.fromNumber = "whatsapp:+14155238886";
+      this.logger.warn(
+        `TWILIO_WHATSAPP_NUMBER not set — falling back to Twilio Sandbox (${this.fromNumber}). Recipients must opt-in first.`,
       );
-      this.disabled = true;
-      this.disableReason = "No valid from number or messaging service SID";
-      return;
     }
 
     this.client = twilio(accountSid, authToken);
