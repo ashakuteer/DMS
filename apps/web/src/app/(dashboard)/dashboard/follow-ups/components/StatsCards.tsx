@@ -11,13 +11,23 @@ interface Stats {
   completed: number
 }
 
+const HIGHLIGHT_CARD = {
+  background: "linear-gradient(135deg, #5FA8A8, #6FAFD4)",
+  boxShadow: "0 6px 18px rgba(95,168,168,0.25)",
+};
+const NORMAL_CARD = {
+  background: "#FFFFFF",
+  border: "1px solid #EEF2F7",
+  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+};
+
 export default function StatsCards({ stats }: { stats: Stats }) {
   const { t } = useTranslation()
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
 
-      <Card className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)", boxShadow: "0 4px 12px rgba(95,168,168,0.25)" }}>
+      <Card className="border-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)]" style={HIGHLIGHT_CARD}>
         <CardContent className="pt-4 pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-md bg-white/20">
@@ -31,7 +41,7 @@ export default function StatsCards({ stats }: { stats: Stats }) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)", boxShadow: "0 4px 12px rgba(95,168,168,0.25)" }}>
+      <Card className="border-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)]" style={HIGHLIGHT_CARD}>
         <CardContent className="pt-4 pb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-md bg-white/20">
@@ -45,10 +55,10 @@ export default function StatsCards({ stats }: { stats: Stats }) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+      <Card className="border-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)]" style={NORMAL_CARD}>
         <CardContent className="pt-4 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-md bg-white/70">
+            <div className="p-2 rounded-md bg-[#F1F5F9]">
               <Clock className="h-5 w-5 text-[#5FA8A8]" />
             </div>
             <div>
@@ -59,10 +69,10 @@ export default function StatsCards({ stats }: { stats: Stats }) {
         </CardContent>
       </Card>
 
-      <Card className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+      <Card className="border-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)]" style={NORMAL_CARD}>
         <CardContent className="pt-4 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-md bg-white/70">
+            <div className="p-2 rounded-md bg-[#F1F5F9]">
               <CheckCircle2 className="h-5 w-5 text-[#5FA8A8]" />
             </div>
             <div>

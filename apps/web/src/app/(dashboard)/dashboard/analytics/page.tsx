@@ -45,12 +45,12 @@ const CHART_COLORS = [
 ];
 
 const CARD_STYLES: React.CSSProperties[] = [
-  { background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)", border: "none", boxShadow: "0 4px 12px rgba(95,168,168,0.25)" },
-  { background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)", border: "none", boxShadow: "0 4px 12px rgba(95,168,168,0.25)" },
-  { background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" },
-  { background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" },
+  { background: "linear-gradient(135deg, #5FA8A8, #6FAFD4)", border: "none", boxShadow: "0 6px 18px rgba(95,168,168,0.25)" },
+  { background: "linear-gradient(135deg, #5FA8A8, #6FAFD4)", border: "none", boxShadow: "0 6px 18px rgba(95,168,168,0.25)" },
+  { background: "#FFFFFF", border: "1px solid #EEF2F7", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" },
+  { background: "#FFFFFF", border: "1px solid #EEF2F7", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" },
 ];
-const CARD_STYLE_STANDARD: React.CSSProperties = { background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" };
+const CARD_STYLE_STANDARD: React.CSSProperties = { background: "#FFFFFF", border: "1px solid #EEF2F7", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
 
 const fmtCurrency = (n: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -238,9 +238,9 @@ function KPICard({
   testId: string;
   cardStyle?: React.CSSProperties;
 }) {
-  const isGradient = cardStyle && typeof cardStyle.background === "string" && cardStyle.background.includes("5FA8A8") && cardStyle.background.includes("7FAFD4") && cardStyle.background.includes("135deg");
+  const isGradient = cardStyle && typeof cardStyle.background === "string" && cardStyle.background.includes("5FA8A8") && cardStyle.background.includes("135deg");
   return (
-    <Card data-testid={testId} style={cardStyle} className="border-0 shadow-none transition-shadow hover:shadow-md">
+    <Card data-testid={testId} style={cardStyle} className="border-0 shadow-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)]">
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
         <CardTitle className={`text-sm font-medium ${isGradient ? "text-white/80" : "text-muted-foreground"}`}>{title}</CardTitle>
         <Icon className={`h-4 w-4 ${isGradient ? "text-white/70" : "text-muted-foreground"}`} />

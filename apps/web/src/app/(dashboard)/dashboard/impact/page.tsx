@@ -189,7 +189,7 @@ export default function ImpactDashboardPage() {
       subtitle: `${data.summary.activeSponsorships} sponsorships`,
       growth: 0,
       icon: Heart,
-      cardBg: "linear-gradient(135deg, #E6F4F4, #EEF6FB)",
+      cardBg: "#FFFFFF",
       isGradient: false,
     },
     {
@@ -198,7 +198,7 @@ export default function ImpactDashboardPage() {
       subtitle: `${data.summary.totalCampaigns} campaigns`,
       growth: 0,
       icon: IndianRupee,
-      cardBg: "linear-gradient(135deg, #E6F4F4, #EEF6FB)",
+      cardBg: "#FFFFFF",
       isGradient: false,
     },
   ];
@@ -224,10 +224,10 @@ export default function ImpactDashboardPage() {
           <Card
             key={card.title}
             data-testid={`card-kpi-${card.title.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}
-            className="border-0 transition-shadow hover:shadow-md"
+            className="border-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)]"
             style={card.isGradient
-              ? { background: card.cardBg, boxShadow: "0 4px 12px rgba(95,168,168,0.25)" }
-              : { background: card.cardBg, border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }
+              ? { background: card.cardBg, boxShadow: "0 6px 18px rgba(95,168,168,0.25)" }
+              : { background: card.cardBg, border: "1px solid #EEF2F7", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }
             }
           >
             <CardContent className="p-5">

@@ -94,10 +94,10 @@ function KpiCard({ title, value, icon: Icon, color, gradient }: {
   const isHighlight = !!gradient;
   return (
     <Card
-      className={`transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)] ${isHighlight ? "border-0" : ""}`}
+      className={`transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)] ${isHighlight ? "border-0" : ""}`}
       style={isHighlight
-        ? { background: gradient, boxShadow: "0 4px 12px rgba(95,168,168,0.25)" }
-        : { background: "#FFFFFF", borderColor: "#E2E8F0" }
+        ? { background: gradient, boxShadow: "0 6px 18px rgba(95,168,168,0.25)" }
+        : { background: "#FFFFFF", border: "1px solid #EEF2F7" }
       }
     >
       <CardContent className="p-5">

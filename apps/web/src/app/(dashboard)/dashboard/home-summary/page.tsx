@@ -273,7 +273,7 @@ export default function HomeSummaryPage() {
       ) : data ? (
         <div className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            <Card data-testid="card-total-beneficiaries" className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)", boxShadow: "0 4px 12px rgba(95,168,168,0.25)" }}>
+            <Card data-testid="card-total-beneficiaries" className="border-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)]" style={{ background: "linear-gradient(135deg, #5FA8A8, #6FAFD4)", boxShadow: "0 6px 18px rgba(95,168,168,0.25)" }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <Users className="h-4 w-4 text-white/80" />
@@ -285,7 +285,7 @@ export default function HomeSummaryPage() {
                 </p>
               </CardContent>
             </Card>
-            <Card data-testid="card-health-normal" className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)", boxShadow: "0 4px 12px rgba(95,168,168,0.25)" }}>
+            <Card data-testid="card-health-normal" className="border-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)]" style={{ background: "linear-gradient(135deg, #5FA8A8, #6FAFD4)", boxShadow: "0 6px 18px rgba(95,168,168,0.25)" }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <HeartPulse className="h-4 w-4 text-white/80" />
@@ -294,7 +294,7 @@ export default function HomeSummaryPage() {
                 <p className="text-2xl font-bold text-white">{data.totals.totalHealthNormal}</p>
               </CardContent>
             </Card>
-            <Card data-testid="card-health-sick" className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+            <Card data-testid="card-health-sick" className="border-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)]" style={{ background: "#FFFFFF", border: "1px solid #EEF2F7", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <HeartPulse className="h-4 w-4 text-[#5FA8A8]" />
@@ -303,7 +303,7 @@ export default function HomeSummaryPage() {
                 <p className="text-2xl font-bold text-[#0F172A]">{data.totals.totalHealthSick}</p>
               </CardContent>
             </Card>
-            <Card data-testid="card-education" className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+            <Card data-testid="card-education" className="border-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)]" style={{ background: "#FFFFFF", border: "1px solid #EEF2F7", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <GraduationCap className="h-4 w-4 text-[#7FAFD4]" />
@@ -317,7 +317,7 @@ export default function HomeSummaryPage() {
                 </p>
               </CardContent>
             </Card>
-            <Card data-testid="card-movement" className="border-0 transition-shadow hover:shadow-md" style={{ background: "linear-gradient(135deg, #E6F4F4, #EEF6FB)", border: "1px solid #D1E3E3", boxShadow: "0 2px 6px rgba(0,0,0,0.05)" }}>
+            <Card data-testid="card-movement" className="border-0 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)]" style={{ background: "#FFFFFF", border: "1px solid #EEF2F7", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1">
                   <UserPlus className="h-4 w-4 text-[#5FA8A8]" />
