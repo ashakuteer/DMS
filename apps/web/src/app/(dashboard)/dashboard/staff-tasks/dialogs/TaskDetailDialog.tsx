@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +13,9 @@ import { Button } from "@/components/ui/button";
 import {
   Clock, CheckCircle2, Circle, AlertCircle, XCircle,
   Calendar, User, Tag, Repeat, FileText, Timer,
+  Square, SquareCheck, Loader2,
 } from "lucide-react";
+import { fetchWithAuth } from "@/lib/auth";
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }> = {
   PENDING:     { label: "Pending",     color: "bg-yellow-100 text-yellow-800 border-yellow-200", icon: Circle },
@@ -61,11 +64,31 @@ export default function TaskDetailDialog({
   open,
   setOpen,
   task,
+  onChecklistChange,
 }: {
   open: boolean;
   setOpen: (v: boolean) => void;
   task: any;
+  onChecklistChange?: () => void;
 }) {
+  const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  const toggleChecklistItem = async (itemId: string) => {
+    if (!task?.id) return;
+    setTogglingId(itemId);
+    const checklist = (task.checklist || []).map((item: any) =>
+      item.id === itemId ? { ...item, done: !item.done } : item
+    );
+    try {
+      await fetchWithAuth(`/api/staff-tasks/${task.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ checklist }),
+      });
+      onChecklistChange?.();
+    } catch { /* silent */ }
+    setTogglingId(null);
+  };
+
   if (!task) return null;
 
   const statusConf = STATUS_CONFIG[task.status] || STATUS_CONFIG.PENDING;
@@ -151,18 +174,28 @@ export default function TaskDetailDialog({
           {/* Checklist */}
           {Array.isArray(task.checklist) && task.checklist.length > 0 && (
             <div className="border-t pt-3">
-              <p className="text-xs text-muted-foreground mb-2">Checklist</p>
-              <ul className="space-y-1.5">
+              <p className="text-xs text-muted-foreground mb-2 font-medium">
+                Checklist — {task.checklist.filter((i: any) => i.done).length}/{task.checklist.length} done
+              </p>
+              <div className="space-y-2">
                 {task.checklist.map((item: any, i: number) => (
-                  <li key={i} className="flex items-center gap-2 text-sm">
-                    {item.done
-                      ? <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
-                      : <Circle className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <button
+                    key={item.id || i}
+                    className="flex items-center gap-2.5 w-full text-left group"
+                    onClick={() => toggleChecklistItem(item.id)}
+                    disabled={togglingId === item.id}
+                    data-testid={`detail-checklist-${task.id}-${i}`}
+                  >
+                    {togglingId === item.id
+                      ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground shrink-0" />
+                      : item.done
+                        ? <SquareCheck className="h-4 w-4 text-green-500 shrink-0" />
+                        : <Square className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
                     }
-                    <span className={item.done ? "line-through text-muted-foreground" : ""}>{item.label || item}</span>
-                  </li>
+                    <span className={`text-sm ${item.done ? "line-through text-muted-foreground" : ""}`}>{item.text || item.label || String(item)}</span>
+                  </button>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 

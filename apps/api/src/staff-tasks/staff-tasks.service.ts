@@ -141,6 +141,10 @@ export class StaffTasksService {
         updateData.completedAt = new Date();
       }
     }
+    if ((data as any).checklist !== undefined) updateData.checklist = (data as any).checklist;
+    if ((data as any).minutesTaken !== undefined) updateData.minutesTaken = (data as any).minutesTaken || null;
+    if ((data as any).isRecurring !== undefined) updateData.isRecurring = (data as any).isRecurring;
+    if ((data as any).recurrenceType !== undefined) updateData.recurrenceType = (data as any).recurrenceType;
 
     return this.prisma.staffTask.update({
       where: { id },

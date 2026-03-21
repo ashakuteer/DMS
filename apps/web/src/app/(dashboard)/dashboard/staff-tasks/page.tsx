@@ -75,9 +75,21 @@ if (stored) {
 }
 }, []);
 
+// Refetch with filters whenever the tasks tab is active or filters change
 useEffect(() => {
-fetchTasks();
-}, [fetchTasks]);
+  if (activeTab !== "tasks") return;
+  const params = new URLSearchParams();
+  if (statusFilter !== "ALL") params.set("status", statusFilter);
+  if (priorityFilter !== "ALL") params.set("priority", priorityFilter);
+  if (searchQuery) params.set("search", searchQuery);
+  fetchTasks(params);
+}, [fetchTasks, activeTab, statusFilter, priorityFilter, searchQuery]);
+
+// Also fetch once on mount for initial load
+useEffect(() => {
+  fetchTasks();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
 if (!user) return null;
 
@@ -254,6 +266,7 @@ return ( <div className="p-6 space-y-6 max-w-7xl mx-auto">
     open={showDetailDialog}
     setOpen={setShowDetailDialog}
     task={selectedTask}
+    onChecklistChange={() => fetchTasks()}
   />
 
 </div>

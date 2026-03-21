@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import {
   Loader2, CheckCircle2, Circle, Clock, AlertCircle,
-  XCircle, Trophy, TrendingUp, Flame,
+  XCircle, Trophy, Flame, ChevronDown, ChevronRight, Square, SquareCheck,
 } from "lucide-react";
 import { fetchWithAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -76,6 +76,7 @@ export default function MyTasksView({ userId }: Props) {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState("ACTIVE");
   const [actionId, setActionId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Time tracking for completing a task
   const [completeId, setCompleteId] = useState<string | null>(null);
@@ -145,6 +146,21 @@ export default function MyTasksView({ userId }: Props) {
     } finally {
       setActionId(null);
     }
+  };
+
+  const toggleChecklistItem = async (task: Task, itemId: string) => {
+    const checklist = ((task as any).checklist || []).map((item: any) =>
+      item.id === itemId ? { ...item, done: !item.done } : item
+    );
+    try {
+      const res = await fetchWithAuth(`/api/staff-tasks/${task.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ checklist }),
+      });
+      if (res.ok) {
+        loadTasks();
+      }
+    } catch { /* silent */ }
   };
 
   const handleCompleteSubmit = async (taskId: string) => {
@@ -291,7 +307,7 @@ export default function MyTasksView({ userId }: Props) {
                       </div>
                     </div>
                   ) : (
-                    // ─── Normal view ──────────────────────────────────────────
+                    <>
                     <div className="flex items-center justify-between gap-4 flex-wrap">
                       <div className="flex items-start gap-3 min-w-0 flex-1">
                         {/* Status toggle button */}
@@ -349,8 +365,46 @@ export default function MyTasksView({ userId }: Props) {
                             </Button>
                           </div>
                         )}
+                        {/* Checklist expand toggle */}
+                        {Array.isArray((task as any).checklist) && (task as any).checklist.length > 0 && (
+                          <button
+                            onClick={() => setExpandedId(expandedId === task.id ? null : task.id)}
+                            className="text-muted-foreground hover:text-foreground transition-colors"
+                            data-testid={`button-expand-${task.id}`}
+                          >
+                            {expandedId === task.id
+                              ? <ChevronDown className="h-4 w-4" />
+                              : <ChevronRight className="h-4 w-4" />
+                            }
+                          </button>
+                        )}
                       </div>
                     </div>
+
+                    {/* Checklist section (expanded) */}
+                    {expandedId === task.id && Array.isArray((task as any).checklist) && (task as any).checklist.length > 0 && (
+                      <div className="mt-3 pl-8 space-y-1.5 border-t pt-3">
+                        <p className="text-xs text-muted-foreground font-medium mb-2">Checklist</p>
+                        {(task as any).checklist.map((item: any, idx: number) => (
+                          <button
+                            key={item.id || idx}
+                            className="flex items-center gap-2.5 w-full text-left group"
+                            onClick={() => toggleChecklistItem(task, item.id)}
+                            data-testid={`checklist-toggle-${task.id}-${idx}`}
+                          >
+                            {item.done
+                              ? <SquareCheck className="h-4 w-4 text-green-500 shrink-0" />
+                              : <Square className="h-4 w-4 text-muted-foreground shrink-0 group-hover:text-foreground" />
+                            }
+                            <span className={`text-sm ${item.done ? "line-through text-muted-foreground" : ""}`}>{item.text}</span>
+                          </button>
+                        ))}
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {(task as any).checklist.filter((i: any) => i.done).length}/{(task as any).checklist.length} done
+                        </p>
+                      </div>
+                    )}
+                    </>
                   )}
                 </CardContent>
               </Card>

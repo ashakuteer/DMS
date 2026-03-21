@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, X, GripVertical } from "lucide-react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -63,11 +63,22 @@ export default function CreateTaskDialog({
   const [submitting, setSubmitting] = useState(false);
   const [staffList, setStaffList] = useState<{ id: string; name: string; role: string }[]>([]);
   const [loadingStaff, setLoadingStaff] = useState(false);
+  const [checklistItems, setChecklistItems] = useState<{ id: string; text: string; done: boolean }[]>([]);
+  const [newItemText, setNewItemText] = useState("");
+
+  const addChecklistItem = () => {
+    if (!newItemText.trim()) return;
+    setChecklistItems((p) => [...p, { id: crypto.randomUUID(), text: newItemText.trim(), done: false }]);
+    setNewItemText("");
+  };
+  const removeChecklistItem = (id: string) => setChecklistItems((p) => p.filter((i) => i.id !== id));
 
   // Load staff list when dialog opens
   useEffect(() => {
     if (!open) return;
     setForm({ ...EMPTY });
+    setChecklistItems([]);
+    setNewItemText("");
     if (!isAdminOrManager) return;
     setLoadingStaff(true);
     fetchWithAuth("/api/staff-tasks/staff-list")
@@ -96,6 +107,7 @@ export default function CreateTaskDialog({
         notes: form.notes || undefined,
         isRecurring: form.recurrenceType !== "NONE",
         recurrenceType: form.recurrenceType,
+        checklist: checklistItems.length > 0 ? checklistItems : undefined,
       };
       if (isAdminOrManager && form.assignedToId) {
         payload.assignedToId = form.assignedToId;
@@ -245,6 +257,37 @@ export default function CreateTaskDialog({
               className="h-16 resize-none"
               data-testid="input-task-notes"
             />
+          </div>
+
+          {/* Checklist */}
+          <div className="space-y-2 border-t pt-3">
+            <Label>Checklist Items <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <div className="flex gap-2">
+              <Input
+                value={newItemText}
+                onChange={(e) => setNewItemText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addChecklistItem(); } }}
+                placeholder="Add a checklist step..."
+                className="h-8 text-sm"
+                data-testid="input-checklist-item"
+              />
+              <Button type="button" size="sm" variant="outline" onClick={addChecklistItem} className="h-8 px-3" data-testid="button-add-checklist">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {checklistItems.length > 0 && (
+              <ul className="space-y-1.5 mt-2">
+                {checklistItems.map((item, i) => (
+                  <li key={item.id} className="flex items-center gap-2 text-sm bg-muted/40 rounded-md px-3 py-1.5" data-testid={`checklist-item-${i}`}>
+                    <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+                    <span className="flex-1">{item.text}</span>
+                    <button type="button" onClick={() => removeChecklistItem(item.id)} className="text-muted-foreground hover:text-destructive transition-colors" data-testid={`remove-checklist-${i}`}>
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
         </div>

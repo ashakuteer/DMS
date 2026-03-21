@@ -50,6 +50,7 @@ export default function TaskFilters({
           <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
           <SelectItem value="COMPLETED">Completed</SelectItem>
           <SelectItem value="OVERDUE">Overdue</SelectItem>
+          <SelectItem value="MISSED">Missed</SelectItem>
         </SelectContent>
       </Select>
 

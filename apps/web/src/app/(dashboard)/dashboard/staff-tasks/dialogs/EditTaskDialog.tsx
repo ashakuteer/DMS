@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Loader2, Plus, X, GripVertical, CheckSquare2 } from "lucide-react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -62,10 +62,32 @@ export default function EditTaskDialog({
   const [form, setForm] = useState<any>({});
   const [submitting, setSubmitting] = useState(false);
   const [staffList, setStaffList] = useState<{ id: string; name: string; role: string }[]>([]);
+  const [checklistItems, setChecklistItems] = useState<{ id: string; text: string; done: boolean }[]>([]);
+  const [newItemText, setNewItemText] = useState("");
 
-  // Sync form with task whenever it changes
+  const addChecklistItem = () => {
+    if (!newItemText.trim()) return;
+    setChecklistItems((p) => [...p, { id: crypto.randomUUID(), text: newItemText.trim(), done: false }]);
+    setNewItemText("");
+  };
+  const removeChecklistItem = (id: string) => setChecklistItems((p) => p.filter((i) => i.id !== id));
+  const editChecklistItem = (id: string, text: string) =>
+    setChecklistItems((p) => p.map((i) => (i.id === id ? { ...i, text } : i)));
+
+  // Sync form + checklist with task whenever it changes
   useEffect(() => {
     if (!task) return;
+    // Initialize checklist from task data
+    if (Array.isArray(task.checklist) && task.checklist.length > 0) {
+      setChecklistItems(task.checklist.map((item: any) => ({
+        id: item.id || crypto.randomUUID(),
+        text: item.text || item.label || String(item),
+        done: item.done || false,
+      })));
+    } else {
+      setChecklistItems([]);
+    }
+    setNewItemText("");
     setForm({
       title: task.title || "",
       description: task.description || "",
@@ -110,6 +132,7 @@ export default function EditTaskDialog({
         isRecurring: form.recurrenceType !== "NONE",
         notes: form.notes || undefined,
         minutesTaken: form.minutesTaken ? parseInt(form.minutesTaken) : undefined,
+        checklist: checklistItems,
       };
       if (isAdminOrManager && form.assignedToId) {
         payload.assignedToId = form.assignedToId;
@@ -291,6 +314,42 @@ export default function EditTaskDialog({
               className="h-16 resize-none"
               data-testid="input-edit-notes"
             />
+          </div>
+
+          {/* Checklist */}
+          <div className="space-y-2 border-t pt-3">
+            <Label>Checklist Items</Label>
+            <div className="flex gap-2">
+              <Input
+                value={newItemText}
+                onChange={(e) => setNewItemText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addChecklistItem(); } }}
+                placeholder="Add a checklist step..."
+                className="h-8 text-sm"
+                data-testid="input-edit-checklist"
+              />
+              <Button type="button" size="sm" variant="outline" onClick={addChecklistItem} className="h-8 px-3" data-testid="button-add-edit-checklist">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            {checklistItems.length > 0 && (
+              <ul className="space-y-1.5 mt-2">
+                {checklistItems.map((item, i) => (
+                  <li key={item.id} className="flex items-center gap-2 bg-muted/40 rounded-md px-2 py-1" data-testid={`edit-checklist-${i}`}>
+                    <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
+                    <CheckSquare2 className={`h-3.5 w-3.5 shrink-0 ${item.done ? "text-green-500" : "text-muted-foreground"}`} />
+                    <Input
+                      value={item.text}
+                      onChange={(e) => editChecklistItem(item.id, e.target.value)}
+                      className="h-6 text-xs border-0 bg-transparent p-0 focus-visible:ring-0"
+                    />
+                    <button type="button" onClick={() => removeChecklistItem(item.id)} className="text-muted-foreground hover:text-destructive transition-colors shrink-0" data-testid={`remove-edit-checklist-${i}`}>
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
         </div>
