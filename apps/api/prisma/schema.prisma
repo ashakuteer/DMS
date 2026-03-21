@@ -2132,6 +2132,7 @@ model Staff {
   bankDetails            StaffBankDetails?
   salary                 StaffSalary?
   salaryPayments         SalaryPayment[]
+  leaves                 StaffLeave[]
 
   @@map("staff_profiles")
 }
@@ -2160,6 +2161,23 @@ model StaffDocument {
   createdAt DateTime          @default(now())
 
   @@map("staff_documents")
+}
+
+model StaffLeave {
+  id        String   @id @default(uuid())
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  type      String   @default("CASUAL")
+  startDate DateTime @db.Date
+  endDate   DateTime @db.Date
+  days      Int      @default(1)
+  reason    String?
+  status    String   @default("PENDING")
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("staff_leaves")
 }
 
 model StaffSalary {

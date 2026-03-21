@@ -88,7 +88,7 @@ export default function PermissionsPage() {
   const user = authStorage.getUser();
 
   useEffect(() => {
-    if (user?.role !== "ADMIN") {
+    if (user?.role !== "FOUNDER" && user?.role !== "ADMIN") {
       router.push("/dashboard");
       return;
     }
