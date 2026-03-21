@@ -25,9 +25,9 @@ async function bootstrap() {
       "https://dms-sepia-gamma.vercel.app",
       "http://localhost:3000",
     ],
-    methods: "GET,POST,PATCH,DELETE,OPTIONS",
-    allowedHeaders: "*",
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   });
 
   app.setGlobalPrefix("api");
