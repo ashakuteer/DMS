@@ -22,7 +22,7 @@ import {
   TrendingUp, Milestone, ShieldCheck, DatabaseBackup, ArchiveRestore,
   Cake, Send, FileBarChart, ClipboardList, Building2, ArrowUpRight,
   FolderLock, Lock, Repeat, ListChecks, Phone, Clock, ChevronDown,
-  ChevronRight, MessageSquarePlus, Banknote, CalendarOff,
+  ChevronRight, MessageSquarePlus, Banknote, CalendarOff, ClipboardCheck,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
@@ -95,6 +95,7 @@ const navGroups: NavGroup[] = [
       { title: "Staff Profiles", tKey: "nav.staff_profiles", href: "/dashboard/staff-profiles", icon: Users, permissionModule: "users" },
       { title: "Staff Salary", tKey: "nav.staff_salary", href: "/dashboard/salary", icon: Banknote, permissionModule: "users" },
       { title: "Staff Leaves", tKey: "nav.staff_leaves", href: "/dashboard/leaves", icon: CalendarOff, permissionModule: "users" },
+      { title: "Attendance", tKey: "nav.attendance", href: "/dashboard/attendance", icon: ClipboardCheck, permissionModule: "users" },
       { title: "Staff & Tasks", tKey: "nav.staff_tasks", href: "/dashboard/staff-tasks", icon: ListChecks, permissionModule: "staffTasks" },
       { title: "Staff Contacts", tKey: "nav.staff_contacts", href: "/dashboard/staff-management", icon: Phone, permissionModule: "users" },
     ],
