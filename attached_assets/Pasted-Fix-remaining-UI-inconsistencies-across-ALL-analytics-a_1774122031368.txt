@@ -1,0 +1,95 @@
+Fix remaining UI inconsistencies across ALL analytics and dashboard pages.
+
+IMPORTANT:
+Previous update did not apply to all KPI cards and internal pages.
+Now apply consistent card color system everywhere.
+
+-------------------------------------
+KPI CARD COLOR SYSTEM (GLOBAL)
+-------------------------------------
+
+Apply this pattern to ALL metric cards across:
+
+- Dashboard
+- Analytics
+- Impact Dashboard
+- Retention
+- Any page with stat cards
+
+Pattern:
+
+- Card 1: 
+  background: linear-gradient(135deg, #A8D5D1, #5FA8A8)
+
+- Card 2:
+  background: linear-gradient(135deg, #B6CCFE, #7FAFD4)
+
+- Card 3:
+  background: #E6F4F1
+
+- Card 4:
+  background: #EAF1FF
+
+- Remaining cards:
+  background: #FFFFFF
+
+-------------------------------------
+APPLY TO SPECIFIC SECTIONS
+-------------------------------------
+
+1. Donor Engagement Analytics:
+- Apply above pattern to all 8 KPI cards
+
+2. NGO Impact Dashboard:
+- Apply same color system to top metric cards
+
+3. Retention Dashboard:
+- Apply same pattern to top 4 cards
+
+-------------------------------------
+CHART COLORS FIX
+-------------------------------------
+
+Update charts:
+
+- Line color: #5FA8A8
+- Secondary: #7FAFD4
+- Remove orange lines completely
+
+-------------------------------------
+BUTTONS (RECHECK)
+-------------------------------------
+
+Ensure NO orange buttons remain:
+
+- Replace ALL with:
+  linear-gradient(135deg, #5FA8A8, #7FAFD4)
+
+-------------------------------------
+SIDEBAR FINAL ADJUSTMENT
+-------------------------------------
+
+Sidebar still too dark:
+
+- Change background to: #334155
+- Increase brightness slightly
+- Keep teal active highlight
+
+-------------------------------------
+GLOBAL RULE
+-------------------------------------
+
+Apply changes through shared components:
+
+- Card component
+- Metric card component
+- Button component
+
+So all pages update automatically.
+
+-------------------------------------
+GOAL
+-------------------------------------
+
+Consistent teal-blue design system across entire application,
+with clear visual hierarchy and no orange theme remaining.

@@ -69,12 +69,12 @@ interface ImpactData {
 }
 
 const HOME_COLORS: Record<string, string> = {
-  ORPHAN_GIRLS: "#ec4899",
-  BLIND_BOYS: "#3b82f6",
-  OLD_AGE: "#f59e0b",
+  ORPHAN_GIRLS: "#5FA8A8",
+  BLIND_BOYS: "#7FAFD4",
+  OLD_AGE: "#8b5cf6",
 };
 
-const PIE_COLORS = ["#ec4899", "#3b82f6", "#f59e0b", "#10b981", "#8b5cf6"];
+const PIE_COLORS = ["#5FA8A8", "#7FAFD4", "#8b5cf6", "#10b981", "#6366f1"];
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -171,8 +171,8 @@ export default function ImpactDashboardPage() {
       subtitle: `+${data.growth.newBeneficiariesThisMonth} this month`,
       growth: data.growth.beneficiaryGrowthPct,
       icon: HandHeart,
-      color: "text-rose-600",
-      bgColor: "bg-rose-50 dark:bg-rose-950/50",
+      cardBg: "linear-gradient(135deg, #A8D5D1, #5FA8A8)",
+      isGradient: true,
     },
     {
       title: "Total Donors",
@@ -180,8 +180,8 @@ export default function ImpactDashboardPage() {
       subtitle: `+${data.growth.newDonorsThisMonth} this month`,
       growth: data.growth.donorGrowthPct,
       icon: Users,
-      color: "text-violet-600",
-      bgColor: "bg-violet-50 dark:bg-violet-950/50",
+      cardBg: "linear-gradient(135deg, #B6CCFE, #7FAFD4)",
+      isGradient: true,
     },
     {
       title: "Active Sponsors",
@@ -189,8 +189,8 @@ export default function ImpactDashboardPage() {
       subtitle: `${data.summary.activeSponsorships} sponsorships`,
       growth: 0,
       icon: Heart,
-      color: "text-pink-600",
-      bgColor: "bg-pink-50 dark:bg-pink-950/50",
+      cardBg: "#E6F4F1",
+      isGradient: false,
     },
     {
       title: "Donations (FY)",
@@ -198,8 +198,8 @@ export default function ImpactDashboardPage() {
       subtitle: `${data.summary.totalCampaigns} campaigns`,
       growth: 0,
       icon: IndianRupee,
-      color: "text-emerald-600",
-      bgColor: "bg-emerald-50 dark:bg-emerald-950/50",
+      cardBg: "#EAF1FF",
+      isGradient: false,
     },
   ];
 
@@ -221,23 +221,27 @@ export default function ImpactDashboardPage() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {kpiCards.map((card) => (
-          <Card key={card.title} data-testid={`card-kpi-${card.title.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}>
+          <Card
+            key={card.title}
+            data-testid={`card-kpi-${card.title.toLowerCase().replace(/[^a-z0-9]/g, "-")}`}
+            style={{ background: card.cardBg }}
+          >
             <CardContent className="p-5">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">
+                  <p className={`text-sm font-medium ${card.isGradient ? "text-white/80" : "text-muted-foreground"}`}>
                     {card.title}
                   </p>
-                  <p className="text-2xl font-bold">{card.value}</p>
+                  <p className={`text-2xl font-bold ${card.isGradient ? "text-white" : ""}`}>{card.value}</p>
                   <div className="flex items-center gap-2">
-                    <p className="text-xs text-muted-foreground">
+                    <p className={`text-xs ${card.isGradient ? "text-white/70" : "text-muted-foreground"}`}>
                       {card.subtitle}
                     </p>
                     <GrowthIndicator value={card.growth} />
                   </div>
                 </div>
-                <div className={`p-3 rounded-xl ${card.bgColor}`}>
-                  <card.icon className={`h-6 w-6 ${card.color}`} />
+                <div className={`p-3 rounded-xl ${card.isGradient ? "bg-white/20" : "bg-white/60"}`}>
+                  <card.icon className={`h-6 w-6 ${card.isGradient ? "text-white" : "text-[#5FA8A8]"}`} />
                 </div>
               </div>
             </CardContent>
@@ -262,16 +266,16 @@ export default function ImpactDashboardPage() {
                 >
                   <defs>
                     <linearGradient id="gradBeneficiaries" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ec4899" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#ec4899" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#5FA8A8" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#5FA8A8" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="gradDonors" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#7FAFD4" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#7FAFD4" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient id="gradSponsorships" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
@@ -294,7 +298,7 @@ export default function ImpactDashboardPage() {
                     type="monotone"
                     dataKey="beneficiaries"
                     name="Beneficiaries"
-                    stroke="#ec4899"
+                    stroke="#5FA8A8"
                     fill="url(#gradBeneficiaries)"
                     strokeWidth={2}
                   />
@@ -302,7 +306,7 @@ export default function ImpactDashboardPage() {
                     type="monotone"
                     dataKey="donors"
                     name="Donors"
-                    stroke="#8b5cf6"
+                    stroke="#7FAFD4"
                     fill="url(#gradDonors)"
                     strokeWidth={2}
                   />
@@ -310,7 +314,7 @@ export default function ImpactDashboardPage() {
                     type="monotone"
                     dataKey="sponsorships"
                     name="Sponsorships"
-                    stroke="#10b981"
+                    stroke="#8b5cf6"
                     fill="url(#gradSponsorships)"
                     strokeWidth={2}
                   />
@@ -357,7 +361,7 @@ export default function ImpactDashboardPage() {
                   <Bar
                     dataKey="donations"
                     name="Donations"
-                    fill="#10b981"
+                    fill="#5FA8A8"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>

@@ -30,18 +30,25 @@ import {
 import Link from "next/link";
 
 const CHART_COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-  "#6366f1",
-  "#ec4899",
-  "#f59e0b",
-  "#10b981",
+  "#5FA8A8",
+  "#7FAFD4",
   "#8b5cf6",
+  "#ec4899",
+  "#10b981",
+  "#6366f1",
+  "#f59e0b",
   "#ef4444",
   "#14b8a6",
+  "#8b5cf6",
+  "#6366f1",
+  "#ec4899",
+];
+
+const CARD_STYLES: React.CSSProperties[] = [
+  { background: "linear-gradient(135deg, #A8D5D1, #5FA8A8)" },
+  { background: "linear-gradient(135deg, #B6CCFE, #7FAFD4)" },
+  { background: "#E6F4F1" },
+  { background: "#EAF1FF" },
 ];
 
 const fmtCurrency = (n: number) =>
@@ -220,7 +227,7 @@ function TrendBadge({ value }: { value: number | null }) {
 }
 
 function KPICard({
-  title, value, subtitle, trend, icon: Icon, testId,
+  title, value, subtitle, trend, icon: Icon, testId, cardStyle,
 }: {
   title: string;
   value: string;
@@ -228,19 +235,21 @@ function KPICard({
   trend?: number | null;
   icon: React.ElementType;
   testId: string;
+  cardStyle?: React.CSSProperties;
 }) {
+  const isGradient = cardStyle && typeof cardStyle.background === "string" && cardStyle.background.includes("gradient");
   return (
-    <Card data-testid={testId}>
+    <Card data-testid={testId} style={cardStyle}>
       <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <CardTitle className={`text-sm font-medium ${isGradient ? "text-white/80" : "text-muted-foreground"}`}>{title}</CardTitle>
+        <Icon className={`h-4 w-4 ${isGradient ? "text-white/70" : "text-muted-foreground"}`} />
       </CardHeader>
       <CardContent>
         <div className="flex items-baseline gap-2 flex-wrap">
-          <span className="text-2xl font-bold" data-testid={`${testId}-value`}>{value}</span>
+          <span className={`text-2xl font-bold ${isGradient ? "text-white" : ""}`} data-testid={`${testId}-value`}>{value}</span>
           {trend !== undefined && <TrendBadge value={trend} />}
         </div>
-        {subtitle && <p className="text-xs text-muted-foreground mt-1">{subtitle}</p>}
+        {subtitle && <p className={`text-xs mt-1 ${isGradient ? "text-white/70" : "text-muted-foreground"}`}>{subtitle}</p>}
       </CardContent>
     </Card>
   );
@@ -457,7 +466,7 @@ export default function AnalyticsPage() {
         </div>
       ) : summary && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <KPICard title={t("analytics.total_donors")} value={summary.totalDonors.toLocaleString("en-IN")} icon={Users} testId="kpi-total-donors" />
+          <KPICard title={t("analytics.total_donors")} value={summary.totalDonors.toLocaleString("en-IN")} icon={Users} testId="kpi-total-donors" cardStyle={CARD_STYLES[0]} />
           <KPICard
             title={t("analytics.donations_this_month")}
             value={fmtCurrency(summary.donationsThisMonth)}
@@ -465,8 +474,9 @@ export default function AnalyticsPage() {
             subtitle={t("analytics.vs_last_month")}
             icon={IndianRupee}
             testId="kpi-donations-month"
+            cardStyle={CARD_STYLES[1]}
           />
-          <KPICard title={t("analytics.trailing_12_months")} value={fmtCurrency(summary.donationsT12)} icon={TrendingUp} testId="kpi-donations-t12" />
+          <KPICard title={t("analytics.trailing_12_months")} value={fmtCurrency(summary.donationsT12)} icon={TrendingUp} testId="kpi-donations-t12" cardStyle={CARD_STYLES[2]} />
           <KPICard
             title={t("analytics.donation_count")}
             value={summary.donationCountThisMonth.toLocaleString("en-IN")}
@@ -474,6 +484,7 @@ export default function AnalyticsPage() {
             subtitle={t("analytics.this_month")}
             icon={IndianRupee}
             testId="kpi-donation-count"
+            cardStyle={CARD_STYLES[3]}
           />
           <KPICard
             title={t("analytics.active_sponsorships")}
@@ -481,6 +492,7 @@ export default function AnalyticsPage() {
             subtitle={`${fmtCurrency(summary.activeSponsorshipsMonthlyTotal)}/mo`}
             icon={HandHeart}
             testId="kpi-active-sponsorships"
+            cardStyle={{ background: "#ffffff" }}
           />
           <KPICard
             title={t("analytics.overdue_sponsorships")}
@@ -488,6 +500,7 @@ export default function AnalyticsPage() {
             subtitle={t("analytics.past_due_this_month")}
             icon={AlertTriangle}
             testId="kpi-overdue-sponsorships"
+            cardStyle={{ background: "#ffffff" }}
           />
           <KPICard
             title={t("analytics.pledges_pending")}
@@ -495,6 +508,7 @@ export default function AnalyticsPage() {
             subtitle={fmtCurrency(summary.pledgesPendingAmount)}
             icon={Calendar}
             testId="kpi-pledges-pending"
+            cardStyle={{ background: "#ffffff" }}
           />
           <KPICard
             title={t("analytics.special_days_30d")}
@@ -502,6 +516,7 @@ export default function AnalyticsPage() {
             subtitle={t("analytics.donors_with_upcoming_events")}
             icon={Calendar}
             testId="kpi-special-days"
+            cardStyle={{ background: "#ffffff" }}
           />
           <KPICard
             title={t("analytics.donors_at_risk")}
@@ -509,6 +524,7 @@ export default function AnalyticsPage() {
             subtitle={t("analytics.need_re_engagement")}
             icon={AlertTriangle}
             testId="kpi-at-risk"
+            cardStyle={{ background: "#ffffff" }}
           />
         </div>
       )}

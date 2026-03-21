@@ -85,7 +85,7 @@ interface RetentionData {
   }[];
 }
 
-const PIE_COLORS = ["#10b981", "#3b82f6", "#f59e0b", "#94a3b8"];
+const PIE_COLORS = ["#5FA8A8", "#7FAFD4", "#8b5cf6", "#94a3b8"];
 
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -271,45 +271,45 @@ export default function RetentionAnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card data-testid="card-repeat-donors">
+        <Card data-testid="card-repeat-donors" style={{ background: "linear-gradient(135deg, #A8D5D1, #5FA8A8)" }}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <p className="text-sm text-muted-foreground">Repeat Donors</p>
-                <p className="text-2xl font-bold mt-1">
+                <p className="text-sm text-white/80">Repeat Donors</p>
+                <p className="text-2xl font-bold mt-1 text-white">
                   {summary.repeatDonorCount}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-white/70 mt-1">
                   {summary.overallRetentionPct}% retention rate
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center flex-shrink-0">
-                <Repeat className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <Repeat className="h-5 w-5 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card data-testid="card-one-time-donors">
+        <Card data-testid="card-one-time-donors" style={{ background: "linear-gradient(135deg, #B6CCFE, #7FAFD4)" }}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <p className="text-sm text-muted-foreground">One-Time Donors</p>
-                <p className="text-2xl font-bold mt-1">
+                <p className="text-sm text-white/80">One-Time Donors</p>
+                <p className="text-2xl font-bold mt-1 text-white">
                   {summary.oneTimeDonorCount}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-white/70 mt-1">
                   of {summary.donorsWhoEverDonated} who donated
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center flex-shrink-0">
-                <UserPlus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                <UserPlus className="h-5 w-5 text-white" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card data-testid="card-lapsed-donors">
+        <Card data-testid="card-lapsed-donors" style={{ background: "#E6F4F1" }}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between gap-2">
               <div>
@@ -321,14 +321,14 @@ export default function RetentionAnalyticsPage() {
                   no donation in 6+ months
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center flex-shrink-0">
-                <UserMinus className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              <div className="h-10 w-10 rounded-full bg-white/60 flex items-center justify-center flex-shrink-0">
+                <UserMinus className="h-5 w-5 text-[#5FA8A8]" />
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card data-testid="card-active-donors">
+        <Card data-testid="card-active-donors" style={{ background: "#EAF1FF" }}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between gap-2">
               <div>
@@ -340,8 +340,8 @@ export default function RetentionAnalyticsPage() {
                   {summary.activeLast12Months} active in 12mo
                 </p>
               </div>
-              <div className="h-10 w-10 rounded-full bg-violet-100 dark:bg-violet-950 flex items-center justify-center flex-shrink-0">
-                <UserCheck className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+              <div className="h-10 w-10 rounded-full bg-white/60 flex items-center justify-center flex-shrink-0">
+                <UserCheck className="h-5 w-5 text-[#7FAFD4]" />
               </div>
             </div>
           </CardContent>
@@ -362,8 +362,8 @@ export default function RetentionAnalyticsPage() {
                 <AreaChart data={data.retentionOverTime}>
                   <defs>
                     <linearGradient id="retGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#5FA8A8" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#5FA8A8" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
@@ -389,7 +389,7 @@ export default function RetentionAnalyticsPage() {
                   <Area
                     type="monotone"
                     dataKey="retentionPct"
-                    stroke="#10b981"
+                    stroke="#5FA8A8"
                     fill="url(#retGrad)"
                     strokeWidth={2}
                     name="Retention %"
@@ -481,13 +481,13 @@ export default function RetentionAnalyticsPage() {
                 <Legend />
                 <Bar
                   dataKey="newDonors"
-                  fill="#3b82f6"
+                  fill="#7FAFD4"
                   name="New Donors"
                   radius={[4, 4, 0, 0]}
                 />
                 <Bar
                   dataKey="returningDonors"
-                  fill="#10b981"
+                  fill="#5FA8A8"
                   name="Returning Donors"
                   radius={[4, 4, 0, 0]}
                 />
