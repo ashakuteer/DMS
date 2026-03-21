@@ -262,22 +262,20 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                       <Link key={item.href} href={item.href}>
                         <div
                           className={cn(
-                            "flex items-center gap-2.5 px-2.5 py-2 text-sm transition-all cursor-pointer select-none rounded-lg",
+                            "flex items-center gap-2.5 px-3.5 py-2.5 text-sm transition-all duration-200 cursor-pointer select-none rounded-[10px]",
                             collapsed && "justify-center px-2"
                           )}
                           style={
                             active
                               ? {
                                   background: ACTIVE_BG,
-                                  borderLeft: collapsed ? "none" : ACTIVE_BORDER,
-                                  paddingLeft: collapsed ? undefined : "calc(0.625rem - 4px)",
                                   color: TEXT_ACTIVE,
                                   fontWeight: 500,
                                 }
                               : { color: TEXT_DEFAULT }
                           }
                           onMouseEnter={e => {
-                            if (!active) { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }
+                            if (!active) { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_HOVER; }
                           }}
                           onMouseLeave={e => {
                             if (!active) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }
@@ -317,7 +315,7 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                               : { color: TEXT_DEFAULT }
                           }
                           onMouseEnter={e => {
-                            if (!active) { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }
+                            if (!active) { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_HOVER; }
                           }}
                           onMouseLeave={e => {
                             if (!active) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }
@@ -369,20 +367,18 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
                       return (
                         <Link key={item.href} href={item.href}>
                           <div
-                            className="flex items-center gap-2.5 px-2.5 py-1.5 text-xs transition-all cursor-pointer select-none rounded-lg"
+                            className="flex items-center gap-2.5 px-3.5 py-2.5 text-xs transition-all duration-200 cursor-pointer select-none rounded-[10px]"
                             style={
                               active
                                 ? {
                                     background: ACTIVE_BG,
-                                    borderLeft: ACTIVE_BORDER,
-                                    paddingLeft: "calc(0.625rem - 4px)",
                                     color: TEXT_ACTIVE,
                                     fontWeight: 500,
                                   }
                                 : { color: TEXT_DEFAULT }
                             }
                             onMouseEnter={e => {
-                              if (!active) { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_ACTIVE; }
+                              if (!active) { (e.currentTarget as HTMLElement).style.background = HOVER_BG; (e.currentTarget as HTMLElement).style.color = TEXT_HOVER; }
                             }}
                             onMouseLeave={e => {
                               if (!active) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = TEXT_DEFAULT; }
