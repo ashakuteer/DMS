@@ -29,19 +29,19 @@ import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-const SIDEBAR_BG = "#F1F5F9";
-const TEXT_DEFAULT = "#475569";
-const TEXT_HOVER   = "#0F172A";
-const TEXT_LABEL   = "#64748B";
-const TEXT_ACTIVE  = "#0F172A";
+const SIDEBAR_BG = "#2F3E46";
+const TEXT_DEFAULT = "#AAB4BE";
+const TEXT_HOVER   = "#E2E8F0";
+const TEXT_LABEL   = "#CBD5E1";
+const TEXT_ACTIVE  = "#ffffff";
 const TEAL = "#5FA8A8";
-const ICON_COLOR   = "#64748B";
+const ICON_COLOR   = "#AAB4BE";
 const ICON_ACTIVE  = "#5FA8A8";
-const ACTIVE_BG = "rgba(95,168,168,0.15)";
+const ACTIVE_BG = "rgba(95,168,168,0.25)";
 const ACTIVE_BORDER = "none";
-const HOVER_BG = "#E2E8F0";
-const BORDER_COLOR = "rgba(0,0,0,0.07)";
-const GROUP_LABEL_COLOR = "#94A3B8";
+const HOVER_BG = "rgba(255,255,255,0.06)";
+const BORDER_COLOR = "rgba(255,255,255,0.08)";
+const GROUP_LABEL_COLOR = "#6B7280";
 
 interface NavItem {
   title: string;

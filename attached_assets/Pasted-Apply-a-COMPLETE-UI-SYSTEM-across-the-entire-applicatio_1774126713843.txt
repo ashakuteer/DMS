@@ -1,0 +1,195 @@
+Apply a COMPLETE UI SYSTEM across the entire application.
+
+This is NOT a page-level change.
+This must affect ALL pages, ALL components, ALL modules.
+
+-------------------------------------
+CORE DESIGN RULE (VERY IMPORTANT)
+-------------------------------------
+
+Follow this strictly:
+
+- 90% UI = neutral (white / grey)
+- 10% UI = teal highlight (#5FA8A8)
+
+Remove ALL orange colors from the entire app.
+
+-------------------------------------
+1. CARDS SYSTEM (GLOBAL)
+-------------------------------------
+
+A. Highlight Cards (ONLY 2 per page)
+Used for:
+- Total Donations
+- Key financial KPIs
+
+Style:
+
+background: linear-gradient(135deg, #5FA8A8, #7FAFD4);
+color: white;
+border: none;
+border-radius: 12px;
+
+Icons:
+background: rgba(255,255,255,0.2);
+color: white;
+
+-------------------------------------
+
+B. Normal Cards (ALL other cards)
+
+background: #FFFFFF;
+border: 1px solid #E2E8F0;
+color: #1E293B;
+border-radius: 12px;
+
+Remove:
+- teal backgrounds
+- gradients
+- colored fills
+
+Icons:
+background: #F1F5F9;
+color: #5FA8A8;
+
+-------------------------------------
+2. TABLE SYSTEM (GLOBAL)
+-------------------------------------
+
+Apply to ALL tables:
+
+Header:
+background: #F1F5F9;
+color: #334155;
+
+Rows:
+background: #FFFFFF;
+
+Hover:
+background: #F8FAFC;
+
+Borders:
+#E2E8F0;
+
+-------------------------------------
+
+BADGES (replace all):
+
+Success:
+background: #DCFCE7;
+color: #166534;
+
+Info:
+background: #DBEAFE;
+color: #1E40AF;
+
+Warning:
+background: #FEF9C3;
+color: #854D0E;
+
+Neutral:
+background: #F1F5F9;
+color: #475569;
+
+REMOVE orange badges completely.
+
+-------------------------------------
+3. BUTTON SYSTEM (GLOBAL)
+-------------------------------------
+
+Primary Button:
+
+background: linear-gradient(135deg, #5FA8A8, #7FAFD4);
+color: white;
+border-radius: 8px;
+
+-------------------------------------
+
+Secondary Button:
+
+background: #F1F5F9;
+color: #334155;
+
+-------------------------------------
+
+Danger Button:
+
+background: #EF4444;
+color: white;
+
+-------------------------------------
+
+Remove:
+- orange buttons
+- inconsistent styles
+
+-------------------------------------
+4. SIDEBAR (KEEP CONSISTENT)
+-------------------------------------
+
+Background:
+#2F3E46 (neutral dark grey)
+
+Active:
+rgba(95,168,168,0.25)
+
+Text:
+#AAB4BE default
+#FFFFFF active
+
+-------------------------------------
+5. GLOBAL BACKGROUND
+-------------------------------------
+
+All pages:
+
+background: #F5F7FA;
+
+-------------------------------------
+6. HOVER & INTERACTIONS
+-------------------------------------
+
+Cards:
+
+hover:
+transform: translateY(-2px);
+box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+
+-------------------------------------
+7. REMOVE DESIGN ISSUES
+-------------------------------------
+
+REMOVE completely:
+- orange color anywhere
+- multiple gradients
+- inconsistent card styles
+- dark backgrounds inside content
+
+-------------------------------------
+8. APPLY EVERYWHERE
+-------------------------------------
+
+Must apply to:
+
+- Dashboard
+- Donors page
+- Donations page
+- Beneficiaries
+- Campaigns
+- Reports
+- Communication pages
+- Staff pages
+- Admin tools
+
+-------------------------------------
+FINAL GOAL
+-------------------------------------
+
+UI must look:
+- clean
+- consistent
+- minimal
+- premium SaaS-level
+
+No color confusion.
+Clear hierarchy.

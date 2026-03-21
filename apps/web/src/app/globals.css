@@ -27,8 +27,8 @@
   --success-text: #065F46;
 
   /* SIDEBAR */
-  --sidebar-bg:   #F1F5F9;
-  --sidebar-text: #475569;
+  --sidebar-bg:   #2F3E46;
+  --sidebar-text: #AAB4BE;
 }
 
 /* ─── Shadcn / Tailwind HSL Tokens ─────────────────────────────── */
@@ -112,6 +112,51 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ─── Global Table Styles ────────────────────────────────────────── */
+
+thead tr th,
+.table-header-cell {
+  background-color: #F1F5F9 !important;
+  color: #334155 !important;
+  font-weight: 600;
+}
+
+tbody tr:hover td {
+  background-color: #F8FAFC;
+}
+
+/* ─── Global Badge System ────────────────────────────────────────── */
+
+.badge-info {
+  background: #DBEAFE;
+  color: #1E40AF;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-warning {
+  background: #FEF9C3;
+  color: #854D0E;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-neutral {
+  background: #F1F5F9;
+  color: #475569;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
 }
 
 /* ─── Sidebar Animations & Effects ─────────────────────────────── */
