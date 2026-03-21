@@ -151,8 +151,7 @@ function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; load
   const pendingDonors = totalMonthlyDonors - count;
 
   return (
-    <Card className="border-0 shadow-md overflow-hidden" data-testid="monthly-target-card">
-      <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to right, rgba(95,168,168,0.05), transparent)" }} />
+    <Card className="border-0 shadow-md overflow-hidden" style={{ background: "#ffffff" }} data-testid="monthly-target-card">
       <CardContent className="p-6">
         <div className="flex items-start justify-between gap-4 mb-5">
           <div>
@@ -178,7 +177,7 @@ function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; load
         {/* Big numbers row */}
         <div className="grid grid-cols-3 gap-4 mb-5">
           <div>
-            <p className="text-2xl font-black" style={{ color: "#5FA8A8" }}>{fmt(raised)}</p>
+            <p className="text-2xl font-black text-foreground">{fmt(raised)}</p>
             <p className="text-xs text-muted-foreground mt-0.5">Raised this month</p>
           </div>
           <div>
