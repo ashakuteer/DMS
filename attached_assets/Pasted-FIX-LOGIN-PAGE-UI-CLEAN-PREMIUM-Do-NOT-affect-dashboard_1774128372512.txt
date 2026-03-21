@@ -1,0 +1,135 @@
+FIX LOGIN PAGE UI (CLEAN + PREMIUM)
+
+Do NOT affect dashboard or sidebar.
+Only update login page.
+
+-------------------------------------
+1. PAGE LAYOUT
+-------------------------------------
+
+Keep 2-column layout but improve balance:
+
+Left side (branding):
+width: 60%
+
+Right side (login form):
+width: 40%
+
+-------------------------------------
+2. LEFT SIDE (TEAL PANEL)
+-------------------------------------
+
+Keep gradient but make it softer:
+
+background: linear-gradient(135deg, #5FA8A8, #7FAFD4);
+
+Add overlay for softness:
+background-blend-mode: overlay;
+opacity effect: subtle
+
+-------------------------------------
+
+Content spacing:
+
+padding: 48px;
+
+Heading:
+font-size: 24px;
+font-weight: 600;
+color: white;
+
+Subtext:
+font-size: 15px;
+color: rgba(255,255,255,0.85);
+
+Feature list:
+spacing: 12px;
+icons:
+background: rgba(255,255,255,0.15);
+
+-------------------------------------
+3. RIGHT SIDE (LOGIN CARD)
+-------------------------------------
+
+Center vertically:
+
+display: flex;
+align-items: center;
+justify-content: center;
+
+-------------------------------------
+
+Card style:
+
+background: #FFFFFF;
+padding: 24px;
+border-radius: 12px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+
+width: 340px;
+
+-------------------------------------
+
+Heading "Sign In":
+
+font-size: 18px;
+font-weight: 600;
+color: #0F172A;
+
+-------------------------------------
+
+Input fields:
+
+height: 42px;
+border-radius: 8px;
+border: 1px solid #E2E8F0;
+
+focus:
+border-color: #5FA8A8;
+outline: none;
+
+-------------------------------------
+
+Button:
+
+background: linear-gradient(135deg, #5FA8A8, #7FAFD4);
+color: white;
+height: 42px;
+border-radius: 8px;
+font-weight: 500;
+
+hover:
+slightly brighter
+
+-------------------------------------
+4. REMOVE CLUTTER
+-------------------------------------
+
+Remove:
+- excessive empty space
+- harsh shadows
+- inconsistent font sizes
+
+-------------------------------------
+5. FINAL LOOK
+-------------------------------------
+
+Login page must feel:
+- calm
+- clean
+- welcoming
+- premium
+
+Like:
+modern SaaS login (Stripe style)
+
+-------------------------------------
+IMPORTANT
+-------------------------------------
+
+Do NOT:
+- change sidebar
+- change dashboard
+- change global styles
+
+ONLY login page.
