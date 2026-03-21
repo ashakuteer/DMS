@@ -2130,6 +2130,8 @@ model Staff {
   createdAt              DateTime          @default(now())
   documents              StaffDocument[]
   bankDetails            StaffBankDetails?
+  salary                 StaffSalary?
+  salaryPayments         SalaryPayment[]
 
   @@map("staff_profiles")
 }
@@ -2158,4 +2160,39 @@ model StaffDocument {
   createdAt DateTime          @default(now())
 
   @@map("staff_documents")
+}
+
+model StaffSalary {
+  id            String          @id @default(uuid())
+  staffId       String          @unique
+  staff         Staff           @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  baseSalary    Decimal         @default(0) @db.Decimal(10, 2)
+  allowances    Decimal         @default(0) @db.Decimal(10, 2)
+  deductions    Decimal         @default(0) @db.Decimal(10, 2)
+  effectiveFrom DateTime?       @db.Date
+  notes         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@map("staff_salary")
+}
+
+model SalaryPayment {
+  id          String   @id @default(uuid())
+  staffId     String
+  staff       Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  month       Int
+  year        Int
+  baseSalary  Decimal  @default(0) @db.Decimal(10, 2)
+  allowances  Decimal  @default(0) @db.Decimal(10, 2)
+  deductions  Decimal  @default(0) @db.Decimal(10, 2)
+  netSalary   Decimal  @default(0) @db.Decimal(10, 2)
+  amountPaid  Decimal  @default(0) @db.Decimal(10, 2)
+  paymentDate DateTime? @db.Date
+  paymentMode String   @default("BANK_TRANSFER")
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@unique([staffId, month, year])
+  @@map("salary_payments")
 }

@@ -18,8 +18,9 @@ import {
 import {
   ArrowLeft, Loader2, Pencil, Save, X, Upload, FileText,
   Phone, Mail, Building2, Heart, AlertCircle, Trash2, ExternalLink,
-  Camera, CreditCard, User, MapPin,
+  Camera, CreditCard, User, MapPin, Banknote,
 } from "lucide-react";
+import Link from "next/link";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -389,6 +390,11 @@ export default function StaffProfilePage() {
               </>
             ) : (
               <>
+                <Button variant="outline" size="sm" asChild data-testid="button-salary">
+                  <Link href={`/dashboard/staff-profiles/${id}/salary`}>
+                    <Banknote className="mr-2 h-4 w-4 text-orange-500" />Salary
+                  </Link>
+                </Button>
                 <Button variant="outline" size="sm" onClick={startEdit} data-testid="button-edit">
                   <Pencil className="mr-2 h-4 w-4" />Edit
                 </Button>
