@@ -363,52 +363,17 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50/60 dark:bg-background">
       <div className="max-w-7xl mx-auto p-6 space-y-8">
 
-        {/* ── HERO ──────────────────────────────────────────────────────────── */}
-        <div
-          className="relative rounded-3xl overflow-hidden"
-          style={{ background: "linear-gradient(135deg, #0f2847 0%, #1a4480 45%, #1d4ed8 100%)" }}
-        >
-          {/* Background depth circles */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-white opacity-[0.03]" />
-            <div className="absolute top-1/2 -translate-y-1/2 left-1/3 w-[500px] h-[500px] rounded-full bg-blue-400 opacity-[0.04]" />
-            <div className="absolute -bottom-16 right-1/4 w-64 h-64 rounded-full bg-white opacity-[0.03]" />
-            <div className="absolute top-6 right-56 w-2 h-2 rounded-full bg-orange-400 opacity-40" />
-            <div className="absolute bottom-8 left-16 w-1.5 h-1.5 rounded-full bg-orange-300 opacity-30" />
-            <div className="absolute top-16 left-1/2 w-1 h-1 rounded-full bg-white opacity-25" />
-          </div>
-
-          <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 md:gap-10 px-8 md:px-12 py-12 md:py-16">
-            {/* Left: Text */}
-            <div className="flex-1 min-w-0">
-              <h1
-                className="font-black text-white tracking-tight"
-                style={{ fontSize: "clamp(2.4rem, 4.5vw, 3.5rem)", lineHeight: 1.12 }}
-              >
-                {t("home.title")}
-              </h1>
-              <p className="mt-5 max-w-lg" style={{ color: "rgba(219,234,254,0.9)", fontSize: "1.05rem", lineHeight: 1.8 }}>
-                Welcome to{" "}
-                <strong className="text-white font-semibold">Asha Kuteer Foundation</strong>{" "}
-                Donor Management System.{" "}
-                <span style={{ color: "rgba(191,219,254,0.85)" }}>
-                  Track donors, donations, sponsorships, homes, and impact — all in one place.
-                </span>
-              </p>
-            </div>
-
-            {/* Right: Photo with soft glow */}
-            <div className="relative w-full md:w-[380px] lg:w-[440px] flex-shrink-0">
-              {/* Warm glow halo behind image */}
-              <div
-                className="absolute inset-0 rounded-3xl pointer-events-none"
-                style={{ margin: "-12px", background: "radial-gradient(ellipse at center, rgba(251,146,60,0.18) 0%, transparent 70%)", filter: "blur(16px)" }}
-              />
-              <div className="relative h-[240px] md:h-[290px]">
-                <HeroIllustration />
-              </div>
-            </div>
-          </div>
+        {/* ── PAGE HEADER ───────────────────────────────────────────────────── */}
+        <div className="pb-2">
+          <h1 className="text-2xl font-bold text-foreground">
+            {(() => {
+              const h = new Date().getHours();
+              const greeting = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
+              const name = userProfile?.name?.split(" ")[0] ?? "Founder";
+              return `${greeting}, ${name} 👋`;
+            })()}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1">Here's your NGO overview today</p>
         </div>
 
         {/* ── MONTHLY DONOR TARGET ──────────────────────────────────────────── */}
