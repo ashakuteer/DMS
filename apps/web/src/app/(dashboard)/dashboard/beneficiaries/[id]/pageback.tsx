@@ -293,7 +293,7 @@ function getHomeTypeBadgeColor(homeType: string) {
     case 'BLIND_BOYS':
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
     case 'OLD_AGE':
-      return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
+      return 'bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]';
     default:
       return 'bg-gray-100 text-gray-800';
   }
@@ -1136,7 +1136,7 @@ export default function BeneficiaryProfilePage() {
     switch (severity) {
       case "LOW": return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
       case "MEDIUM": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
-      case "HIGH": return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
+      case "HIGH": return "bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]";
       case "CRITICAL": return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
       default: return "bg-gray-100 text-gray-800";
     }
@@ -1147,7 +1147,7 @@ export default function BeneficiaryProfilePage() {
       case "NORMAL": return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300";
       case "SICK": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300";
       case "HOSPITALIZED": return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300";
-      case "UNDER_TREATMENT": return "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300";
+      case "UNDER_TREATMENT": return "bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]";
       default: return "bg-gray-100 text-gray-800";
     }
   };
@@ -2213,7 +2213,7 @@ export default function BeneficiaryProfilePage() {
                 <div className="space-y-4">
                   {healthTimeline.map((item) => (
                     <div key={`${item.type}-${item.id}`} className="relative pl-10" data-testid={`timeline-item-${item.type.toLowerCase()}-${item.id}`}>
-                      <div className={`absolute left-2.5 top-2 h-3 w-3 rounded-full border-2 border-background ${item.type === 'METRIC' ? 'bg-blue-500' : 'bg-amber-500'}`} />
+                      <div className={`absolute left-2.5 top-2 h-3 w-3 rounded-full border-2 border-background ${item.type === 'METRIC' ? 'bg-blue-500' : 'bg-[#E6F4F1]0'}`} />
                       <Card>
                         <CardContent className="pt-3 pb-3">
                           <div className="flex items-start justify-between gap-2 flex-wrap">
@@ -2222,7 +2222,7 @@ export default function BeneficiaryProfilePage() {
                                 {item.type === 'METRIC' ? (
                                   <Ruler className="h-4 w-4 text-blue-500" />
                                 ) : (
-                                  <Stethoscope className="h-4 w-4 text-amber-500" />
+                                  <Stethoscope className="h-4 w-4 text-[#5FA8A8]" />
                                 )}
                                 <span className="font-medium text-sm">{item.title}</span>
                                 {item.type === 'METRIC' && item.healthStatus && (
@@ -3261,7 +3261,7 @@ export default function BeneficiaryProfilePage() {
             )}
 
             {newDocument.isSensitive && (
-              <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+              <div className="flex items-center gap-2 text-sm text-[#5FA8A8] dark:text-[#A8D5D1]">
                 <AlertTriangle className="h-4 w-4 flex-shrink-0" />
                 <span>Sensitive documents can only be viewed by administrators</span>
               </div>

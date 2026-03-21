@@ -153,7 +153,7 @@ export default function DonorQuickActions({
               {t("donor_profile.resend_receipt")}
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => handleResendReceipt("TAX")} data-testid="button-send-tax-receipt">
-              <Receipt className="h-4 w-4 mr-2 text-orange-500" />
+              <Receipt className="h-4 w-4 mr-2 text-[#5FA8A8]" />
               {t("donor_profile.send_tax_receipt")}
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -194,8 +194,8 @@ export default function DonorQuickActions({
               {t("donor_profile.latest")}: ₹{latestDonation.donationAmount} · {latestDonation.receiptNumber || t("donor_profile.no_receipt")}
             </Badge>
           )}
-          {!hasEmail && <span className="text-orange-500">{t("donor_profile.no_email_on_file")}</span>}
-          {!hasPhone && <span className="text-orange-500">{t("donor_profile.no_phone_on_file")}</span>}
+          {!hasEmail && <span className="text-[#5FA8A8]">{t("donor_profile.no_email_on_file")}</span>}
+          {!hasPhone && <span className="text-[#5FA8A8]">{t("donor_profile.no_phone_on_file")}</span>}
         </div>
       </div>
 

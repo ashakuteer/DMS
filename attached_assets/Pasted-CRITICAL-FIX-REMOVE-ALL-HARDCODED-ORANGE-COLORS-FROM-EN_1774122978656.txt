@@ -1,0 +1,124 @@
+CRITICAL FIX: REMOVE ALL HARDCODED ORANGE COLORS FROM ENTIRE APPLICATION
+
+Problem:
+Orange color is still appearing across many pages (buttons, toggles, badges, icons, steps).
+This means colors are hardcoded inside components instead of using theme.
+
+You must REMOVE all orange usage globally.
+
+-------------------------------------
+STEP 1: GLOBAL SEARCH & REPLACE
+-------------------------------------
+
+Search entire codebase for:
+
+- orange
+- amber
+- #f97316
+- #fb923c
+- #ea580c
+- bg-orange
+- text-orange
+- border-orange
+
+Replace with:
+
+PRIMARY:
+#5FA8A8 (teal)
+
+SECONDARY:
+#7FAFD4 (blue)
+
+-------------------------------------
+STEP 2: FIX BUTTON COMPONENT (VERY IMPORTANT)
+-------------------------------------
+
+Update shared Button component:
+
+Replace ALL variants with:
+
+background: linear-gradient(135deg, #5FA8A8, #7FAFD4)
+color: white
+border: none
+
+Remove:
+- orange variants
+- warning variants using orange
+
+-------------------------------------
+STEP 3: FIX TOGGLES / SWITCHES
+-------------------------------------
+
+Currently toggles are orange.
+
+Change:
+
+- ON state → #5FA8A8
+- OFF state → light gray
+
+-------------------------------------
+STEP 4: FIX BADGES / STATUS TAGS
+-------------------------------------
+
+Replace:
+
+- orange badges → blue or teal
+
+New system:
+
+- Success → light green
+- Info → light blue
+- Warning → soft yellow (NOT orange)
+- Neutral → gray
+
+-------------------------------------
+STEP 5: FIX ICON COLORS
+-------------------------------------
+
+Icons using orange must be updated:
+
+Replace with:
+- teal (#5FA8A8)
+- gray (#64748B)
+
+-------------------------------------
+STEP 6: FIX STEP INDICATORS (IMPORTANT)
+-------------------------------------
+
+In "Send Message" page:
+
+- Step indicator active = teal
+- NOT orange
+
+-------------------------------------
+STEP 7: FIX EMPTY STATE / ERROR BUTTONS
+-------------------------------------
+
+Example:
+"Go to Dashboard" button is orange → must be gradient teal-blue
+
+-------------------------------------
+STEP 8: FORCE THEME USAGE
+-------------------------------------
+
+All components must use:
+
+- theme colors
+- CSS variables
+- shared design tokens
+
+DO NOT allow hardcoded colors anywhere.
+
+-------------------------------------
+FINAL GOAL
+-------------------------------------
+
+ZERO orange color anywhere in application.
+
+Consistent teal-blue design system across:
+- Admin tools
+- Staff pages
+- Communication pages
+- System pages
+
+This is a full theme migration, not partial fix.

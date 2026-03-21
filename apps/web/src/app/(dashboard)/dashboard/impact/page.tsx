@@ -517,8 +517,8 @@ export default function ImpactDashboardPage() {
               value: segmentation?.majorDonors ?? "-",
               description: "₹50K–1L lifetime",
               icon: Star,
-              color: "text-amber-600",
-              bg: "bg-amber-50 dark:bg-amber-950/50",
+              color: "text-[#5FA8A8]",
+              bg: "bg-[#E6F4F1] dark:bg-[#5FA8A8]/20",
               testId: "card-segment-major",
             },
             {
@@ -577,7 +577,7 @@ export default function ImpactDashboardPage() {
               <div className="space-y-3">
                 {[
                   { label: "Champion", count: segmentation.championDonors, color: "bg-purple-500" },
-                  { label: "Major", count: segmentation.majorDonors, color: "bg-amber-500" },
+                  { label: "Major", count: segmentation.majorDonors, color: "bg-[#E6F4F1]0" },
                   { label: "Active", count: segmentation.activeDonors, color: "bg-blue-500" },
                   { label: "Small", count: segmentation.smallDonors, color: "bg-green-500" },
                 ].map((tier) => {

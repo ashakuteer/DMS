@@ -21,7 +21,7 @@ const RECURRENCE_TYPES: Record<string, { label: string; color: string }> = {
   DAILY:       { label: "Daily",       color: "bg-blue-100 text-blue-700 border-blue-200" },
   WEEKLY:      { label: "Weekly",      color: "bg-purple-100 text-purple-700 border-purple-200" },
   MONTHLY:     { label: "Monthly",     color: "bg-green-100 text-green-700 border-green-200" },
-  QUARTERLY:   { label: "Quarterly",   color: "bg-orange-100 text-orange-700 border-orange-200" },
+  QUARTERLY:   { label: "Quarterly",   color: "bg-[#E6F4F1] text-[#5FA8A8] border-[#5FA8A8]" },
   HALF_YEARLY: { label: "Half-Yearly", color: "bg-pink-100 text-pink-700 border-pink-200" },
   ANNUAL:      { label: "Annual",      color: "bg-red-100 text-red-700 border-red-200" },
 };

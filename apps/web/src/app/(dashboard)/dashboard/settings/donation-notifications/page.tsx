@@ -137,7 +137,7 @@ export default function DonationNotificationsPage() {
                   Automatically send a PDF receipt via email to the donor after recording a donation.
                 </p>
                 {!settings.emailConfigured && settings.enableDonationEmail && (
-                  <p className="text-xs text-amber-600 dark:text-amber-400 flex items-center gap-1 mt-1">
+                  <p className="text-xs text-[#5FA8A8] dark:text-[#A8D5D1] flex items-center gap-1 mt-1">
                     <AlertCircle className="h-3 w-3" />
                     SMTP not configured. Emails will be queued but not delivered until configured.
                   </p>

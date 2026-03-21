@@ -47,7 +47,7 @@ function reportTypeBadge(type: string) {
     DONOR_SUMMARY: "bg-blue-100 text-blue-800",
     DONATION_HISTORY: "bg-green-100 text-green-800",
     IMPACT_REPORT: "bg-purple-100 text-purple-800",
-    ANNUAL_STATEMENT: "bg-orange-100 text-orange-800",
+    ANNUAL_STATEMENT: "bg-[#E6F4F1] text-[#5FA8A8]",
     CUSTOM: "bg-gray-100 text-gray-800",
   };
   return map[type] ?? "bg-gray-100 text-gray-800";

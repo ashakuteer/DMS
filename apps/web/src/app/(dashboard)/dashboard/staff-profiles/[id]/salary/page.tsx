@@ -306,7 +306,7 @@ export default function StaffSalaryPage() {
           </Button>
           <div>
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <Banknote className="h-5 w-5 text-orange-500" />
+              <Banknote className="h-5 w-5 text-[#5FA8A8]" />
               Salary — {staffInfo?.name}
             </h1>
             <p className="text-sm text-muted-foreground">
@@ -389,10 +389,10 @@ export default function StaffSalaryPage() {
 
               {/* Net preview */}
               {structureForm.baseSalary && (
-                <div className="flex items-center gap-2 rounded-lg bg-orange-500/10 px-4 py-2.5 border border-orange-500/20">
-                  <IndianRupee className="h-4 w-4 text-orange-500 shrink-0" />
+                <div className="flex items-center gap-2 rounded-lg bg-[#E6F4F1]0/10 px-4 py-2.5 border border-[#5FA8A8]/20">
+                  <IndianRupee className="h-4 w-4 text-[#5FA8A8] shrink-0" />
                   <span className="text-sm text-muted-foreground">Net Salary:</span>
-                  <span className="font-semibold text-orange-600 ml-auto">{fmt(previewNet)}</span>
+                  <span className="font-semibold text-[#5FA8A8] ml-auto">{fmt(previewNet)}</span>
                 </div>
               )}
 
@@ -436,11 +436,11 @@ export default function StaffSalaryPage() {
                 <SalaryTile label="Allowances" value={`+ ${fmt(structure.allowances)}`} green />
                 <SalaryTile label="Deductions" value={`- ${fmt(structure.deductions)}`} red />
               </div>
-              <div className="flex items-center gap-3 rounded-lg bg-orange-500/10 border border-orange-500/20 px-4 py-3">
-                <IndianRupee className="h-5 w-5 text-orange-500" />
+              <div className="flex items-center gap-3 rounded-lg bg-[#E6F4F1]0/10 border border-[#5FA8A8]/20 px-4 py-3">
+                <IndianRupee className="h-5 w-5 text-[#5FA8A8]" />
                 <div>
                   <p className="text-xs text-muted-foreground">Net Monthly Salary</p>
-                  <p className="text-xl font-bold text-orange-600" data-testid="text-net-salary">{fmt(netSalary)}</p>
+                  <p className="text-xl font-bold text-[#5FA8A8]" data-testid="text-net-salary">{fmt(netSalary)}</p>
                 </div>
                 {structure.effectiveFrom && (
                   <div className="ml-auto text-right">

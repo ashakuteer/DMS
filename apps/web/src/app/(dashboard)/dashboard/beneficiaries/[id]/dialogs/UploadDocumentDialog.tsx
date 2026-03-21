@@ -176,7 +176,7 @@ export default function UploadDocumentDialog({
           )}
 
           {newDocument.isSensitive && (
-            <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+            <div className="flex items-center gap-2 text-sm text-[#5FA8A8] dark:text-[#A8D5D1]">
               <AlertTriangle className="h-4 w-4 flex-shrink-0" />
               <span>Sensitive documents can only be viewed by administrators</span>
             </div>

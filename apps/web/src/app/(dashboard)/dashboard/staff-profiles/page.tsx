@@ -38,7 +38,7 @@ const DESIGNATION_COLORS: Record<string, string> = {
   Telecaller: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
 };
 function getDesignationColor(designation: string) {
-  return DESIGNATION_COLORS[designation] || "bg-orange-500/15 text-orange-700 dark:text-orange-400";
+  return DESIGNATION_COLORS[designation] || "bg-[#E6F4F1]0/15 text-[#5FA8A8] dark:text-[#A8D5D1]";
 }
 
 // Group labels for filter dropdown
@@ -201,7 +201,7 @@ export default function StaffProfilesPage() {
               href={`/dashboard/staff-profiles/${s.id}`}
               data-testid={`card-staff-${s.id}`}
             >
-              <Card className="h-full hover:border-orange-500/40 transition-colors cursor-pointer">
+              <Card className="h-full hover:border-[#5FA8A8]/60/40 transition-colors cursor-pointer">
                 <CardHeader className="pb-2">
                   <div className="flex items-start gap-3">
                     {/* Avatar */}

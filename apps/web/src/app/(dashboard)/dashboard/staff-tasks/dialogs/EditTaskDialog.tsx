@@ -40,7 +40,7 @@ const STATUS_COLORS: Record<string, string> = {
   PENDING: "text-yellow-600",
   IN_PROGRESS: "text-blue-600",
   COMPLETED: "text-green-600",
-  OVERDUE: "text-orange-600",
+  OVERDUE: "text-[#5FA8A8]",
   MISSED: "text-red-600",
 };
 

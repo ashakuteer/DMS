@@ -64,7 +64,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   RECOGNITION: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
   DONOR_SUPPORT: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
   EVENT_BY_KIDS: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
-  VISITOR_VISIT: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+  VISITOR_VISIT: "bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]",
   CHALLENGE_PROBLEM: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
   GENERAL_UPDATE: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200",
 };

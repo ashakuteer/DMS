@@ -92,7 +92,7 @@ export default function DonorTimelineTab({
       key: "PLEDGE",
       label: t("donor_profile.tab_pledges"),
       icon: Gift,
-      color: "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300",
+      color: "bg-[#E6F4F1] dark:bg-[#5FA8A8]/20 text-[#5FA8A8] dark:text-[#A8D5D1]",
     },
     {
       key: "FOLLOW_UP",
@@ -265,8 +265,8 @@ export default function DonorTimelineTab({
                     },
                     PLEDGE: {
                       icon: Gift,
-                      bg: "bg-amber-100 dark:bg-amber-900",
-                      text: "text-amber-600 dark:text-amber-400",
+                      bg: "bg-[#E6F4F1] dark:bg-[#5FA8A8]/20",
+                      text: "text-[#5FA8A8] dark:text-[#A8D5D1]",
                     },
                     FOLLOW_UP: {
                       icon: CalendarClock,

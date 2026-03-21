@@ -44,7 +44,7 @@ function daysPassed(d: string | null | undefined) {
 
 function priorityColor(p: string) {
   if (p === "HIGH" || p === "URGENT") return "text-red-600 font-semibold";
-  if (p === "MEDIUM") return "text-orange-500";
+  if (p === "MEDIUM") return "text-[#5FA8A8]";
   return "text-muted-foreground";
 }
 
@@ -175,7 +175,7 @@ export default function MissedTasksPage() {
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4">
-            <p className="text-2xl font-bold text-orange-600">
+            <p className="text-2xl font-bold text-[#5FA8A8]">
               {tasks.filter((t) => t.dueDate && daysPassed(t.dueDate)! <= 3).length}
             </p>
             <p className="text-xs text-muted-foreground">Missed within 3 days</p>
@@ -312,7 +312,7 @@ export default function MissedTasksPage() {
                           variant="outline"
                           className={isOld
                             ? "border-red-500 text-red-700 bg-red-100 dark:bg-red-950 font-semibold"
-                            : "border-orange-400 text-orange-700 bg-orange-50 dark:bg-orange-950"
+                            : "border-[#5FA8A8] text-[#5FA8A8] bg-[#E6F4F1] dark:bg-[#5FA8A8]/20"
                           }
                           data-testid={`badge-days-${task.id}`}
                         >

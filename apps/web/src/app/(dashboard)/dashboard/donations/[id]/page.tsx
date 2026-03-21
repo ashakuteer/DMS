@@ -387,7 +387,7 @@ export default function DashboardPage() {
   const getInsightIcon = (type: string) => {
     switch (type) {
       case "positive": return <ArrowUpRight className="h-4 w-4 text-emerald-600" />;
-      case "warning": return <AlertTriangle className="h-4 w-4 text-amber-600" />;
+      case "warning": return <AlertTriangle className="h-4 w-4 text-[#5FA8A8]" />;
       default: return <Info className="h-4 w-4 text-blue-600" />;
     }
   };
@@ -395,7 +395,7 @@ export default function DashboardPage() {
   const getInsightBg = (type: string) => {
     switch (type) {
       case "positive": return "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800";
-      case "warning": return "bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800";
+      case "warning": return "bg-[#E6F4F1] dark:bg-[#5FA8A8]/20 border-[#5FA8A8] dark:border-[#5FA8A8]";
       default: return "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800";
     }
   };
@@ -524,7 +524,7 @@ export default function DashboardPage() {
         <Card className="border-0 shadow-sm" data-testid="card-ai-insights">
           <CardHeader className="pb-3">
             <div className="flex items-center gap-2">
-              <Lightbulb className="h-5 w-5 text-amber-500" />
+              <Lightbulb className="h-5 w-5 text-[#5FA8A8]" />
               <CardTitle className="text-lg">AI Insights</CardTitle>
             </div>
             <CardDescription>Smart observations based on your data</CardDescription>
@@ -556,10 +556,10 @@ export default function DashboardPage() {
           {insightCards.map((card) => {
             const colorMap = {
               warning: {
-                border: 'border-l-amber-500',
-                bg: 'bg-amber-50 dark:bg-amber-950/30',
-                text: 'text-amber-600',
-                countColor: 'text-amber-700 dark:text-amber-400',
+                border: 'border-l-[#5FA8A8]',
+                bg: 'bg-[#E6F4F1] dark:bg-[#5FA8A8]/20',
+                text: 'text-[#5FA8A8]',
+                countColor: 'text-[#5FA8A8] dark:text-[#A8D5D1]',
               },
               info: {
                 border: 'border-l-blue-500',
@@ -672,7 +672,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex items-center gap-2">
                 {staffActions.summary.atRisk > 0 && (
-                  <Badge variant="outline" className="text-xs border-amber-500 text-amber-600 bg-amber-50 dark:bg-amber-950/30" data-testid="badge-at-risk">
+                  <Badge variant="outline" className="text-xs border-[#5FA8A8] text-[#5FA8A8] bg-[#E6F4F1] dark:bg-[#5FA8A8]/20" data-testid="badge-at-risk">
                     {staffActions.summary.atRisk} At-Risk
                   </Badge>
                 )}
@@ -723,7 +723,7 @@ export default function DashboardPage() {
                           <div className="flex items-center gap-2">
                             <Badge 
                               variant="outline" 
-                              className={`text-xs ${donor.healthStatus === 'DORMANT' ? 'border-red-500 text-red-600 bg-red-50 dark:bg-red-950/30' : 'border-amber-500 text-amber-600 bg-amber-50 dark:bg-amber-950/30'}`}
+                              className={`text-xs ${donor.healthStatus === 'DORMANT' ? 'border-red-500 text-red-600 bg-red-50 dark:bg-red-950/30' : 'border-[#5FA8A8] text-[#5FA8A8] bg-[#E6F4F1] dark:bg-[#5FA8A8]/20'}`}
                               data-testid={`health-status-${donor.id}`}
                             >
                               {donor.healthStatus === 'DORMANT' ? 'Dormant' : 'At-Risk'}
@@ -771,13 +771,13 @@ export default function DashboardPage() {
       )}
 
       {canSeeDueReminders && dueReminders.length > 0 && (
-        <Card className="border-0 shadow-sm bg-gradient-to-br from-orange-50/50 to-amber-50/50 dark:from-orange-950/20 dark:to-amber-950/20" data-testid="card-followups-due">
+        <Card className="border-0 shadow-sm bg-gradient-to-br from-[#5FA8A8]/50 to-[#7FAFD4]/50 dark:from-[#5FA8A8]/20 dark:to-[#7FAFD4]/20" data-testid="card-followups-due">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-orange-600" />
+                <Bell className="h-5 w-5 text-[#5FA8A8]" />
                 <CardTitle className="text-lg">Follow-ups Due</CardTitle>
-                <Badge variant="outline" className="text-xs border-orange-500 text-orange-600 bg-orange-50 dark:bg-orange-950/30" data-testid="badge-due-count">
+                <Badge variant="outline" className="text-xs border-[#5FA8A8] text-[#5FA8A8] bg-[#E6F4F1] dark:bg-[#5FA8A8]/20" data-testid="badge-due-count">
                   {dueReminders.length} pending
                 </Badge>
               </div>
@@ -798,7 +798,7 @@ export default function DashboardPage() {
                   >
                     <div className="flex items-start justify-between gap-3 flex-wrap">
                       <div className="flex items-center gap-3">
-                        <Bell className="h-4 w-4 text-orange-500" />
+                        <Bell className="h-4 w-4 text-[#5FA8A8]" />
                         <div>
                           <p className="font-medium text-sm">{donorName}</p>
                           <p className="text-xs text-muted-foreground">{reminder.donor.donorCode}</p>

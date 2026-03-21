@@ -371,7 +371,7 @@ export default function BeneficiaryHealthTab({
                 >
                   <div
                     className={`absolute left-2.5 top-2 h-3 w-3 rounded-full border-2 border-background ${
-                      item.type === "METRIC" ? "bg-blue-500" : "bg-amber-500"
+                      item.type === "METRIC" ? "bg-blue-500" : "bg-[#E6F4F1]0"
                     }`}
                   />
 
@@ -383,7 +383,7 @@ export default function BeneficiaryHealthTab({
                             {item.type === "METRIC" ? (
                               <Ruler className="h-4 w-4 text-blue-500" />
                             ) : (
-                              <Stethoscope className="h-4 w-4 text-amber-500" />
+                              <Stethoscope className="h-4 w-4 text-[#5FA8A8]" />
                             )}
 
                             <span className="font-medium text-sm">{item.title}</span>

@@ -200,7 +200,7 @@ export default function EmailJobsPage() {
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Queued</CardDescription>
-            <CardTitle className="text-2xl text-amber-600">{stats.queued}</CardTitle>
+            <CardTitle className="text-2xl text-[#5FA8A8]">{stats.queued}</CardTitle>
           </CardHeader>
         </Card>
         <Card>

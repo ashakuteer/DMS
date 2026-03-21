@@ -38,20 +38,20 @@ interface PredictionData {
 function getHealthColor(score: number) {
   if (score >= 80) return "text-green-600";
   if (score >= 50) return "text-blue-600";
-  if (score >= 30) return "text-amber-600";
+  if (score >= 30) return "text-[#5FA8A8]";
   return "text-red-600";
 }
 
 function getHealthBadgeClass(status: string) {
   if (status === "Healthy Donor") return "bg-green-100 text-green-800";
   if (status === "Active Donor") return "bg-blue-100 text-blue-800";
-  if (status === "At Risk Donor") return "bg-amber-100 text-amber-800";
+  if (status === "At Risk Donor") return "bg-[#E6F4F1] text-[#5FA8A8]";
   return "bg-red-100 text-red-800";
 }
 
 function getProbabilityColor(prob: number) {
   if (prob >= 70) return "text-green-600";
-  if (prob >= 45) return "text-amber-600";
+  if (prob >= 45) return "text-[#5FA8A8]";
   return "text-red-600";
 }
 
@@ -99,7 +99,7 @@ export default function DonorOverviewTab({
                 >
                   {donor.primaryPhoneCode} {donor.primaryPhone}
                   {isDataMasked && donor.primaryPhone?.includes("*") && (
-                    <Lock className="h-3 w-3 text-amber-500" />
+                    <Lock className="h-3 w-3 text-[#5FA8A8]" />
                   )}
                 </span>
               </div>
@@ -128,7 +128,7 @@ export default function DonorOverviewTab({
                 >
                   {donor.personalEmail}
                   {isDataMasked && donor.personalEmail?.includes("*") && (
-                    <Lock className="h-3 w-3 text-amber-500" />
+                    <Lock className="h-3 w-3 text-[#5FA8A8]" />
                   )}
                 </span>
               </div>

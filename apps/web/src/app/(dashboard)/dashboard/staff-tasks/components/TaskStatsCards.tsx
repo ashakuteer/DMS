@@ -44,8 +44,8 @@ export default function TaskStatsCards({ stats }: { stats: Stats }) {
       <Card>
         <CardContent className="pt-4 pb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-md bg-orange-100 dark:bg-orange-900">
-              <Loader2 className="h-5 w-5 text-orange-600 dark:text-orange-300" />
+            <div className="p-2 rounded-md bg-[#E6F4F1] dark:bg-[#5FA8A8]/20">
+              <Loader2 className="h-5 w-5 text-[#5FA8A8] dark:text-[#A8D5D1]" />
             </div>
             <div>
               <p className="text-2xl font-bold">{stats.inProgress}</p>

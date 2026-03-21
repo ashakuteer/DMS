@@ -43,7 +43,7 @@ export default function TodaySummary({ followUps }: any) {
             </span>
           </div>
 
-          <Badge className="bg-orange-100 text-orange-800">
+          <Badge className="bg-[#E6F4F1] text-[#5FA8A8]">
             {t("follow_ups.due_today_count", { count: dueTodayCount })}
           </Badge>
 

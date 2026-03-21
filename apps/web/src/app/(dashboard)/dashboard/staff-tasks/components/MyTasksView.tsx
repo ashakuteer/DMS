@@ -22,19 +22,19 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }>
   PENDING:     { label: "Pending",     color: "text-yellow-600 bg-yellow-50 border-yellow-200", icon: Circle },
   IN_PROGRESS: { label: "In Progress", color: "text-blue-600 bg-blue-50 border-blue-200",       icon: Clock },
   COMPLETED:   { label: "Completed",   color: "text-green-600 bg-green-50 border-green-200",    icon: CheckCircle2 },
-  OVERDUE:     { label: "Overdue",     color: "text-orange-600 bg-orange-50 border-orange-200", icon: AlertCircle },
+  OVERDUE:     { label: "Overdue",     color: "text-[#5FA8A8] bg-[#E6F4F1] border-[#5FA8A8]", icon: AlertCircle },
   MISSED:      { label: "Missed",      color: "text-red-600 bg-red-50 border-red-200",           icon: XCircle },
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  LOW: "text-gray-500", MEDIUM: "text-blue-500", HIGH: "text-orange-500", URGENT: "text-red-600",
+  LOW: "text-gray-500", MEDIUM: "text-blue-500", HIGH: "text-[#5FA8A8]", URGENT: "text-red-600",
 };
 
 const GRADE_CONFIG: Record<string, { color: string; label: string }> = {
   A: { color: "text-green-600", label: "Excellent" },
   B: { color: "text-blue-600", label: "Good" },
   C: { color: "text-yellow-600", label: "Average" },
-  D: { color: "text-orange-600", label: "Below Average" },
+  D: { color: "text-[#5FA8A8]", label: "Below Average" },
   F: { color: "text-red-600", label: "Poor" },
 };
 
@@ -326,7 +326,7 @@ export default function MyTasksView({ userId }: Props) {
                             }
                           </button>
                         ) : (
-                          <StatusIcon className={`h-5 w-5 mt-0.5 shrink-0 ${task.status === "COMPLETED" ? "text-green-500" : task.status === "MISSED" ? "text-red-500" : "text-orange-500"}`} />
+                          <StatusIcon className={`h-5 w-5 mt-0.5 shrink-0 ${task.status === "COMPLETED" ? "text-green-500" : task.status === "MISSED" ? "text-red-500" : "text-[#5FA8A8]"}`} />
                         )}
 
                         <div className="min-w-0">

@@ -31,7 +31,7 @@ function getHealthBadge(healthStatus?: string, healthScore?: number) {
 function getEngagementBadge(level?: string) {
   if (!level) return null
   if (level === "HOT")
-    return <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200 text-xs">HOT</Badge>
+    return <Badge className="bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1] text-xs">HOT</Badge>
   if (level === "WARM")
     return <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs">WARM</Badge>
   if (level === "COLD")
@@ -43,7 +43,7 @@ const ROLE_STYLES: Record<PersonRole, string> = {
   INDIVIDUAL: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
   CSR:        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
   VOLUNTEER:  "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  INFLUENCER: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
+  INFLUENCER: "bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]",
 }
 
 function getRoleBadge(role: PersonRole, size: "sm" | "xs" = "sm") {

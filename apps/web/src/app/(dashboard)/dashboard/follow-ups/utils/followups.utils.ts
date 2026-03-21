@@ -26,7 +26,7 @@ export function getDueDateDisplay(dateStr: string) {
 
   else if (today) {
     label = "Due today"
-    className = "text-sm text-orange-600 font-medium"
+    className = "text-sm text-[#5FA8A8] font-medium"
   }
 
   else if (tomorrow) {

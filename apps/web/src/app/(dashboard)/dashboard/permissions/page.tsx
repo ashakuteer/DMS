@@ -227,7 +227,7 @@ export default function PermissionsPage() {
         </div>
         <div className="flex items-center gap-2">
           {hasChanges && (
-            <Badge variant="outline" className="text-amber-600 border-amber-600" data-testid="badge-unsaved">
+            <Badge variant="outline" className="text-[#5FA8A8] border-[#5FA8A8]" data-testid="badge-unsaved">
               <AlertTriangle className="h-3 w-3 mr-1" />
               Unsaved Changes
             </Badge>

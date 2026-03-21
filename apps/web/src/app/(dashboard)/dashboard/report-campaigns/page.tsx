@@ -85,7 +85,7 @@ const typeLabels: Record<string, string> = {
 const typeColors: Record<string, string> = {
   QUARTERLY: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
   ANNUAL: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300",
-  AUDIT: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300",
+  AUDIT: "bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]",
   EVENT: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300",
 };
 
@@ -312,7 +312,7 @@ export default function ReportCampaignsPage() {
       case "DRAFT":
         return <Badge variant="outline" data-testid="badge-status-draft">Draft</Badge>;
       case "QUEUED":
-        return <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300" data-testid="badge-status-queued">Queued</Badge>;
+        return <Badge className="bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]" data-testid="badge-status-queued">Queued</Badge>;
       case "SENT":
         return <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300" data-testid="badge-status-sent">Sent</Badge>;
       default:

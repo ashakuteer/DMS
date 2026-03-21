@@ -59,7 +59,7 @@ export default function DonorStatsCards({
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2">
-            <Gift className="h-5 w-5 text-amber-600" />
+            <Gift className="h-5 w-5 text-[#5FA8A8]" />
             <span className="text-2xl font-bold">{pendingPledges}</span>
           </div>
           <p className="text-xs text-muted-foreground mt-1">

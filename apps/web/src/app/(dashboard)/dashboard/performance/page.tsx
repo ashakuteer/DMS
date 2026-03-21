@@ -59,7 +59,7 @@ function gradeBadge(grade: string) {
     A: "bg-green-100 text-green-700 border-green-300 dark:bg-green-950/40 dark:text-green-300",
     B: "bg-blue-100 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300",
     C: "bg-yellow-100 text-yellow-700 border-yellow-300 dark:bg-yellow-950/40 dark:text-yellow-300",
-    D: "bg-orange-100 text-orange-700 border-orange-300 dark:bg-orange-950/40 dark:text-orange-300",
+    D: "bg-[#E6F4F1] text-[#5FA8A8] border-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]",
     F: "bg-red-100 text-red-700 border-red-300 dark:bg-red-950/40 dark:text-red-300",
   };
   return colors[grade] || "bg-muted text-muted-foreground";

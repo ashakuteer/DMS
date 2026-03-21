@@ -108,7 +108,7 @@ export function getSeverityBadgeClass(severity: string) {
       return "bg-yellow-100 text-yellow-800";
 
     case "HIGH":
-      return "bg-orange-100 text-orange-800";
+      return "bg-[#E6F4F1] text-[#5FA8A8]";
 
     case "CRITICAL":
       return "bg-red-100 text-red-800";
@@ -130,7 +130,7 @@ export function getHealthStatusBadgeClass(status: string) {
       return "bg-red-100 text-red-800";
 
     case "UNDER_TREATMENT":
-      return "bg-orange-100 text-orange-800";
+      return "bg-[#E6F4F1] text-[#5FA8A8]";
 
     default:
       return "";

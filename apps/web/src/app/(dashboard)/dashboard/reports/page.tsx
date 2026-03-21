@@ -111,7 +111,7 @@ function formatDate(dateStr: string): string {
 function HealthStatusBadge({ status }: { status: 'HEALTHY' | 'AT_RISK' | 'DORMANT' }) {
   const variants: Record<string, { class: string; label: string }> = {
     HEALTHY: { class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200', label: 'Healthy' },
-    AT_RISK: { class: 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200', label: 'At-Risk' },
+    AT_RISK: { class: 'bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]', label: 'At-Risk' },
     DORMANT: { class: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200', label: 'Dormant' },
   };
   const v = variants[status] || variants.DORMANT;

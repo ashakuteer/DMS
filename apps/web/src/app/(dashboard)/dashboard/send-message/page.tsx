@@ -182,8 +182,8 @@ export default function SendMessagePage() {
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
       {/* Page Header */}
       <div className="flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-          <MessageSquarePlus className="h-5 w-5 text-orange-600" />
+        <div className="h-10 w-10 rounded-xl bg-[#E6F4F1] dark:bg-[#5FA8A8]/20 flex items-center justify-center">
+          <MessageSquarePlus className="h-5 w-5 text-[#5FA8A8]" />
         </div>
         <div>
           <h1 className="text-2xl font-bold">{t("send_message.title")}</h1>
@@ -200,7 +200,7 @@ export default function SendMessagePage() {
                 idx < currentStep
                   ? "text-green-700 dark:text-green-400"
                   : idx === currentStep
-                  ? "bg-orange-500 text-white shadow-sm"
+                  ? "bg-[#E6F4F1]0 text-white shadow-sm"
                   : "text-muted-foreground"
               }`}
             >
@@ -208,7 +208,7 @@ export default function SendMessagePage() {
                 <CheckCircle2 className="h-4 w-4" />
               ) : (
                 <span className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold border-2 ${
-                  idx === currentStep ? "border-white bg-orange-500 text-white" : "border-muted-foreground/30"
+                  idx === currentStep ? "border-white bg-[#E6F4F1]0 text-white" : "border-muted-foreground/30"
                 }`}>{idx + 1}</span>
               )}
               {step}
@@ -246,8 +246,8 @@ export default function SendMessagePage() {
                       onClick={() => setSelectedTemplateId(tmpl.id)}
                       className={`text-left p-4 rounded-xl border-2 transition-all ${
                         selectedTemplateId === tmpl.id
-                          ? "border-orange-500 bg-orange-50 dark:bg-orange-900/20"
-                          : "border-border hover:border-orange-300 hover:bg-muted/40"
+                          ? "border-[#5FA8A8] bg-[#E6F4F1] dark:bg-[#5FA8A8]/20"
+                          : "border-border hover:border-[#5FA8A8]/60 hover:bg-muted/40"
                       }`}
                       data-testid={`template-option-${tmpl.type.toLowerCase()}`}
                     >
@@ -256,7 +256,7 @@ export default function SendMessagePage() {
                           <p className="font-semibold text-sm truncate">{tmpl.name}</p>
                           {tmpl.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{tmpl.description}</p>}
                         </div>
-                        {selectedTemplateId === tmpl.id && <CheckCircle2 className="h-5 w-5 text-orange-500 flex-shrink-0 mt-0.5" />}
+                        {selectedTemplateId === tmpl.id && <CheckCircle2 className="h-5 w-5 text-[#5FA8A8] flex-shrink-0 mt-0.5" />}
                       </div>
                       <div className="flex gap-1.5 mt-2">
                         <Badge variant="outline" className="text-[10px] py-0">
@@ -330,10 +330,10 @@ export default function SendMessagePage() {
                           <button
                             key={d.id}
                             onClick={() => toggleDonor(d)}
-                            className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 transition-colors ${selected ? "bg-orange-50 dark:bg-orange-900/20" : ""}`}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-muted/50 transition-colors ${selected ? "bg-[#E6F4F1] dark:bg-[#5FA8A8]/20" : ""}`}
                             data-testid={`search-result-${d.donorCode}`}
                           >
-                            <div className="h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-orange-700 dark:text-orange-300 text-xs font-bold flex-shrink-0">
+                            <div className="h-8 w-8 rounded-full bg-[#E6F4F1] dark:bg-[#5FA8A8]/20 flex items-center justify-center text-[#5FA8A8] dark:text-[#A8D5D1] text-xs font-bold flex-shrink-0">
                               {(d.firstName?.[0] || "D").toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -342,7 +342,7 @@ export default function SendMessagePage() {
                                 {d.donorCode} {d.primaryPhone ? `· ${d.primaryPhone}` : ""} {d.city ? `· ${d.city}` : ""}
                               </p>
                             </div>
-                            {selected && <CheckCircle2 className="h-4 w-4 text-orange-500 flex-shrink-0" />}
+                            {selected && <CheckCircle2 className="h-4 w-4 text-[#5FA8A8] flex-shrink-0" />}
                           </button>
                         );
                       })}
@@ -408,7 +408,7 @@ export default function SendMessagePage() {
                       <div className="border rounded-lg divide-y max-h-48 overflow-y-auto">
                         {groupResults.slice(0, 50).map((d) => (
                           <div key={d.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                            <div className="h-7 w-7 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-orange-700 dark:text-orange-300 text-xs font-bold flex-shrink-0">
+                            <div className="h-7 w-7 rounded-full bg-[#E6F4F1] dark:bg-[#5FA8A8]/20 flex items-center justify-center text-[#5FA8A8] dark:text-[#A8D5D1] text-xs font-bold flex-shrink-0">
                               {(d.firstName?.[0] || "D").toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -451,7 +451,7 @@ export default function SendMessagePage() {
                 recipients.slice(0, 3).map((donor, idx) => (
                   <div key={donor.id} className="border rounded-xl p-4 space-y-3">
                     <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-orange-700 text-xs font-bold">
+                      <div className="h-7 w-7 rounded-full bg-[#E6F4F1] dark:bg-[#5FA8A8]/20 flex items-center justify-center text-[#5FA8A8] text-xs font-bold">
                         {(donor.firstName?.[0] || "D").toUpperCase()}
                       </div>
                       <span className="font-semibold text-sm">{getDonorDisplayName(donor)}</span>
@@ -522,7 +522,7 @@ export default function SendMessagePage() {
 
                   return (
                     <div key={donor.id} className="flex items-center gap-3 p-3 border rounded-lg bg-card">
-                      <div className="h-8 w-8 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center text-orange-700 text-sm font-bold flex-shrink-0">
+                      <div className="h-8 w-8 rounded-full bg-[#E6F4F1] dark:bg-[#5FA8A8]/20 flex items-center justify-center text-[#5FA8A8] text-sm font-bold flex-shrink-0">
                         {(donor.firstName?.[0] || "D").toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">

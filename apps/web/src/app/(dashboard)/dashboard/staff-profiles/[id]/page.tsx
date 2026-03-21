@@ -392,7 +392,7 @@ export default function StaffProfilePage() {
               <>
                 <Button variant="outline" size="sm" asChild data-testid="button-salary">
                   <Link href={`/dashboard/staff-profiles/${id}/salary`}>
-                    <Banknote className="mr-2 h-4 w-4 text-orange-500" />Salary
+                    <Banknote className="mr-2 h-4 w-4 text-[#5FA8A8]" />Salary
                   </Link>
                 </Button>
                 <Button variant="outline" size="sm" onClick={startEdit} data-testid="button-edit">

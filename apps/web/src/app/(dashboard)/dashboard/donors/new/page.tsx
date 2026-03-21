@@ -538,9 +538,9 @@ export default function NewDonorPage() {
       </div>
 
       {duplicates.length > 0 && (
-        <Card className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+        <Card className="border-[#5FA8A8] bg-[#E6F4F1] dark:bg-[#5FA8A8]/20">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-amber-700 dark:text-amber-400">
+            <CardTitle className="flex items-center gap-2 text-[#5FA8A8] dark:text-[#A8D5D1]">
               <AlertTriangle className="h-5 w-5" />
               Possible Duplicates Found
             </CardTitle>

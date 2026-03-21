@@ -21,14 +21,14 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }>
   PENDING:     { label: "Pending",     color: "bg-yellow-100 text-yellow-800 border-yellow-200", icon: Circle },
   IN_PROGRESS: { label: "In Progress", color: "bg-blue-100 text-blue-800 border-blue-200",       icon: Clock },
   COMPLETED:   { label: "Completed",   color: "bg-green-100 text-green-800 border-green-200",    icon: CheckCircle2 },
-  OVERDUE:     { label: "Overdue",     color: "bg-orange-100 text-orange-800 border-orange-200", icon: AlertCircle },
+  OVERDUE:     { label: "Overdue",     color: "bg-[#E6F4F1] text-[#5FA8A8] border-[#5FA8A8]", icon: AlertCircle },
   MISSED:      { label: "Missed",      color: "bg-red-100 text-red-800 border-red-200",           icon: XCircle },
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
   LOW: "bg-gray-100 text-gray-700 border-gray-200",
   MEDIUM: "bg-blue-100 text-blue-700 border-blue-200",
-  HIGH: "bg-orange-100 text-orange-700 border-orange-200",
+  HIGH: "bg-[#E6F4F1] text-[#5FA8A8] border-[#5FA8A8]",
   URGENT: "bg-red-100 text-red-700 border-red-200",
 };
 

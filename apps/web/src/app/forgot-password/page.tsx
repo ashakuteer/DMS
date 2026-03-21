@@ -96,8 +96,8 @@ export default function ForgotPasswordPage() {
             {!submitted ? (
               <>
                 <div className="mb-8">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 mb-4">
-                    <User className="h-6 w-6 text-orange-500" />
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#E6F4F1] dark:bg-[#5FA8A8]/20 mb-4">
+                    <User className="h-6 w-6 text-[#5FA8A8]" />
                   </div>
                   <h2 className="text-2xl font-bold text-foreground">Reset password</h2>
                   <p className="text-muted-foreground text-sm mt-1">
@@ -119,7 +119,7 @@ export default function ForgotPasswordPage() {
                       required
                       disabled={isLoading}
                       autoComplete="username"
-                      className="h-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-orange-500"
+                      className="h-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-[#5FA8A8]"
                       data-testid="input-forgot-username"
                     />
                     <p className="text-xs text-muted-foreground">
@@ -138,7 +138,7 @@ export default function ForgotPasswordPage() {
 
                   <Button
                     type="submit"
-                    className="w-full h-11 rounded-xl text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/30 transition-all"
+                    className="w-full h-11 rounded-xl text-sm font-semibold bg-[#5FA8A8] hover:bg-[#5FA8A8] text-white shadow-md shadow-[#5FA8A8]/20 transition-all"
                     disabled={isLoading}
                     data-testid="button-send-reset"
                   >

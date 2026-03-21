@@ -53,10 +53,10 @@ export default function DonorSpecialDaysTab({
   return (
     <div className="space-y-4">
       {upcomingOccasions.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50/50 dark:bg-amber-900/10 dark:border-amber-800">
+        <Card className="border-[#5FA8A8] bg-[#E6F4F1]/50 dark:bg-[#5FA8A8]/20 dark:border-[#5FA8A8]">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-amber-600" />
+              <Calendar className="h-4 w-4 text-[#5FA8A8]" />
               {t("donor_profile.upcoming_30_days")}
             </CardTitle>
           </CardHeader>
@@ -66,7 +66,7 @@ export default function DonorSpecialDaysTab({
                 <Badge
                   key={occasion.id}
                   variant="secondary"
-                  className="bg-amber-100 dark:bg-amber-900/30"
+                  className="bg-[#E6F4F1] dark:bg-[#5FA8A8]/20"
                 >
                   {getOccasionTypeLabel(occasion.type)} -{" "}
                   {occasion.daysUntil === 0

@@ -123,7 +123,7 @@ export default function SalaryOverviewPage() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Banknote className="h-6 w-6 text-orange-500" />
+            <Banknote className="h-6 w-6 text-[#5FA8A8]" />
             Staff Salary
           </h1>
           <p className="text-muted-foreground text-sm mt-0.5">
@@ -137,8 +137,8 @@ export default function SalaryOverviewPage() {
         <Card>
           <CardContent className="pt-5 pb-4">
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                <IndianRupee className="h-5 w-5 text-orange-500" />
+              <div className="h-9 w-9 rounded-lg bg-[#E6F4F1]0/10 flex items-center justify-center">
+                <IndianRupee className="h-5 w-5 text-[#5FA8A8]" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Total Monthly Payroll</p>

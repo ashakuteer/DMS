@@ -134,7 +134,7 @@ function ResetPasswordForm() {
                 </div>
                 <Link
                   href="/login"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-orange-500 hover:text-orange-600 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-[#5FA8A8] hover:text-[#5FA8A8] transition-colors"
                   data-testid="link-go-login"
                 >
                   Go to sign in →
@@ -143,8 +143,8 @@ function ResetPasswordForm() {
             ) : (
               <>
                 <div className="mb-8">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-orange-100 dark:bg-orange-900/30 mb-4">
-                    <ShieldCheck className="h-6 w-6 text-orange-500" />
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-[#E6F4F1] dark:bg-[#5FA8A8]/20 mb-4">
+                    <ShieldCheck className="h-6 w-6 text-[#5FA8A8]" />
                   </div>
                   <h2 className="text-2xl font-bold text-foreground">New password</h2>
                   <p className="text-muted-foreground text-sm mt-1">
@@ -165,7 +165,7 @@ function ResetPasswordForm() {
                       onChange={(e) => setToken(e.target.value)}
                       required
                       disabled={isLoading}
-                      className="h-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-orange-500 font-mono text-xs"
+                      className="h-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-[#5FA8A8] font-mono text-xs"
                       data-testid="input-reset-token"
                     />
                   </div>
@@ -183,7 +183,7 @@ function ResetPasswordForm() {
                         onChange={(e) => setNewPassword(e.target.value)}
                         required
                         disabled={isLoading}
-                        className="h-11 pr-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-orange-500"
+                        className="h-11 pr-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-[#5FA8A8]"
                         data-testid="input-new-password"
                       />
                       <button
@@ -210,7 +210,7 @@ function ResetPasswordForm() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                         disabled={isLoading}
-                        className="h-11 pr-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-orange-500"
+                        className="h-11 pr-11 rounded-xl border-gray-200 dark:border-gray-700 focus-visible:ring-[#5FA8A8]"
                         data-testid="input-confirm-password"
                       />
                       <button
@@ -235,7 +235,7 @@ function ResetPasswordForm() {
 
                   <Button
                     type="submit"
-                    className="w-full h-11 rounded-xl text-sm font-semibold bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/30 transition-all"
+                    className="w-full h-11 rounded-xl text-sm font-semibold bg-[#5FA8A8] hover:bg-[#5FA8A8] text-white shadow-md shadow-[#5FA8A8]/20 transition-all"
                     disabled={isLoading}
                     data-testid="button-reset-submit"
                   >
@@ -279,7 +279,7 @@ export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#5FA8A8]" />
       </div>
     }>
       <ResetPasswordForm />

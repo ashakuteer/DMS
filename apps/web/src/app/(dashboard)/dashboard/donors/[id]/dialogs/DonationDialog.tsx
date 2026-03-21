@@ -135,14 +135,14 @@ export default function DonationDialog({
                   className={[
                     "inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium",
                     kindDonation
-                      ? "bg-amber-50 text-amber-700 border border-amber-200"
+                      ? "bg-[#E6F4F1] text-[#5FA8A8] border border-[#5FA8A8]"
                       : "bg-blue-50 text-blue-700 border border-blue-200",
                   ].join(" ")}
                 >
                   <span
                     className={[
                       "w-1.5 h-1.5 rounded-full",
-                      kindDonation ? "bg-amber-500" : "bg-blue-500",
+                      kindDonation ? "bg-[#E6F4F1]0" : "bg-blue-500",
                     ].join(" ")}
                   />
                   {kindDonation
@@ -301,7 +301,7 @@ export default function DonationDialog({
             )}
 
             {kindDonation && (
-              <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2.5 text-xs text-amber-800">
+              <div className="rounded-md bg-[#E6F4F1] border border-[#5FA8A8] px-3 py-2.5 text-xs text-[#5FA8A8]">
                 <span className="font-semibold">{t("donor_profile.acknowledgement")}</span>{" "}
                 {t("donor_profile.in_kind_auto_ack")}
               </div>

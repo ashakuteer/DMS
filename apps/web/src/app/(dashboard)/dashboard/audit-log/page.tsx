@@ -120,7 +120,7 @@ const ACTION_COLORS: Record<string, string> = {
   WHATSAPP_SEND: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
   PLEDGE_FULFILLED: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400",
   PLEDGE_POSTPONED: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-  PLEDGE_CANCELLED: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+  PLEDGE_CANCELLED: "bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]",
   DATA_EXPORT: "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
   ROLE_CHANGE: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400",
   LOGIN: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",

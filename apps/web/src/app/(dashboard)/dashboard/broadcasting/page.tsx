@@ -1091,7 +1091,7 @@ export default function BroadcastingPage() {
             </div>
 
             {!previewResult && (
-              <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-500/10 rounded-md p-3">
+              <div className="flex items-center gap-2 text-sm text-[#5FA8A8] bg-[#E6F4F1]0/10 rounded-md p-3">
                 <AlertTriangle className="h-4 w-4 shrink-0" />
                 Please preview your audience before sending.
               </div>
@@ -1131,9 +1131,9 @@ export default function BroadcastingPage() {
                     </div>
                   </div>
                   <div className="text-center">
-                    <div className="text-xl font-bold text-amber-600" data-testid="text-result-skipped">{sendResult.skipped}</div>
+                    <div className="text-xl font-bold text-[#5FA8A8]" data-testid="text-result-skipped">{sendResult.skipped}</div>
                     <div className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-                      <AlertTriangle className="h-3 w-3 text-amber-600" /> Skipped
+                      <AlertTriangle className="h-3 w-3 text-[#5FA8A8]" /> Skipped
                     </div>
                   </div>
                 </div>

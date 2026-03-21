@@ -132,7 +132,7 @@ function ChartCard({ title, subtitle, children }: { title: string; subtitle?: st
 function insightStyle(type: string) {
   switch (type) {
     case "positive": return { border: "border-l-2 border-l-emerald-400", icon: <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" /> };
-    case "warning": return { border: "border-l-2 border-l-amber-400", icon: <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" /> };
+    case "warning": return { border: "border-l-2 border-l-[#5FA8A8]", icon: <AlertTriangle className="h-4 w-4 text-[#5FA8A8] flex-shrink-0 mt-0.5" /> };
     case "urgent": return { border: "border-l-2 border-l-red-400", icon: <Zap className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" /> };
     default: return { border: "border-l-2 border-l-blue-400", icon: <Info className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" /> };
   }
@@ -405,7 +405,7 @@ export default function DashboardPage() {
                 <KpiCard title={t("home.total_beneficiaries")} value={stats?.totalBeneficiaries?.toString() ?? "—"} icon={HandHeart} color="text-rose-600" />
                 <KpiCard title={t("home.active_sponsors")} value={sponsoredCount > 0 ? sponsoredCount.toString() : "—"} icon={Heart} color="text-pink-600" />
                 <KpiCard title={t("home.retention_rate")} value={retentionPct > 0 ? `${retentionPct.toFixed(1)}%` : "—"} icon={Repeat} color="text-emerald-600" />
-                <KpiCard title={t("home.pending_followups")} value={followUpCount > 0 ? followUpCount.toString() : "—"} icon={Bell} color="text-amber-600" />
+                <KpiCard title={t("home.pending_followups")} value={followUpCount > 0 ? followUpCount.toString() : "—"} icon={Bell} color="text-[#5FA8A8]" />
               </div>
             </div>
           )}
@@ -546,7 +546,7 @@ export default function DashboardPage() {
                         {[
                           { labelKey: "home.repeat_donors_count", value: retentionData.summary.repeatDonorCount, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
                           { labelKey: "home.lapsed_donors_count", value: retentionData.summary.lapsedDonorCount, color: "text-red-500", bg: "bg-red-50 dark:bg-red-950/30" },
-                          { labelKey: "home.one_time_only", value: retentionData.summary.oneTimeDonorCount, color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/30" },
+                          { labelKey: "home.one_time_only", value: retentionData.summary.oneTimeDonorCount, color: "text-[#5FA8A8]", bg: "bg-[#E6F4F1] dark:bg-[#5FA8A8]/20" },
                           { labelKey: "home.active_6mo", value: retentionData.summary.activeLast6Months, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30" },
                         ].map(({ labelKey, value, color, bg }) => (
                           <div key={labelKey} className={`rounded-xl p-3.5 ${bg}`}>
@@ -657,15 +657,15 @@ export default function DashboardPage() {
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-xl ${d.healthStatus === "DORMANT" ? "bg-red-50 dark:bg-red-950/30" : "bg-amber-50 dark:bg-amber-950/30"}`}>
-                          <Phone className={`h-4 w-4 ${d.healthStatus === "DORMANT" ? "text-red-500" : "text-amber-500"}`} />
+                        <div className={`p-2 rounded-xl ${d.healthStatus === "DORMANT" ? "bg-red-50 dark:bg-red-950/30" : "bg-[#E6F4F1] dark:bg-[#5FA8A8]/20"}`}>
+                          <Phone className={`h-4 w-4 ${d.healthStatus === "DORMANT" ? "text-red-500" : "text-[#5FA8A8]"}`} />
                         </div>
                         <div>
                           <p className="text-sm font-semibold">{d.name}</p>
                           <p className="text-xs text-muted-foreground">{d.donorCode} · {d.phone}</p>
                         </div>
                       </div>
-                      <Badge variant="outline" className={`text-xs flex-shrink-0 ${d.healthStatus === "DORMANT" ? "border-red-400 text-red-600 bg-red-50" : "border-amber-400 text-amber-600 bg-amber-50"}`}>
+                      <Badge variant="outline" className={`text-xs flex-shrink-0 ${d.healthStatus === "DORMANT" ? "border-red-400 text-red-600 bg-red-50" : "border-[#5FA8A8] text-[#5FA8A8] bg-[#E6F4F1]"}`}>
                         {d.healthStatus === "DORMANT" ? "Dormant" : "At-Risk"} · {d.daysSinceLastDonation}d
                       </Badge>
                     </div>
@@ -731,7 +731,7 @@ export default function DashboardPage() {
                       {topDonors.slice(0, 7).map((d, idx) => (
                         <Link key={d.donorId} href={`/dashboard/donors/${d.donorId}`}>
                           <div className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer group" data-testid={`top-donor-${d.donorId}`}>
-                            <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${idx === 0 ? "bg-amber-100 text-amber-700" : idx === 1 ? "bg-gray-100 text-gray-600" : idx === 2 ? "bg-muted text-muted-foreground" : "bg-muted text-muted-foreground"}`}>{idx + 1}</div>
+                            <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${idx === 0 ? "bg-[#E6F4F1] text-[#5FA8A8]" : idx === 1 ? "bg-gray-100 text-gray-600" : idx === 2 ? "bg-muted text-muted-foreground" : "bg-muted text-muted-foreground"}`}>{idx + 1}</div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{d.name}</p>
                               <p className="text-xs text-muted-foreground">{d.donorCode} · {d.donationCount} donation{d.donationCount !== 1 ? "s" : ""}</p>

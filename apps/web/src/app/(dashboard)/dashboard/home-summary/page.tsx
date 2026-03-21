@@ -297,10 +297,10 @@ export default function HomeSummaryPage() {
             <Card data-testid="card-health-sick">
               <CardContent className="p-4">
                 <div className="flex items-center gap-2 mb-1">
-                  <HeartPulse className="h-4 w-4 text-amber-600" />
+                  <HeartPulse className="h-4 w-4 text-[#5FA8A8]" />
                   <p className="text-sm text-muted-foreground">Sick</p>
                 </div>
-                <p className="text-2xl font-bold text-amber-600">{data.totals.totalHealthSick}</p>
+                <p className="text-2xl font-bold text-[#5FA8A8]">{data.totals.totalHealthSick}</p>
               </CardContent>
             </Card>
             <Card data-testid="card-education">
@@ -407,7 +407,7 @@ export default function HomeSummaryPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           {home.healthSick > 0 ? (
-                            <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 no-default-hover-elevate no-default-active-elevate">{home.healthSick}</Badge>
+                            <Badge variant="secondary" className="bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1] no-default-hover-elevate no-default-active-elevate">{home.healthSick}</Badge>
                           ) : (
                             <span className="text-muted-foreground">0</span>
                           )}
@@ -428,7 +428,7 @@ export default function HomeSummaryPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         {data.totals.totalHealthSick > 0 ? (
-                          <Badge variant="secondary" className="bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 no-default-hover-elevate no-default-active-elevate">{data.totals.totalHealthSick}</Badge>
+                          <Badge variant="secondary" className="bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1] no-default-hover-elevate no-default-active-elevate">{data.totals.totalHealthSick}</Badge>
                         ) : (
                           <span className="text-muted-foreground">0</span>
                         )}

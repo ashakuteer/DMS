@@ -126,7 +126,7 @@ export function getDonorLoyaltyTier(donorSince?: string | null): LoyaltyTier {
   }
   const years = new Date().getFullYear() - new Date(donorSince).getFullYear();
   if (years >= 7) return { label: "Champion Donor", colorClass: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200", years };
-  if (years >= 3) return { label: "Loyal Donor",    colorClass: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200", years };
+  if (years >= 3) return { label: "Loyal Donor",    colorClass: "bg-[#E6F4F1] text-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]", years };
   if (years >= 1) return { label: "Active Donor",   colorClass: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200", years };
   return { label: "New Donor", colorClass: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200", years };
 }

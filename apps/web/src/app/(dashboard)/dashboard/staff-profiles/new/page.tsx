@@ -286,7 +286,7 @@ export default function NewStaffPage() {
         <CardContent>
           <div className="flex items-center gap-6">
             <div
-              className="relative h-24 w-24 rounded-full border-2 border-dashed border-border bg-muted flex items-center justify-center overflow-hidden cursor-pointer hover:border-orange-500 transition-colors"
+              className="relative h-24 w-24 rounded-full border-2 border-dashed border-border bg-muted flex items-center justify-center overflow-hidden cursor-pointer hover:border-[#5FA8A8]/60 transition-colors"
               onClick={() => photoInputRef.current?.click()}
               data-testid="photo-upload-area"
             >
