@@ -20,35 +20,14 @@ import * as express from "express";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Explicit allowlist — covers the Vercel production app, all Vercel preview URLs,
-  // Replit dev/app domains, and local development ports.
-  const ALLOWED_ORIGINS = new Set([
-    "https://dms-sepia-gamma.vercel.app",
-    "http://localhost:3000",
-    "http://localhost:5000",
-  ]);
-
   app.enableCors({
-    origin: (origin, callback) => {
-      if (
-        !origin ||
-        ALLOWED_ORIGINS.has(origin) ||
-        origin.endsWith(".vercel.app") ||
-        origin.endsWith(".replit.dev") ||
-        origin.endsWith(".repl.co") ||
-        origin.endsWith(".replit.app")
-      ) {
-        callback(null, true);
-      } else {
-        callback(null, true); // permissive during rollout — tighten post-launch
-      }
-    },
+    origin: [
+      "https://dms-sepia-gamma.vercel.app",
+      "http://localhost:3000",
+    ],
+    methods: "GET,POST,PATCH,DELETE,OPTIONS",
+    allowedHeaders: "*",
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept", "X-Requested-With"],
-    exposedHeaders: ["Authorization"],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
   });
 
   app.setGlobalPrefix("api");
