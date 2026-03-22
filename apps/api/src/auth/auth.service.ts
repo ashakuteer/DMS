@@ -178,13 +178,13 @@ export class AuthService {
 
   async forgotPassword(dto: ForgotPasswordDto) {
     try {
-      console.log('Reset requested for identifier:', dto.username);
+      console.log('Reset requested for email:', dto.email);
 
       const user = await this.prisma.user.findFirst({
         where: {
           OR: [
-            { username: dto.username },
-            { email: dto.username },
+            { email: dto.email },
+            { username: dto.email },
           ],
         },
       });
@@ -208,6 +208,7 @@ export class AuthService {
       const resetLink = `${appUrl}/reset-password?token=${rawToken}`;
       const adminEmail = process.env.SMTP_USER || 'ashakuteer@gmail.com';
 
+      const displayId = user.username || user.email;
       const roleBadgeColor = user.role === 'FOUNDER' ? '#7c3aed' : user.role === 'ADMIN' ? '#1d4ed8' : '#0f766e';
 
       const html = `
@@ -226,8 +227,8 @@ export class AuthService {
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px 24px; margin-bottom: 28px;">
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="color: #64748b; font-size: 13px; padding: 6px 0; width: 120px;">Username</td>
-                  <td style="color: #0f172a; font-size: 15px; font-weight: 600; padding: 6px 0; font-family: monospace;">${user.username}</td>
+                  <td style="color: #64748b; font-size: 13px; padding: 6px 0; width: 120px;">Email</td>
+                  <td style="color: #0f172a; font-size: 15px; font-weight: 600; padding: 6px 0; font-family: monospace;">${user.email}</td>
                 </tr>
                 <tr>
                   <td style="color: #64748b; font-size: 13px; padding: 6px 0;">Full Name</td>
@@ -242,10 +243,6 @@ export class AuthService {
                       ${user.role}
                     </span>
                   </td>
-                </tr>
-                <tr>
-                  <td style="color: #64748b; font-size: 13px; padding: 6px 0;">Email</td>
-                  <td style="color: #0f172a; font-size: 14px; padding: 6px 0;">${user.email}</td>
                 </tr>
                 <tr>
                   <td style="color: #64748b; font-size: 13px; padding: 6px 0;">Expires</td>
@@ -263,7 +260,7 @@ export class AuthService {
                  style="display: inline-block; background: #f97316; color: #ffffff; text-decoration: none;
                         font-size: 15px; font-weight: 600; padding: 14px 36px; border-radius: 8px;
                         letter-spacing: 0.3px;">
-                Reset Password for ${user.username}
+                Reset Password for ${displayId}
               </a>
             </div>
 
@@ -290,14 +287,13 @@ export class AuthService {
         </div>
       `;
 
-      const text = `Password Reset Request\n\nUsername: ${user.username || user.email}\nName: ${user.name}\nRole: ${user.role}\n\nReset link (expires in 1 hour):\n${resetLink}\n\n— Asha Kuteer Foundation DMS`;
+      const text = `Password Reset Request\n\nEmail: ${user.email}\nName: ${user.name}\nRole: ${user.role}\n\nReset link (expires in 1 hour):\n${resetLink}\n\n— Asha Kuteer Foundation DMS`;
 
-      const recipient = process.env.TEST_EMAIL || adminEmail;
-      console.log('Sending reset email to:', recipient, '(user:', user.email, 'role:', user.role + ')');
+      console.log('Sending reset email to admin (user:', user.email, 'role:', user.role + ')');
 
       const emailResult = await this.emailService.sendEmail({
         to: adminEmail,
-        subject: `DMS Password Reset — ${user.username || user.email} (${user.role})`,
+        subject: `DMS Password Reset — ${displayId} (${user.role})`,
         html,
         text,
         featureType: 'MANUAL',

@@ -34,47 +34,62 @@ async function main() {
   console.log('Seeding database...');
 
   // Create users
-  const founderPassword = await bcrypt.hash('StrongPassword123', 10);
+  const founderPassword = await bcrypt.hash('Founder@123', 10);
   const founder = await prisma.user.upsert({
-    where: { email: 'founder@ngo.org' },
-    update: {},
+    where: { email: 'founder@ashakuteer.org' },
+    update: {
+      password: founderPassword,
+      name: 'Asha Kuteer Founder',
+      role: Role.FOUNDER,
+      isActive: true,
+    },
     create: {
-      email: 'founder@ngo.org',
+      email: 'founder@ashakuteer.org',
       password: founderPassword,
       name: 'Asha Kuteer Founder',
       role: Role.FOUNDER,
       isActive: true,
     },
   });
-  console.log(`Created founder user: ${founder.email}`);
+  console.log(`Upserted founder user: ${founder.email}`);
 
-  const adminPassword = await bcrypt.hash('Admin123', 10);
+  const adminPassword = await bcrypt.hash('Admin@123', 10);
   const admin = await prisma.user.upsert({
-    where: { email: 'admin@ngo.org' },
-    update: {},
+    where: { email: 'admin@ashakuteer.org' },
+    update: {
+      password: adminPassword,
+      name: 'System Admin',
+      role: Role.ADMIN,
+      isActive: true,
+    },
     create: {
-      email: 'admin@ngo.org',
+      email: 'admin@ashakuteer.org',
       password: adminPassword,
       name: 'System Admin',
       role: Role.ADMIN,
       isActive: true,
     },
   });
-  console.log(`Created admin user: ${admin.email}`);
+  console.log(`Upserted admin user: ${admin.email}`);
 
-  const staffPassword = await bcrypt.hash('Staff123', 10);
+  const staffPassword = await bcrypt.hash('Staff@123', 10);
   const staff = await prisma.user.upsert({
-    where: { email: 'staff@ngo.org' },
-    update: {},
+    where: { email: 'staff@ashakuteer.org' },
+    update: {
+      password: staffPassword,
+      name: 'Staff Member',
+      role: Role.STAFF,
+      isActive: true,
+    },
     create: {
-      email: 'staff@ngo.org',
+      email: 'staff@ashakuteer.org',
       password: staffPassword,
       name: 'Staff Member',
       role: Role.STAFF,
       isActive: true,
     },
   });
-  console.log(`Created staff user: ${staff.email}`);
+  console.log(`Upserted staff user: ${staff.email}`);
 
   // Clear existing donors and related data for clean reseed
   await prisma.donation.deleteMany({});
