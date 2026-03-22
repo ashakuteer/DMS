@@ -20,7 +20,7 @@ export class TasksService {
     beneficiary: {
       select: {
         id: true,
-        name: true,
+        fullName: true,
       },
     },
     assignedUser: {
