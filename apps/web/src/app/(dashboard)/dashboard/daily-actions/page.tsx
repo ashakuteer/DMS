@@ -27,6 +27,30 @@ const PRIORITY_COLORS: Record<string, string> = {
   LOW: "bg-gray-100 text-gray-500",
 }
 
+const PRIORITY_ORDER: Record<string, number> = {
+  URGENT: 0,
+  HIGH: 1,
+  MEDIUM: 2,
+  LOW: 3,
+}
+
+function sortByPriorityThenDate(tasks: TaskItem[]): TaskItem[] {
+  return [...tasks].sort((a, b) => {
+    const pa = PRIORITY_ORDER[a.priority] ?? 99
+    const pb = PRIORITY_ORDER[b.priority] ?? 99
+    if (pa !== pb) return pa - pb
+    return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+  })
+}
+
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 mt-1">
+      {label}
+    </h2>
+  )
+}
+
 function TaskCard({
   task,
   isOverdue,
@@ -143,15 +167,19 @@ export default function DailyActionsPage() {
     )
   }
 
-  const allTasks: Array<TaskItem & { isOverdue: boolean }> = [
-    ...data.overdue.map((t) => ({ ...t, isOverdue: true })),
-    ...data.dueToday.map((t) => ({ ...t, isOverdue: false })),
-  ]
+  const overdueGroup = sortByPriorityThenDate(data.overdue)
 
-  const completedCount = allTasks.filter((t) => t.status === "COMPLETED").length
+  const todayPending = sortByPriorityThenDate(
+    data.dueToday.filter((t) => t.status !== "COMPLETED")
+  )
+  const completedGroup = sortByPriorityThenDate(
+    data.dueToday.filter((t) => t.status === "COMPLETED")
+  )
+
+  const completedCount = completedGroup.length
   const totalCount = data.total
-  const overdueCount = data.overdue.length
-  const isEmpty = allTasks.length === 0
+  const overdueCount = overdueGroup.length
+  const isEmpty = overdueGroup.length === 0 && todayPending.length === 0 && completedGroup.length === 0
 
   return (
     <div className="space-y-5 max-w-3xl mx-auto">
@@ -194,10 +222,6 @@ export default function DailyActionsPage() {
       </div>
 
       <div>
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-          Task List
-        </h2>
-
         {isEmpty ? (
           <div
             className="flex flex-col items-center gap-3 py-14 text-gray-400 bg-white rounded-lg"
@@ -209,15 +233,50 @@ export default function DailyActionsPage() {
           </div>
         ) : (
           <div>
-            {allTasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                task={task}
-                isOverdue={task.isOverdue}
-                isToggling={toggling.has(task.id)}
-                onToggle={() => toggleStatus(task.id, task.status)}
-              />
-            ))}
+            {overdueGroup.length > 0 && (
+              <div data-testid="section-overdue" className="mb-4">
+                <SectionHeader label="🔴 Overdue" />
+                {overdueGroup.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    isOverdue={true}
+                    isToggling={toggling.has(task.id)}
+                    onToggle={() => toggleStatus(task.id, task.status)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {todayPending.length > 0 && (
+              <div data-testid="section-today" className="mb-4">
+                <SectionHeader label="🟡 Due Today" />
+                {todayPending.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    isOverdue={false}
+                    isToggling={toggling.has(task.id)}
+                    onToggle={() => toggleStatus(task.id, task.status)}
+                  />
+                ))}
+              </div>
+            )}
+
+            {completedGroup.length > 0 && (
+              <div data-testid="section-completed" className="mb-4">
+                <SectionHeader label="✅ Completed" />
+                {completedGroup.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    isOverdue={false}
+                    isToggling={toggling.has(task.id)}
+                    onToggle={() => toggleStatus(task.id, task.status)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
