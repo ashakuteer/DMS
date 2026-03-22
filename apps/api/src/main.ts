@@ -21,27 +21,31 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const allowedOrigins = [
-    "https://dms-sepia-gamma.vercel.app",
     "http://localhost:3000",
     "http://localhost:5000",
+    "https://dms-sepia-gamma.vercel.app",
   ];
 
   app.enableCors({
     origin: (origin, callback) => {
+      // Allow server-to-server requests (no origin header)
       if (!origin) return callback(null, true);
+      // Allow explicitly listed origins
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      // Allow all Replit preview / deployment domains
       if (
-        allowedOrigins.includes(origin) ||
         /\.replit\.dev$/.test(origin) ||
         /\.repl\.co$/.test(origin) ||
         /\.replit\.app$/.test(origin)
       ) {
         return callback(null, true);
       }
-      return callback(null, true);
+      return callback(new Error(`CORS: origin ${origin} not allowed`), false);
     },
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    exposedHeaders: ["Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"],
   });
 
   app.setGlobalPrefix("api");
