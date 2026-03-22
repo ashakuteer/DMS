@@ -28,8 +28,7 @@ export type TaskInboxData = {
 export function useTaskInbox() {
   const [data, setData] = useState<TaskInboxData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [completing, setCompleting] = useState<Set<string>>(new Set())
-  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set())
+  const [toggling, setToggling] = useState<Set<string>>(new Set())
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -38,7 +37,6 @@ export function useTaskInbox() {
       if (res.ok) {
         const result: TaskInboxData = await res.json()
         setData(result)
-        setCompletedIds(new Set())
       }
     } catch (err) {
       console.error(err)
@@ -47,9 +45,10 @@ export function useTaskInbox() {
     }
   }, [])
 
-  const markComplete = useCallback(async (taskId: string) => {
-    if (completing.has(taskId) || completedIds.has(taskId)) return
-    setCompleting((prev) => new Set(prev).add(taskId))
+  const toggleStatus = useCallback(async (taskId: string, currentStatus: string) => {
+    if (toggling.has(taskId)) return
+    const nextStatus = currentStatus === "COMPLETED" ? "PENDING" : "COMPLETED"
+    setToggling((prev) => new Set(prev).add(taskId))
     try {
       const token = authStorage.getAccessToken()
       const res = await fetch(`${API_URL}/api/tasks/${taskId}/status`, {
@@ -58,56 +57,25 @@ export function useTaskInbox() {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ status: "COMPLETED" }),
+        body: JSON.stringify({ status: nextStatus }),
       })
       if (res.ok) {
-        setCompletedIds((prev) => new Set(prev).add(taskId))
+        await fetchData()
       }
     } catch (err) {
       console.error(err)
     } finally {
-      setCompleting((prev) => {
+      setToggling((prev) => {
         const next = new Set(prev)
         next.delete(taskId)
         return next
       })
     }
-  }, [completing, completedIds])
-
-  const unmarkComplete = useCallback(async (taskId: string) => {
-    if (completing.has(taskId)) return
-    setCompleting((prev) => new Set(prev).add(taskId))
-    try {
-      const token = authStorage.getAccessToken()
-      const res = await fetch(`${API_URL}/api/tasks/${taskId}/status`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ status: "PENDING" }),
-      })
-      if (res.ok) {
-        setCompletedIds((prev) => {
-          const next = new Set(prev)
-          next.delete(taskId)
-          return next
-        })
-      }
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setCompleting((prev) => {
-        const next = new Set(prev)
-        next.delete(taskId)
-        return next
-      })
-    }
-  }, [completing])
+  }, [toggling, fetchData])
 
   useEffect(() => {
     fetchData()
   }, [fetchData])
 
-  return { data, loading, completing, completedIds, markComplete, unmarkComplete, refresh: fetchData }
+  return { data, loading, toggling, toggleStatus, refresh: fetchData }
 }

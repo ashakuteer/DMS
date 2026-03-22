@@ -129,7 +129,6 @@ export class TasksService {
     const [dueTodayRaw, overdueRaw] = await Promise.all([
       this.prisma.task.findMany({
         where: {
-          status: { notIn: [TaskStatus.COMPLETED] },
           dueDate: { gte: today, lt: tomorrow },
         },
         include: this.includeRelations,

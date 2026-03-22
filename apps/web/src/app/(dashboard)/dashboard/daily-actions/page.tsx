@@ -2,7 +2,6 @@
 
 import { RefreshCw, Loader2, CheckSquare, Square, ClipboardList } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { useTaskInbox, TaskItem } from "./hooks/useTaskInbox"
 
 const TYPE_LABELS: Record<string, string> = {
@@ -31,21 +30,15 @@ const PRIORITY_COLORS: Record<string, string> = {
 function TaskCard({
   task,
   isOverdue,
-  isCompleted,
-  isCompleting,
+  isToggling,
   onToggle,
 }: {
   task: TaskItem
   isOverdue: boolean
-  isCompleted: boolean
-  isCompleting: boolean
+  isToggling: boolean
   onToggle: () => void
 }) {
-  const borderColor = isCompleted
-    ? "border-l-4 border-l-gray-300"
-    : isOverdue
-    ? "border-l-4 border-l-red-500"
-    : "border-l-4 border-l-teal-500"
+  const isCompleted = task.status === "COMPLETED"
 
   const donorName = task.donor
     ? `${task.donor.firstName} ${task.donor.lastName}`
@@ -54,7 +47,7 @@ function TaskCard({
   return (
     <div
       data-testid={`task-card-${task.id}`}
-      className={`flex items-start gap-3 bg-white rounded-lg p-3 mb-[10px] ${borderColor}`}
+      className="flex items-start gap-3 bg-white rounded-lg"
       style={{
         border: "1px solid #E2E8F0",
         borderRadius: 8,
@@ -71,7 +64,7 @@ function TaskCard({
       <button
         data-testid={`checkbox-task-${task.id}`}
         onClick={onToggle}
-        disabled={isCompleting}
+        disabled={isToggling}
         className="mt-0.5 flex-shrink-0 text-teal-600 disabled:opacity-40 hover:text-teal-800 transition-colors"
       >
         {isCompleted ? (
@@ -129,8 +122,7 @@ function TaskCard({
 }
 
 export default function DailyActionsPage() {
-  const { data, loading, completing, completedIds, markComplete, unmarkComplete, refresh } =
-    useTaskInbox()
+  const { data, loading, toggling, toggleStatus, refresh } = useTaskInbox()
 
   if (loading) {
     return (
@@ -156,10 +148,9 @@ export default function DailyActionsPage() {
     ...data.dueToday.map((t) => ({ ...t, isOverdue: false })),
   ]
 
-  const completedCount = completedIds.size
+  const completedCount = allTasks.filter((t) => t.status === "COMPLETED").length
   const totalCount = data.total
   const overdueCount = data.overdue.length
-
   const isEmpty = allTasks.length === 0
 
   return (
@@ -218,22 +209,15 @@ export default function DailyActionsPage() {
           </div>
         ) : (
           <div>
-            {allTasks.map((task) => {
-              const isCompleted = completedIds.has(task.id)
-              const isCompleting = completing.has(task.id)
-              return (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  isOverdue={task.isOverdue}
-                  isCompleted={isCompleted}
-                  isCompleting={isCompleting}
-                  onToggle={() =>
-                    isCompleted ? unmarkComplete(task.id) : markComplete(task.id)
-                  }
-                />
-              )
-            })}
+            {allTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                isOverdue={task.isOverdue}
+                isToggling={toggling.has(task.id)}
+                onToggle={() => toggleStatus(task.id, task.status)}
+              />
+            ))}
           </div>
         )}
       </div>
