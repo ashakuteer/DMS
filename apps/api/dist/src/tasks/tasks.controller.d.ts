@@ -1,0 +1,86 @@
+import { TasksService } from './tasks.service';
+import { TaskSchedulerService } from './task-scheduler.service';
+import { CreateTaskDto, UpdateTaskStatusDto, UpdateTaskDto } from './tasks.dto';
+export declare class TasksController {
+    private tasksService;
+    private taskSchedulerService;
+    constructor(tasksService: TasksService, taskSchedulerService: TaskSchedulerService);
+    triggerGeneration(): Promise<{
+        message: string;
+    }>;
+    create(dto: CreateTaskDto): Promise<{
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+            primaryPhone: string;
+        };
+        beneficiary: {
+            id: string;
+            fullName: string;
+        };
+        assignedUser: {
+            email: string;
+            name: string;
+            id: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import(".prisma/client").$Enums.TaskPriority;
+        type: import(".prisma/client").$Enums.TaskType;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        donorId: string | null;
+        description: string | null;
+        title: string;
+        dueDate: Date;
+        completedAt: Date | null;
+        beneficiaryId: string | null;
+        assignedTo: string | null;
+    }>;
+    getToday(): Promise<{
+        dueToday: any[];
+        overdue: {
+            status: "OVERDUE";
+            donor: {
+                id: string;
+                donorCode: string;
+                firstName: string;
+                lastName: string;
+                primaryPhone: string;
+            };
+            beneficiary: {
+                id: string;
+                fullName: string;
+            };
+            assignedUser: {
+                email: string;
+                name: string;
+                id: string;
+            };
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            priority: import(".prisma/client").$Enums.TaskPriority;
+            type: import(".prisma/client").$Enums.TaskType;
+            donorId: string | null;
+            description: string | null;
+            title: string;
+            dueDate: Date;
+            completedAt: Date | null;
+            beneficiaryId: string | null;
+            assignedTo: string | null;
+        }[];
+        total: number;
+    }>;
+    getStaffList(): Promise<{
+        name: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+    }[]>;
+    findAll(status: string, type: string, dueDate: string): Promise<any[]>;
+    updateStatus(id: string, dto: UpdateTaskStatusDto): Promise<any>;
+    updateTask(id: string, dto: UpdateTaskDto): Promise<any>;
+}

@@ -1,0 +1,278 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TaskTemplatesService = void 0;
+const common_1 = require("@nestjs/common");
+const prisma_service_1 = require("../prisma/prisma.service");
+const client_1 = require("@prisma/client");
+const RECURRENCE_DAYS = {
+    DAILY: 1,
+    WEEKLY: 7,
+    MONTHLY: 30,
+    QUARTERLY: 90,
+    HALF_YEARLY: 180,
+    ANNUAL: 365,
+};
+let TaskTemplatesService = class TaskTemplatesService {
+    constructor(prisma) {
+        this.prisma = prisma;
+    }
+    async findAll(includeInactive = false) {
+        return this.prisma.taskTemplate.findMany({
+            where: includeInactive ? {} : { isActive: true },
+            include: {
+                tasks: { where: { deletedAt: null }, select: { id: true, status: true, createdAt: true } },
+                items: { orderBy: { orderIndex: 'asc' }, select: { id: true, itemText: true, orderIndex: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
+    async findOne(id) {
+        const t = await this.prisma.taskTemplate.findUnique({
+            where: { id },
+            include: {
+                tasks: {
+                    where: { deletedAt: null },
+                    select: { id: true, status: true, createdAt: true, assignedTo: { select: { id: true, name: true } } },
+                    orderBy: { createdAt: 'desc' },
+                    take: 20,
+                },
+                items: { orderBy: { orderIndex: 'asc' } },
+            },
+        });
+        if (!t)
+            throw new common_1.NotFoundException('Task template not found');
+        return t;
+    }
+    async create(data, createdById) {
+        return this.prisma.taskTemplate.create({
+            data: {
+                title: data.title,
+                description: data.description ?? null,
+                recurrenceType: data.recurrenceType || 'DAILY',
+                category: data.category || 'GENERAL',
+                priority: data.priority || 'MEDIUM',
+                assignedToRole: data.assignedToRole ?? null,
+                assignedToId: data.assignedToId ?? null,
+                createdById,
+            },
+        });
+    }
+    async update(id, data) {
+        await this.findOne(id);
+        return this.prisma.taskTemplate.update({ where: { id }, data });
+    }
+    async delete(id) {
+        await this.findOne(id);
+        return this.prisma.taskTemplate.delete({ where: { id } });
+    }
+    async addItem(templateId, itemText, orderIndex) {
+        await this.findOne(templateId);
+        const maxOrder = await this.prisma.taskTemplateItem.findMany({
+            where: { templateId },
+            orderBy: { orderIndex: 'desc' },
+            take: 1,
+            select: { orderIndex: true },
+        });
+        const nextOrder = orderIndex ?? ((maxOrder[0]?.orderIndex ?? -1) + 1);
+        return this.prisma.taskTemplateItem.create({
+            data: { templateId, itemText, orderIndex: nextOrder },
+        });
+    }
+    async updateItem(itemId, data) {
+        const item = await this.prisma.taskTemplateItem.findUnique({ where: { id: itemId } });
+        if (!item)
+            throw new common_1.NotFoundException('Item not found');
+        return this.prisma.taskTemplateItem.update({ where: { id: itemId }, data });
+    }
+    async deleteItem(itemId) {
+        const item = await this.prisma.taskTemplateItem.findUnique({ where: { id: itemId } });
+        if (!item)
+            throw new common_1.NotFoundException('Item not found');
+        return this.prisma.taskTemplateItem.delete({ where: { id: itemId } });
+    }
+    async generateTasks(templateId, options) {
+        const template = await this.findOne(templateId);
+        const dueDate = options.forDate ? new Date(options.forDate) : new Date();
+        dueDate.setDate(dueDate.getDate() + (RECURRENCE_DAYS[template.recurrenceType] || 1));
+        let userIds = [];
+        if (options.targetUserIds && options.targetUserIds.length > 0) {
+            userIds = options.targetUserIds;
+        }
+        else if (template.assignedToId) {
+            userIds = [template.assignedToId];
+        }
+        else if (template.assignedToRole) {
+            const users = await this.prisma.user.findMany({
+                where: { isActive: true, role: template.assignedToRole },
+                select: { id: true },
+            });
+            userIds = users.map((u) => u.id);
+        }
+        else {
+            const users = await this.prisma.user.findMany({
+                where: { isActive: true },
+                select: { id: true },
+            });
+            userIds = users.map((u) => u.id);
+        }
+        if (userIds.length === 0) {
+            return { generated: 0, message: 'No matching users found' };
+        }
+        const created = [];
+        for (const userId of userIds) {
+            const existing = await this.prisma.staffTask.findFirst({
+                where: {
+                    templateId,
+                    assignedToId: userId,
+                    dueDate: { gte: new Date(new Date(dueDate).setHours(0, 0, 0, 0)), lte: new Date(new Date(dueDate).setHours(23, 59, 59, 999)) },
+                    deletedAt: null,
+                },
+            });
+            if (existing)
+                continue;
+            const checklist = template.items?.length > 0
+                ? template.items.map((item) => ({ id: item.id, text: item.itemText, done: false }))
+                : null;
+            const task = await this.prisma.staffTask.create({
+                data: {
+                    title: template.title,
+                    description: template.description ?? null,
+                    status: client_1.TaskStatus.PENDING,
+                    priority: template.priority,
+                    category: template.category,
+                    assignedToId: userId,
+                    createdById: options.createdById,
+                    dueDate,
+                    isRecurring: true,
+                    recurrenceType: template.recurrenceType,
+                    templateId,
+                    checklist,
+                },
+                select: { id: true },
+            });
+            created.push(task.id);
+        }
+        return { generated: created.length, total: userIds.length, taskIds: created };
+    }
+    async markOverdueMissed() {
+        const now = new Date();
+        const result = await this.prisma.staffTask.updateMany({
+            where: {
+                deletedAt: null,
+                status: { in: [client_1.TaskStatus.PENDING, client_1.TaskStatus.IN_PROGRESS, client_1.TaskStatus.OVERDUE] },
+                dueDate: { lt: now },
+            },
+            data: { status: client_1.TaskStatus.MISSED },
+        });
+        return { marked: result.count };
+    }
+    async getPerformanceAll(days = 30) {
+        const since = new Date();
+        since.setDate(since.getDate() - days);
+        const users = await this.prisma.user.findMany({
+            where: { isActive: true },
+            select: { id: true, name: true, email: true, role: true },
+            orderBy: { name: 'asc' },
+        });
+        const results = await Promise.all(users.map(async (user) => {
+            const baseWhere = { assignedToId: user.id, deletedAt: null, createdAt: { gte: since } };
+            const [total, completed, onTimeRows, timeRows] = await Promise.all([
+                this.prisma.staffTask.count({ where: baseWhere }),
+                this.prisma.staffTask.count({ where: { ...baseWhere, status: client_1.TaskStatus.COMPLETED } }),
+                this.prisma.staffTask.findMany({
+                    where: { ...baseWhere, status: client_1.TaskStatus.COMPLETED, completedAt: { not: null }, dueDate: { not: null } },
+                    select: { completedAt: true, dueDate: true },
+                }),
+                this.prisma.staffTask.findMany({
+                    where: { ...baseWhere, status: client_1.TaskStatus.COMPLETED, minutesTaken: { not: null } },
+                    select: { minutesTaken: true },
+                }),
+            ]);
+            const completionRate = total > 0 ? (completed / total) * 100 : 0;
+            const onTimeCount = onTimeRows.filter((t) => t.completedAt <= t.dueDate).length;
+            const timelinessScore = completed > 0 ? (onTimeCount / completed) * 100 : 0;
+            const avgMinutes = timeRows.length > 0
+                ? timeRows.reduce((s, t) => s + (t.minutesTaken || 0), 0) / timeRows.length
+                : null;
+            const efficiencyScore = avgMinutes === null ? 80 : avgMinutes < 30 ? 100 : avgMinutes <= 60 ? 80 : 60;
+            const score = Math.round((completionRate + timelinessScore + efficiencyScore) / 3);
+            return {
+                userId: user.id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                total,
+                completed,
+                onTime: onTimeCount,
+                completionRate: Math.round(completionRate),
+                timelinessScore: Math.round(timelinessScore),
+                efficiencyScore,
+                avgMinutesTaken: avgMinutes !== null ? Math.round(avgMinutes) : null,
+                score,
+                grade: score >= 90 ? 'A' : score >= 70 ? 'B' : score >= 50 ? 'C' : score >= 30 ? 'D' : 'F',
+            };
+        }));
+        const sorted = results.sort((a, b) => b.score - a.score);
+        return sorted.map((r, i) => ({ ...r, rank: i + 1, isTopPerformer: i === 0 && r.total > 0 }));
+    }
+    async getAccountabilityScore(userId, days = 30) {
+        const since = new Date();
+        since.setDate(since.getDate() - days);
+        const [assigned, completed, missed, onTime, withTime] = await Promise.all([
+            this.prisma.staffTask.count({
+                where: { assignedToId: userId, deletedAt: null, createdAt: { gte: since } },
+            }),
+            this.prisma.staffTask.count({
+                where: { assignedToId: userId, deletedAt: null, status: client_1.TaskStatus.COMPLETED, createdAt: { gte: since } },
+            }),
+            this.prisma.staffTask.count({
+                where: { assignedToId: userId, deletedAt: null, status: client_1.TaskStatus.MISSED, createdAt: { gte: since } },
+            }),
+            this.prisma.staffTask.findMany({
+                where: { assignedToId: userId, deletedAt: null, status: client_1.TaskStatus.COMPLETED, completedAt: { not: null }, dueDate: { not: null }, createdAt: { gte: since } },
+                select: { completedAt: true, dueDate: true, minutesTaken: true },
+            }),
+            this.prisma.staffTask.findMany({
+                where: { assignedToId: userId, deletedAt: null, status: client_1.TaskStatus.COMPLETED, minutesTaken: { not: null }, createdAt: { gte: since } },
+                select: { minutesTaken: true },
+            }),
+        ]);
+        const onTimeCount = onTime.filter((t) => t.completedAt <= t.dueDate).length;
+        const avgMinutes = withTime.length > 0 ? withTime.reduce((s, t) => s + (t.minutesTaken || 0), 0) / withTime.length : null;
+        let score = 0;
+        if (assigned > 0) {
+            score += (completed / assigned) * 60;
+            score += (1 - missed / assigned) * 15;
+        }
+        if (completed > 0) {
+            score += (onTimeCount / completed) * 25;
+        }
+        score = Math.max(0, Math.min(100, Math.round(score)));
+        return {
+            userId,
+            days,
+            assigned,
+            completed,
+            missed,
+            onTime: onTimeCount,
+            score,
+            grade: score >= 90 ? 'A' : score >= 75 ? 'B' : score >= 60 ? 'C' : score >= 40 ? 'D' : 'F',
+            avgMinutesTaken: avgMinutes !== null ? Math.round(avgMinutes) : null,
+        };
+    }
+};
+exports.TaskTemplatesService = TaskTemplatesService;
+exports.TaskTemplatesService = TaskTemplatesService = __decorate([
+    (0, common_1.Injectable)(),
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+], TaskTemplatesService);
+//# sourceMappingURL=task-templates.service.js.map

@@ -1,0 +1,342 @@
+import { PrismaService } from '../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
+import { CommunicationLogService } from '../communication-log/communication-log.service';
+import { EmailJobsService } from '../email-jobs/email-jobs.service';
+import { OrganizationProfileService } from '../organization-profile/organization-profile.service';
+import { Role, PledgeStatus } from '@prisma/client';
+export interface PledgeQueryOptions {
+    page?: number;
+    limit?: number;
+    donorId?: string;
+    status?: PledgeStatus;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+}
+export interface UserContext {
+    id: string;
+    role: Role;
+    email: string;
+}
+export interface FulfillPledgeDto {
+    donationId?: string;
+    donationAmount?: number;
+    donationDate?: string;
+    donationMode?: string;
+    donationType?: string;
+    remarks?: string;
+    autoCreateDonation?: boolean;
+}
+export declare class PledgesService {
+    private prisma;
+    private auditService;
+    private communicationLogService;
+    private emailJobsService;
+    private orgProfileService;
+    private readonly logger;
+    constructor(prisma: PrismaService, auditService: AuditService, communicationLogService: CommunicationLogService, emailJobsService: EmailJobsService, orgProfileService: OrganizationProfileService);
+    private getDonorAccessFilter;
+    findAll(user: UserContext, options?: PledgeQueryOptions): Promise<{
+        items: {
+            pledgeTypeLabel: string;
+            amount: number;
+            donor: {
+                id: string;
+                donorCode: string;
+                firstName: string;
+                lastName: string;
+                primaryPhone: string;
+                whatsappPhone: string;
+                personalEmail: string;
+            };
+            createdBy: {
+                name: string;
+                id: string;
+            };
+            fulfilledDonation: {
+                id: string;
+                receiptNumber: string;
+                donationAmount: import("@prisma/client/runtime/library").Decimal;
+                donationDate: Date;
+            };
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            currency: string;
+            status: import(".prisma/client").$Enums.PledgeStatus;
+            donorId: string;
+            createdById: string;
+            quantity: string | null;
+            isDeleted: boolean;
+            deletedAt: Date | null;
+            notes: string | null;
+            fulfilledDonationId: string | null;
+            pledgeType: import(".prisma/client").$Enums.PledgeType;
+            promisedDate: Date | null;
+            promisedMonth: number | null;
+            promisedDay: number | null;
+            expectedFulfillmentDate: Date;
+        }[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>;
+    findOne(user: UserContext, id: string): Promise<{
+        pledgeTypeLabel: string;
+        amount: number;
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+            primaryPhone: string;
+            whatsappPhone: string;
+            personalEmail: string;
+        };
+        createdBy: {
+            name: string;
+            id: string;
+        };
+        fulfilledDonation: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            receiptNumber: string | null;
+            donationAmount: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            donationDate: Date;
+            donationMode: import(".prisma/client").$Enums.DonationMode | null;
+            donationType: import(".prisma/client").$Enums.DonationType;
+            kindDescription: string | null;
+            donorId: string;
+            createdById: string;
+            donationPurpose: import(".prisma/client").$Enums.DonationPurpose | null;
+            transactionId: string | null;
+            remarks: string | null;
+            quantity: import("@prisma/client/runtime/library").Decimal | null;
+            unit: string | null;
+            itemDescription: string | null;
+            kindCategory: import(".prisma/client").$Enums.KindCategory | null;
+            donationHomeType: import(".prisma/client").$Enums.DonationHomeType | null;
+            homeId: string | null;
+            visitedHome: boolean;
+            servedFood: boolean;
+            financialYear: string | null;
+            receiptPdfUrl: string | null;
+            attachmentUrl: string | null;
+            isDeleted: boolean;
+            deletedAt: Date | null;
+            campaignId: string | null;
+        };
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        currency: string;
+        status: import(".prisma/client").$Enums.PledgeStatus;
+        donorId: string;
+        createdById: string;
+        quantity: string | null;
+        isDeleted: boolean;
+        deletedAt: Date | null;
+        notes: string | null;
+        fulfilledDonationId: string | null;
+        pledgeType: import(".prisma/client").$Enums.PledgeType;
+        promisedDate: Date | null;
+        promisedMonth: number | null;
+        promisedDay: number | null;
+        expectedFulfillmentDate: Date;
+    }>;
+    create(user: UserContext, data: any, ipAddress: string, userAgent: string): Promise<{
+        pledgeTypeLabel: string;
+        amount: number;
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        currency: string;
+        status: import(".prisma/client").$Enums.PledgeStatus;
+        donorId: string;
+        createdById: string;
+        quantity: string | null;
+        isDeleted: boolean;
+        deletedAt: Date | null;
+        notes: string | null;
+        fulfilledDonationId: string | null;
+        pledgeType: import(".prisma/client").$Enums.PledgeType;
+        promisedDate: Date | null;
+        promisedMonth: number | null;
+        promisedDay: number | null;
+        expectedFulfillmentDate: Date;
+    }>;
+    update(user: UserContext, id: string, data: any, ipAddress: string, userAgent: string): Promise<{
+        pledgeTypeLabel: string;
+        amount: number;
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        currency: string;
+        status: import(".prisma/client").$Enums.PledgeStatus;
+        donorId: string;
+        createdById: string;
+        quantity: string | null;
+        isDeleted: boolean;
+        deletedAt: Date | null;
+        notes: string | null;
+        fulfilledDonationId: string | null;
+        pledgeType: import(".prisma/client").$Enums.PledgeType;
+        promisedDate: Date | null;
+        promisedMonth: number | null;
+        promisedDay: number | null;
+        expectedFulfillmentDate: Date;
+    }>;
+    markFulfilled(user: UserContext, id: string, dto?: FulfillPledgeDto, ipAddress?: string, userAgent?: string): Promise<{
+        pledgeTypeLabel: string;
+        amount: number;
+        createdDonation: {
+            id: any;
+            receiptNumber: any;
+            donationAmount: any;
+        };
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
+        fulfilledDonation: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            receiptNumber: string | null;
+            donationAmount: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            donationDate: Date;
+            donationMode: import(".prisma/client").$Enums.DonationMode | null;
+            donationType: import(".prisma/client").$Enums.DonationType;
+            kindDescription: string | null;
+            donorId: string;
+            createdById: string;
+            donationPurpose: import(".prisma/client").$Enums.DonationPurpose | null;
+            transactionId: string | null;
+            remarks: string | null;
+            quantity: import("@prisma/client/runtime/library").Decimal | null;
+            unit: string | null;
+            itemDescription: string | null;
+            kindCategory: import(".prisma/client").$Enums.KindCategory | null;
+            donationHomeType: import(".prisma/client").$Enums.DonationHomeType | null;
+            homeId: string | null;
+            visitedHome: boolean;
+            servedFood: boolean;
+            financialYear: string | null;
+            receiptPdfUrl: string | null;
+            attachmentUrl: string | null;
+            isDeleted: boolean;
+            deletedAt: Date | null;
+            campaignId: string | null;
+        };
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        currency: string;
+        status: import(".prisma/client").$Enums.PledgeStatus;
+        donorId: string;
+        createdById: string;
+        quantity: string | null;
+        isDeleted: boolean;
+        deletedAt: Date | null;
+        notes: string | null;
+        fulfilledDonationId: string | null;
+        pledgeType: import(".prisma/client").$Enums.PledgeType;
+        promisedDate: Date | null;
+        promisedMonth: number | null;
+        promisedDay: number | null;
+        expectedFulfillmentDate: Date;
+    }>;
+    postpone(user: UserContext, id: string, newDate: string, notes?: string, ipAddress?: string, userAgent?: string): Promise<{
+        pledgeTypeLabel: string;
+        amount: number;
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        currency: string;
+        status: import(".prisma/client").$Enums.PledgeStatus;
+        donorId: string;
+        createdById: string;
+        quantity: string | null;
+        isDeleted: boolean;
+        deletedAt: Date | null;
+        notes: string | null;
+        fulfilledDonationId: string | null;
+        pledgeType: import(".prisma/client").$Enums.PledgeType;
+        promisedDate: Date | null;
+        promisedMonth: number | null;
+        promisedDay: number | null;
+        expectedFulfillmentDate: Date;
+    }>;
+    cancel(user: UserContext, id: string, reason?: string, ipAddress?: string, userAgent?: string): Promise<{
+        pledgeTypeLabel: string;
+        amount: number;
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        currency: string;
+        status: import(".prisma/client").$Enums.PledgeStatus;
+        donorId: string;
+        createdById: string;
+        quantity: string | null;
+        isDeleted: boolean;
+        deletedAt: Date | null;
+        notes: string | null;
+        fulfilledDonationId: string | null;
+        pledgeType: import(".prisma/client").$Enums.PledgeType;
+        promisedDate: Date | null;
+        promisedMonth: number | null;
+        promisedDay: number | null;
+        expectedFulfillmentDate: Date;
+    }>;
+    delete(user: UserContext, id: string, ipAddress: string, userAgent: string): Promise<{
+        success: boolean;
+    }>;
+    getDonorPledgeSuggestions(donorId: string): Promise<{
+        id: string;
+        pledgeType: import(".prisma/client").$Enums.PledgeType;
+        pledgeTypeLabel: string;
+        amount: number;
+        quantity: string;
+        expectedFulfillmentDate: Date;
+        notes: string;
+    }[]>;
+    sendPledgeReminderEmail(user: UserContext, id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    buildWhatsAppReminderText(pledge: any): Promise<string>;
+    logWhatsAppReminder(user: UserContext, id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    private generatePledgeReminders;
+}
