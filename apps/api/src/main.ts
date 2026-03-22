@@ -17,33 +17,13 @@ import * as express from "express";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // ✅ CLEAN CORS FIX (IMPORTANT)
   app.enableCors({
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        "http://localhost:3000",
-        "https://dms-sepia-gamma.vercel.app",
-      ];
-
-      // allow requests with no origin (mobile apps, curl, etc.)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(null, true); // allow all for now (safe fallback)
-      }
-    },
-    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Origin",
-      "X-Requested-With",
-      "Content-Type",
-      "Accept",
-      "Authorization",
-    ],
+    origin: true,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   });
-
-  // ❌ REMOVE old manual header middleware (causing conflict)
+  console.log("CORS ENABLED");
 
   app.setGlobalPrefix("api");
 
