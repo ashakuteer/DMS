@@ -41,7 +41,7 @@ async function bootstrap() {
     Number(process.env.API_PORT) ||
     Number(process.env.PORT) ||
     3001;
-
+console.log("🚀 VERSION 2 - CORS FINAL FIX");
   await app.listen(port, "0.0.0.0");
 
   console.log(`API server running on http://0.0.0.0:${port}`);
