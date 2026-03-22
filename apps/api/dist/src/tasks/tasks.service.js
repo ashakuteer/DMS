@@ -38,12 +38,36 @@ let TasksService = class TasksService {
         };
     }
     resolveStatus(task) {
+        if (!task)
+            return task;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        if (task.status === client_1.TaskStatus.PENDING && new Date(task.dueDate) < today) {
+        if (task.status === client_1.TaskStatus.PENDING && task.dueDate && new Date(task.dueDate) < today) {
             return { ...task, status: client_1.TaskStatus.OVERDUE };
         }
         return task;
+    }
+    safeMapTask(task) {
+        if (!task)
+            return null;
+        return {
+            id: task.id ?? null,
+            title: task.title ?? '',
+            description: task.description ?? null,
+            type: task.type ?? null,
+            status: task.status ?? null,
+            priority: task.priority ?? null,
+            dueDate: task.dueDate ?? null,
+            completedAt: task.completedAt ?? null,
+            donorId: task.donorId ?? null,
+            beneficiaryId: task.beneficiaryId ?? null,
+            assignedTo: task.assignedTo ?? null,
+            createdAt: task.createdAt ?? null,
+            updatedAt: task.updatedAt ?? null,
+            donor: task.donor ?? null,
+            beneficiary: task.beneficiary ?? null,
+            assignedUser: task.assignedUser ?? null,
+        };
     }
     async create(dto) {
         return this.prisma.task.create({
@@ -136,34 +160,44 @@ let TasksService = class TasksService {
         return this.resolveStatus(updated);
     }
     async getToday() {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const [dueTodayRaw, overdueRaw] = await Promise.all([
-            this.prisma.task.findMany({
-                where: {
-                    dueDate: { gte: today, lt: tomorrow },
-                },
-                include: this.includeRelations,
-                orderBy: [{ priority: 'desc' }, { dueDate: 'asc' }],
-            }),
-            this.prisma.task.findMany({
-                where: {
-                    status: client_1.TaskStatus.PENDING,
-                    dueDate: { lt: today },
-                },
-                include: this.includeRelations,
-                orderBy: [{ dueDate: 'asc' }],
-            }),
-        ]);
-        const dueToday = dueTodayRaw.map((t) => this.resolveStatus(t));
-        const overdue = overdueRaw.map((t) => ({ ...t, status: client_1.TaskStatus.OVERDUE }));
-        return {
-            dueToday,
-            overdue,
-            total: dueToday.length + overdue.length,
-        };
+        try {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const [dueTodayRaw, overdueRaw] = await Promise.all([
+                this.prisma.task.findMany({
+                    where: {
+                        dueDate: { gte: today, lt: tomorrow },
+                    },
+                    include: this.includeRelations,
+                    orderBy: [{ priority: 'desc' }, { dueDate: 'asc' }],
+                }),
+                this.prisma.task.findMany({
+                    where: {
+                        status: client_1.TaskStatus.PENDING,
+                        dueDate: { lt: today },
+                    },
+                    include: this.includeRelations,
+                    orderBy: [{ dueDate: 'asc' }],
+                }),
+            ]);
+            const dueToday = dueTodayRaw
+                .filter(Boolean)
+                .map((t) => this.safeMapTask(this.resolveStatus(t)));
+            const overdue = overdueRaw
+                .filter(Boolean)
+                .map((t) => this.safeMapTask({ ...t, status: client_1.TaskStatus.OVERDUE }));
+            return {
+                dueToday,
+                overdue,
+                total: dueToday.length + overdue.length,
+            };
+        }
+        catch (error) {
+            console.error('[TasksService] getToday() error:', error?.message ?? error);
+            return { dueToday: [], overdue: [], total: 0 };
+        }
     }
 };
 exports.TasksService = TasksService;

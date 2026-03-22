@@ -6,6 +6,7 @@ export declare class TasksService {
     constructor(prisma: PrismaService);
     private readonly includeRelations;
     private resolveStatus;
+    private safeMapTask;
     create(dto: CreateTaskDto): Promise<{
         donor: {
             id: string;
@@ -53,37 +54,7 @@ export declare class TasksService {
     updateTask(id: string, dto: UpdateTaskDto): Promise<any>;
     getToday(): Promise<{
         dueToday: any[];
-        overdue: {
-            status: "OVERDUE";
-            donor: {
-                id: string;
-                donorCode: string;
-                firstName: string;
-                lastName: string;
-                primaryPhone: string;
-            };
-            beneficiary: {
-                id: string;
-                fullName: string;
-            };
-            assignedUser: {
-                email: string;
-                name: string;
-                id: string;
-            };
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            priority: import(".prisma/client").$Enums.TaskPriority;
-            type: import(".prisma/client").$Enums.TaskType;
-            donorId: string | null;
-            description: string | null;
-            title: string;
-            dueDate: Date;
-            completedAt: Date | null;
-            beneficiaryId: string | null;
-            assignedTo: string | null;
-        }[];
+        overdue: any[];
         total: number;
     }>;
 }

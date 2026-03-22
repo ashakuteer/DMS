@@ -42,37 +42,7 @@ export declare class TasksController {
     }>;
     getToday(): Promise<{
         dueToday: any[];
-        overdue: {
-            status: "OVERDUE";
-            donor: {
-                id: string;
-                donorCode: string;
-                firstName: string;
-                lastName: string;
-                primaryPhone: string;
-            };
-            beneficiary: {
-                id: string;
-                fullName: string;
-            };
-            assignedUser: {
-                email: string;
-                name: string;
-                id: string;
-            };
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            priority: import(".prisma/client").$Enums.TaskPriority;
-            type: import(".prisma/client").$Enums.TaskType;
-            donorId: string | null;
-            description: string | null;
-            title: string;
-            dueDate: Date;
-            completedAt: Date | null;
-            beneficiaryId: string | null;
-            assignedTo: string | null;
-        }[];
+        overdue: any[];
         total: number;
     }>;
     getStaffList(): Promise<{

@@ -29,13 +29,36 @@ export class TasksService {
   };
 
   private resolveStatus(task: any): any {
+    if (!task) return task;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    if (task.status === TaskStatus.PENDING && new Date(task.dueDate) < today) {
+    if (task.status === TaskStatus.PENDING && task.dueDate && new Date(task.dueDate) < today) {
       return { ...task, status: TaskStatus.OVERDUE };
     }
     return task;
+  }
+
+  private safeMapTask(task: any): any {
+    if (!task) return null;
+    return {
+      id:            task.id            ?? null,
+      title:         task.title         ?? '',
+      description:   task.description   ?? null,
+      type:          task.type          ?? null,
+      status:        task.status        ?? null,
+      priority:      task.priority      ?? null,
+      dueDate:       task.dueDate       ?? null,
+      completedAt:   task.completedAt   ?? null,
+      donorId:       task.donorId       ?? null,
+      beneficiaryId: task.beneficiaryId ?? null,
+      assignedTo:    task.assignedTo    ?? null,
+      createdAt:     task.createdAt     ?? null,
+      updatedAt:     task.updatedAt     ?? null,
+      donor:         task.donor         ?? null,
+      beneficiary:   task.beneficiary   ?? null,
+      assignedUser:  task.assignedUser  ?? null,
+    };
   }
 
   async create(dto: CreateTaskDto) {
@@ -144,36 +167,46 @@ export class TasksService {
   }
 
   async getToday() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    try {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const [dueTodayRaw, overdueRaw] = await Promise.all([
-      this.prisma.task.findMany({
-        where: {
-          dueDate: { gte: today, lt: tomorrow },
-        },
-        include: this.includeRelations,
-        orderBy: [{ priority: 'desc' }, { dueDate: 'asc' }],
-      }),
-      this.prisma.task.findMany({
-        where: {
-          status: TaskStatus.PENDING,
-          dueDate: { lt: today },
-        },
-        include: this.includeRelations,
-        orderBy: [{ dueDate: 'asc' }],
-      }),
-    ]);
+      const [dueTodayRaw, overdueRaw] = await Promise.all([
+        this.prisma.task.findMany({
+          where: {
+            dueDate: { gte: today, lt: tomorrow },
+          },
+          include: this.includeRelations,
+          orderBy: [{ priority: 'desc' }, { dueDate: 'asc' }],
+        }),
+        this.prisma.task.findMany({
+          where: {
+            status: TaskStatus.PENDING,
+            dueDate: { lt: today },
+          },
+          include: this.includeRelations,
+          orderBy: [{ dueDate: 'asc' }],
+        }),
+      ]);
 
-    const dueToday = dueTodayRaw.map((t) => this.resolveStatus(t));
-    const overdue = overdueRaw.map((t) => ({ ...t, status: TaskStatus.OVERDUE }));
+      const dueToday = dueTodayRaw
+        .filter(Boolean)
+        .map((t) => this.safeMapTask(this.resolveStatus(t)));
 
-    return {
-      dueToday,
-      overdue,
-      total: dueToday.length + overdue.length,
-    };
+      const overdue = overdueRaw
+        .filter(Boolean)
+        .map((t) => this.safeMapTask({ ...t, status: TaskStatus.OVERDUE }));
+
+      return {
+        dueToday,
+        overdue,
+        total: dueToday.length + overdue.length,
+      };
+    } catch (error) {
+      console.error('[TasksService] getToday() error:', error?.message ?? error);
+      return { dueToday: [], overdue: [], total: 0 };
+    }
   }
 }
