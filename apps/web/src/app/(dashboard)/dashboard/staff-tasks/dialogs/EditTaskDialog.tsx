@@ -2,12 +2,8 @@
 
 import { useState, useEffect } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+  DialogDescription, DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,31 +12,27 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, X, GripVertical, CheckSquare2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
-const STATUSES = ["PENDING", "IN_PROGRESS", "COMPLETED", "OVERDUE", "MISSED"];
+const STATUSES = ["PENDING", "IN_PROGRESS", "COMPLETED", "MISSED"];
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
-const CATEGORIES = [
-  "GENERAL", "DONOR_FOLLOWUP", "BENEFICIARY_UPDATE",
-  "DATA_ENTRY", "REPORTING", "COMMUNICATION", "EVENT", "OTHER",
-];
-const RECURRENCE_TYPES = [
-  { value: "NONE", label: "No Recurrence" },
-  { value: "DAILY", label: "Daily" },
-  { value: "WEEKLY", label: "Weekly" },
-  { value: "MONTHLY", label: "Monthly" },
-  { value: "QUARTERLY", label: "Quarterly" },
-  { value: "HALF_YEARLY", label: "Half-Yearly" },
-  { value: "ANNUAL", label: "Annual" },
+const TASK_TYPES = [
+  { value: "GENERAL", label: "General" },
+  { value: "INTERNAL", label: "Internal" },
+  { value: "MANUAL", label: "Manual" },
+  { value: "BIRTHDAY", label: "Birthday" },
+  { value: "FOLLOW_UP", label: "Follow Up" },
+  { value: "PLEDGE", label: "Pledge" },
+  { value: "REMINDER", label: "Reminder" },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
   PENDING: "text-yellow-600",
   IN_PROGRESS: "text-blue-600",
   COMPLETED: "text-green-600",
-  OVERDUE: "text-[#5FA8A8]",
+  OVERDUE: "text-orange-600",
   MISSED: "text-red-600",
 };
 
@@ -62,53 +54,27 @@ export default function EditTaskDialog({
   const [form, setForm] = useState<any>({});
   const [submitting, setSubmitting] = useState(false);
   const [staffList, setStaffList] = useState<{ id: string; name: string; role: string }[]>([]);
-  const [checklistItems, setChecklistItems] = useState<{ id: string; text: string; done: boolean }[]>([]);
-  const [newItemText, setNewItemText] = useState("");
 
-  const addChecklistItem = () => {
-    if (!newItemText.trim()) return;
-    setChecklistItems((p) => [...p, { id: crypto.randomUUID(), text: newItemText.trim(), done: false }]);
-    setNewItemText("");
-  };
-  const removeChecklistItem = (id: string) => setChecklistItems((p) => p.filter((i) => i.id !== id));
-  const editChecklistItem = (id: string, text: string) =>
-    setChecklistItems((p) => p.map((i) => (i.id === id ? { ...i, text } : i)));
-
-  // Sync form + checklist with task whenever it changes
   useEffect(() => {
     if (!task) return;
-    // Initialize checklist from task data
-    if (Array.isArray(task.checklist) && task.checklist.length > 0) {
-      setChecklistItems(task.checklist.map((item: any) => ({
-        id: item.id || crypto.randomUUID(),
-        text: item.text || item.label || String(item),
-        done: item.done || false,
-      })));
-    } else {
-      setChecklistItems([]);
-    }
-    setNewItemText("");
     setForm({
       title: task.title || "",
-      description: task.description || "",
+      description: task.description || task.notes || "",
       status: task.status || "PENDING",
       priority: task.priority || "MEDIUM",
-      category: task.category || "GENERAL",
-      assignedToId: task.assignedToId || "",
+      type: task.type || task.category || "GENERAL",
+      assignedTo: task.assignedTo || task.assignedToId || "",
       dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
-      recurrenceType: task.recurrenceType || "NONE",
-      notes: task.notes || "",
-      minutesTaken: task.minutesTaken?.toString() || "",
     });
   }, [task]);
 
   useEffect(() => {
     if (!open || !isAdminOrManager) return;
-    fetchWithAuth("/api/staff-tasks/staff-list")
+    fetchWithAuth("/api/tasks/staff")
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setStaffList(d); })
       .catch(() => {});
-  }, [open]);
+  }, [open, isAdminOrManager]);
 
   const set = (key: string) => (val: string) => setForm((p: any) => ({ ...p, [key]: val }));
 
@@ -126,19 +92,14 @@ export default function EditTaskDialog({
         description: form.description || undefined,
         status: form.status,
         priority: form.priority,
-        category: form.category,
+        type: form.type,
         dueDate: form.dueDate || undefined,
-        recurrenceType: form.recurrenceType,
-        isRecurring: form.recurrenceType !== "NONE",
-        notes: form.notes || undefined,
-        minutesTaken: form.minutesTaken ? parseInt(form.minutesTaken) : undefined,
-        checklist: checklistItems,
       };
-      if (isAdminOrManager && form.assignedToId) {
-        payload.assignedToId = form.assignedToId;
+      if (isAdminOrManager) {
+        payload.assignedTo = form.assignedTo || null;
       }
 
-      const res = await fetchWithAuth(`/api/staff-tasks/${task.id}`, {
+      const res = await fetchWithAuth(`/api/tasks/${task.id}`, {
         method: "PATCH",
         body: JSON.stringify(payload),
       });
@@ -165,14 +126,11 @@ export default function EditTaskDialog({
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
-          <DialogDescription>
-            Update the task details below. Changes are saved immediately.
-          </DialogDescription>
+          <DialogDescription>Update task details below.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
 
-          {/* Title */}
           <div className="space-y-1.5">
             <Label htmlFor="et-title">Task Title <span className="text-destructive">*</span></Label>
             <Input
@@ -183,7 +141,6 @@ export default function EditTaskDialog({
             />
           </div>
 
-          {/* Description */}
           <div className="space-y-1.5">
             <Label htmlFor="et-desc">Description</Label>
             <Textarea
@@ -195,44 +152,22 @@ export default function EditTaskDialog({
             />
           </div>
 
-          {/* Status */}
-          <div className="space-y-1.5">
-            <Label>Status</Label>
-            <Select value={form.status} onValueChange={set("status")}>
-              <SelectTrigger data-testid="select-edit-status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUSES.map((s) => (
-                  <SelectItem key={s} value={s}>
-                    <span className={STATUS_COLORS[s]}>{s.replace(/_/g, " ")}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Assign to — admin only */}
-          {isAdminOrManager && staffList.length > 0 && (
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Assigned To</Label>
-              <Select value={form.assignedToId} onValueChange={set("assignedToId")}>
-                <SelectTrigger data-testid="select-edit-assigned">
-                  <SelectValue placeholder="Select staff member" />
+              <Label>Status</Label>
+              <Select value={form.status} onValueChange={set("status")}>
+                <SelectTrigger data-testid="select-edit-status">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {staffList.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      {s.name} — {s.role}
+                  {STATUSES.map((s) => (
+                    <SelectItem key={s} value={s}>
+                      <span className={STATUS_COLORS[s]}>{s.replace(/_/g, " ")}</span>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          )}
-
-          {/* Priority + Category */}
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Priority</Label>
               <Select value={form.priority} onValueChange={set("priority")}>
@@ -246,23 +181,22 @@ export default function EditTaskDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Category</Label>
-              <Select value={form.category} onValueChange={set("category")}>
-                <SelectTrigger data-testid="select-edit-category">
+              <Label>Type</Label>
+              <Select value={form.type} onValueChange={set("type")}>
+                <SelectTrigger data-testid="select-edit-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c.replace(/_/g, " ")}</SelectItem>
+                  {TASK_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          {/* Due Date + Recurrence */}
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label htmlFor="et-due">Due Date</Label>
               <Input
@@ -273,84 +207,25 @@ export default function EditTaskDialog({
                 data-testid="input-edit-due"
               />
             </div>
+          </div>
+
+          {isAdminOrManager && staffList.length > 0 && (
             <div className="space-y-1.5">
-              <Label>Recurrence</Label>
-              <Select value={form.recurrenceType} onValueChange={set("recurrenceType")}>
-                <SelectTrigger data-testid="select-edit-recurrence">
-                  <SelectValue />
+              <Label>Assigned To</Label>
+              <Select value={form.assignedTo || ""} onValueChange={set("assignedTo")}>
+                <SelectTrigger data-testid="select-edit-assigned">
+                  <SelectValue placeholder="Select staff member" />
                 </SelectTrigger>
                 <SelectContent>
-                  {RECURRENCE_TYPES.map((r) => (
-                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                  {staffList.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name} — {s.role}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          </div>
-
-          {/* Minutes taken — only relevant if completed */}
-          {(form.status === "COMPLETED" || form.minutesTaken) && (
-            <div className="space-y-1.5">
-              <Label htmlFor="et-mins">Time Taken (minutes)</Label>
-              <Input
-                id="et-mins"
-                type="number"
-                min="0"
-                value={form.minutesTaken || ""}
-                onChange={(e) => set("minutesTaken")(e.target.value)}
-                placeholder="How many minutes did this take?"
-                data-testid="input-edit-minutes"
-              />
-            </div>
           )}
-
-          {/* Notes */}
-          <div className="space-y-1.5">
-            <Label htmlFor="et-notes">Notes</Label>
-            <Textarea
-              id="et-notes"
-              value={form.notes || ""}
-              onChange={(e) => set("notes")(e.target.value)}
-              className="h-16 resize-none"
-              data-testid="input-edit-notes"
-            />
-          </div>
-
-          {/* Checklist */}
-          <div className="space-y-2 border-t pt-3">
-            <Label>Checklist Items</Label>
-            <div className="flex gap-2">
-              <Input
-                value={newItemText}
-                onChange={(e) => setNewItemText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addChecklistItem(); } }}
-                placeholder="Add a checklist step..."
-                className="h-8 text-sm"
-                data-testid="input-edit-checklist"
-              />
-              <Button type="button" size="sm" variant="outline" onClick={addChecklistItem} className="h-8 px-3" data-testid="button-add-edit-checklist">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            {checklistItems.length > 0 && (
-              <ul className="space-y-1.5 mt-2">
-                {checklistItems.map((item, i) => (
-                  <li key={item.id} className="flex items-center gap-2 bg-muted/40 rounded-md px-2 py-1" data-testid={`edit-checklist-${i}`}>
-                    <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
-                    <CheckSquare2 className={`h-3.5 w-3.5 shrink-0 ${item.done ? "text-green-500" : "text-muted-foreground"}`} />
-                    <Input
-                      value={item.text}
-                      onChange={(e) => editChecklistItem(item.id, e.target.value)}
-                      className="h-6 text-xs border-0 bg-transparent p-0 focus-visible:ring-0"
-                    />
-                    <button type="button" onClick={() => removeChecklistItem(item.id)} className="text-muted-foreground hover:text-destructive transition-colors shrink-0" data-testid={`remove-edit-checklist-${i}`}>
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
 
         </div>
 

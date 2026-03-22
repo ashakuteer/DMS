@@ -16,34 +16,25 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, X, GripVertical } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
-const CATEGORIES = [
-  "GENERAL", "DONOR_FOLLOWUP", "BENEFICIARY_UPDATE",
-  "DATA_ENTRY", "REPORTING", "COMMUNICATION", "EVENT", "OTHER",
-];
-const RECURRENCE_TYPES = [
-  { value: "NONE", label: "No Recurrence" },
-  { value: "DAILY", label: "Daily" },
-  { value: "WEEKLY", label: "Weekly" },
-  { value: "MONTHLY", label: "Monthly" },
-  { value: "QUARTERLY", label: "Quarterly" },
-  { value: "HALF_YEARLY", label: "Half-Yearly" },
-  { value: "ANNUAL", label: "Annual" },
+
+const TASK_TYPES = [
+  { value: "GENERAL", label: "General" },
+  { value: "INTERNAL", label: "Internal" },
+  { value: "MANUAL", label: "Manual" },
 ];
 
 const EMPTY = {
   title: "",
   description: "",
-  assignedToId: "",
+  assignedTo: "",
   priority: "MEDIUM",
-  category: "GENERAL",
-  dueDate: "",
-  recurrenceType: "NONE",
-  notes: "",
+  type: "GENERAL",
+  dueDate: new Date().toISOString().split("T")[0],
 };
 
 export default function CreateTaskDialog({
@@ -63,30 +54,18 @@ export default function CreateTaskDialog({
   const [submitting, setSubmitting] = useState(false);
   const [staffList, setStaffList] = useState<{ id: string; name: string; role: string }[]>([]);
   const [loadingStaff, setLoadingStaff] = useState(false);
-  const [checklistItems, setChecklistItems] = useState<{ id: string; text: string; done: boolean }[]>([]);
-  const [newItemText, setNewItemText] = useState("");
 
-  const addChecklistItem = () => {
-    if (!newItemText.trim()) return;
-    setChecklistItems((p) => [...p, { id: crypto.randomUUID(), text: newItemText.trim(), done: false }]);
-    setNewItemText("");
-  };
-  const removeChecklistItem = (id: string) => setChecklistItems((p) => p.filter((i) => i.id !== id));
-
-  // Load staff list when dialog opens
   useEffect(() => {
     if (!open) return;
     setForm({ ...EMPTY });
-    setChecklistItems([]);
-    setNewItemText("");
     if (!isAdminOrManager) return;
     setLoadingStaff(true);
-    fetchWithAuth("/api/staff-tasks/staff-list")
+    fetchWithAuth("/api/tasks/staff")
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setStaffList(d); })
       .catch(() => {})
       .finally(() => setLoadingStaff(false));
-  }, [open]);
+  }, [open, isAdminOrManager]);
 
   const set = (key: string) => (val: string) => setForm((p) => ({ ...p, [key]: val }));
 
@@ -101,19 +80,15 @@ export default function CreateTaskDialog({
       const payload: any = {
         title: form.title.trim(),
         description: form.description || undefined,
+        type: form.type,
         priority: form.priority,
-        category: form.category,
-        dueDate: form.dueDate || undefined,
-        notes: form.notes || undefined,
-        isRecurring: form.recurrenceType !== "NONE",
-        recurrenceType: form.recurrenceType,
-        checklist: checklistItems.length > 0 ? checklistItems : undefined,
+        dueDate: form.dueDate,
       };
-      if (isAdminOrManager && form.assignedToId) {
-        payload.assignedToId = form.assignedToId;
+      if (isAdminOrManager && form.assignedTo) {
+        payload.assignedTo = form.assignedTo;
       }
 
-      const res = await fetchWithAuth("/api/staff-tasks", {
+      const res = await fetchWithAuth("/api/tasks", {
         method: "POST",
         body: JSON.stringify(payload),
       });
@@ -135,29 +110,27 @@ export default function CreateTaskDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Create New Task</DialogTitle>
           <DialogDescription>
-            Fill in the details below to assign a new task to a staff member.
+            Assign a new internal task to a staff member.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
 
-          {/* Title */}
           <div className="space-y-1.5">
             <Label htmlFor="ct-title">Task Title <span className="text-destructive">*</span></Label>
             <Input
               id="ct-title"
               value={form.title}
               onChange={(e) => set("title")(e.target.value)}
-              placeholder="e.g. Follow up with Ramesh on pledge"
+              placeholder="e.g. Prepare monthly donation report"
               data-testid="input-task-title"
             />
           </div>
 
-          {/* Description */}
           <div className="space-y-1.5">
             <Label htmlFor="ct-desc">Description <span className="text-muted-foreground font-normal">(optional)</span></Label>
             <Textarea
@@ -170,11 +143,10 @@ export default function CreateTaskDialog({
             />
           </div>
 
-          {/* Assign to staff — only for admin/founder */}
           {isAdminOrManager && (
             <div className="space-y-1.5">
-              <Label>Assign To <span className="text-muted-foreground font-normal">(defaults to you)</span></Label>
-              <Select value={form.assignedToId} onValueChange={set("assignedToId")}>
+              <Label>Assign To <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Select value={form.assignedTo} onValueChange={set("assignedTo")}>
                 <SelectTrigger data-testid="select-assigned-to">
                   <SelectValue placeholder={loadingStaff ? "Loading staff..." : "Select staff member"} />
                 </SelectTrigger>
@@ -189,8 +161,20 @@ export default function CreateTaskDialog({
             </div>
           )}
 
-          {/* Priority + Category row */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1.5">
+              <Label>Type</Label>
+              <Select value={form.type} onValueChange={set("type")}>
+                <SelectTrigger data-testid="select-task-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TASK_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-1.5">
               <Label>Priority</Label>
               <Select value={form.priority} onValueChange={set("priority")}>
@@ -205,24 +189,7 @@ export default function CreateTaskDialog({
               </Select>
             </div>
             <div className="space-y-1.5">
-              <Label>Category</Label>
-              <Select value={form.category} onValueChange={set("category")}>
-                <SelectTrigger data-testid="select-category">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c} value={c}>{c.replace(/_/g, " ")}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Due Date + Recurrence row */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="ct-due">Due Date <span className="text-muted-foreground font-normal">(optional)</span></Label>
+              <Label htmlFor="ct-due">Due Date</Label>
               <Input
                 id="ct-due"
                 type="date"
@@ -231,63 +198,6 @@ export default function CreateTaskDialog({
                 data-testid="input-due-date"
               />
             </div>
-            <div className="space-y-1.5">
-              <Label>Recurrence</Label>
-              <Select value={form.recurrenceType} onValueChange={set("recurrenceType")}>
-                <SelectTrigger data-testid="select-recurrence">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {RECURRENCE_TYPES.map((r) => (
-                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div className="space-y-1.5">
-            <Label htmlFor="ct-notes">Notes <span className="text-muted-foreground font-normal">(optional)</span></Label>
-            <Textarea
-              id="ct-notes"
-              value={form.notes}
-              onChange={(e) => set("notes")(e.target.value)}
-              placeholder="Any additional notes..."
-              className="h-16 resize-none"
-              data-testid="input-task-notes"
-            />
-          </div>
-
-          {/* Checklist */}
-          <div className="space-y-2 border-t pt-3">
-            <Label>Checklist Items <span className="text-muted-foreground font-normal">(optional)</span></Label>
-            <div className="flex gap-2">
-              <Input
-                value={newItemText}
-                onChange={(e) => setNewItemText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addChecklistItem(); } }}
-                placeholder="Add a checklist step..."
-                className="h-8 text-sm"
-                data-testid="input-checklist-item"
-              />
-              <Button type="button" size="sm" variant="outline" onClick={addChecklistItem} className="h-8 px-3" data-testid="button-add-checklist">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-            {checklistItems.length > 0 && (
-              <ul className="space-y-1.5 mt-2">
-                {checklistItems.map((item, i) => (
-                  <li key={item.id} className="flex items-center gap-2 text-sm bg-muted/40 rounded-md px-3 py-1.5" data-testid={`checklist-item-${i}`}>
-                    <GripVertical className="h-3.5 w-3.5 text-muted-foreground/50 shrink-0" />
-                    <span className="flex-1">{item.text}</span>
-                    <button type="button" onClick={() => removeChecklistItem(item.id)} className="text-muted-foreground hover:text-destructive transition-colors" data-testid={`remove-checklist-${i}`}>
-                      <X className="h-3.5 w-3.5" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
 
         </div>
@@ -296,7 +206,7 @@ export default function CreateTaskDialog({
           <Button variant="outline" onClick={() => setOpen(false)} disabled={submitting} data-testid="button-cancel-create">
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={submitting} data-testid="button-submit-create">
+          <Button onClick={handleSubmit} disabled={submitting || !form.title.trim()} data-testid="button-submit-create">
             {submitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating...</> : "Create Task"}
           </Button>
         </DialogFooter>

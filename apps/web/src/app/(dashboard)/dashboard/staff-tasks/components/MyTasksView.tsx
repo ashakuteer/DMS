@@ -86,16 +86,24 @@ export default function MyTasksView({ userId }: Props) {
 
   const loadTasks = useCallback(() => {
     setLoading(true);
-    const params = new URLSearchParams({ assignedToId: userId, limit: "100" });
-    if (filterStatus === "ACTIVE") {
-      params.set("status", "");
-    } else if (filterStatus !== "ALL") {
+    const params = new URLSearchParams({ assignedTo: userId });
+    if (filterStatus !== "ACTIVE" && filterStatus !== "ALL") {
       params.set("status", filterStatus);
     }
 
-    fetchWithAuth(`/api/staff-tasks?${params.toString()}`)
+    fetchWithAuth(`/api/tasks?${params.toString()}`)
       .then((r) => r.json())
-      .then((d) => { if (d?.items) setTasks(d.items); })
+      .then((d) => {
+        const items = Array.isArray(d) ? d : (d?.items || []);
+        setTasks(items.map((t: any) => ({
+          ...t,
+          category: t.type,
+          notes: t.description ?? null,
+          startedAt: null,
+          minutesTaken: null,
+          checklist: [],
+        })));
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, [userId, filterStatus]);
@@ -129,9 +137,9 @@ export default function MyTasksView({ userId }: Props) {
   const submitStatus = async (id: string, status: string, extra: any) => {
     setActionId(id);
     try {
-      const res = await fetchWithAuth(`/api/staff-tasks/${id}/status`, {
+      const res = await fetchWithAuth(`/api/tasks/${id}/status`, {
         method: "PATCH",
-        body: JSON.stringify({ status, ...extra }),
+        body: JSON.stringify({ status }),
       });
       if (res.ok) {
         toast({ title: status === "COMPLETED" ? "Task completed!" : "Status updated" });
@@ -148,19 +156,8 @@ export default function MyTasksView({ userId }: Props) {
     }
   };
 
-  const toggleChecklistItem = async (task: Task, itemId: string) => {
-    const checklist = ((task as any).checklist || []).map((item: any) =>
-      item.id === itemId ? { ...item, done: !item.done } : item
-    );
-    try {
-      const res = await fetchWithAuth(`/api/staff-tasks/${task.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ checklist }),
-      });
-      if (res.ok) {
-        loadTasks();
-      }
-    } catch { /* silent */ }
+  const toggleChecklistItem = async (_task: Task, _itemId: string) => {
+    // Checklist not supported in unified task table — no-op
   };
 
   const handleCompleteSubmit = async (taskId: string) => {

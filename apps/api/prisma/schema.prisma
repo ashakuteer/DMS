@@ -2317,6 +2317,8 @@ enum TaskType {
   PLEDGE
   REMINDER
   MANUAL
+  GENERAL
+  INTERNAL
 }
 
 enum Profession {

@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react"
 import { authStorage } from "@/lib/auth"
 
 export type TaskStatus = "PENDING" | "COMPLETED" | "OVERDUE" | "IN_PROGRESS" | "MISSED"
-export type TaskType = "BIRTHDAY" | "FOLLOW_UP" | "PLEDGE" | "REMINDER" | "MANUAL" | "GENERAL"
+export type TaskType = "BIRTHDAY" | "FOLLOW_UP" | "PLEDGE" | "REMINDER"
 export type TaskPriority = "URGENT" | "HIGH" | "MEDIUM" | "LOW"
 
 export interface TaskItem {
@@ -61,18 +61,18 @@ export function useTaskInbox() {
   const fetchTasks = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`${API_URL}/api/tasks?status=PENDING`, {
-        headers: authHeaders(),
-      })
-      if (res.ok) {
-        const data: TaskItem[] = await res.json()
-        // Also fetch overdue tasks
-        const resOverdue = await fetch(`${API_URL}/api/tasks?status=OVERDUE`, {
-          headers: authHeaders(),
-        })
-        const overdue: TaskItem[] = resOverdue.ok ? await resOverdue.json() : []
-        setTasks([...overdue.map(t => ({ ...t, status: "OVERDUE" as TaskStatus })), ...data])
-      }
+      // Fetch only donor-related task types
+      const [resPending, resOverdue] = await Promise.all([
+        fetch(`${API_URL}/api/tasks?category=donor&status=PENDING`, { headers: authHeaders() }),
+        fetch(`${API_URL}/api/tasks?category=donor&status=OVERDUE`, { headers: authHeaders() }),
+      ])
+      const pending: TaskItem[] = resPending.ok ? await resPending.json() : []
+      const overdue: TaskItem[] = resOverdue.ok ? await resOverdue.json() : []
+      // Overdue first, then pending
+      setTasks([
+        ...overdue.map(t => ({ ...t, status: "OVERDUE" as TaskStatus })),
+        ...pending,
+      ])
     } catch (err) {
       console.error("[useTaskInbox] fetchTasks error:", err)
     } finally {

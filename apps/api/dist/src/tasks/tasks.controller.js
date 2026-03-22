@@ -40,8 +40,11 @@ let TasksController = class TasksController {
     getStaffList() {
         return this.tasksService.getStaffList();
     }
-    findAll(status, type, dueDate) {
-        return this.tasksService.findAll({ status, type, dueDate });
+    findAll(status, type, category, dueDate, assignedTo, priority) {
+        return this.tasksService.findAll({ status, type, category, dueDate, assignedTo, priority });
+    }
+    findOne(id) {
+        return this.tasksService.findOne(id);
     }
     completeTask(id) {
         return this.tasksService.updateStatus(id, client_1.TaskStatus.COMPLETED);
@@ -51,6 +54,9 @@ let TasksController = class TasksController {
     }
     updateTask(id, dto) {
         return this.tasksService.updateTask(id, dto);
+    }
+    deleteTask(id) {
+        return this.tasksService.deleteTask(id);
     }
 };
 exports.TasksController = TasksController;
@@ -90,11 +96,22 @@ __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Query)('status')),
     __param(1, (0, common_1.Query)('type')),
-    __param(2, (0, common_1.Query)('dueDate')),
+    __param(2, (0, common_1.Query)('category')),
+    __param(3, (0, common_1.Query)('dueDate')),
+    __param(4, (0, common_1.Query)('assignedTo')),
+    __param(5, (0, common_1.Query)('priority')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], TasksController.prototype, "findAll", null);
+__decorate([
+    (0, public_decorator_1.Public)(),
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], TasksController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Patch)(':id/complete'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
@@ -124,6 +141,15 @@ __decorate([
     __metadata("design:paramtypes", [String, tasks_dto_1.UpdateTaskDto]),
     __metadata("design:returntype", void 0)
 ], TasksController.prototype, "updateTask", null);
+__decorate([
+    (0, common_1.Delete)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], TasksController.prototype, "deleteTask", null);
 exports.TasksController = TasksController = __decorate([
     (0, common_1.Controller)('tasks'),
     __metadata("design:paramtypes", [tasks_service_1.TasksService,

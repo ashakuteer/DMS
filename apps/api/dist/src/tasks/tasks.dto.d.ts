@@ -13,5 +13,11 @@ export declare class UpdateTaskStatusDto {
     status: TaskStatus;
 }
 export declare class UpdateTaskDto {
-    assignedTo?: string;
+    title?: string;
+    description?: string;
+    type?: TaskType;
+    priority?: TaskPriority;
+    status?: TaskStatus;
+    dueDate?: string;
+    assignedTo?: string | null;
 }

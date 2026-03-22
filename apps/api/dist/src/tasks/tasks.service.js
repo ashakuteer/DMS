@@ -13,6 +13,17 @@ exports.TasksService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const DONOR_TYPES = [
+    client_1.TaskType.BIRTHDAY,
+    client_1.TaskType.FOLLOW_UP,
+    client_1.TaskType.PLEDGE,
+    client_1.TaskType.REMINDER,
+];
+const STAFF_TYPES = [
+    client_1.TaskType.GENERAL,
+    client_1.TaskType.INTERNAL,
+    client_1.TaskType.MANUAL,
+];
 let TasksService = class TasksService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -99,8 +110,20 @@ let TasksService = class TasksService {
                 where.status = query.status;
             }
         }
-        if (query.type) {
+        if (query.category === 'donor') {
+            where.type = { in: DONOR_TYPES };
+        }
+        else if (query.category === 'staff') {
+            where.type = { in: STAFF_TYPES };
+        }
+        else if (query.type) {
             where.type = query.type;
+        }
+        if (query.priority) {
+            where.priority = query.priority;
+        }
+        if (query.assignedTo) {
+            where.assignedTo = query.assignedTo;
         }
         if (query.dueDate === 'today') {
             where.dueDate = { gte: today, lt: tomorrow };
@@ -138,6 +161,37 @@ let TasksService = class TasksService {
         });
         return this.resolveStatus(updated);
     }
+    async updateTask(id, dto) {
+        await this.findOne(id);
+        const data = {};
+        if (dto.title !== undefined)
+            data.title = dto.title;
+        if (dto.description !== undefined)
+            data.description = dto.description;
+        if (dto.type !== undefined)
+            data.type = dto.type;
+        if (dto.priority !== undefined)
+            data.priority = dto.priority;
+        if (dto.dueDate !== undefined)
+            data.dueDate = new Date(dto.dueDate);
+        if (dto.assignedTo !== undefined)
+            data.assignedTo = dto.assignedTo;
+        if (dto.status !== undefined) {
+            data.status = dto.status;
+            if (dto.status === client_1.TaskStatus.COMPLETED)
+                data.completedAt = new Date();
+        }
+        const updated = await this.prisma.task.update({
+            where: { id },
+            data,
+            include: this.includeRelations,
+        });
+        return this.resolveStatus(updated);
+    }
+    async deleteTask(id) {
+        await this.findOne(id);
+        return this.prisma.task.delete({ where: { id } });
+    }
     async getStaffList() {
         return this.prisma.user.findMany({
             where: {
@@ -147,17 +201,6 @@ let TasksService = class TasksService {
             select: { id: true, name: true, role: true },
             orderBy: { name: 'asc' },
         });
-    }
-    async updateTask(id, dto) {
-        await this.findOne(id);
-        const updated = await this.prisma.task.update({
-            where: { id },
-            data: {
-                assignedTo: dto.assignedTo ?? null,
-            },
-            include: this.includeRelations,
-        });
-        return this.resolveStatus(updated);
     }
     async getToday() {
         try {

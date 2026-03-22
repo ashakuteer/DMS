@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import {
   useTaskInbox,
-  TaskItem,
-  TaskType,
-  TaskPriority,
-  CreateTaskInput,
+  type TaskItem,
+  type TaskType,
+  type TaskPriority,
+  type CreateTaskInput,
 } from "./hooks/useTaskInbox"
 import { authStorage } from "@/lib/auth"
 import Link from "next/link"
@@ -22,8 +22,6 @@ const TYPE_LABELS: Record<string, string> = {
   FOLLOW_UP: "Follow Up",
   PLEDGE: "Pledge",
   REMINDER: "Reminder",
-  MANUAL: "Manual",
-  GENERAL: "General",
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -31,8 +29,6 @@ const TYPE_COLORS: Record<string, string> = {
   FOLLOW_UP: "bg-blue-100 text-blue-700",
   PLEDGE: "bg-purple-100 text-purple-700",
   REMINDER: "bg-yellow-100 text-yellow-700",
-  MANUAL: "bg-gray-100 text-gray-600",
-  GENERAL: "bg-green-100 text-green-700",
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -147,7 +143,7 @@ function NewTaskForm({ onCancel, onCreate, creating }: NewTaskFormProps) {
               onChange={e => setType(e.target.value as TaskType)}
               data-testid="select-task-type"
             >
-              {(["BIRTHDAY", "FOLLOW_UP", "PLEDGE", "REMINDER", "GENERAL", "MANUAL"] as TaskType[]).map(t => (
+              {(["BIRTHDAY", "FOLLOW_UP", "PLEDGE", "REMINDER"] as TaskType[]).map(t => (
                 <option key={t} value={t}>{TYPE_LABELS[t]}</option>
               ))}
             </select>
@@ -315,8 +311,6 @@ const TYPE_FILTERS: { value: string; label: string }[] = [
   { value: "FOLLOW_UP", label: "Follow-ups" },
   { value: "PLEDGE", label: "Pledges" },
   { value: "REMINDER", label: "Reminders" },
-  { value: "GENERAL", label: "General" },
-  { value: "MANUAL", label: "Manual" },
 ]
 
 export default function DailyActionsPage() {

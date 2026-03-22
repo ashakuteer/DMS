@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Body,
   Param,
   Query,
@@ -56,9 +57,18 @@ export class TasksController {
   findAll(
     @Query('status') status: string,
     @Query('type') type: string,
+    @Query('category') category: string,
     @Query('dueDate') dueDate: string,
+    @Query('assignedTo') assignedTo: string,
+    @Query('priority') priority: string,
   ) {
-    return this.tasksService.findAll({ status, type, dueDate });
+    return this.tasksService.findAll({ status, type, category, dueDate, assignedTo, priority });
+  }
+
+  @Public()
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.tasksService.findOne(id);
   }
 
   @Patch(':id/complete')
@@ -80,5 +90,12 @@ export class TasksController {
   @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   updateTask(@Param('id') id: string, @Body() dto: UpdateTaskDto) {
     return this.tasksService.updateTask(id, dto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.FOUNDER, Role.ADMIN)
+  deleteTask(@Param('id') id: string) {
+    return this.tasksService.deleteTask(id);
   }
 }

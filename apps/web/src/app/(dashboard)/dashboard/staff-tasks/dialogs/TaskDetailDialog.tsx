@@ -80,10 +80,8 @@ export default function TaskDetailDialog({
       item.id === itemId ? { ...item, done: !item.done } : item
     );
     try {
-      await fetchWithAuth(`/api/staff-tasks/${task.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({ checklist }),
-      });
+      // Checklist not available in unified task table — no-op
+      void checklist;
       onChecklistChange?.();
     } catch { /* silent */ }
     setTogglingId(null);

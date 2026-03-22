@@ -3,6 +3,19 @@ import { PrismaService } from '../prisma/prisma.service';
 import { TaskStatus, TaskPriority, TaskType, Role } from '@prisma/client';
 import { CreateTaskDto, UpdateTaskDto } from './tasks.dto';
 
+const DONOR_TYPES: TaskType[] = [
+  TaskType.BIRTHDAY,
+  TaskType.FOLLOW_UP,
+  TaskType.PLEDGE,
+  TaskType.REMINDER,
+];
+
+const STAFF_TYPES: TaskType[] = [
+  TaskType.GENERAL,
+  TaskType.INTERNAL,
+  TaskType.MANUAL,
+];
+
 @Injectable()
 export class TasksService {
   constructor(private prisma: PrismaService) {}
@@ -80,7 +93,10 @@ export class TasksService {
   async findAll(query: {
     status?: string;
     type?: string;
+    category?: string;
     dueDate?: string;
+    assignedTo?: string;
+    priority?: string;
   }) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -89,6 +105,7 @@ export class TasksService {
 
     const where: any = {};
 
+    // Status filter
     if (query.status) {
       if (query.status === 'OVERDUE') {
         where.status = TaskStatus.PENDING;
@@ -98,10 +115,27 @@ export class TasksService {
       }
     }
 
-    if (query.type) {
+    // Category virtual filter: 'donor' or 'staff'
+    if (query.category === 'donor') {
+      where.type = { in: DONOR_TYPES };
+    } else if (query.category === 'staff') {
+      where.type = { in: STAFF_TYPES };
+    } else if (query.type) {
+      // Single type filter
       where.type = query.type as TaskType;
     }
 
+    // Priority filter
+    if (query.priority) {
+      where.priority = query.priority as TaskPriority;
+    }
+
+    // Assigned-to filter
+    if (query.assignedTo) {
+      where.assignedTo = query.assignedTo;
+    }
+
+    // Due date filter
     if (query.dueDate === 'today') {
       where.dueDate = { gte: today, lt: tomorrow };
     } else if (query.dueDate === 'overdue') {
@@ -143,6 +177,34 @@ export class TasksService {
     return this.resolveStatus(updated);
   }
 
+  async updateTask(id: string, dto: UpdateTaskDto) {
+    await this.findOne(id);
+
+    const data: any = {};
+    if (dto.title !== undefined) data.title = dto.title;
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.type !== undefined) data.type = dto.type;
+    if (dto.priority !== undefined) data.priority = dto.priority;
+    if (dto.dueDate !== undefined) data.dueDate = new Date(dto.dueDate);
+    if (dto.assignedTo !== undefined) data.assignedTo = dto.assignedTo;
+    if (dto.status !== undefined) {
+      data.status = dto.status;
+      if (dto.status === TaskStatus.COMPLETED) data.completedAt = new Date();
+    }
+
+    const updated = await this.prisma.task.update({
+      where: { id },
+      data,
+      include: this.includeRelations,
+    });
+    return this.resolveStatus(updated);
+  }
+
+  async deleteTask(id: string) {
+    await this.findOne(id);
+    return this.prisma.task.delete({ where: { id } });
+  }
+
   async getStaffList() {
     return this.prisma.user.findMany({
       where: {
@@ -152,18 +214,6 @@ export class TasksService {
       select: { id: true, name: true, role: true },
       orderBy: { name: 'asc' },
     });
-  }
-
-  async updateTask(id: string, dto: UpdateTaskDto) {
-    await this.findOne(id);
-    const updated = await this.prisma.task.update({
-      where: { id },
-      data: {
-        assignedTo: dto.assignedTo ?? null,
-      },
-      include: this.includeRelations,
-    });
-    return this.resolveStatus(updated);
   }
 
   async getToday() {
