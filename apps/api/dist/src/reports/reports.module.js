@@ -10,6 +10,7 @@ exports.ReportsModule = void 0;
 const common_1 = require("@nestjs/common");
 const reports_controller_1 = require("./reports.controller");
 const reports_service_1 = require("./reports.service");
+const smart_reports_service_1 = require("./smart-reports.service");
 const prisma_module_1 = require("../prisma/prisma.module");
 const organization_profile_module_1 = require("../organization-profile/organization-profile.module");
 let ReportsModule = class ReportsModule {
@@ -19,7 +20,7 @@ exports.ReportsModule = ReportsModule = __decorate([
     (0, common_1.Module)({
         imports: [prisma_module_1.PrismaModule, organization_profile_module_1.OrganizationProfileModule],
         controllers: [reports_controller_1.ReportsController],
-        providers: [reports_service_1.ReportsService],
+        providers: [reports_service_1.ReportsService, smart_reports_service_1.SmartReportsService],
     })
 ], ReportsModule);
 //# sourceMappingURL=reports.module.js.map

@@ -21,10 +21,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileSpreadsheet, FileText, Search, ChevronLeft, ChevronRight, Lock, Calendar, ArrowUpDown, CreditCard, FileBarChart } from "lucide-react";
+import { FileSpreadsheet, FileText, Search, ChevronLeft, ChevronRight, Lock, Calendar, ArrowUpDown, CreditCard, FileBarChart, SlidersHorizontal, Save, History, Download, BarChart3 } from "lucide-react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { canAccessModule } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
+
+interface SmartReportRow {
+  groupName: string;
+  donorCount: number;
+  totalAmount: number;
+}
+
+interface SavedReport {
+  id: string;
+  name: string;
+  filters: any;
+  groupBy: string;
+  createdAt: string;
+}
 
 interface MonthlyDonation {
   id: string;
@@ -144,6 +158,17 @@ export default function ReportsPage() {
   const [donorData, setDonorData] = useState<{ data: DonorReportItem[]; pagination: PaginationInfo } | null>(null);
   const [receiptData, setReceiptData] = useState<{ data: ReceiptAuditItem[]; pagination: PaginationInfo; summary: any } | null>(null);
   const [isDownloadingBoardSummary, setIsDownloadingBoardSummary] = useState(false);
+
+  // Smart Report state
+  const [smartGroupBy, setSmartGroupBy] = useState('gender');
+  const [smartFilters, setSmartFilters] = useState<Record<string, string>>({});
+  const [smartData, setSmartData] = useState<SmartReportRow[]>([]);
+  const [smartLoading, setSmartLoading] = useState(false);
+  const [smartSaving, setSmartSaving] = useState(false);
+  const [reportName, setReportName] = useState('');
+  const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+  const [smartExporting, setSmartExporting] = useState<string | null>(null);
 
   const isAdmin = userRole === 'ADMIN';
   const canAccessReports = userRole === 'FOUNDER' || userRole === 'ADMIN' || userRole === 'STAFF';
@@ -265,6 +290,71 @@ export default function ReportsPage() {
       setSortOrder('desc');
     }
     setPage(1);
+  };
+
+  const fetchSmartReport = async () => {
+    setSmartLoading(true);
+    try {
+      const params = new URLSearchParams({ groupBy: smartGroupBy });
+      Object.entries(smartFilters).forEach(([k, v]) => { if (v) params.set(k, v); });
+      const res = await fetchWithAuth(`/api/reports?${params}`);
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json();
+      setSmartData(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setSmartLoading(false);
+    }
+  };
+
+  const fetchSavedReports = async () => {
+    try {
+      const res = await fetchWithAuth('/api/reports/history');
+      if (!res.ok) return;
+      setSavedReports(await res.json());
+    } catch (e) { console.error(e); }
+  };
+
+  const handleSaveReport = async () => {
+    if (!reportName.trim()) return;
+    setSmartSaving(true);
+    try {
+      const res = await fetchWithAuth('/api/reports/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: reportName, filters: smartFilters, groupBy: smartGroupBy }),
+      });
+      if (res.ok) {
+        setReportName('');
+        await fetchSavedReports();
+        setShowHistory(true);
+      }
+    } catch (e) { console.error(e); } finally { setSmartSaving(false); }
+  };
+
+  const handleSmartExport = async (format: 'excel' | 'pdf') => {
+    if (userRole !== 'FOUNDER') return;
+    setSmartExporting(format);
+    try {
+      const params = new URLSearchParams({ groupBy: smartGroupBy, format });
+      Object.entries(smartFilters).forEach(([k, v]) => { if (v) params.set(k, v); });
+      const res = await fetchWithAuth(`/api/reports/export?${params}`);
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `smart-report-${Date.now()}.${format === 'excel' ? 'xlsx' : 'pdf'}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (e) { console.error(e); } finally { setSmartExporting(null); }
+  };
+
+  const setFilter = (key: string, value: string) => {
+    setSmartFilters(prev => value ? { ...prev, [key]: value } : Object.fromEntries(Object.entries(prev).filter(([k]) => k !== key)));
   };
 
   const handleDownloadBoardSummary = async () => {
@@ -439,6 +529,9 @@ export default function ReportsPage() {
               <TabsTrigger value="monthly" data-testid="tab-monthly">Monthly Donations</TabsTrigger>
               <TabsTrigger value="donor" data-testid="tab-donor">Donor-wise Summary</TabsTrigger>
               <TabsTrigger value="receipt" data-testid="tab-receipt">Receipt Register</TabsTrigger>
+              <TabsTrigger value="smart" data-testid="tab-smart" onClick={() => { if (smartData.length === 0) fetchSmartReport(); fetchSavedReports(); }}>
+                <BarChart3 className="h-3.5 w-3.5 mr-1" />Smart Report
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="monthly">
@@ -656,6 +749,200 @@ export default function ReportsPage() {
                   </div>
                 </>
               )}
+            </TabsContent>
+
+            <TabsContent value="smart">
+              <div className="space-y-4">
+                {/* Filters Section */}
+                <div className="border rounded-lg p-4 bg-muted/30">
+                  <div className="flex items-center gap-2 mb-3">
+                    <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-sm">Filters</span>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Group By</label>
+                      <Select value={smartGroupBy} onValueChange={setSmartGroupBy}>
+                        <SelectTrigger data-testid="select-groupby"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {['gender','city','state','country','profession','category','occasion'].map(g => (
+                            <SelectItem key={g} value={g}>{g.charAt(0).toUpperCase()+g.slice(1)}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Gender</label>
+                      <Select value={smartFilters.gender || ''} onValueChange={v => setFilter('gender', v === 'ALL' ? '' : v)}>
+                        <SelectTrigger data-testid="select-gender"><SelectValue placeholder="All" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All</SelectItem>
+                          {['MALE','FEMALE','OTHER'].map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Profession</label>
+                      <Select value={smartFilters.profession || ''} onValueChange={v => setFilter('profession', v === 'ALL' ? '' : v)}>
+                        <SelectTrigger data-testid="select-profession"><SelectValue placeholder="All" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All</SelectItem>
+                          {['DOCTOR','BUSINESS','IT','GOVT','OTHER'].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Category</label>
+                      <Select value={smartFilters.category || ''} onValueChange={v => setFilter('category', v === 'ALL' ? '' : v)}>
+                        <SelectTrigger data-testid="select-category"><SelectValue placeholder="All" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All</SelectItem>
+                          {['GROCERIES','MEDICINES','EDUCATION','SPONSOR','OTHER'].map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Occasion</label>
+                      <Select value={smartFilters.occasion || ''} onValueChange={v => setFilter('occasion', v === 'ALL' ? '' : v)}>
+                        <SelectTrigger data-testid="select-occasion"><SelectValue placeholder="All" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All</SelectItem>
+                          {['BIRTHDAY','ANNIVERSARY','FESTIVAL','MEMORIAL','GENERAL'].map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Schedule Type</label>
+                      <Select value={smartFilters.donationType || ''} onValueChange={v => setFilter('donationType', v === 'ALL' ? '' : v)}>
+                        <SelectTrigger data-testid="select-schedule"><SelectValue placeholder="All" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All</SelectItem>
+                          {['ONE_TIME','MONTHLY','QUARTERLY'].map(t => <SelectItem key={t} value={t}>{t.replace('_',' ')}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">City</label>
+                      <Input placeholder="Filter by city" value={smartFilters.city || ''} onChange={e => setFilter('city', e.target.value)} data-testid="input-filter-city" className="h-9" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">State</label>
+                      <Input placeholder="Filter by state" value={smartFilters.state || ''} onChange={e => setFilter('state', e.target.value)} data-testid="input-filter-state" className="h-9" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Date From</label>
+                      <Input type="date" value={smartFilters.dateFrom || ''} onChange={e => setFilter('dateFrom', e.target.value)} data-testid="input-datefrom" className="h-9" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Date To</label>
+                      <Input type="date" value={smartFilters.dateTo || ''} onChange={e => setFilter('dateTo', e.target.value)} data-testid="input-dateto" className="h-9" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Min Amount (₹)</label>
+                      <Input type="number" placeholder="0" value={smartFilters.minAmount || ''} onChange={e => setFilter('minAmount', e.target.value)} data-testid="input-minamount" className="h-9" />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Max Amount (₹)</label>
+                      <Input type="number" placeholder="∞" value={smartFilters.maxAmount || ''} onChange={e => setFilter('maxAmount', e.target.value)} data-testid="input-maxamount" className="h-9" />
+                    </div>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <Button onClick={fetchSmartReport} disabled={smartLoading} data-testid="button-run-report">
+                      {smartLoading ? 'Running...' : 'Run Report'}
+                    </Button>
+                    <Button variant="outline" onClick={() => { setSmartFilters({}); setSmartGroupBy('gender'); setSmartData([]); }} data-testid="button-clear-filters">
+                      Clear
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Results Table */}
+                {smartData.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                      <div className="flex items-center gap-3">
+                        <Badge variant="secondary">{smartData.length} groups</Badge>
+                        <Badge variant="outline">Total: ₹{smartData.reduce((s,r)=>s+r.totalAmount,0).toLocaleString('en-IN')}</Badge>
+                      </div>
+                      <div className="flex gap-2">
+                        {userRole === 'FOUNDER' && (
+                          <>
+                            <Button size="sm" variant="outline" onClick={() => handleSmartExport('excel')} disabled={smartExporting !== null} data-testid="button-export-smart-excel">
+                              <FileSpreadsheet className="h-3.5 w-3.5 mr-1" />{smartExporting === 'excel' ? 'Exporting...' : 'Excel'}
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => handleSmartExport('pdf')} disabled={smartExporting !== null} data-testid="button-export-smart-pdf">
+                              <FileText className="h-3.5 w-3.5 mr-1" />{smartExporting === 'pdf' ? 'Exporting...' : 'PDF'}
+                            </Button>
+                          </>
+                        )}
+                        <div className="flex gap-1">
+                          <Input placeholder="Report name..." value={reportName} onChange={e => setReportName(e.target.value)} className="h-8 w-40 text-sm" data-testid="input-report-name" />
+                          <Button size="sm" onClick={handleSaveReport} disabled={smartSaving || !reportName.trim()} data-testid="button-save-report">
+                            <Save className="h-3.5 w-3.5 mr-1" />{smartSaving ? 'Saving...' : 'Save'}
+                          </Button>
+                        </div>
+                        <Button size="sm" variant="ghost" onClick={() => { setShowHistory(!showHistory); fetchSavedReports(); }} data-testid="button-show-history">
+                          <History className="h-3.5 w-3.5 mr-1" />History
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="border rounded-lg overflow-hidden">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>{smartGroupBy.charAt(0).toUpperCase()+smartGroupBy.slice(1)}</TableHead>
+                            <TableHead className="text-center">Donors</TableHead>
+                            <TableHead className="text-right">Total Amount</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {smartData.map((row, i) => (
+                            <TableRow key={i} data-testid={`row-smart-${i}`}>
+                              <TableCell className="font-medium">{row.groupName}</TableCell>
+                              <TableCell className="text-center">{row.donorCount}</TableCell>
+                              <TableCell className="text-right font-semibold">₹{row.totalAmount.toLocaleString('en-IN')}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  </div>
+                )}
+
+                {smartData.length === 0 && !smartLoading && (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <BarChart3 className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                    <p>Set filters and click <strong>Run Report</strong> to see results.</p>
+                  </div>
+                )}
+
+                {/* History Panel */}
+                {showHistory && (
+                  <div className="border rounded-lg p-4 mt-4">
+                    <h3 className="font-medium mb-3 flex items-center gap-2"><History className="h-4 w-4" />Saved Reports</h3>
+                    {savedReports.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No saved reports yet.</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {savedReports.map(r => (
+                          <div key={r.id} className="flex items-center justify-between border rounded p-2" data-testid={`saved-report-${r.id}`}>
+                            <div>
+                              <p className="text-sm font-medium">{r.name}</p>
+                              <p className="text-xs text-muted-foreground">Group by: {r.groupBy} · {new Date(r.createdAt).toLocaleDateString('en-IN')}</p>
+                            </div>
+                            <Button size="sm" variant="ghost" onClick={() => {
+                              setSmartGroupBy(r.groupBy);
+                              setSmartFilters(r.filters || {});
+                              setShowHistory(false);
+                              fetchSmartReport();
+                            }} data-testid={`button-load-report-${r.id}`}>Load</Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </TabsContent>
           </Tabs>
 

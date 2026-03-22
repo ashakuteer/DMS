@@ -1,15 +1,122 @@
-import { Controller, Get, Query, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, Res, Body, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Role } from '@prisma/client';
 import { ReportsService } from './reports.service';
+import { SmartReportsService } from './smart-reports.service';
 
 @Controller('reports')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ReportsController {
-  constructor(private readonly reportsService: ReportsService) {}
+  constructor(
+    private readonly reportsService: ReportsService,
+    private readonly smartReportsService: SmartReportsService,
+  ) {}
+
+  @Get()
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  async getSmartReport(
+    @Query('groupBy') groupBy: string = 'gender',
+    @Query('gender') gender?: string,
+    @Query('city') city?: string,
+    @Query('state') state?: string,
+    @Query('country') country?: string,
+    @Query('profession') profession?: string,
+    @Query('category') category?: string,
+    @Query('occasion') occasion?: string,
+    @Query('donationType') donationType?: string,
+    @Query('minAmount') minAmount?: string,
+    @Query('maxAmount') maxAmount?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('visited') visited?: string,
+  ) {
+    const filters: any = {};
+    if (gender) filters.gender = gender;
+    if (city) filters.city = city;
+    if (state) filters.state = state;
+    if (country) filters.country = country;
+    if (profession) filters.profession = profession;
+    if (category) filters.category = category;
+    if (occasion) filters.occasion = occasion;
+    if (donationType) filters.donationType = donationType;
+    if (minAmount) filters.minAmount = parseFloat(minAmount);
+    if (maxAmount) filters.maxAmount = parseFloat(maxAmount);
+    if (dateFrom) filters.dateFrom = dateFrom;
+    if (dateTo) filters.dateTo = dateTo;
+    if (visited !== undefined) filters.visited = visited === 'true';
+
+    return this.smartReportsService.getSmartReport(filters, groupBy as any);
+  }
+
+  @Get('export')
+  @Roles(Role.FOUNDER)
+  async exportSmartReport(
+    @Query('format') format: string = 'excel',
+    @Query('groupBy') groupBy: string = 'gender',
+    @Query('gender') gender?: string,
+    @Query('city') city?: string,
+    @Query('state') state?: string,
+    @Query('country') country?: string,
+    @Query('profession') profession?: string,
+    @Query('category') category?: string,
+    @Query('occasion') occasion?: string,
+    @Query('donationType') donationType?: string,
+    @Query('minAmount') minAmount?: string,
+    @Query('maxAmount') maxAmount?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
+    @Query('visited') visited?: string,
+    @Res() res?: Response,
+  ) {
+    const filters: any = {};
+    if (gender) filters.gender = gender;
+    if (city) filters.city = city;
+    if (state) filters.state = state;
+    if (country) filters.country = country;
+    if (profession) filters.profession = profession;
+    if (category) filters.category = category;
+    if (occasion) filters.occasion = occasion;
+    if (donationType) filters.donationType = donationType;
+    if (minAmount) filters.minAmount = parseFloat(minAmount);
+    if (maxAmount) filters.maxAmount = parseFloat(maxAmount);
+    if (dateFrom) filters.dateFrom = dateFrom;
+    if (dateTo) filters.dateTo = dateTo;
+    if (visited !== undefined) filters.visited = visited === 'true';
+
+    if (format === 'pdf') {
+      const buffer = await this.smartReportsService.exportPdf(filters, groupBy as any);
+      res!.setHeader('Content-Type', 'application/pdf');
+      res!.setHeader('Content-Disposition', `attachment; filename="report-${Date.now()}.pdf"`);
+      res!.send(buffer);
+    } else {
+      const buffer = await this.smartReportsService.exportExcel(filters, groupBy as any);
+      res!.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res!.setHeader('Content-Disposition', `attachment; filename="report-${Date.now()}.xlsx"`);
+      res!.send(buffer);
+    }
+  }
+
+  @Post('save')
+  @Roles(Role.FOUNDER, Role.ADMIN)
+  async saveReport(@Body() body: { name: string; filters: any; groupBy: string }) {
+    return this.smartReportsService.saveReport(body.name, body.filters, body.groupBy);
+  }
+
+  @Get('history')
+  @Roles(Role.FOUNDER, Role.ADMIN)
+  async getReportHistory() {
+    return this.smartReportsService.getReportHistory();
+  }
+
+  @Get('analytics')
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  async getAnalytics() {
+    return this.smartReportsService.getAnalytics();
+  }
 
   @Get('monthly-donations')
   @Roles(Role.FOUNDER, Role.ADMIN)

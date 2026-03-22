@@ -1,0 +1,162 @@
+Build a complete Donor Reporting + Analytics system.
+
+-------------------------------------
+STEP 1: DATA STANDARDIZATION (VERY IMPORTANT)
+
+Update schema:
+
+1. Donor:
+- gender (enum: MALE, FEMALE, OTHER)
+- city (string)
+- state (string)
+- country (string)
+- profession (enum: DOCTOR, BUSINESS, IT, GOVT, OTHER)
+- visited (boolean default false)
+
+2. Donation:
+- amount (number)
+- category (enum: GROCERIES, MEDICINES, EDUCATION, SPONSOR, OTHER)
+- occasion (enum: BIRTHDAY, ANNIVERSARY, FESTIVAL, MEMORIAL, GENERAL)
+- donationType (enum: ONE_TIME, MONTHLY, QUARTERLY)
+- createdAt (date)
+
+-------------------------------------
+STEP 2: REPORT ENGINE
+
+Create API:
+GET /reports
+
+Query params:
+- filters:
+  gender
+  city
+  state
+  country
+  profession
+  category
+  occasion
+  donationType
+  minAmount
+  maxAmount
+  dateFrom
+  dateTo
+  visited
+
+- groupBy:
+  gender | city | state | country | profession | category | occasion
+
+Backend logic:
+- filter donors + donations
+- group by selected field
+- return:
+  groupName
+  donorCount
+  totalAmount
+
+-------------------------------------
+STEP 3: EXPORT SYSTEM
+
+Create:
+GET /reports/export
+
+- Accept same filters + groupBy
+
+Excel:
+- Sheet 1: Summary (grouped)
+- Sheet 2: Donor list (name, phone, city, amount)
+
+PDF:
+- Simple table (group + amount)
+
+Only allow if user.role === 'FOUNDER'
+
+-------------------------------------
+STEP 4: SAVE REPORTS
+
+Create table:
+ReportHistory:
+- id
+- name
+- filters (JSON)
+- groupBy
+- createdAt
+
+API:
+POST /reports/save
+GET /reports/history
+
+-------------------------------------
+STEP 5: ANALYTICS API
+
+Create:
+GET /reports/analytics
+
+Return:
+
+1. monthlyDonations (last 12 months)
+2. professionStats
+3. categoryStats
+4. occasionStats
+5. geoStats:
+   - hyderabad
+   - telanganaOther
+   - otherStates
+   - international
+6. repeatVsOneTime
+7. topDonors
+8. donationTrend
+
+-------------------------------------
+STEP 6: DAILY ACTIONS
+
+Create:
+GET /dashboard/today
+
+Return:
+
+1. todayStats:
+- totalDonationsToday
+- totalDonorsToday
+- totalAmountToday
+
+2. todayEvents:
+- birthdays
+- anniversaries
+- memorials
+- specialDays
+
+3. todayTasks:
+- followUps
+- pledgeReminders
+- monthlyDonorReminders
+
+-------------------------------------
+STEP 7: FRONTEND
+
+1. REPORT PAGE (/dashboard/reports):
+- filters section
+- groupBy dropdown
+- result table
+- export buttons
+- save report button
+
+2. ANALYTICS PAGE:
+- charts:
+  - monthly trend (line)
+  - profession (bar)
+  - category (pie)
+  - geo (pie)
+  - occasion (bar)
+
+3. DAILY ACTIONS PAGE:
+- today stats cards
+- today events
+- tasks list
+
+-------------------------------------
+IMPORTANT RULES:
+
+- Keep UI simple (no clutter)
+- Use tables for reports
+- Charts only in analytics
+- Dashboard should remain clean

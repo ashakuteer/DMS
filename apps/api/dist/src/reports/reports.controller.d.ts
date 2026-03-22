@@ -1,8 +1,73 @@
 import { Response } from 'express';
 import { ReportsService } from './reports.service';
+import { SmartReportsService } from './smart-reports.service';
 export declare class ReportsController {
     private readonly reportsService;
-    constructor(reportsService: ReportsService);
+    private readonly smartReportsService;
+    constructor(reportsService: ReportsService, smartReportsService: SmartReportsService);
+    getSmartReport(groupBy?: string, gender?: string, city?: string, state?: string, country?: string, profession?: string, category?: string, occasion?: string, donationType?: string, minAmount?: string, maxAmount?: string, dateFrom?: string, dateTo?: string, visited?: string): Promise<import("./smart-reports.service").SmartReportRow[]>;
+    exportSmartReport(format?: string, groupBy?: string, gender?: string, city?: string, state?: string, country?: string, profession?: string, category?: string, occasion?: string, donationType?: string, minAmount?: string, maxAmount?: string, dateFrom?: string, dateTo?: string, visited?: string, res?: Response): Promise<void>;
+    saveReport(body: {
+        name: string;
+        filters: any;
+        groupBy: string;
+    }): Promise<{
+        name: string;
+        id: string;
+        createdAt: Date;
+        filters: import("@prisma/client/runtime/library").JsonValue;
+        groupBy: string;
+    }>;
+    getReportHistory(): Promise<{
+        name: string;
+        id: string;
+        createdAt: Date;
+        filters: import("@prisma/client/runtime/library").JsonValue;
+        groupBy: string;
+    }[]>;
+    getAnalytics(): Promise<{
+        monthlyDonations: {
+            month: string;
+            amount: number;
+            count: number;
+        }[];
+        professionStats: {
+            profession: string;
+            count: number;
+        }[];
+        categoryStats: {
+            amount: number;
+            count: number;
+            category: string;
+        }[];
+        occasionStats: {
+            amount: number;
+            count: number;
+            occasion: string;
+        }[];
+        geoStats: {
+            hyderabad: number;
+            telanganaOther: number;
+            otherStates: number;
+            international: number;
+        };
+        repeatVsOneTime: {
+            repeat: number;
+            oneTime: number;
+        };
+        topDonors: {
+            id: string;
+            name: string;
+            donorCode: string;
+            city: string;
+            totalAmount: any;
+            donationCount: number;
+        }[];
+        donationTrend: {
+            month: string;
+            amount: number;
+        }[];
+    }>;
     getMonthlyDonations(startDate?: string, endDate?: string, page?: string, limit?: string, search?: string): Promise<{
         data: {
             id: string;

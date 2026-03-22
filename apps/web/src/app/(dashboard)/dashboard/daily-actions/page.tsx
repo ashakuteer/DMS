@@ -1,10 +1,30 @@
 "use client"
 
-import { RefreshCw, Loader2, CheckSquare, Square, ClipboardList, UserCircle } from "lucide-react"
+import { RefreshCw, Loader2, CheckSquare, Square, ClipboardList, UserCircle, Cake, IndianRupee, Users, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTaskInbox, TaskItem, StaffUser } from "./hooks/useTaskInbox"
 import { useEffect, useState } from "react"
 import { API_URL } from "@/lib/api-config"
+import { fetchWithAuth } from "@/lib/auth"
+
+interface TodayStats {
+  totalDonationsToday: number;
+  totalDonorsToday: number;
+  totalAmountToday: number;
+}
+
+interface TodayEvent {
+  id: string;
+  name: string;
+  phone: string;
+  city: string;
+}
+
+interface TodayData {
+  todayStats: TodayStats;
+  todayEvents: { birthdays: TodayEvent[]; anniversaries: TodayEvent[] };
+  todayTasks: { followUps: any[]; pledgeReminders: any[]; monthlyDonorReminders: any[] };
+}
 
 const TYPE_LABELS: Record<string, string> = {
   BIRTHDAY: "Birthday",
@@ -183,11 +203,19 @@ function TaskCard({
 export default function DailyActionsPage() {
   const { data, loading, toggling, assigning, toggleStatus, assignTask, refresh } = useTaskInbox()
   const [staffList, setStaffList] = useState<StaffUser[]>([])
+  const [todayData, setTodayData] = useState<TodayData | null>(null)
 
   useEffect(() => {
     fetch(`${API_URL}/api/tasks/staff`)
       .then((r) => r.ok ? r.json() : [])
       .then((list: StaffUser[]) => setStaffList(list))
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    fetchWithAuth('/api/dashboard/today')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setTodayData(d); })
       .catch(() => {})
   }, [])
 
@@ -250,6 +278,61 @@ export default function DailyActionsPage() {
           Refresh
         </Button>
       </div>
+
+      {/* Today Stats from Dashboard */}
+      {todayData && (
+        <div data-testid="today-stats-section" className="space-y-3">
+          <div className="grid grid-cols-3 gap-3">
+            <div data-testid="today-stat-donations" className="bg-white rounded-lg p-4 text-center border border-gray-200">
+              <IndianRupee className="h-4 w-4 mx-auto mb-1 text-teal-600" />
+              <p className="text-xl font-bold text-gray-800">₹{todayData.todayStats.totalAmountToday.toLocaleString('en-IN')}</p>
+              <p className="text-xs text-gray-500 mt-0.5">Donations Today</p>
+            </div>
+            <div data-testid="today-stat-donors" className="bg-white rounded-lg p-4 text-center border border-gray-200">
+              <Users className="h-4 w-4 mx-auto mb-1 text-blue-600" />
+              <p className="text-xl font-bold text-gray-800">{todayData.todayStats.totalDonorsToday}</p>
+              <p className="text-xs text-gray-500 mt-0.5">Donors Today</p>
+            </div>
+            <div data-testid="today-stat-reminders" className="bg-white rounded-lg p-4 text-center border border-gray-200">
+              <Bell className="h-4 w-4 mx-auto mb-1 text-orange-500" />
+              <p className="text-xl font-bold text-gray-800">{todayData.todayTasks.monthlyDonorReminders.length}</p>
+              <p className="text-xs text-gray-500 mt-0.5">Reminders (7d)</p>
+            </div>
+          </div>
+          {todayData.todayEvents.birthdays.length > 0 && (
+            <div data-testid="today-birthdays" className="bg-pink-50 rounded-lg border border-pink-100 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Cake className="h-4 w-4 text-pink-600" />
+                <h3 className="text-sm font-semibold text-pink-800">Birthdays Today ({todayData.todayEvents.birthdays.length})</h3>
+              </div>
+              <div className="space-y-2">
+                {todayData.todayEvents.birthdays.map((b) => (
+                  <div key={b.id} data-testid={`birthday-${b.id}`} className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-gray-800">{b.name}</span>
+                    <span className="text-gray-500">{b.phone} · {b.city}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {todayData.todayTasks.pledgeReminders.length > 0 && (
+            <div data-testid="today-pledge-reminders" className="bg-purple-50 rounded-lg border border-purple-100 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Bell className="h-4 w-4 text-purple-600" />
+                <h3 className="text-sm font-semibold text-purple-800">Pledge Follow-ups Due ({todayData.todayTasks.pledgeReminders.length})</h3>
+              </div>
+              <div className="space-y-2">
+                {todayData.todayTasks.pledgeReminders.slice(0, 5).map((p) => (
+                  <div key={p.id} data-testid={`pledge-${p.id}`} className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-gray-800">{p.donorName || p.title}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${p.priority === 'HIGH' || p.priority === 'URGENT' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>{p.priority}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-3">
         <div

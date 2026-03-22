@@ -18,6 +18,7 @@ const dashboard_insights_service_1 = require("./dashboard.insights.service");
 const dashboard_actions_service_1 = require("./dashboard.actions.service");
 const dashboard_impact_service_1 = require("./dashboard.impact.service");
 const dashboard_retention_service_1 = require("./dashboard.retention.service");
+const dashboard_today_service_1 = require("./dashboard.today.service");
 let DashboardModule = class DashboardModule {
 };
 exports.DashboardModule = DashboardModule;
@@ -33,6 +34,7 @@ exports.DashboardModule = DashboardModule = __decorate([
             dashboard_actions_service_1.DashboardActionsService,
             dashboard_impact_service_1.DashboardImpactService,
             dashboard_retention_service_1.DashboardRetentionService,
+            dashboard_today_service_1.DashboardTodayService,
         ],
         exports: [dashboard_service_1.DashboardService],
     })

@@ -100,6 +100,8 @@ model Donor {
   country            String?                @default("India")
   pincode            String?
   profession         String?
+  professionType     Profession?
+  visited            Boolean                @default(false)
   approximateAge     Int?
   gender             Gender?
   incomeSpectrum     IncomeSpectrum?
@@ -250,6 +252,9 @@ model Donation {
   donationType      DonationType       @default(CASH)
   donationMode      DonationMode?
   donationPurpose   DonationPurpose?
+  donationCategory  DonationCategory?
+  donationOccasion  DonationOccasion?
+  scheduleType      DonationSchedule?
   transactionId     String?
   remarks           String?
   quantity          Decimal?           @db.Decimal(10, 2)
@@ -2312,4 +2317,44 @@ enum TaskType {
   PLEDGE
   REMINDER
   MANUAL
+}
+
+enum Profession {
+  DOCTOR
+  BUSINESS
+  IT
+  GOVT
+  OTHER
+}
+
+enum DonationCategory {
+  GROCERIES
+  MEDICINES
+  EDUCATION
+  SPONSOR
+  OTHER
+}
+
+enum DonationOccasion {
+  BIRTHDAY
+  ANNIVERSARY
+  FESTIVAL
+  MEMORIAL
+  GENERAL
+}
+
+enum DonationSchedule {
+  ONE_TIME
+  MONTHLY
+  QUARTERLY
+}
+
+model ReportHistory {
+  id        String   @id @default(uuid())
+  name      String
+  filters   Json
+  groupBy   String
+  createdAt DateTime @default(now())
+
+  @@map("report_history")
 }

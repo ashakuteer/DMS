@@ -1,7 +1,52 @@
 import { DashboardService } from './dashboard.service';
+import { DashboardTodayService } from './dashboard.today.service';
 export declare class DashboardController {
     private readonly dashboardService;
-    constructor(dashboardService: DashboardService);
+    private readonly dashboardTodayService;
+    constructor(dashboardService: DashboardService, dashboardTodayService: DashboardTodayService);
+    getToday(): Promise<{
+        todayStats: {
+            totalDonationsToday: number;
+            totalDonorsToday: number;
+            totalAmountToday: any;
+        };
+        todayEvents: {
+            birthdays: {
+                id: string;
+                name: string;
+                phone: string;
+                city: string;
+            }[];
+            anniversaries: any[];
+            memorials: any[];
+            specialDays: any[];
+        };
+        todayTasks: {
+            followUps: {
+                id: string;
+                title: string;
+                priority: import(".prisma/client").$Enums.TaskPriority;
+                dueDate: Date;
+                status: import(".prisma/client").$Enums.TaskStatus;
+                donorName: string;
+            }[];
+            pledgeReminders: {
+                id: string;
+                title: string;
+                priority: import(".prisma/client").$Enums.TaskPriority;
+                dueDate: Date;
+                status: import(".prisma/client").$Enums.TaskStatus;
+                donorName: string;
+            }[];
+            monthlyDonorReminders: {
+                id: string;
+                title: string;
+                dueDate: Date;
+                donorName: string;
+                donorPhone: string;
+            }[];
+        };
+    }>;
     getSummary(user: any): Promise<{
         stats: {
             totalDonationsFY: number;
@@ -72,6 +117,21 @@ export declare class DashboardController {
         };
         adminInsights: any[];
         reminders: {
+            donation: {
+                id: string;
+                donationDate: Date;
+                donationAmount: import("@prisma/client/runtime/library").Decimal;
+                receiptNumber: string;
+            };
+            id: string;
+            donorId: string;
+            createdById: string;
+            createdAt: Date;
+            updatedAt: Date;
+            createdBy: {
+                id: string;
+                name: string;
+            };
             donor: {
                 id: string;
                 donorCode: string;
@@ -79,28 +139,13 @@ export declare class DashboardController {
                 lastName: string;
                 primaryPhone: string;
             };
-            donation: {
-                id: string;
-                receiptNumber: string;
-                donationAmount: import("@prisma/client/runtime/library").Decimal;
-                donationDate: Date;
-            };
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
+            title: string;
+            description: string;
             type: string;
             status: import(".prisma/client").$Enums.ReminderStatus;
-            donorId: string;
-            donationId: string;
-            description: string;
-            createdById: string;
-            createdBy: {
-                name: string;
-                id: string;
-            };
-            title: string;
             dueDate: Date;
             completedAt: Date;
+            donationId: string;
         }[];
     }>;
     getStats(): Promise<{

@@ -289,6 +289,8 @@ export default function AnalyticsPage() {
   const [loadingSegment, setLoadingSegment] = useState(false);
   const [exporting, setExporting] = useState<string | null>(null);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [extAnalytics, setExtAnalytics] = useState<any | null>(null);
+  const [loadingExtAnalytics, setLoadingExtAnalytics] = useState(false);
   const defaultFrom = new Date(new Date().getFullYear() - 1, new Date().getMonth(), new Date().getDate()).toISOString().split("T")[0];
   const defaultTo = new Date().toISOString().split("T")[0];
   const [exportFrom, setExportFrom] = useState(defaultFrom);
@@ -340,10 +342,21 @@ export default function AnalyticsPage() {
     }
   }, [toast]);
 
+  const fetchExtAnalytics = useCallback(async () => {
+    setLoadingExtAnalytics(true);
+    try {
+      const res = await fetchWithAuth('/api/reports/analytics');
+      if (res.ok) setExtAnalytics(await res.json());
+    } catch (e) { console.error(e); } finally {
+      setLoadingExtAnalytics(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchSummary();
     fetchCharts();
-  }, [fetchSummary, fetchCharts]);
+    fetchExtAnalytics();
+  }, [fetchSummary, fetchCharts, fetchExtAnalytics]);
 
   useEffect(() => {
     fetchSegment(activeTab);
@@ -647,6 +660,160 @@ export default function AnalyticsPage() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* Extended Analytics Charts from Reports API */}
+      {loadingExtAnalytics ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}><CardContent className="pt-6"><Skeleton className="h-52 w-full" /></CardContent></Card>
+          ))}
+        </div>
+      ) : extAnalytics && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Monthly Donation Trend */}
+          <Card className="lg:col-span-2" data-testid="chart-ext-monthly-trend">
+            <CardHeader>
+              <CardTitle className="text-base">Monthly Donation Trend (12 Months)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={260}>
+                <AreaChart data={extAnalytics.monthlyDonations}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+                  <YAxis tickFormatter={(v: number) => `₹${(v/1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
+                  <Tooltip formatter={(v: number) => fmtCurrency(v)} />
+                  <Area type="monotone" dataKey="amount" name="Amount" stroke={CHART_COLORS[0]} fill={CHART_COLORS[0]} fillOpacity={0.15} strokeWidth={2} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* Profession Distribution */}
+          {extAnalytics.professionStats?.length > 0 && (
+            <Card data-testid="chart-ext-profession">
+              <CardHeader>
+                <CardTitle className="text-base">Donor Profession Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={extAnalytics.professionStats} layout="vertical">
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis type="number" tick={{ fontSize: 11 }} />
+                    <YAxis dataKey="profession" type="category" tick={{ fontSize: 11 }} width={80} />
+                    <Tooltip />
+                    <Bar dataKey="count" name="Donors" radius={[0,4,4,0]}>
+                      {extAnalytics.professionStats.map((_: any, i: number) => (
+                        <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Donation Category Distribution */}
+          {extAnalytics.categoryStats?.length > 0 && (
+            <Card data-testid="chart-ext-category">
+              <CardHeader>
+                <CardTitle className="text-base">Donations by Category (12 Months)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie data={extAnalytics.categoryStats} dataKey="amount" nameKey="category" cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={2}>
+                      {extAnalytics.categoryStats.map((_: any, i: number) => (
+                        <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(v: number) => fmtCurrency(v)} />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Geographic Distribution */}
+          {extAnalytics.geoStats && (
+            <Card data-testid="chart-ext-geo">
+              <CardHeader>
+                <CardTitle className="text-base">Donor Geographic Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Hyderabad', value: extAnalytics.geoStats.hyderabad },
+                        { name: 'Telangana (Other)', value: extAnalytics.geoStats.telanganaOther },
+                        { name: 'Other States', value: extAnalytics.geoStats.otherStates },
+                        { name: 'International', value: extAnalytics.geoStats.international },
+                      ]}
+                      dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={2}
+                    >
+                      {[0,1,2,3].map((i) => <Cell key={i} fill={CHART_COLORS[i]} />)}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Occasion Distribution */}
+          {extAnalytics.occasionStats?.length > 0 && (
+            <Card data-testid="chart-ext-occasion">
+              <CardHeader>
+                <CardTitle className="text-base">Donations by Occasion (12 Months)</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={240}>
+                  <BarChart data={extAnalytics.occasionStats}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis dataKey="occasion" tick={{ fontSize: 11 }} />
+                    <YAxis tickFormatter={(v: number) => `₹${(v/1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
+                    <Tooltip formatter={(v: number) => fmtCurrency(v)} />
+                    <Bar dataKey="amount" name="Amount" radius={[4,4,0,0]}>
+                      {extAnalytics.occasionStats.map((_: any, i: number) => (
+                        <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Repeat vs One-Time */}
+          {extAnalytics.repeatVsOneTime && (
+            <Card data-testid="chart-ext-repeat">
+              <CardHeader>
+                <CardTitle className="text-base">Repeat vs One-Time Donors</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={240}>
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'Repeat Donors', value: extAnalytics.repeatVsOneTime.repeat },
+                        { name: 'One-Time Donors', value: extAnalytics.repeatVsOneTime.oneTime },
+                      ]}
+                      dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={2}
+                    >
+                      <Cell fill={CHART_COLORS[0]} />
+                      <Cell fill={CHART_COLORS[4]} />
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
 

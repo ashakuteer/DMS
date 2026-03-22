@@ -5,11 +5,21 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Role } from '@prisma/client';
 import { DashboardService } from './dashboard.service';
+import { DashboardTodayService } from './dashboard.today.service';
 
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DashboardController {
-  constructor(private readonly dashboardService: DashboardService) {}
+  constructor(
+    private readonly dashboardService: DashboardService,
+    private readonly dashboardTodayService: DashboardTodayService,
+  ) {}
+
+  @Get('today')
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  async getToday() {
+    return this.dashboardTodayService.getToday();
+  }
 
   /**
    * Single unified endpoint — replaces 13+ individual dashboard fetches.

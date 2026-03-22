@@ -9,6 +9,7 @@ import { DashboardInsightsService } from "./dashboard.insights.service";
 import { DashboardActionsService } from "./dashboard.actions.service";
 import { DashboardImpactService } from "./dashboard.impact.service";
 import { DashboardRetentionService } from "./dashboard.retention.service";
+import { DashboardTodayService } from "./dashboard.today.service";
 
 @Module({
   imports: [PrismaModule, CommunicationLogModule],
@@ -21,6 +22,7 @@ import { DashboardRetentionService } from "./dashboard.retention.service";
     DashboardActionsService,
     DashboardImpactService,
     DashboardRetentionService,
+    DashboardTodayService,
   ],
   exports: [DashboardService],
 })

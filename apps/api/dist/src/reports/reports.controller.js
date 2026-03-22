@@ -19,9 +19,91 @@ const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 const client_1 = require("@prisma/client");
 const reports_service_1 = require("./reports.service");
+const smart_reports_service_1 = require("./smart-reports.service");
 let ReportsController = class ReportsController {
-    constructor(reportsService) {
+    constructor(reportsService, smartReportsService) {
         this.reportsService = reportsService;
+        this.smartReportsService = smartReportsService;
+    }
+    async getSmartReport(groupBy = 'gender', gender, city, state, country, profession, category, occasion, donationType, minAmount, maxAmount, dateFrom, dateTo, visited) {
+        const filters = {};
+        if (gender)
+            filters.gender = gender;
+        if (city)
+            filters.city = city;
+        if (state)
+            filters.state = state;
+        if (country)
+            filters.country = country;
+        if (profession)
+            filters.profession = profession;
+        if (category)
+            filters.category = category;
+        if (occasion)
+            filters.occasion = occasion;
+        if (donationType)
+            filters.donationType = donationType;
+        if (minAmount)
+            filters.minAmount = parseFloat(minAmount);
+        if (maxAmount)
+            filters.maxAmount = parseFloat(maxAmount);
+        if (dateFrom)
+            filters.dateFrom = dateFrom;
+        if (dateTo)
+            filters.dateTo = dateTo;
+        if (visited !== undefined)
+            filters.visited = visited === 'true';
+        return this.smartReportsService.getSmartReport(filters, groupBy);
+    }
+    async exportSmartReport(format = 'excel', groupBy = 'gender', gender, city, state, country, profession, category, occasion, donationType, minAmount, maxAmount, dateFrom, dateTo, visited, res) {
+        const filters = {};
+        if (gender)
+            filters.gender = gender;
+        if (city)
+            filters.city = city;
+        if (state)
+            filters.state = state;
+        if (country)
+            filters.country = country;
+        if (profession)
+            filters.profession = profession;
+        if (category)
+            filters.category = category;
+        if (occasion)
+            filters.occasion = occasion;
+        if (donationType)
+            filters.donationType = donationType;
+        if (minAmount)
+            filters.minAmount = parseFloat(minAmount);
+        if (maxAmount)
+            filters.maxAmount = parseFloat(maxAmount);
+        if (dateFrom)
+            filters.dateFrom = dateFrom;
+        if (dateTo)
+            filters.dateTo = dateTo;
+        if (visited !== undefined)
+            filters.visited = visited === 'true';
+        if (format === 'pdf') {
+            const buffer = await this.smartReportsService.exportPdf(filters, groupBy);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="report-${Date.now()}.pdf"`);
+            res.send(buffer);
+        }
+        else {
+            const buffer = await this.smartReportsService.exportExcel(filters, groupBy);
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', `attachment; filename="report-${Date.now()}.xlsx"`);
+            res.send(buffer);
+        }
+    }
+    async saveReport(body) {
+        return this.smartReportsService.saveReport(body.name, body.filters, body.groupBy);
+    }
+    async getReportHistory() {
+        return this.smartReportsService.getReportHistory();
+    }
+    async getAnalytics() {
+        return this.smartReportsService.getAnalytics();
     }
     async getMonthlyDonations(startDate, endDate, page, limit, search) {
         return this.reportsService.getMonthlyDonations({ startDate, endDate }, { page: parseInt(page || '1'), limit: parseInt(limit || '20'), search });
@@ -128,6 +210,72 @@ let ReportsController = class ReportsController {
     }
 };
 exports.ReportsController = ReportsController;
+__decorate([
+    (0, common_1.Get)(),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    __param(0, (0, common_1.Query)('groupBy')),
+    __param(1, (0, common_1.Query)('gender')),
+    __param(2, (0, common_1.Query)('city')),
+    __param(3, (0, common_1.Query)('state')),
+    __param(4, (0, common_1.Query)('country')),
+    __param(5, (0, common_1.Query)('profession')),
+    __param(6, (0, common_1.Query)('category')),
+    __param(7, (0, common_1.Query)('occasion')),
+    __param(8, (0, common_1.Query)('donationType')),
+    __param(9, (0, common_1.Query)('minAmount')),
+    __param(10, (0, common_1.Query)('maxAmount')),
+    __param(11, (0, common_1.Query)('dateFrom')),
+    __param(12, (0, common_1.Query)('dateTo')),
+    __param(13, (0, common_1.Query)('visited')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String, String, String, String, String, String]),
+    __metadata("design:returntype", Promise)
+], ReportsController.prototype, "getSmartReport", null);
+__decorate([
+    (0, common_1.Get)('export'),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER),
+    __param(0, (0, common_1.Query)('format')),
+    __param(1, (0, common_1.Query)('groupBy')),
+    __param(2, (0, common_1.Query)('gender')),
+    __param(3, (0, common_1.Query)('city')),
+    __param(4, (0, common_1.Query)('state')),
+    __param(5, (0, common_1.Query)('country')),
+    __param(6, (0, common_1.Query)('profession')),
+    __param(7, (0, common_1.Query)('category')),
+    __param(8, (0, common_1.Query)('occasion')),
+    __param(9, (0, common_1.Query)('donationType')),
+    __param(10, (0, common_1.Query)('minAmount')),
+    __param(11, (0, common_1.Query)('maxAmount')),
+    __param(12, (0, common_1.Query)('dateFrom')),
+    __param(13, (0, common_1.Query)('dateTo')),
+    __param(14, (0, common_1.Query)('visited')),
+    __param(15, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, Object]),
+    __metadata("design:returntype", Promise)
+], ReportsController.prototype, "exportSmartReport", null);
+__decorate([
+    (0, common_1.Post)('save'),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ReportsController.prototype, "saveReport", null);
+__decorate([
+    (0, common_1.Get)('history'),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], ReportsController.prototype, "getReportHistory", null);
+__decorate([
+    (0, common_1.Get)('analytics'),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], ReportsController.prototype, "getAnalytics", null);
 __decorate([
     (0, common_1.Get)('monthly-donations'),
     (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN),
@@ -304,6 +452,7 @@ __decorate([
 exports.ReportsController = ReportsController = __decorate([
     (0, common_1.Controller)('reports'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    __metadata("design:paramtypes", [reports_service_1.ReportsService])
+    __metadata("design:paramtypes", [reports_service_1.ReportsService,
+        smart_reports_service_1.SmartReportsService])
 ], ReportsController);
 //# sourceMappingURL=reports.controller.js.map

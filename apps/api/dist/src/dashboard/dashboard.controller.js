@@ -20,9 +20,14 @@ const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 const current_user_decorator_1 = require("../auth/decorators/current-user.decorator");
 const client_1 = require("@prisma/client");
 const dashboard_service_1 = require("./dashboard.service");
+const dashboard_today_service_1 = require("./dashboard.today.service");
 let DashboardController = class DashboardController {
-    constructor(dashboardService) {
+    constructor(dashboardService, dashboardTodayService) {
         this.dashboardService = dashboardService;
+        this.dashboardTodayService = dashboardTodayService;
+    }
+    async getToday() {
+        return this.dashboardTodayService.getToday();
     }
     async getSummary(user) {
         return this.dashboardService.getSummary(user);
@@ -77,6 +82,13 @@ let DashboardController = class DashboardController {
     }
 };
 exports.DashboardController = DashboardController;
+__decorate([
+    (0, common_1.Get)('today'),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], DashboardController.prototype, "getToday", null);
 __decorate([
     (0, common_1.Get)('summary'),
     (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
@@ -205,6 +217,7 @@ __decorate([
 exports.DashboardController = DashboardController = __decorate([
     (0, common_1.Controller)('dashboard'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    __metadata("design:paramtypes", [dashboard_service_1.DashboardService])
+    __metadata("design:paramtypes", [dashboard_service_1.DashboardService,
+        dashboard_today_service_1.DashboardTodayService])
 ], DashboardController);
 //# sourceMappingURL=dashboard.controller.js.map
