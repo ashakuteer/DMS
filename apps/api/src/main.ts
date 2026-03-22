@@ -20,32 +20,20 @@ import * as express from "express";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const allowedOrigins = [
-    "http://localhost:3000",
-    "http://localhost:5000",
-    "https://dms-sepia-gamma.vercel.app",
-  ];
-
   app.enableCors({
-    origin: (origin, callback) => {
-      // Allow server-to-server requests (no origin header)
-      if (!origin) return callback(null, true);
-      // Allow explicitly listed origins
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      // Allow all Replit preview / deployment domains
-      if (
-        /\.replit\.dev$/.test(origin) ||
-        /\.repl\.co$/.test(origin) ||
-        /\.replit\.app$/.test(origin)
-      ) {
-        return callback(null, true);
-      }
-      return callback(new Error(`CORS: origin ${origin} not allowed`), false);
-    },
+    origin: [
+      "http://localhost:3000",
+      "https://dms-sepia-gamma.vercel.app",
+    ],
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: ["Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"],
+  });
+
+  app.use((req: any, res: any, next: any) => {
+    res.header("Access-Control-Allow-Origin", "https://dms-sepia-gamma.vercel.app");
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    next();
   });
 
   app.setGlobalPrefix("api");
