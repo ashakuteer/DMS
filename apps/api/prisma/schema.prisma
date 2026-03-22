@@ -63,6 +63,7 @@ model User {
   ngoDocAccessLogs           NgoDocumentAccessLog[]   @relation("NgoDocAccessBy")
   assignedTasks              StaffTask[]              @relation("TaskAssignedTo")
   createdTasks               StaffTask[]              @relation("TaskCreatedBy")
+  centralTasks               Task[]                   @relation("TaskAssignedUser")
   performanceSnapshots       StaffPerformance[]       @relation("StaffPerformanceUser")
   communicationMessages      CommunicationMessage[]   @relation("CommunicationMessageCreatedBy")
 
@@ -174,6 +175,7 @@ model Donor {
   followUpReminders      FollowUpReminder[]
   linkedTasks            StaffTask[]           @relation("TaskLinkedDonor")
   communicationMessages  CommunicationMessage[] @relation("CommunicationMessageDonor")
+  tasks                  Task[]                @relation("TaskDonor")
 
   individualProfile      IndividualDonorProfile?
   volunteerProfile       VolunteerProfile?
@@ -455,6 +457,7 @@ model Beneficiary {
   documents                Document[]
   progressReports          BeneficiaryProgressReport[]
   campaignBeneficiaries    CampaignBeneficiary[]
+  tasks                    Task[]                     @relation("TaskBeneficiary")
 
   @@index([code])
   @@index([homeType])
@@ -2269,4 +2272,44 @@ model SalaryPayment {
 
   @@unique([staffId, month, year])
   @@map("salary_payments")
+}
+
+// ─── Central Task Engine ─────────────────────────────────────────
+
+model Task {
+  id              String       @id @default(uuid())
+  title           String
+  description     String?
+  type            TaskType
+  status          TaskStatus   @default(PENDING)
+  priority        TaskPriority @default(MEDIUM)
+  dueDate         DateTime
+  completedAt     DateTime?
+  donorId         String?
+  beneficiaryId   String?
+  assignedTo      String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  donor           Donor?       @relation("TaskDonor", fields: [donorId], references: [id], onDelete: SetNull)
+  beneficiary     Beneficiary? @relation("TaskBeneficiary", fields: [beneficiaryId], references: [id], onDelete: SetNull)
+  assignedUser    User?        @relation("TaskAssignedUser", fields: [assignedTo], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([type])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([donorId])
+  @@index([beneficiaryId])
+  @@index([assignedTo])
+  @@index([status, dueDate])
+  @@map("tasks")
+}
+
+enum TaskType {
+  BIRTHDAY
+  FOLLOW_UP
+  PLEDGE
+  REMINDER
+  MANUAL
 }
