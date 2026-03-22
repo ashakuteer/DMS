@@ -43,3 +43,9 @@ export class UpdateTaskStatusDto {
   @IsEnum(TaskStatus)
   status: TaskStatus;
 }
+
+export class UpdateTaskDto {
+  @IsOptional()
+  @IsString()
+  assignedTo?: string;
+}

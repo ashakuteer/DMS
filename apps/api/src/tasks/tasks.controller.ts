@@ -14,7 +14,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { Role, TaskStatus } from '@prisma/client';
 import { TasksService } from './tasks.service';
-import { CreateTaskDto, UpdateTaskStatusDto } from './tasks.dto';
+import { CreateTaskDto, UpdateTaskStatusDto, UpdateTaskDto } from './tasks.dto';
 
 @Controller('tasks')
 export class TasksController {
@@ -34,6 +34,12 @@ export class TasksController {
   }
 
   @Public()
+  @Get('staff')
+  getStaffList() {
+    return this.tasksService.getStaffList();
+  }
+
+  @Public()
   @Get()
   findAll(
     @Query('status') status: string,
@@ -48,5 +54,12 @@ export class TasksController {
   @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   updateStatus(@Param('id') id: string, @Body() dto: UpdateTaskStatusDto) {
     return this.tasksService.updateStatus(id, dto.status as TaskStatus);
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  updateTask(@Param('id') id: string, @Body() dto: UpdateTaskDto) {
+    return this.tasksService.updateTask(id, dto);
   }
 }

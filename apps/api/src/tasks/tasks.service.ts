@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { TaskStatus, TaskPriority, TaskType } from '@prisma/client';
-import { CreateTaskDto } from './tasks.dto';
+import { TaskStatus, TaskPriority, TaskType, Role } from '@prisma/client';
+import { CreateTaskDto, UpdateTaskDto } from './tasks.dto';
 
 @Injectable()
 export class TasksService {
@@ -115,6 +115,29 @@ export class TasksService {
     const updated = await this.prisma.task.update({
       where: { id },
       data,
+      include: this.includeRelations,
+    });
+    return this.resolveStatus(updated);
+  }
+
+  async getStaffList() {
+    return this.prisma.user.findMany({
+      where: {
+        isActive: true,
+        role: { in: [Role.STAFF, Role.ADMIN, Role.FOUNDER] },
+      },
+      select: { id: true, name: true, role: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async updateTask(id: string, dto: UpdateTaskDto) {
+    await this.findOne(id);
+    const updated = await this.prisma.task.update({
+      where: { id },
+      data: {
+        assignedTo: dto.assignedTo ?? null,
+      },
       include: this.includeRelations,
     });
     return this.resolveStatus(updated);

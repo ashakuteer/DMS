@@ -1,8 +1,10 @@
 "use client"
 
-import { RefreshCw, Loader2, CheckSquare, Square, ClipboardList } from "lucide-react"
+import { RefreshCw, Loader2, CheckSquare, Square, ClipboardList, UserCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useTaskInbox, TaskItem } from "./hooks/useTaskInbox"
+import { useTaskInbox, TaskItem, StaffUser } from "./hooks/useTaskInbox"
+import { useEffect, useState } from "react"
+import { API_URL } from "@/lib/api-config"
 
 const TYPE_LABELS: Record<string, string> = {
   BIRTHDAY: "Birthday",
@@ -55,12 +57,18 @@ function TaskCard({
   task,
   isOverdue,
   isToggling,
+  isAssigning,
+  staffList,
   onToggle,
+  onAssign,
 }: {
   task: TaskItem
   isOverdue: boolean
   isToggling: boolean
+  isAssigning: boolean
+  staffList: StaffUser[]
   onToggle: () => void
+  onAssign: (userId: string | null) => void
 }) {
   const isCompleted = task.status === "COMPLETED"
 
@@ -120,6 +128,33 @@ function TaskCard({
             {task.priority}
           </span>
         </div>
+
+        <div className="flex items-center gap-1 mt-2">
+          <UserCircle className="h-3.5 w-3.5 text-gray-400 flex-shrink-0" />
+          {staffList.length > 0 ? (
+            <select
+              data-testid={`assign-select-${task.id}`}
+              value={task.assignedTo ?? ""}
+              disabled={isAssigning}
+              onChange={(e) => onAssign(e.target.value || null)}
+              className="text-xs text-gray-500 bg-transparent border-none outline-none cursor-pointer hover:text-gray-700 disabled:opacity-50 max-w-[160px]"
+            >
+              <option value="">Unassigned</option>
+              {staffList.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <span
+              data-testid={`assigned-name-${task.id}`}
+              className="text-xs text-gray-400"
+            >
+              {task.assignedUser?.name ?? "Unassigned"}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex-shrink-0 text-right">
@@ -146,7 +181,15 @@ function TaskCard({
 }
 
 export default function DailyActionsPage() {
-  const { data, loading, toggling, toggleStatus, refresh } = useTaskInbox()
+  const { data, loading, toggling, assigning, toggleStatus, assignTask, refresh } = useTaskInbox()
+  const [staffList, setStaffList] = useState<StaffUser[]>([])
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/tasks/staff`)
+      .then((r) => r.ok ? r.json() : [])
+      .then((list: StaffUser[]) => setStaffList(list))
+      .catch(() => {})
+  }, [])
 
   if (loading) {
     return (
@@ -168,7 +211,6 @@ export default function DailyActionsPage() {
   }
 
   const overdueGroup = sortByPriorityThenDate(data.overdue)
-
   const todayPending = sortByPriorityThenDate(
     data.dueToday.filter((t) => t.status !== "COMPLETED")
   )
@@ -180,6 +222,21 @@ export default function DailyActionsPage() {
   const totalCount = data.total
   const overdueCount = overdueGroup.length
   const isEmpty = overdueGroup.length === 0 && todayPending.length === 0 && completedGroup.length === 0
+
+  function renderCard(task: TaskItem, isOverdue: boolean) {
+    return (
+      <TaskCard
+        key={task.id}
+        task={task}
+        isOverdue={isOverdue}
+        isToggling={toggling.has(task.id)}
+        isAssigning={assigning.has(task.id)}
+        staffList={staffList}
+        onToggle={() => toggleStatus(task.id, task.status)}
+        onAssign={(userId) => assignTask(task.id, userId)}
+      />
+    )
+  }
 
   return (
     <div className="space-y-5 max-w-3xl mx-auto">
@@ -236,45 +293,21 @@ export default function DailyActionsPage() {
             {overdueGroup.length > 0 && (
               <div data-testid="section-overdue" className="mb-4">
                 <SectionHeader label="🔴 Overdue" />
-                {overdueGroup.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    isOverdue={true}
-                    isToggling={toggling.has(task.id)}
-                    onToggle={() => toggleStatus(task.id, task.status)}
-                  />
-                ))}
+                {overdueGroup.map((task) => renderCard(task, true))}
               </div>
             )}
 
             {todayPending.length > 0 && (
               <div data-testid="section-today" className="mb-4">
                 <SectionHeader label="🟡 Due Today" />
-                {todayPending.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    isOverdue={false}
-                    isToggling={toggling.has(task.id)}
-                    onToggle={() => toggleStatus(task.id, task.status)}
-                  />
-                ))}
+                {todayPending.map((task) => renderCard(task, false))}
               </div>
             )}
 
             {completedGroup.length > 0 && (
               <div data-testid="section-completed" className="mb-4">
                 <SectionHeader label="✅ Completed" />
-                {completedGroup.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    isOverdue={false}
-                    isToggling={toggling.has(task.id)}
-                    onToggle={() => toggleStatus(task.id, task.status)}
-                  />
-                ))}
+                {completedGroup.map((task) => renderCard(task, false))}
               </div>
             )}
           </div>

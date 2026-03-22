@@ -4,6 +4,12 @@ import { API_URL } from "@/lib/api-config"
 import { useEffect, useState, useCallback } from "react"
 import { authStorage } from "@/lib/auth"
 
+export type StaffUser = {
+  id: string
+  name: string
+  role: string
+}
+
 export type TaskItem = {
   id: string
   title: string
@@ -15,8 +21,10 @@ export type TaskItem = {
   completedAt: string | null
   donorId: string | null
   beneficiaryId: string | null
+  assignedTo: string | null
   donor: { id: string; donorCode: string; firstName: string; lastName: string } | null
   beneficiary: { id: string; fullName: string } | null
+  assignedUser: { id: string; name: string; email: string } | null
 }
 
 export type TaskInboxData = {
@@ -29,6 +37,7 @@ export function useTaskInbox() {
   const [data, setData] = useState<TaskInboxData | null>(null)
   const [loading, setLoading] = useState(true)
   const [toggling, setToggling] = useState<Set<string>>(new Set())
+  const [assigning, setAssigning] = useState<Set<string>>(new Set())
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -73,9 +82,36 @@ export function useTaskInbox() {
     }
   }, [toggling, fetchData])
 
+  const assignTask = useCallback(async (taskId: string, userId: string | null) => {
+    if (assigning.has(taskId)) return
+    setAssigning((prev) => new Set(prev).add(taskId))
+    try {
+      const token = authStorage.getAccessToken()
+      const res = await fetch(`${API_URL}/api/tasks/${taskId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ assignedTo: userId }),
+      })
+      if (res.ok) {
+        await fetchData()
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setAssigning((prev) => {
+        const next = new Set(prev)
+        next.delete(taskId)
+        return next
+      })
+    }
+  }, [assigning, fetchData])
+
   useEffect(() => {
     fetchData()
   }, [fetchData])
 
-  return { data, loading, toggling, toggleStatus, refresh: fetchData }
+  return { data, loading, toggling, assigning, toggleStatus, assignTask, refresh: fetchData }
 }
