@@ -61,6 +61,13 @@ export class TasksController {
     return this.tasksService.findAll({ status, type, dueDate });
   }
 
+  @Patch(':id/complete')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  completeTask(@Param('id') id: string) {
+    return this.tasksService.updateStatus(id, TaskStatus.COMPLETED);
+  }
+
   @Patch(':id/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)

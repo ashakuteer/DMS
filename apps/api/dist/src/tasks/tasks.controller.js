@@ -43,6 +43,9 @@ let TasksController = class TasksController {
     findAll(status, type, dueDate) {
         return this.tasksService.findAll({ status, type, dueDate });
     }
+    completeTask(id) {
+        return this.tasksService.updateStatus(id, client_1.TaskStatus.COMPLETED);
+    }
     updateStatus(id, dto) {
         return this.tasksService.updateStatus(id, dto.status);
     }
@@ -92,6 +95,15 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String]),
     __metadata("design:returntype", void 0)
 ], TasksController.prototype, "findAll", null);
+__decorate([
+    (0, common_1.Patch)(':id/complete'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], TasksController.prototype, "completeTask", null);
 __decorate([
     (0, common_1.Patch)(':id/status'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

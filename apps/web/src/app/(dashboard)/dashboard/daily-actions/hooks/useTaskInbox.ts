@@ -4,114 +4,167 @@ import { API_URL } from "@/lib/api-config"
 import { useEffect, useState, useCallback } from "react"
 import { authStorage } from "@/lib/auth"
 
-export type StaffUser = {
+export type TaskStatus = "PENDING" | "COMPLETED" | "OVERDUE" | "IN_PROGRESS" | "MISSED"
+export type TaskType = "BIRTHDAY" | "FOLLOW_UP" | "PLEDGE" | "REMINDER" | "MANUAL" | "GENERAL"
+export type TaskPriority = "URGENT" | "HIGH" | "MEDIUM" | "LOW"
+
+export interface TaskItem {
+  id: string
+  title: string
+  description: string | null
+  type: TaskType
+  status: TaskStatus
+  priority: TaskPriority
+  dueDate: string
+  completedAt: string | null
+  donorId: string | null
+  assignedTo: string | null
+  donor: {
+    id: string
+    donorCode: string
+    firstName: string
+    lastName: string
+    primaryPhone: string | null
+  } | null
+  assignedUser: { id: string; name: string; email: string } | null
+}
+
+export interface CreateTaskInput {
+  title: string
+  type: TaskType
+  priority: TaskPriority
+  dueDate: string
+  description?: string
+  donorId?: string
+}
+
+export interface StaffUser {
   id: string
   name: string
   role: string
 }
 
-export type TaskItem = {
-  id: string
-  title: string
-  description: string | null
-  type: string
-  status: string
-  priority: string
-  dueDate: string
-  completedAt: string | null
-  donorId: string | null
-  beneficiaryId: string | null
-  assignedTo: string | null
-  donor: { id: string; donorCode: string; firstName: string; lastName: string } | null
-  beneficiary: { id: string; fullName: string } | null
-  assignedUser: { id: string; name: string; email: string } | null
-}
-
-export type TaskInboxData = {
-  dueToday: TaskItem[]
-  overdue: TaskItem[]
-  total: number
+function authHeaders() {
+  const token = authStorage.getAccessToken()
+  return {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
 }
 
 export function useTaskInbox() {
-  const [data, setData] = useState<TaskInboxData | null>(null)
+  const [tasks, setTasks] = useState<TaskItem[]>([])
   const [loading, setLoading] = useState(true)
-  const [toggling, setToggling] = useState<Set<string>>(new Set())
-  const [assigning, setAssigning] = useState<Set<string>>(new Set())
+  const [completing, setCompleting] = useState<Set<string>>(new Set())
+  const [creating, setCreating] = useState(false)
 
-  const fetchData = useCallback(async () => {
+  const fetchTasks = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`${API_URL}/api/tasks/today`)
+      const res = await fetch(`${API_URL}/api/tasks?status=PENDING`, {
+        headers: authHeaders(),
+      })
       if (res.ok) {
-        const result: TaskInboxData = await res.json()
-        setData(result)
+        const data: TaskItem[] = await res.json()
+        // Also fetch overdue tasks
+        const resOverdue = await fetch(`${API_URL}/api/tasks?status=OVERDUE`, {
+          headers: authHeaders(),
+        })
+        const overdue: TaskItem[] = resOverdue.ok ? await resOverdue.json() : []
+        setTasks([...overdue.map(t => ({ ...t, status: "OVERDUE" as TaskStatus })), ...data])
       }
     } catch (err) {
-      console.error(err)
+      console.error("[useTaskInbox] fetchTasks error:", err)
     } finally {
       setLoading(false)
     }
   }, [])
 
-  const toggleStatus = useCallback(async (taskId: string, currentStatus: string) => {
-    if (toggling.has(taskId)) return
-    const nextStatus = currentStatus === "COMPLETED" ? "PENDING" : "COMPLETED"
-    setToggling((prev) => new Set(prev).add(taskId))
+  const completeTask = useCallback(async (taskId: string) => {
+    if (completing.has(taskId)) return
+    setCompleting(prev => new Set(prev).add(taskId))
+    // Optimistic update
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "COMPLETED" as TaskStatus } : t))
     try {
-      const token = authStorage.getAccessToken()
-      const res = await fetch(`${API_URL}/api/tasks/${taskId}/status`, {
+      const res = await fetch(`${API_URL}/api/tasks/${taskId}/complete`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ status: nextStatus }),
+        headers: authHeaders(),
       })
-      if (res.ok) {
-        await fetchData()
+      if (!res.ok) {
+        // Revert on failure
+        setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "PENDING" as TaskStatus } : t))
       }
     } catch (err) {
       console.error(err)
+      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "PENDING" as TaskStatus } : t))
     } finally {
-      setToggling((prev) => {
+      setCompleting(prev => {
         const next = new Set(prev)
         next.delete(taskId)
         return next
       })
     }
-  }, [toggling, fetchData])
+  }, [completing])
 
-  const assignTask = useCallback(async (taskId: string, userId: string | null) => {
-    if (assigning.has(taskId)) return
-    setAssigning((prev) => new Set(prev).add(taskId))
+  const reopenTask = useCallback(async (taskId: string) => {
+    setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: "PENDING" as TaskStatus } : t))
     try {
-      const token = authStorage.getAccessToken()
-      const res = await fetch(`${API_URL}/api/tasks/${taskId}`, {
+      await fetch(`${API_URL}/api/tasks/${taskId}/status`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ assignedTo: userId }),
+        headers: authHeaders(),
+        body: JSON.stringify({ status: "PENDING" }),
       })
-      if (res.ok) {
-        await fetchData()
-      }
     } catch (err) {
       console.error(err)
-    } finally {
-      setAssigning((prev) => {
-        const next = new Set(prev)
-        next.delete(taskId)
-        return next
-      })
     }
-  }, [assigning, fetchData])
+  }, [])
+
+  const createTask = useCallback(async (input: CreateTaskInput) => {
+    setCreating(true)
+    try {
+      const res = await fetch(`${API_URL}/api/tasks`, {
+        method: "POST",
+        headers: authHeaders(),
+        body: JSON.stringify(input),
+      })
+      if (res.ok) {
+        await fetchTasks()
+        return true
+      }
+      return false
+    } catch (err) {
+      console.error(err)
+      return false
+    } finally {
+      setCreating(false)
+    }
+  }, [fetchTasks])
+
+  const generateTasks = useCallback(async () => {
+    try {
+      await fetch(`${API_URL}/api/tasks/generate`, {
+        method: "POST",
+        headers: authHeaders(),
+      })
+      await fetchTasks()
+    } catch (err) {
+      console.error(err)
+    }
+  }, [fetchTasks])
 
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    fetchTasks()
+  }, [fetchTasks])
 
-  return { data, loading, toggling, assigning, toggleStatus, assignTask, refresh: fetchData }
+  return {
+    tasks,
+    loading,
+    completing,
+    creating,
+    completeTask,
+    reopenTask,
+    createTask,
+    generateTasks,
+    refresh: fetchTasks,
+  }
 }

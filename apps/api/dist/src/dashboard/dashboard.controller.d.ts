@@ -117,21 +117,6 @@ export declare class DashboardController {
         };
         adminInsights: any[];
         reminders: {
-            donation: {
-                id: string;
-                donationDate: Date;
-                donationAmount: import("@prisma/client/runtime/library").Decimal;
-                receiptNumber: string;
-            };
-            id: string;
-            donorId: string;
-            createdById: string;
-            createdAt: Date;
-            updatedAt: Date;
-            createdBy: {
-                id: string;
-                name: string;
-            };
             donor: {
                 id: string;
                 donorCode: string;
@@ -139,13 +124,28 @@ export declare class DashboardController {
                 lastName: string;
                 primaryPhone: string;
             };
-            title: string;
-            description: string;
+            donation: {
+                id: string;
+                receiptNumber: string;
+                donationAmount: import("@prisma/client/runtime/library").Decimal;
+                donationDate: Date;
+            };
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
             type: string;
             status: import(".prisma/client").$Enums.ReminderStatus;
+            donorId: string;
+            donationId: string;
+            description: string;
+            createdById: string;
+            createdBy: {
+                name: string;
+                id: string;
+            };
+            title: string;
             dueDate: Date;
             completedAt: Date;
-            donationId: string;
         }[];
     }>;
     getStats(): Promise<{

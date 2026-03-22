@@ -51,6 +51,7 @@ export declare class TasksController {
         id: string;
     }[]>;
     findAll(status: string, type: string, dueDate: string): Promise<any[]>;
+    completeTask(id: string): Promise<any>;
     updateStatus(id: string, dto: UpdateTaskStatusDto): Promise<any>;
     updateTask(id: string, dto: UpdateTaskDto): Promise<any>;
 }
