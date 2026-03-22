@@ -14,11 +14,23 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
 import { Role, TaskStatus } from '@prisma/client';
 import { TasksService } from './tasks.service';
+import { TaskSchedulerService } from './task-scheduler.service';
 import { CreateTaskDto, UpdateTaskStatusDto, UpdateTaskDto } from './tasks.dto';
 
 @Controller('tasks')
 export class TasksController {
-  constructor(private tasksService: TasksService) {}
+  constructor(
+    private tasksService: TasksService,
+    private taskSchedulerService: TaskSchedulerService,
+  ) {}
+
+  @Post('generate')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.FOUNDER, Role.ADMIN)
+  async triggerGeneration() {
+    await this.taskSchedulerService.runDailyTaskGeneration();
+    return { message: 'Task generation triggered successfully' };
+  }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
