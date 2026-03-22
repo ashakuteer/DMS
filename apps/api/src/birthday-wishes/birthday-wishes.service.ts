@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { EmailJobsService, CreateEmailJobDto } from '../email-jobs/email-jobs.service';
 import { CommunicationLogService } from '../communication-log/communication-log.service';
 import { OrganizationProfileService } from '../organization-profile/organization-profile.service';
-import { CommunicationType } from '@prisma/client';
+import { CommunicationType, TaskType, TaskStatus, TaskPriority } from '@prisma/client';
 
 interface UserContext {
   userId: string;
@@ -163,6 +163,10 @@ export class BirthdayWishService {
         emailHtml,
         imageUrl,
       });
+
+      if (daysUntil === 0) {
+        await this.ensureBirthdayTask(donor.id, donorName);
+      }
     }
 
     results.sort((a, b) => a.daysUntil - b.daysUntil);
@@ -793,5 +797,35 @@ export class BirthdayWishService {
       result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
     }
     return result;
+  }
+
+  private async ensureBirthdayTask(donorId: string, donorName: string): Promise<void> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const existing = await this.prisma.task.findFirst({
+      where: {
+        type: TaskType.BIRTHDAY,
+        donorId,
+        dueDate: { gte: today, lt: tomorrow },
+      },
+    });
+
+    if (existing) return;
+
+    await this.prisma.task.create({
+      data: {
+        title: `Wish ${donorName} happy birthday`,
+        type: TaskType.BIRTHDAY,
+        status: TaskStatus.PENDING,
+        priority: TaskPriority.HIGH,
+        dueDate: today,
+        donorId,
+      },
+    });
+
+    this.logger.log(`Birthday task created for donor ${donorId} (${donorName})`);
   }
 }
