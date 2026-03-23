@@ -5,7 +5,7 @@ import { useEffect, useState, useCallback } from "react"
 import { authStorage } from "@/lib/auth"
 
 export type TaskStatus = "PENDING" | "COMPLETED" | "OVERDUE" | "IN_PROGRESS" | "MISSED"
-export type TaskType = "BIRTHDAY" | "FOLLOW_UP" | "PLEDGE" | "REMINDER"
+export type TaskType = "BIRTHDAY" | "FOLLOW_UP" | "PLEDGE" | "REMINDER" | "GENERAL"
 export type TaskPriority = "URGENT" | "HIGH" | "MEDIUM" | "LOW"
 
 export interface TaskItem {

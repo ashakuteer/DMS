@@ -22,6 +22,7 @@ const TYPE_LABELS: Record<string, string> = {
   FOLLOW_UP: "Follow Up",
   PLEDGE: "Pledge",
   REMINDER: "Reminder",
+  GENERAL: "General",
 }
 
 const TYPE_COLORS: Record<string, string> = {
@@ -29,6 +30,7 @@ const TYPE_COLORS: Record<string, string> = {
   FOLLOW_UP: "bg-blue-100 text-blue-700",
   PLEDGE: "bg-purple-100 text-purple-700",
   REMINDER: "bg-yellow-100 text-yellow-700",
+  GENERAL: "bg-gray-100 text-gray-700",
 }
 
 const PRIORITY_LABELS: Record<string, string> = {
@@ -143,7 +145,7 @@ function NewTaskForm({ onCancel, onCreate, creating }: NewTaskFormProps) {
               onChange={e => setType(e.target.value as TaskType)}
               data-testid="select-task-type"
             >
-              {(["BIRTHDAY", "FOLLOW_UP", "PLEDGE", "REMINDER"] as TaskType[]).map(t => (
+              {(["BIRTHDAY", "FOLLOW_UP", "PLEDGE", "REMINDER", "GENERAL"] as TaskType[]).map(t => (
                 <option key={t} value={t}>{TYPE_LABELS[t]}</option>
               ))}
             </select>
@@ -311,6 +313,7 @@ const TYPE_FILTERS: { value: string; label: string }[] = [
   { value: "FOLLOW_UP", label: "Follow-ups" },
   { value: "PLEDGE", label: "Pledges" },
   { value: "REMINDER", label: "Reminders" },
+  { value: "GENERAL", label: "General" },
 ]
 
 export default function DailyActionsPage() {
