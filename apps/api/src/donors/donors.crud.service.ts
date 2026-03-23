@@ -414,25 +414,26 @@ async update(
 ) {
   await this.getActiveDonorOrThrow(id);
 
+  async update(
+  user: any,
+  id: string,
+  data: any,
+  ipAddress?: string,
+  userAgent?: string,
+) {
+  await this.getActiveDonorOrThrow(id);
+
   const {
     individualProfile,
     volunteerProfile,
     influencerProfile,
     csrProfile,
-
-    // ❌ remove wrong fields
-    professionType,
-    visited,
-    visitedHome,
-
     ...rest
   } = data;
 
   const donorData: any = {
     ...rest,
-
-    // ✅ Only valid mapping
-    profession: rest.profession || professionType || null,
+    profession: rest.profession || null,
   };
 
   const donor = await this.prisma.donor.update({
@@ -442,16 +443,6 @@ async update(
 
   return donor;
 }
-  async softDelete(
-    user: UserContext,
-    id: string,
-    deleteReason?: string,
-    ipAddress?: string,
-    userAgent?: string,
-  ) {
-    if (user.role !== Role.ADMIN) {
-      throw new ForbiddenException("Only administrators can delete donors");
-    }
 
     await this.getActiveDonorOrThrow(id);
 
