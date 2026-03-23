@@ -405,7 +405,6 @@ if (assignedToUserId) {
     throw err;
   }
 }
-
 async update(
   user: any,
   id: string,
@@ -424,6 +423,7 @@ async update(
     // ❌ remove wrong fields
     professionType,
     visited,
+    visitedHome,
 
     ...rest
   } = data;
@@ -431,9 +431,8 @@ async update(
   const donorData: any = {
     ...rest,
 
-    // ✅ FIX mappings
+    // ✅ Only valid mapping
     profession: rest.profession || professionType || null,
-    visitedHome: rest.visitedHome ?? visited ?? false,
   };
 
   const donor = await this.prisma.donor.update({
