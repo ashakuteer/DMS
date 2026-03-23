@@ -419,12 +419,18 @@ async update(
     volunteerProfile,
     influencerProfile,
     csrProfile,
+
+    // ❌ REMOVE THESE FROM REST
+    visited,
+    visitedHome,
+    professionType,
+
     ...rest
   } = data;
 
   const donorData: any = {
     ...rest,
-    profession: rest.profession || null,
+    profession: rest.profession || professionType || null,
   };
 
   const donor = await this.prisma.donor.update({
@@ -434,7 +440,6 @@ async update(
 
   return donor;
 }
-
 async softDelete(
   user: UserContext,
   id: string,
