@@ -17,7 +17,7 @@ import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
 const STATUSES = ["PENDING", "IN_PROGRESS", "COMPLETED", "MISSED"];
-const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
+const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
 const TASK_CATEGORIES = [
   { value: "GENERAL", label: "General" },
   { value: "INTERNAL", label: "Internal" },

@@ -1,0 +1,244 @@
+FINAL STAFF TASK SYSTEM (PRODUCTION READY - DO NOT MODIFY STRUCTURE)
+
+We are building a stable NGO staff task system with clear separation,
+clean roles, and simple UI. No extra features. No duplication.
+
+---------------------------------------
+1. CORE STRUCTURE
+---------------------------------------
+
+There are ONLY 2 working pages:
+
+1. MY TASKS (Founder only)
+2. STAFF TASKS (Main page for staff)
+
+Other pages:
+- Performance (separate)
+- Missed Tasks (auto system)
+
+---------------------------------------
+2. ROLES (FINAL)
+---------------------------------------
+
+FOUNDER:
+- Full control
+- Creates recurring tasks
+- Creates manual tasks
+- Assigns tasks
+
+ADMIN:
+- View + manage
+- Can create recurring tasks
+- Cannot assign manual tasks
+
+STAFF:
+- View tasks
+- Mark complete
+- Add notes
+- Cannot create/edit tasks
+
+---------------------------------------
+3. TASK TYPES (INTERNAL ONLY)
+---------------------------------------
+
+A. RECURRING TASKS
+- Created by Founder/Admin
+- Auto-generated
+
+B. MANUAL TASKS
+- Created by Founder only
+- One-time or multi-day
+
+---------------------------------------
+4. STAFF TASKS PAGE (MAIN PAGE)
+---------------------------------------
+
+This page shows BOTH:
+
+- Recurring tasks (auto-generated)
+- Manual tasks (assigned)
+
+Filter:
+WHERE category = 'STAFF'
+
+Group by:
+- Staff
+- Priority
+- Due Date
+
+---------------------------------------
+5. RECURRING TASK CREATION (INSIDE STAFF TASKS - ADMIN MODE)
+---------------------------------------
+
+Add button: "Add Recurring Task"
+
+Fields:
+
+- Title
+- Assign To (staff)
+- Priority (Critical / High / Medium / Low)
+- Estimated Time (minutes)
+
+Frequency Options:
+
+- DAILY
+- WEEKLY (select days: Mon–Sat)
+- MONTHLY (select date)
+- CUSTOM INTERVAL (e.g., every 28 days)
+
+Save in TaskTemplate
+
+---------------------------------------
+6. AUTO TASK GENERATION
+---------------------------------------
+
+On page load OR cron:
+
+For each template:
+
+IF matches today:
+  check if task already created
+  IF NOT:
+    create Task:
+      title
+      assignedTo
+      category = 'STAFF'
+      dueDate = today
+      priority
+      estimatedTime
+
+---------------------------------------
+7. MANUAL TASK CREATION (MY TASKS PAGE)
+---------------------------------------
+
+Founder can:
+
+- Create task
+- Assign to staff
+- Set:
+
+Fields:
+- Title
+- Assign To
+- Priority
+- Start Date
+- Due Date
+- Time (optional)
+
+---------------------------------------
+8. TASK COMPLETION FLOW
+---------------------------------------
+
+When staff clicks "Mark Done":
+
+IF priority = CRITICAL or HIGH:
+  → Notes REQUIRED
+
+ELSE:
+  → Notes optional
+
+Update:
+
+completed = true
+completedAt = now()
+actualTime (optional)
+notes = input
+
+---------------------------------------
+9. PRIORITY SYSTEM (FINAL)
+---------------------------------------
+
+enum Priority {
+  CRITICAL   // Red
+  HIGH       // Orange
+  MEDIUM     // Yellow
+  LOW        // Green
+}
+
+Sorting:
+
+ORDER BY:
+priority DESC
+dueDate ASC
+
+---------------------------------------
+10. MISSED TASK SYSTEM (AUTO)
+---------------------------------------
+
+Daily check:
+
+IF dueDate < today AND completed = false:
+  status = "MISSED"
+
+NO manual button allowed
+
+---------------------------------------
+11. TASK DURATION SUPPORT
+---------------------------------------
+
+Each task supports:
+
+- Start Date
+- Due Date
+- Optional Time (for short tasks)
+
+---------------------------------------
+12. STAFF NOTES
+---------------------------------------
+
+Each task has:
+
+notes field
+
+Used for:
+- Completion explanation
+- Work updates
+
+---------------------------------------
+13. PERFORMANCE (SEPARATE PAGE)
+---------------------------------------
+
+Calculate:
+
+totalTasks
+completedTasks
+missedTasks
+
+completionRate = completed / total
+
+score =
+(completed * 10)
+- (missed * 15)
++ (completionRate * 10)
+
+---------------------------------------
+14. REMOVE DUPLICATION
+---------------------------------------
+
+REMOVE:
+
+- Performance tab from Staff & Tasks
+- Recurring Tasks tab from Staff & Tasks
+
+---------------------------------------
+15. FINAL UI STRUCTURE
+---------------------------------------
+
+Sidebar:
+
+- My Tasks (Founder)
+- Staff Tasks (Main work page)
+- Missed Tasks
+- Performance
+
+---------------------------------------
+FINAL RESULT:
+
+✔ One page for staff work
+✔ Founder control centralized
+✔ Recurring + manual unified in view
+✔ Strong discipline system
+✔ No duplication
+✔ Clean and scalable system
+
+THIS SYSTEM IS FINAL. DO NOT CHANGE.

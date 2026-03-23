@@ -5,7 +5,7 @@ import {
   Table, TableHeader, TableRow, TableHead, TableBody, TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Eye, Pencil, Trash2, CheckCircle2, Clock, Circle,
   AlertCircle, XCircle, ChevronDown, Timer, CheckSquare,
@@ -14,6 +14,10 @@ import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
   DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { authStorage } from "@/lib/auth";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
@@ -22,15 +26,16 @@ const STATUS_CONFIG: Record<string, { label: string; class: string; icon: any }>
   PENDING:     { label: "Pending",     class: "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400", icon: Circle },
   IN_PROGRESS: { label: "In Progress", class: "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400",         icon: Clock },
   COMPLETED:   { label: "Completed",   class: "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-400",    icon: CheckCircle2 },
-  OVERDUE:     { label: "Overdue",     class: "bg-[#E6F4F1] text-[#5FA8A8] border-[#5FA8A8] dark:bg-[#5FA8A8]/20 dark:text-[#A8D5D1]", icon: AlertCircle },
+  OVERDUE:     { label: "Overdue",     class: "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400", icon: AlertCircle },
   MISSED:      { label: "Missed",      class: "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-400",               icon: XCircle },
 };
 
 const PRIORITY_CONFIG: Record<string, string> = {
-  LOW:    "bg-gray-100 text-gray-700 border-gray-200",
-  MEDIUM: "bg-blue-100 text-blue-700 border-blue-200",
-  HIGH:   "bg-[#E6F4F1] text-[#5FA8A8] border-[#5FA8A8]",
-  URGENT: "bg-red-100 text-red-700 border-red-200",
+  LOW:      "bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400",
+  MEDIUM:   "bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400",
+  HIGH:     "bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400",
+  CRITICAL: "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400",
+  URGENT:   "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400",
 };
 
 const STATUS_TRANSITIONS: Record<string, string[]> = {
@@ -41,6 +46,8 @@ const STATUS_TRANSITIONS: Record<string, string[]> = {
   MISSED:      ["PENDING"],
 };
 
+const NOTES_REQUIRED_PRIORITIES = ["CRITICAL", "HIGH"];
+
 function fmtDate(d: string | null | undefined) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
@@ -50,6 +57,70 @@ function fmtTime(mins: number | null | undefined) {
   if (!mins) return null;
   if (mins >= 60) return `${Math.floor(mins / 60)}h ${mins % 60}m`;
   return `${mins}m`;
+}
+
+// ─── Completion notes dialog ───────────────────────────────────────────────────
+
+function CompletionNotesDialog({
+  task,
+  onConfirm,
+  onCancel,
+}: {
+  task: any;
+  onConfirm: (notes: string) => void;
+  onCancel: () => void;
+}) {
+  const [notes, setNotes] = useState("");
+  const isRequired = NOTES_REQUIRED_PRIORITIES.includes(task?.priority);
+
+  return (
+    <Dialog open onOpenChange={(open) => { if (!open) onCancel(); }}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Mark Task as Completed</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-3 py-1">
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium text-foreground">{task?.title}</span>
+          </p>
+
+          {isRequired && (
+            <p className="text-xs text-red-600 font-medium">
+              Notes are required for {task?.priority} priority tasks.
+            </p>
+          )}
+
+          <div className="space-y-1.5">
+            <Label htmlFor="completion-notes">
+              Completion Notes {isRequired ? <span className="text-red-500">*</span> : "(optional)"}
+            </Label>
+            <Textarea
+              id="completion-notes"
+              placeholder="Describe what was done..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              data-testid="input-completion-notes"
+            />
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button variant="outline" onClick={onCancel} data-testid="button-cancel-completion">
+            Cancel
+          </Button>
+          <Button
+            onClick={() => onConfirm(notes)}
+            disabled={isRequired && !notes.trim()}
+            data-testid="button-confirm-completion"
+          >
+            Mark Complete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -69,18 +140,34 @@ export default function TaskTable({
   onView: (t: any) => void;
   canUpdate?: boolean;
   canDelete?: boolean;
-  updateStatus?: (id: string, status: string) => Promise<boolean>;
+  updateStatus?: (id: string, status: string, notes?: string) => Promise<boolean>;
 }) {
   const user = authStorage.getUser();
   const isAdminOrManager = user?.role === "FOUNDER" || user?.role === "ADMIN";
 
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [pendingCompletion, setPendingCompletion] = useState<{ task: any } | null>(null);
 
-  const handleStatusChange = async (taskId: string, newStatus: string) => {
+  const handleStatusChange = async (task: any, newStatus: string) => {
     if (!updateStatus) return;
-    setUpdatingId(taskId);
-    await updateStatus(taskId, newStatus);
+
+    if (newStatus === "COMPLETED" && NOTES_REQUIRED_PRIORITIES.includes(task.priority)) {
+      setPendingCompletion({ task });
+      return;
+    }
+
+    setUpdatingId(task.id);
+    await updateStatus(task.id, newStatus);
+    setUpdatingId(null);
+  };
+
+  const confirmCompletion = async (notes: string) => {
+    if (!pendingCompletion || !updateStatus) return;
+    const { task } = pendingCompletion;
+    setPendingCompletion(null);
+    setUpdatingId(task.id);
+    await updateStatus(task.id, "COMPLETED", notes);
     setUpdatingId(null);
   };
 
@@ -95,6 +182,14 @@ export default function TaskTable({
 
   return (
     <>
+      {pendingCompletion && (
+        <CompletionNotesDialog
+          task={pendingCompletion.task}
+          onConfirm={confirmCompletion}
+          onCancel={() => setPendingCompletion(null)}
+        />
+      )}
+
       <div className="rounded-lg border overflow-hidden">
         <Table>
           <TableHeader>
@@ -166,7 +261,11 @@ export default function TaskTable({
                             const conf = STATUS_CONFIG[s];
                             const Icon = conf?.icon;
                             return (
-                              <DropdownMenuItem key={s} onClick={() => handleStatusChange(task.id, s)} data-testid={`change-status-${s}-${task.id}`}>
+                              <DropdownMenuItem
+                                key={s}
+                                onClick={() => handleStatusChange(task, s)}
+                                data-testid={`change-status-${s}-${task.id}`}
+                              >
                                 {Icon && <Icon className="h-3.5 w-3.5 mr-2 text-muted-foreground" />}
                                 {conf?.label || s}
                               </DropdownMenuItem>
@@ -184,14 +283,20 @@ export default function TaskTable({
 
                   {/* Priority */}
                   <TableCell>
-                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.MEDIUM}`} data-testid={`priority-${task.id}`}>
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${PRIORITY_CONFIG[task.priority] || PRIORITY_CONFIG.MEDIUM}`}
+                      data-testid={`priority-${task.id}`}
+                    >
                       {task.priority}
                     </span>
                   </TableCell>
 
                   {/* Due date */}
                   <TableCell>
-                    <span className={`text-xs ${task.status !== "COMPLETED" && task.dueDate && new Date(task.dueDate) < new Date() ? "text-red-600 font-medium" : "text-muted-foreground"}`} data-testid={`due-date-${task.id}`}>
+                    <span
+                      className={`text-xs ${task.status !== "COMPLETED" && task.dueDate && new Date(task.dueDate) < new Date() ? "text-red-600 font-medium" : "text-muted-foreground"}`}
+                      data-testid={`due-date-${task.id}`}
+                    >
                       {fmtDate(task.dueDate)}
                     </span>
                   </TableCell>

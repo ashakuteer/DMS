@@ -27,7 +27,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }>
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  LOW: "text-gray-500", MEDIUM: "text-blue-500", HIGH: "text-[#5FA8A8]", URGENT: "text-red-600",
+  LOW: "text-green-600", MEDIUM: "text-yellow-600", HIGH: "text-orange-600", CRITICAL: "text-red-600", URGENT: "text-red-600",
 };
 
 const GRADE_CONFIG: Record<string, { color: string; label: string }> = {
@@ -78,9 +78,10 @@ export default function MyTasksView({ userId }: Props) {
   const [actionId, setActionId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  // Time tracking for completing a task
+  // Time tracking + notes for completing a task
   const [completeId, setCompleteId] = useState<string | null>(null);
-  const [timeData, setTimeData] = useState({ startedAt: "", completedAt: "", minutesTaken: "" });
+  const [completingTask, setCompletingTask] = useState<Task | null>(null);
+  const [timeData, setTimeData] = useState({ startedAt: "", completedAt: "", minutesTaken: "", notes: "" });
 
   // ─── Load ────────────────────────────────────────────────────────────────
 
@@ -115,12 +116,12 @@ export default function MyTasksView({ userId }: Props) {
 
   const quickUpdate = async (task: Task, newStatus: string) => {
     if (newStatus === "COMPLETED") {
-      // Show time tracking form
       const now = new Date();
       const startStr = task.startedAt
         ? new Date(task.startedAt).toTimeString().slice(0, 5)
         : "";
-      setTimeData({ startedAt: startStr, completedAt: now.toTimeString().slice(0, 5), minutesTaken: "" });
+      setTimeData({ startedAt: startStr, completedAt: now.toTimeString().slice(0, 5), minutesTaken: "", notes: "" });
+      setCompletingTask(task);
       setCompleteId(task.id);
       return;
     }
@@ -130,13 +131,15 @@ export default function MyTasksView({ userId }: Props) {
   const submitStatus = async (id: string, status: string, extra: any) => {
     setActionId(id);
     try {
+      const body: any = { status, ...extra };
       const res = await fetchWithAuth(`/api/staff-tasks/${id}/status`, {
         method: "PATCH",
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(body),
       });
       if (res.ok) {
         toast({ title: status === "COMPLETED" ? "Task completed!" : "Status updated" });
         setCompleteId(null);
+        setCompletingTask(null);
         loadTasks();
         loadScore();
       } else {
@@ -159,8 +162,12 @@ export default function MyTasksView({ userId }: Props) {
     if (timeData.startedAt) extra.startedAt = `${today}T${timeData.startedAt}:00`;
     if (timeData.completedAt) extra.completedAt = `${today}T${timeData.completedAt}:00`;
     if (timeData.minutesTaken) extra.minutesTaken = parseInt(timeData.minutesTaken);
+    if (timeData.notes) extra.notes = timeData.notes;
     await submitStatus(taskId, "COMPLETED", extra);
   };
+
+  const notesRequiredForTask = (task: Task | null) =>
+    task !== null && ["CRITICAL", "HIGH"].includes(task.priority);
 
   // ─── Filter ───────────────────────────────────────────────────────────────
 
@@ -267,11 +274,14 @@ export default function MyTasksView({ userId }: Props) {
               <Card key={task.id} className={task.status === "MISSED" ? "border-red-200 bg-red-50/30" : task.status === "COMPLETED" ? "opacity-75" : ""} data-testid={`my-task-${task.id}`}>
                 <CardContent className="pt-3 pb-3">
                   {isCompleting ? (
-                    // ─── Time tracking form ──────────────────────────────────
+                    // ─── Time tracking + notes form ───────────────────────────
                     <div className="space-y-3">
                       <div className="flex items-center gap-3">
                         <CheckCircle2 className="h-5 w-5 text-green-500 shrink-0" />
                         <p className="font-medium">{task.title}</p>
+                        {notesRequiredForTask(completingTask) && (
+                          <span className="text-xs text-red-500 font-medium ml-auto">{task.priority} — notes required</span>
+                        )}
                       </div>
                       <p className="text-xs text-muted-foreground ml-8">Log time taken (optional)</p>
                       <div className="ml-8 grid grid-cols-3 gap-3">
@@ -288,12 +298,31 @@ export default function MyTasksView({ userId }: Props) {
                           <Input type="number" value={timeData.minutesTaken} onChange={(e) => setTimeData((p) => ({ ...p, minutesTaken: e.target.value }))} placeholder="auto" className="h-8 text-xs" data-testid="input-minutes" />
                         </div>
                       </div>
+                      <div className="ml-8 space-y-1">
+                        <Label className="text-xs">
+                          Notes {notesRequiredForTask(completingTask) ? <span className="text-red-500">*</span> : "(optional)"}
+                        </Label>
+                        <textarea
+                          value={timeData.notes}
+                          onChange={(e) => setTimeData((p) => ({ ...p, notes: e.target.value }))}
+                          placeholder="Describe what was done..."
+                          rows={2}
+                          className="w-full text-xs rounded-md border border-input bg-background px-3 py-2 resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+                          data-testid="input-task-notes"
+                        />
+                      </div>
                       <div className="ml-8 flex gap-2">
-                        <Button size="sm" className="h-7 text-xs bg-green-600 hover:bg-green-700" onClick={() => handleCompleteSubmit(task.id)} disabled={actionId === task.id} data-testid="button-confirm-complete">
+                        <Button
+                          size="sm"
+                          className="h-7 text-xs bg-green-600 hover:bg-green-700"
+                          onClick={() => handleCompleteSubmit(task.id)}
+                          disabled={actionId === task.id || (notesRequiredForTask(completingTask) && !timeData.notes.trim())}
+                          data-testid="button-confirm-complete"
+                        >
                           {actionId === task.id ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <CheckCircle2 className="h-3 w-3 mr-1" />}
                           Mark Complete
                         </Button>
-                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setCompleteId(null)} data-testid="button-cancel-complete">Cancel</Button>
+                        <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => { setCompleteId(null); setCompletingTask(null); }} data-testid="button-cancel-complete">Cancel</Button>
                       </div>
                     </div>
                   ) : (

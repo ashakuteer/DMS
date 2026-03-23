@@ -337,6 +337,8 @@ let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
     async updateTaskStatus(id, newStatus, userId, extra) {
         const existing = await this.findOne(id);
         const updateData = { status: newStatus };
+        if (extra?.notes !== undefined)
+            updateData.notes = extra.notes;
         if (newStatus === client_1.TaskStatus.IN_PROGRESS && !existing.startedAt) {
             updateData.startedAt = extra?.startedAt ? new Date(extra.startedAt) : new Date();
         }

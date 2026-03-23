@@ -55,10 +55,12 @@ export function useStaffTasks() {
     return res.ok;
   };
 
-  const updateStatus = async (taskId: string, status: string) => {
+  const updateStatus = async (taskId: string, status: string, notes?: string) => {
+    const body: Record<string, unknown> = { status };
+    if (notes !== undefined) body.notes = notes;
     const res = await fetchWithAuth(`/api/staff-tasks/${taskId}/status`, {
       method: "PATCH",
-      body: JSON.stringify({ status }),
+      body: JSON.stringify(body),
     });
     return res.ok;
   };

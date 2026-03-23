@@ -368,10 +368,11 @@ export class StaffTasksService {
     };
   }
 
-  async updateTaskStatus(id: string, newStatus: TaskStatus, userId: string, extra?: { minutesTaken?: number; startedAt?: string; completedAt?: string }) {
+  async updateTaskStatus(id: string, newStatus: TaskStatus, userId: string, extra?: { minutesTaken?: number; startedAt?: string; completedAt?: string; notes?: string }) {
     const existing = await this.findOne(id);
 
     const updateData: any = { status: newStatus };
+    if (extra?.notes !== undefined) updateData.notes = extra.notes;
 
     if (newStatus === TaskStatus.IN_PROGRESS && !existing.startedAt) {
       updateData.startedAt = extra?.startedAt ? new Date(extra.startedAt) : new Date();

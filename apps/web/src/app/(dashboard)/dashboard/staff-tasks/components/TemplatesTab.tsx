@@ -30,7 +30,7 @@ const CATEGORIES = [
   "GENERAL", "DONOR_FOLLOWUP", "BENEFICIARY_UPDATE", "DATA_ENTRY",
   "REPORTING", "COMMUNICATION", "EVENT", "OTHER",
 ];
-const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
+const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
 const ROLES = [
   { value: "", label: "All Active Staff" },
   { value: "STAFF", label: "Staff Only" },

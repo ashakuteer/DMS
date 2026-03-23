@@ -16,14 +16,14 @@ export declare class StaffTasksService {
         isRecurring?: boolean;
     }): Promise<{
         items: ({
-            createdBy: {
-                name: string;
-                id: string;
-            };
             assignedTo: {
+                id: string;
                 email: string;
                 name: string;
+            };
+            createdBy: {
                 id: string;
+                name: string;
             };
             linkedDonor: {
                 id: string;
@@ -33,27 +33,27 @@ export declare class StaffTasksService {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            priority: import(".prisma/client").$Enums.TaskPriority;
-            status: import(".prisma/client").$Enums.TaskStatus;
-            templateId: string | null;
-            description: string | null;
-            createdById: string;
-            deletedAt: Date | null;
             title: string;
-            dueDate: Date | null;
-            completedAt: Date | null;
-            notes: string | null;
+            description: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            priority: import(".prisma/client").$Enums.TaskPriority;
             category: import(".prisma/client").$Enums.TaskCategory;
             assignedToId: string;
+            createdById: string;
             linkedDonorId: string | null;
+            dueDate: Date | null;
             startedAt: Date | null;
+            completedAt: Date | null;
+            notes: string | null;
             isRecurring: boolean;
             recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
             parentTaskId: string | null;
             checklist: import("@prisma/client/runtime/library").JsonValue | null;
+            templateId: string | null;
             minutesTaken: number | null;
+            createdAt: Date;
+            updatedAt: Date;
+            deletedAt: Date | null;
         })[];
         total: number;
         page: number;
@@ -61,14 +61,14 @@ export declare class StaffTasksService {
         totalPages: number;
     }>;
     findOne(id: string): Promise<{
-        createdBy: {
-            name: string;
-            id: string;
-        };
         assignedTo: {
+            id: string;
             email: string;
             name: string;
+        };
+        createdBy: {
             id: string;
+            name: string;
         };
         linkedDonor: {
             id: string;
@@ -78,27 +78,27 @@ export declare class StaffTasksService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        priority: import(".prisma/client").$Enums.TaskPriority;
-        status: import(".prisma/client").$Enums.TaskStatus;
-        templateId: string | null;
-        description: string | null;
-        createdById: string;
-        deletedAt: Date | null;
         title: string;
-        dueDate: Date | null;
-        completedAt: Date | null;
-        notes: string | null;
+        description: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        priority: import(".prisma/client").$Enums.TaskPriority;
         category: import(".prisma/client").$Enums.TaskCategory;
         assignedToId: string;
+        createdById: string;
         linkedDonorId: string | null;
+        dueDate: Date | null;
         startedAt: Date | null;
+        completedAt: Date | null;
+        notes: string | null;
         isRecurring: boolean;
         recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
         parentTaskId: string | null;
         checklist: import("@prisma/client/runtime/library").JsonValue | null;
+        templateId: string | null;
         minutesTaken: number | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
     }>;
     create(data: {
         title: string;
@@ -111,14 +111,14 @@ export declare class StaffTasksService {
         dueDate?: string;
         notes?: string;
     }, userId: string): Promise<{
-        createdBy: {
-            name: string;
-            id: string;
-        };
         assignedTo: {
+            id: string;
             email: string;
             name: string;
+        };
+        createdBy: {
             id: string;
+            name: string;
         };
         linkedDonor: {
             id: string;
@@ -128,27 +128,27 @@ export declare class StaffTasksService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        priority: import(".prisma/client").$Enums.TaskPriority;
-        status: import(".prisma/client").$Enums.TaskStatus;
-        templateId: string | null;
-        description: string | null;
-        createdById: string;
-        deletedAt: Date | null;
         title: string;
-        dueDate: Date | null;
-        completedAt: Date | null;
-        notes: string | null;
+        description: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        priority: import(".prisma/client").$Enums.TaskPriority;
         category: import(".prisma/client").$Enums.TaskCategory;
         assignedToId: string;
+        createdById: string;
         linkedDonorId: string | null;
+        dueDate: Date | null;
         startedAt: Date | null;
+        completedAt: Date | null;
+        notes: string | null;
         isRecurring: boolean;
         recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
         parentTaskId: string | null;
         checklist: import("@prisma/client/runtime/library").JsonValue | null;
+        templateId: string | null;
         minutesTaken: number | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
     }>;
     update(id: string, data: {
         title?: string;
@@ -161,14 +161,14 @@ export declare class StaffTasksService {
         dueDate?: string;
         notes?: string;
     }, userId: string): Promise<{
-        createdBy: {
-            name: string;
-            id: string;
-        };
         assignedTo: {
+            id: string;
             email: string;
             name: string;
+        };
+        createdBy: {
             id: string;
+            name: string;
         };
         linkedDonor: {
             id: string;
@@ -178,51 +178,51 @@ export declare class StaffTasksService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        priority: import(".prisma/client").$Enums.TaskPriority;
-        status: import(".prisma/client").$Enums.TaskStatus;
-        templateId: string | null;
-        description: string | null;
-        createdById: string;
-        deletedAt: Date | null;
         title: string;
-        dueDate: Date | null;
-        completedAt: Date | null;
-        notes: string | null;
+        description: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        priority: import(".prisma/client").$Enums.TaskPriority;
         category: import(".prisma/client").$Enums.TaskCategory;
         assignedToId: string;
+        createdById: string;
         linkedDonorId: string | null;
+        dueDate: Date | null;
         startedAt: Date | null;
+        completedAt: Date | null;
+        notes: string | null;
         isRecurring: boolean;
         recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
         parentTaskId: string | null;
         checklist: import("@prisma/client/runtime/library").JsonValue | null;
+        templateId: string | null;
         minutesTaken: number | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
     }>;
     delete(id: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        priority: import(".prisma/client").$Enums.TaskPriority;
-        status: import(".prisma/client").$Enums.TaskStatus;
-        templateId: string | null;
-        description: string | null;
-        createdById: string;
-        deletedAt: Date | null;
         title: string;
-        dueDate: Date | null;
-        completedAt: Date | null;
-        notes: string | null;
+        description: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        priority: import(".prisma/client").$Enums.TaskPriority;
         category: import(".prisma/client").$Enums.TaskCategory;
         assignedToId: string;
+        createdById: string;
         linkedDonorId: string | null;
+        dueDate: Date | null;
         startedAt: Date | null;
+        completedAt: Date | null;
+        notes: string | null;
         isRecurring: boolean;
         recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
         parentTaskId: string | null;
         checklist: import("@prisma/client/runtime/library").JsonValue | null;
+        templateId: string | null;
         minutesTaken: number | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
     }>;
     getStats(userId?: string): Promise<{
         pending: number;
@@ -238,18 +238,17 @@ export declare class StaffTasksService {
             overdue: number;
         };
         latestPerformanceScore: number;
+        id: string;
         email: string;
         name: string;
         role: import(".prisma/client").$Enums.Role;
-        id: string;
     }[]>;
     getStaffPerformance(userId: string, year?: number): Promise<{
         id: string;
         createdAt: Date;
-        userId: string;
         updatedAt: Date;
+        userId: string;
         month: number;
-        score: number;
         year: number;
         tasksAssigned: number;
         tasksCompleted: number;
@@ -257,14 +256,14 @@ export declare class StaffTasksService {
         tasksOverdue: number;
         followUpsDone: number;
         donorResponses: number;
+        score: number;
     }[]>;
     calculatePerformance(userId: string, month: number, year: number): Promise<{
         id: string;
         createdAt: Date;
-        userId: string;
         updatedAt: Date;
+        userId: string;
         month: number;
-        score: number;
         year: number;
         tasksAssigned: number;
         tasksCompleted: number;
@@ -272,17 +271,18 @@ export declare class StaffTasksService {
         tasksOverdue: number;
         followUpsDone: number;
         donorResponses: number;
+        score: number;
     }>;
     getKanbanBoard(assignedToId?: string): Promise<{
         PENDING: ({
-            createdBy: {
-                name: string;
-                id: string;
-            };
             assignedTo: {
+                id: string;
                 email: string;
                 name: string;
+            };
+            createdBy: {
                 id: string;
+                name: string;
             };
             linkedDonor: {
                 id: string;
@@ -292,37 +292,37 @@ export declare class StaffTasksService {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            priority: import(".prisma/client").$Enums.TaskPriority;
-            status: import(".prisma/client").$Enums.TaskStatus;
-            templateId: string | null;
-            description: string | null;
-            createdById: string;
-            deletedAt: Date | null;
             title: string;
-            dueDate: Date | null;
-            completedAt: Date | null;
-            notes: string | null;
+            description: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            priority: import(".prisma/client").$Enums.TaskPriority;
             category: import(".prisma/client").$Enums.TaskCategory;
             assignedToId: string;
+            createdById: string;
             linkedDonorId: string | null;
+            dueDate: Date | null;
             startedAt: Date | null;
+            completedAt: Date | null;
+            notes: string | null;
             isRecurring: boolean;
             recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
             parentTaskId: string | null;
             checklist: import("@prisma/client/runtime/library").JsonValue | null;
+            templateId: string | null;
             minutesTaken: number | null;
+            createdAt: Date;
+            updatedAt: Date;
+            deletedAt: Date | null;
         })[];
         IN_PROGRESS: ({
-            createdBy: {
-                name: string;
-                id: string;
-            };
             assignedTo: {
+                id: string;
                 email: string;
                 name: string;
+            };
+            createdBy: {
                 id: string;
+                name: string;
             };
             linkedDonor: {
                 id: string;
@@ -332,37 +332,37 @@ export declare class StaffTasksService {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            priority: import(".prisma/client").$Enums.TaskPriority;
-            status: import(".prisma/client").$Enums.TaskStatus;
-            templateId: string | null;
-            description: string | null;
-            createdById: string;
-            deletedAt: Date | null;
             title: string;
-            dueDate: Date | null;
-            completedAt: Date | null;
-            notes: string | null;
+            description: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            priority: import(".prisma/client").$Enums.TaskPriority;
             category: import(".prisma/client").$Enums.TaskCategory;
             assignedToId: string;
+            createdById: string;
             linkedDonorId: string | null;
+            dueDate: Date | null;
             startedAt: Date | null;
+            completedAt: Date | null;
+            notes: string | null;
             isRecurring: boolean;
             recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
             parentTaskId: string | null;
             checklist: import("@prisma/client/runtime/library").JsonValue | null;
+            templateId: string | null;
             minutesTaken: number | null;
+            createdAt: Date;
+            updatedAt: Date;
+            deletedAt: Date | null;
         })[];
         COMPLETED: ({
-            createdBy: {
-                name: string;
-                id: string;
-            };
             assignedTo: {
+                id: string;
                 email: string;
                 name: string;
+            };
+            createdBy: {
                 id: string;
+                name: string;
             };
             linkedDonor: {
                 id: string;
@@ -372,37 +372,37 @@ export declare class StaffTasksService {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            priority: import(".prisma/client").$Enums.TaskPriority;
-            status: import(".prisma/client").$Enums.TaskStatus;
-            templateId: string | null;
-            description: string | null;
-            createdById: string;
-            deletedAt: Date | null;
             title: string;
-            dueDate: Date | null;
-            completedAt: Date | null;
-            notes: string | null;
+            description: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            priority: import(".prisma/client").$Enums.TaskPriority;
             category: import(".prisma/client").$Enums.TaskCategory;
             assignedToId: string;
+            createdById: string;
             linkedDonorId: string | null;
+            dueDate: Date | null;
             startedAt: Date | null;
+            completedAt: Date | null;
+            notes: string | null;
             isRecurring: boolean;
             recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
             parentTaskId: string | null;
             checklist: import("@prisma/client/runtime/library").JsonValue | null;
+            templateId: string | null;
             minutesTaken: number | null;
+            createdAt: Date;
+            updatedAt: Date;
+            deletedAt: Date | null;
         })[];
         OVERDUE: ({
-            createdBy: {
-                name: string;
-                id: string;
-            };
             assignedTo: {
+                id: string;
                 email: string;
                 name: string;
+            };
+            createdBy: {
                 id: string;
+                name: string;
             };
             linkedDonor: {
                 id: string;
@@ -412,42 +412,43 @@ export declare class StaffTasksService {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            priority: import(".prisma/client").$Enums.TaskPriority;
-            status: import(".prisma/client").$Enums.TaskStatus;
-            templateId: string | null;
-            description: string | null;
-            createdById: string;
-            deletedAt: Date | null;
             title: string;
-            dueDate: Date | null;
-            completedAt: Date | null;
-            notes: string | null;
+            description: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            priority: import(".prisma/client").$Enums.TaskPriority;
             category: import(".prisma/client").$Enums.TaskCategory;
             assignedToId: string;
+            createdById: string;
             linkedDonorId: string | null;
+            dueDate: Date | null;
             startedAt: Date | null;
+            completedAt: Date | null;
+            notes: string | null;
             isRecurring: boolean;
             recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
             parentTaskId: string | null;
             checklist: import("@prisma/client/runtime/library").JsonValue | null;
+            templateId: string | null;
             minutesTaken: number | null;
+            createdAt: Date;
+            updatedAt: Date;
+            deletedAt: Date | null;
         })[];
     }>;
     updateTaskStatus(id: string, newStatus: TaskStatus, userId: string, extra?: {
         minutesTaken?: number;
         startedAt?: string;
         completedAt?: string;
+        notes?: string;
     }): Promise<{
-        createdBy: {
-            name: string;
-            id: string;
-        };
         assignedTo: {
+            id: string;
             email: string;
             name: string;
+        };
+        createdBy: {
             id: string;
+            name: string;
         };
         linkedDonor: {
             id: string;
@@ -457,26 +458,26 @@ export declare class StaffTasksService {
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        priority: import(".prisma/client").$Enums.TaskPriority;
-        status: import(".prisma/client").$Enums.TaskStatus;
-        templateId: string | null;
-        description: string | null;
-        createdById: string;
-        deletedAt: Date | null;
         title: string;
-        dueDate: Date | null;
-        completedAt: Date | null;
-        notes: string | null;
+        description: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        priority: import(".prisma/client").$Enums.TaskPriority;
         category: import(".prisma/client").$Enums.TaskCategory;
         assignedToId: string;
+        createdById: string;
         linkedDonorId: string | null;
+        dueDate: Date | null;
         startedAt: Date | null;
+        completedAt: Date | null;
+        notes: string | null;
         isRecurring: boolean;
         recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
         parentTaskId: string | null;
         checklist: import("@prisma/client/runtime/library").JsonValue | null;
+        templateId: string | null;
         minutesTaken: number | null;
+        createdAt: Date;
+        updatedAt: Date;
+        deletedAt: Date | null;
     }>;
 }

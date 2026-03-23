@@ -20,7 +20,7 @@ import { Loader2 } from "lucide-react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
-const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
+const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
 
 const TASK_CATEGORIES = [
   { value: "GENERAL", label: "General" },

@@ -152,6 +152,7 @@ export class StaffTasksController {
       minutesTaken: body.minutesTaken,
       startedAt: body.startedAt,
       completedAt: body.completedAt,
+      notes: body.notes,
     });
   }
 

@@ -26,10 +26,11 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any }>
 };
 
 const PRIORITY_COLORS: Record<string, string> = {
-  LOW: "bg-gray-100 text-gray-700 border-gray-200",
-  MEDIUM: "bg-blue-100 text-blue-700 border-blue-200",
-  HIGH: "bg-[#E6F4F1] text-[#5FA8A8] border-[#5FA8A8]",
-  URGENT: "bg-red-100 text-red-700 border-red-200",
+  LOW:      "bg-green-100 text-green-700 border-green-200",
+  MEDIUM:   "bg-yellow-100 text-yellow-700 border-yellow-200",
+  HIGH:     "bg-orange-100 text-orange-700 border-orange-200",
+  CRITICAL: "bg-red-100 text-red-700 border-red-200",
+  URGENT:   "bg-red-100 text-red-700 border-red-200",
 };
 
 function Field({ icon: Icon, label, value }: { icon: any; label: string; value?: string | null }) {
