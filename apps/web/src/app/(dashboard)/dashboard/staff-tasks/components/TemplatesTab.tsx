@@ -91,8 +91,16 @@ export default function TemplatesTab({ staffList }: Props) {
     fetchWithAuth("/api/task-templates?includeInactive=false")
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setTemplates(d); })
-      .catch(() => toast({ title: "Failed to load templates", variant: "destructive" }))
+      .catch(() => toast({ title: "Failed to load recurring tasks", variant: "destructive" }))
       .finally(() => setLoading(false));
+  }, []);
+
+  const refreshChecklist = useCallback(async () => {
+    try {
+      await fetchWithAuth("/api/task-templates/generate-today", { method: "POST" });
+    } catch {
+      // silent — checklist will refresh next time it loads
+    }
   }, []);
 
   useEffect(() => { loadTemplates(); }, [loadTemplates]);
@@ -126,9 +134,10 @@ export default function TemplatesTab({ staffList }: Props) {
         : await fetchWithAuth("/api/task-templates", { method: "POST", body: JSON.stringify(payload) });
       if (res.ok) {
         const created = await res.json();
-        toast({ title: editId ? "Template updated" : "Template created" });
+        toast({ title: editId ? "Recurring task updated" : "Recurring task created" });
         setShowForm(false); setEditId(null); resetForm();
         loadTemplates();
+        refreshChecklist();
         if (!editId && created?.id) {
           setExpandedItems((p) => ({ ...p, [created.id]: true }));
         }
@@ -163,7 +172,7 @@ export default function TemplatesTab({ staffList }: Props) {
     setDeletingId(id);
     try {
       const res = await fetchWithAuth(`/api/task-templates/${id}`, { method: "DELETE" });
-      if (res.ok) { toast({ title: "Template deleted" }); loadTemplates(); }
+      if (res.ok) { toast({ title: "Recurring task deleted" }); loadTemplates(); refreshChecklist(); }
       else toast({ title: "Delete failed", variant: "destructive" });
     } catch { toast({ title: "Error", variant: "destructive" }); }
     finally { setDeletingId(null); }
@@ -213,14 +222,14 @@ export default function TemplatesTab({ staffList }: Props) {
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <p className="text-sm text-muted-foreground">
-          Create reusable task templates with checklist items — auto-generate tasks for your team
+          Recurring tasks are auto-generated daily for your team based on frequency — manage them here
         </p>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={handleMarkMissed} data-testid="button-mark-missed">
             Mark Overdue as Missed
           </Button>
           <Button size="sm" onClick={() => { setShowForm(!showForm); setEditId(null); resetForm(); }} data-testid="button-new-template">
-            <Plus className="mr-1.5 h-4 w-4" />New Template
+            <Plus className="mr-1.5 h-4 w-4" />New Recurring Task
           </Button>
         </div>
       </div>
@@ -230,7 +239,7 @@ export default function TemplatesTab({ staffList }: Props) {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base">{editId ? "Edit Template" : "New Task Template"}</CardTitle>
+              <CardTitle className="text-base">{editId ? "Edit Recurring Task" : "New Recurring Task"}</CardTitle>
               <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { setShowForm(false); setEditId(null); resetForm(); }}>
                 <X className="h-4 w-4" />
               </Button>
@@ -290,7 +299,7 @@ export default function TemplatesTab({ staffList }: Props) {
             <div className="flex gap-2">
               <Button size="sm" onClick={handleSubmit} disabled={submitting} data-testid="button-save-template">
                 {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-                {submitting ? "Saving..." : (editId ? "Update Template" : "Create Template")}
+                {submitting ? "Saving..." : (editId ? "Update" : "Create Recurring Task")}
               </Button>
               <Button size="sm" variant="outline" onClick={() => { setShowForm(false); setEditId(null); resetForm(); }}>Cancel</Button>
             </div>
@@ -304,7 +313,7 @@ export default function TemplatesTab({ staffList }: Props) {
       ) : templates.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-12 text-muted-foreground">
           <Repeat className="h-10 w-10 opacity-30" />
-          <p>No templates yet. Create your first reusable task template.</p>
+          <p>No recurring tasks yet. Create one to auto-generate daily checklist tasks for your team.</p>
         </div>
       ) : (
         <div className="space-y-3">

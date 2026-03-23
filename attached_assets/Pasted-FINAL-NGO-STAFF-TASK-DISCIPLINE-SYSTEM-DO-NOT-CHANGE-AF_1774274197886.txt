@@ -1,0 +1,245 @@
+FINAL NGO STAFF TASK + DISCIPLINE SYSTEM (DO NOT CHANGE AFTER THIS)
+
+We are building a stable, production-ready staff management system.
+Keep it SIMPLE, STRICT, and FINAL.
+
+---------------------------------------
+1. CORE STRUCTURE (DO NOT MODIFY)
+---------------------------------------
+
+There are ONLY 3 modules:
+
+1. DAILY CHECKLIST (Recurring Tasks)
+2. STAFF TASKS (Manual Tasks)
+3. MISSED TASKS (Auto discipline system)
+
+---------------------------------------
+2. DATABASE (FINAL MODELS)
+---------------------------------------
+
+enum TaskCategory {
+  DONOR
+  STAFF
+}
+
+enum FrequencyType {
+  DAILY
+  WEEKLY
+  FORTNIGHT
+  MONTHLY
+  QUARTERLY
+  HALF_YEARLY
+  YEARLY
+}
+
+model TaskTemplate {
+  id            String   @id @default(cuid())
+  title         String
+  frequency     FrequencyType
+  assignedTo    String?
+  estimatedTime Int?   // minutes
+  createdAt     DateTime @default(now())
+}
+
+model Task {
+  id            String   @id @default(cuid())
+  title         String
+  category      TaskCategory
+  assignedTo    String?
+  templateId    String?
+
+  dueDate       DateTime
+  durationDays  Int?     // optional multi-day tasks
+
+  completed     Boolean @default(false)
+  completedAt   DateTime?
+
+  estimatedTime Int?
+  actualTime    Int?
+
+  status        String   @default("PENDING") // PENDING / COMPLETED / MISSED
+
+  createdAt     DateTime @default(now())
+}
+
+---------------------------------------
+3. DAILY CHECKLIST (RECURRING SYSTEM)
+---------------------------------------
+
+When Daily Checklist page loads:
+
+Run:
+generateTodayTasks()
+
+Logic:
+
+- Fetch all TaskTemplates
+- For each template:
+   if matches today's frequency:
+      if task not already created today:
+         create Task:
+           title
+           category = 'STAFF'
+           assignedTo
+           dueDate = today
+           estimatedTime
+
+---------------------------------------
+4. STAFF TASKS (MANUAL)
+---------------------------------------
+
+Used for one-time assignments.
+
+When creating:
+- MUST include:
+  assignedTo
+  dueDate
+  category = 'STAFF'
+
+---------------------------------------
+5. TASK COMPLETION FLOW
+---------------------------------------
+
+When staff clicks "Mark Done":
+
+Ask:
+→ "Enter time taken (minutes)"
+
+Then update:
+
+completed = true
+completedAt = now()
+actualTime = input
+status = "COMPLETED"
+
+---------------------------------------
+6. MISSED TASK SYSTEM (AUTO - NO BUTTON)
+---------------------------------------
+
+Run daily check:
+
+For each task:
+
+deadline = dueDate + durationDays (if exists)
+
+if (today > deadline AND completed = false):
+   status = "MISSED"
+
+REMOVE:
+❌ "Mark Overdue as Missed" button
+
+---------------------------------------
+7. DAILY CHECKLIST VIEW
+---------------------------------------
+
+Show:
+
+- Task title
+- Staff name
+- Estimated time
+- Checkbox (done)
+
+Group by staff
+
+---------------------------------------
+8. MISSED TASK PAGE
+---------------------------------------
+
+Show:
+
+- Staff name
+- Task title
+- Due date
+- Days missed
+
+---------------------------------------
+9. PERFORMANCE SYSTEM (FINAL)
+---------------------------------------
+
+For each staff:
+
+totalTasks
+completedTasks
+missedTasks
+
+completionRate = completed / total
+
+efficiencyScore:
+
+if actualTime <= estimatedTime → +5
+else → 0
+
+FINAL SCORE:
+
+score =
+(completedTasks * 10)
+- (missedTasks * 15)
++ (completionRate * 10)
++ efficiencyScore
+
+---------------------------------------
+10. STATUS LEVEL
+---------------------------------------
+
+score >= 90 → Excellent
+70–89 → Good
+50–69 → Warning
+<50 → Critical
+
+---------------------------------------
+11. SIMPLE AI INSIGHT (RULE BASED)
+---------------------------------------
+
+Generate message:
+
+if missedTasks > 5:
+→ "Needs improvement – missing tasks frequently"
+
+if completionRate > 0.9:
+→ "Excellent and consistent performer"
+
+if completionRate < 0.6:
+→ "High risk – low task completion"
+
+---------------------------------------
+12. UI RULES (IMPORTANT)
+---------------------------------------
+
+- Daily Checklist = only complete tasks
+- No editing here
+
+- Recurring Tasks page:
+  → Add / Edit / Delete templates
+
+- Staff Tasks:
+  → Manual assignments
+
+---------------------------------------
+13. FINAL RULES (DO NOT BREAK)
+---------------------------------------
+
+- DO NOT mix donor tasks
+- DO NOT add extra tabs
+- DO NOT complicate UI
+- DO NOT add unnecessary features
+
+---------------------------------------
+FINAL RESULT:
+
+Founder:
+→ Assign work
+→ Track completion
+→ See missed tasks
+→ See performance
+
+Staff:
+→ View tasks
+→ Mark done
+→ Enter time
+
+System:
+→ Auto generate
+→ Auto track missed
+→ Auto evaluate performance
+
+THIS SYSTEM IS FINAL. KEEP IT STABLE.

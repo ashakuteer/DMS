@@ -210,7 +210,7 @@ return ( <div className="p-6 space-y-6 max-w-7xl mx-auto">
       {isAdminOrManager && (
         <TabsTrigger value="templates" data-testid="tab-templates">
           <Repeat className="h-4 w-4 mr-1"/>
-          Templates
+          Recurring Tasks
         </TabsTrigger>
       )}
 

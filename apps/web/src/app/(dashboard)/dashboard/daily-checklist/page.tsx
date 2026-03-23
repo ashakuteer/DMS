@@ -128,7 +128,7 @@ export default function DailyChecklistPage() {
   }, [generateToday, loadTasks]);
 
   const toggleItem = async (task: Task, itemId: string) => {
-    if (task.status === "COMPLETED" || task.status === "MISSED") return;
+    if (task.status === "MISSED") return;
     const key = `${task.id}-${itemId}`;
     setTogglingItem(key);
 
@@ -154,6 +154,15 @@ export default function DailyChecklistPage() {
       }
     } else if (doneCount > 0) {
       body.status = "IN_PROGRESS";
+      // If was completed and un-checking, clear completion data
+      if (task.status === "COMPLETED") {
+        body.completedAt = null;
+        body.minutesTaken = null;
+      }
+    } else {
+      body.status = "PENDING";
+      body.completedAt = null;
+      body.minutesTaken = null;
     }
 
     try {
@@ -181,7 +190,7 @@ export default function DailyChecklistPage() {
   };
 
   const toggleNoChecklist = async (task: Task) => {
-    if (task.status === "COMPLETED" || task.status === "MISSED") return;
+    if (task.status === "MISSED") return;
     const now = new Date().toISOString();
     const isCompleting = task.status !== "COMPLETED";
     const body: any = {
@@ -194,6 +203,10 @@ export default function DailyChecklistPage() {
     if (isCompleting && !task.startedAt) {
       body.startedAt = now;
     }
+    if (!isCompleting) {
+      body.minutesTaken = null;
+      body.startedAt = null;
+    }
 
     try {
       const res = await fetchWithAuth(`/api/staff-tasks/${task.id}`, { method: "PATCH", body: JSON.stringify(body) });
@@ -203,7 +216,7 @@ export default function DailyChecklistPage() {
             t.id === task.id ? { ...t, ...body } : t
           )
         );
-        if (isCompleting) toast({ title: "Task marked complete!" });
+        toast({ title: isCompleting ? "Task marked complete!" : "Task marked as not complete" });
       }
     } catch {
       toast({ title: "Error", variant: "destructive" });
@@ -321,16 +334,17 @@ export default function DailyChecklistPage() {
                         <CardHeader className="pb-0 pt-4 px-4">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-3 flex-1 min-w-0">
-                              {/* Big checkbox for tasks without checklist items */}
+                              {/* Checkbox / toggle for tasks without checklist items */}
                               {!hasChecklist && (
                                 <button
                                   onClick={() => toggleNoChecklist(task)}
                                   disabled={isMissed}
-                                  className="mt-0.5 shrink-0 text-muted-foreground hover:text-primary disabled:opacity-50"
+                                  title={isCompleted ? "Click to mark as not complete" : "Click to mark as complete"}
+                                  className={`mt-0.5 shrink-0 group disabled:opacity-50 transition-colors ${isCompleted ? "text-green-600 hover:text-muted-foreground" : "text-muted-foreground hover:text-green-600"}`}
                                   data-testid={`checkbox-task-${task.id}`}
                                 >
                                   {isCompleted
-                                    ? <CheckSquare className="h-5 w-5 text-green-600" />
+                                    ? <CheckSquare className="h-5 w-5" />
                                     : <Square className="h-5 w-5" />}
                                 </button>
                               )}
