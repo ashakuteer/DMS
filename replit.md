@@ -1,5 +1,30 @@
 # NGO Donor Management System
 
+## Recent Changes (User + Role Stability Fix — Mar 2026)
+
+### Role System Overhaul
+- Added `OFFICE_ASSISTANT` to the Prisma `Role` enum (DB pushed via `prisma db push`)
+- `permissions.ts` updated: Role type, `ALL_ROLES`, `ROLE_LABELS`, and `ROLE_BADGE_COLORS` now include `TELECALLER`, `ACCOUNTANT`, `OFFICE_ASSISTANT`
+- Added `isAdmin()` helper: returns true for FOUNDER or ADMIN
+- `hasPermission()` now maps TELECALLER/ACCOUNTANT/OFFICE_ASSISTANT → STAFF-level in fallback mode
+- Exported `isAdmin` from `permissions.ts`
+
+### Backend Permission Fixes (Critical)
+- `RolePermissionsService.hasPermission()`: FOUNDER now correctly returns `true` (was ADMIN-only bug)
+- `getMyPermissionsFromCache()`: FOUNDER now returns all permissions (same as ADMIN)
+- `DEFAULT_PERMISSIONS` refactored with `STAFF_LIKE_ROLES` / `ADMIN_LIKE_ROLES` / `ALL_ACTIVE_ROLES` constants, includes `TELECALLER`, `ACCOUNTANT`, `OFFICE_ASSISTANT` with STAFF-level access
+- Added `staffTasks` module to `DEFAULT_PERMISSIONS`
+- `ensureNewRolePermissions()` runs on startup: upserts all roles × modules × actions so new roles always have DB entries even when seeding is skipped
+
+### Delete User Feature
+- `DELETE /api/users/:id` — soft deletes by setting `isActive = false`
+- Users page: "Delete User" option in the action dropdown with confirmation dialog
+- Cannot delete yourself (button disabled if `user.id === currentUser.id`)
+
+### Staff Role Coverage
+- `listStaffForAssignment()`: now includes TELECALLER, ACCOUNTANT, OFFICE_ASSISTANT
+- `listAllStaff()`: includes ADMIN, TELECALLER, ACCOUNTANT, OFFICE_ASSISTANT (plus STAFF)
+
 ## Recent Changes (Advanced Task Management — Mar 2026)
 
 ### Database

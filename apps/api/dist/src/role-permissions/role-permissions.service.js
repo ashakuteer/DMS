@@ -14,145 +14,154 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const audit_service_1 = require("../audit/audit.service");
 const client_1 = require("@prisma/client");
+const STAFF_LIKE_ROLES = [client_1.Role.STAFF, client_1.Role.TELECALLER, client_1.Role.ACCOUNTANT, client_1.Role.OFFICE_ASSISTANT];
+const ADMIN_LIKE_ROLES = [client_1.Role.FOUNDER, client_1.Role.ADMIN];
+const ALL_ACTIVE_ROLES = [...ADMIN_LIKE_ROLES, ...STAFF_LIKE_ROLES];
 const DEFAULT_PERMISSIONS = {
     donors: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        create: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        edit: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        delete: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        export: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        addNotes: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        viewSensitive: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        create: ALL_ACTIVE_ROLES,
+        edit: ALL_ACTIVE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
+        export: ADMIN_LIKE_ROLES,
+        addNotes: ALL_ACTIVE_ROLES,
+        viewSensitive: ADMIN_LIKE_ROLES,
     },
     donations: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        create: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        edit: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        delete: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        export: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        create: ALL_ACTIVE_ROLES,
+        edit: ALL_ACTIVE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
+        export: ADMIN_LIKE_ROLES,
     },
     beneficiaries: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        create: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        edit: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        delete: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        export: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        viewSensitive: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        create: ALL_ACTIVE_ROLES,
+        edit: ALL_ACTIVE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
+        export: ADMIN_LIKE_ROLES,
+        viewSensitive: ADMIN_LIKE_ROLES,
     },
     pledges: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        create: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        edit: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        delete: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        create: ALL_ACTIVE_ROLES,
+        edit: ALL_ACTIVE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
     },
     campaigns: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        create: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        edit: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        delete: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        create: ALL_ACTIVE_ROLES,
+        edit: ALL_ACTIVE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
     },
     reports: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        export: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        export: ADMIN_LIKE_ROLES,
     },
     analytics: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ADMIN_LIKE_ROLES,
     },
     management: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ADMIN_LIKE_ROLES,
     },
     settings: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ADMIN_LIKE_ROLES,
     },
     users: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ADMIN_LIKE_ROLES,
     },
     milestones: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ADMIN_LIKE_ROLES,
     },
     dailyActions: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
+        view: ALL_ACTIVE_ROLES,
     },
     reminders: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
+        view: ALL_ACTIVE_ROLES,
     },
     followUps: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        create: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        edit: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        delete: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        create: ALL_ACTIVE_ROLES,
+        edit: ALL_ACTIVE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
     },
     templates: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
+        view: ALL_ACTIVE_ROLES,
     },
     reportCampaigns: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ADMIN_LIKE_ROLES,
     },
     emailQueue: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ADMIN_LIKE_ROLES,
     },
     auditLog: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ADMIN_LIKE_ROLES,
     },
     backup: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        create: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        restore: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ADMIN_LIKE_ROLES,
+        create: ADMIN_LIKE_ROLES,
+        restore: ADMIN_LIKE_ROLES,
     },
     birthdayWishes: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        send: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        manageTemplates: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        send: ALL_ACTIVE_ROLES,
+        manageTemplates: ADMIN_LIKE_ROLES,
     },
     donorUpdates: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        create: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        send: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        delete: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        create: ALL_ACTIVE_ROLES,
+        send: ALL_ACTIVE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
     },
     donorReports: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        generate: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        share: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        delete: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        manageTemplates: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        generate: ADMIN_LIKE_ROLES,
+        share: ADMIN_LIKE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
+        manageTemplates: ADMIN_LIKE_ROLES,
     },
     progressReports: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        generate: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        share: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        delete: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        generate: ALL_ACTIVE_ROLES,
+        share: ALL_ACTIVE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
     },
     homeSummary: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        export: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
+        view: ALL_ACTIVE_ROLES,
+        export: ALL_ACTIVE_ROLES,
     },
     impact: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
+        view: ALL_ACTIVE_ROLES,
     },
     retention: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
+        view: ALL_ACTIVE_ROLES,
     },
     ngoDocuments: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        upload: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        edit: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        delete: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        accessLog: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ALL_ACTIVE_ROLES,
+        upload: ALL_ACTIVE_ROLES,
+        edit: ALL_ACTIVE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
+        accessLog: ADMIN_LIKE_ROLES,
     },
     timeMachine: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        create: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        edit: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
-        delete: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        uploadPhoto: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
+        view: ALL_ACTIVE_ROLES,
+        create: ALL_ACTIVE_ROLES,
+        edit: ALL_ACTIVE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
+        uploadPhoto: ALL_ACTIVE_ROLES,
     },
     permissions: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
-        manage: [client_1.Role.FOUNDER, client_1.Role.ADMIN],
+        view: ADMIN_LIKE_ROLES,
+        manage: ADMIN_LIKE_ROLES,
     },
     dashboard: {
-        view: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF],
+        view: ALL_ACTIVE_ROLES,
+    },
+    staffTasks: {
+        view: ALL_ACTIVE_ROLES,
+        create: ADMIN_LIKE_ROLES,
+        update: ALL_ACTIVE_ROLES,
+        delete: ADMIN_LIKE_ROLES,
     },
 };
 let RolePermissionsService = class RolePermissionsService {
@@ -170,6 +179,12 @@ let RolePermissionsService = class RolePermissionsService {
             console.error("[RolePermissionsService] seedDefaultPermissions failed (non-fatal):", err);
         }
         try {
+            await this.ensureNewRolePermissions();
+        }
+        catch (err) {
+            console.error("[RolePermissionsService] ensureNewRolePermissions failed (non-fatal):", err);
+        }
+        try {
             await this.refreshCache();
         }
         catch (err) {
@@ -185,6 +200,26 @@ let RolePermissionsService = class RolePermissionsService {
             this.cacheInitialized = true;
             console.log("[RolePermissionsService] Fallback: cache populated from DEFAULT_PERMISSIONS");
         }
+    }
+    async ensureNewRolePermissions() {
+        const allRoles = Object.values(client_1.Role);
+        const data = [];
+        for (const [module, actions] of Object.entries(DEFAULT_PERMISSIONS)) {
+            for (const [action, allowedRoles] of Object.entries(actions)) {
+                for (const role of allRoles) {
+                    data.push({
+                        role,
+                        module,
+                        action,
+                        allowed: allowedRoles.includes(role),
+                    });
+                }
+            }
+        }
+        await this.prisma.rolePermission.createMany({
+            data,
+            skipDuplicates: true,
+        });
     }
     async seedDefaultPermissions() {
         const count = await this.prisma.rolePermission.count();
@@ -222,7 +257,7 @@ let RolePermissionsService = class RolePermissionsService {
         this.cacheInitialized = true;
     }
     hasPermission(role, module, action) {
-        if (role === client_1.Role.ADMIN)
+        if (role === client_1.Role.FOUNDER || role === client_1.Role.ADMIN)
             return true;
         if (!this.cacheInitialized)
             return false;
@@ -280,7 +315,7 @@ let RolePermissionsService = class RolePermissionsService {
         }
     }
     getMyPermissionsFromCache(role) {
-        if (role === client_1.Role.ADMIN) {
+        if (role === client_1.Role.FOUNDER || role === client_1.Role.ADMIN) {
             const result = {};
             for (const [module, actions] of Object.entries(DEFAULT_PERMISSIONS)) {
                 result[module] = Object.keys(actions);

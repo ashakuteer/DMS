@@ -1,0 +1,206 @@
+FINAL FIX: USER + STAFF UNIFICATION + PERMISSIONS + CLEAN SYSTEM
+
+THIS IS A CRITICAL STABILITY FIX.
+DO NOT ADD EXTRA FEATURES. ONLY FIX AND ALIGN.
+
+---------------------------------------
+1. SINGLE SOURCE OF TRUTH (MANDATORY)
+---------------------------------------
+
+User table is MASTER.
+
+StaffProfile is ONLY additional info.
+
+UPDATE schema:
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  role      Role
+  isActive  Boolean  @default(true)
+
+  staffProfile StaffProfile?
+}
+
+model StaffProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+
+  designation String?
+  phone       String?
+
+  createdAt DateTime @default(now())
+}
+
+REMOVE:
+- name/email duplication from StaffProfile
+
+---------------------------------------
+2. ROLE SYSTEM (FINAL)
+---------------------------------------
+
+enum Role {
+  FOUNDER
+  ADMIN
+  STAFF
+  TELECALLER
+  ACCOUNTANT
+  OFFICE_ASSISTANT
+}
+
+RULE:
+- ALWAYS read role from User table
+- NEVER hardcode role in UI
+
+---------------------------------------
+3. PERMISSION FIX (CRITICAL BUG)
+---------------------------------------
+
+Fix Access Denied issue:
+
+Create helper:
+
+function isAdmin(user) {
+  return user.role === 'FOUNDER' || user.role === 'ADMIN'
+}
+
+Apply to:
+
+/admin/*
+/dashboard/users
+/staff-management
+/archive
+/permissions
+
+IF isAdmin → allow
+ELSE → deny
+
+👉 Founder MUST ALWAYS have access
+
+---------------------------------------
+4. AUTO CREATE STAFF PROFILE
+---------------------------------------
+
+When creating new User:
+
+IF role != FOUNDER:
+
+→ Automatically create StaffProfile
+
+---------------------------------------
+5. UNIFY DATA EVERYWHERE
+---------------------------------------
+
+ALL pages must use:
+
+User.name  
+User.email  
+User.role  
+
+StaffProfile only for:
+- phone
+- designation
+
+Fix:
+
+- Staff Profiles page → join with User
+- Staff & Tasks → use User data
+- Performance → use User data
+
+NO mismatches allowed
+
+---------------------------------------
+6. FIX EXISTING DATA (IMPORTANT)
+---------------------------------------
+
+Run migration:
+
+- Link existing staff profiles to users via email
+- Remove duplicate records
+- Ensure each staff has ONE user + ONE profile
+
+---------------------------------------
+7. DELETE USER (ADD OPTION)
+---------------------------------------
+
+In User Management:
+
+Add DELETE button
+
+API:
+
+DELETE /users/:id
+
+Logic:
+
+- Soft delete:
+  isActive = false
+
+- OR hard delete if safe
+
+---------------------------------------
+8. FIX STAFF ROLE DISPLAY
+---------------------------------------
+
+Update roles:
+
+Chepuri Preethi → ADMIN  
+Talupula Nagamani → OFFICE_ASSISTANT  
+
+Ensure UI reflects from DB
+
+---------------------------------------
+9. FIX ACCESS DENIED UI BUG
+---------------------------------------
+
+If current logged-in user is FOUNDER:
+
+→ NEVER show Access Denied
+
+Fix middleware / guard logic
+
+---------------------------------------
+10. CLEAN NAVIGATION (FINAL)
+---------------------------------------
+
+Staff Module:
+
+Staff & Tasks:
+- My Tasks
+- All Tasks
+- Staff
+- Recurring Tasks
+
+Sidebar:
+- Daily Checklist
+- Missed Tasks
+- Performance
+
+Admin Tools:
+- Users
+- Permissions
+- Archive
+
+---------------------------------------
+11. SAFETY CHECKS
+---------------------------------------
+
+- Add null checks everywhere
+- Prevent frontend crash
+- Handle empty states
+
+---------------------------------------
+FINAL RESULT:
+
+✔ One user = one identity everywhere  
+✔ Roles consistent  
+✔ No mismatch  
+✔ Founder has full access  
+✔ Staff data clean  
+✔ Delete option available  
+✔ System stable and usable  
+
+DO NOT CHANGE STRUCTURE AFTER THIS
+ONLY USE SYSTEM

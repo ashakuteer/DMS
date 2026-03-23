@@ -97,4 +97,11 @@ export declare class UsersService {
         createdAt: Date;
         isActive: boolean;
     }[]>;
+    deleteUser(id: string): Promise<{
+        email: string;
+        name: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+        isActive: boolean;
+    }>;
 }

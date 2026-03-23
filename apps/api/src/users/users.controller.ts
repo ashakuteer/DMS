@@ -4,6 +4,7 @@ import {
   Post,
   Param,
   Patch,
+  Delete,
   Query,
   Body,
   UseGuards,
@@ -114,5 +115,11 @@ export class UsersController {
     @Body("toUserId") toUserId: string,
   ) {
     return this.usersService.reassignPhone(fromUserId, toUserId);
+  }
+
+  @Delete(":id")
+  @Roles(Role.ADMIN, Role.FOUNDER)
+  async deleteUser(@Param("id") id: string) {
+    return this.usersService.deleteUser(id);
   }
 }

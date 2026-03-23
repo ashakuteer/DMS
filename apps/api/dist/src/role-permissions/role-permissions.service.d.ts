@@ -21,6 +21,7 @@ export declare class RolePermissionsService implements OnModuleInit {
     private cacheInitialized;
     constructor(prisma: PrismaService, auditService: AuditService);
     onModuleInit(): Promise<void>;
+    private ensureNewRolePermissions;
     private seedDefaultPermissions;
     refreshCache(): Promise<void>;
     hasPermission(role: Role, module: string, action: string): boolean;

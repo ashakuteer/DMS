@@ -48,6 +48,7 @@ import {
   Pencil,
   Loader2,
   Users,
+  Trash2,
 } from "lucide-react";
 import { authStorage, fetchWithAuth } from "@/lib/auth";
 import { canAccessModule, ALL_ROLES, ROLE_LABELS } from "@/lib/permissions";
@@ -71,6 +72,9 @@ const ROLE_BADGE_COLORS: Record<string, string> = {
   FOUNDER: "bg-purple-100 text-purple-800 border-purple-200",
   ADMIN: "bg-red-100 text-red-800 border-red-200",
   STAFF: "bg-green-100 text-green-800 border-green-200",
+  TELECALLER: "bg-blue-100 text-blue-800 border-blue-200",
+  ACCOUNTANT: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  OFFICE_ASSISTANT: "bg-orange-100 text-orange-800 border-orange-200",
 };
 
 async function fetchUsers(): Promise<{ items: SystemUser[]; total: number }> {
@@ -91,6 +95,7 @@ export default function UsersPage() {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [resetPwDialogOpen, setResetPwDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<SystemUser | null>(null);
 
   const [newUser, setNewUser] = useState({
@@ -226,6 +231,26 @@ export default function UsersPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetchWithAuth(`/api/users/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to delete user");
+      }
+      return res.json();
+    },
+    onSuccess: (deleted: SystemUser) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      setDeleteDialogOpen(false);
+      setSelectedUser(null);
+      toast({ title: "User deleted", description: `${deleted.name} has been deactivated.` });
+    },
+    onError: (err: Error) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    },
+  });
+
   function openEditDialog(user: SystemUser) {
     setSelectedUser(user);
     setEditData({ name: user.name, phone: user.phone ?? "", role: user.role });
@@ -237,6 +262,11 @@ export default function UsersPage() {
     setNewPassword("");
     setConfirmNewPassword("");
     setResetPwDialogOpen(true);
+  }
+
+  function openDeleteDialog(user: SystemUser) {
+    setSelectedUser(user);
+    setDeleteDialogOpen(true);
   }
 
   function handleCreateSubmit() {
@@ -468,6 +498,16 @@ export default function UsersPage() {
                                 </>
                               )}
                             </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              data-testid={`menu-delete-${user.id}`}
+                              onClick={() => openDeleteDialog(user)}
+                              disabled={user.id === currentUser?.id}
+                              className="text-destructive focus:text-destructive"
+                            >
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete User
+                            </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -682,6 +722,30 @@ export default function UsersPage() {
             >
               {resetPasswordMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("users.reset_password")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete <strong>{selectedUser?.name}</strong>? This will deactivate their account. This action can be undone by activating them again.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              data-testid="button-confirm-delete-user"
+              variant="destructive"
+              onClick={() => selectedUser && deleteMutation.mutate(selectedUser.id)}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete User
             </Button>
           </DialogFooter>
         </DialogContent>

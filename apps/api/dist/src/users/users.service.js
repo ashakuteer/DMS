@@ -165,7 +165,7 @@ let UsersService = class UsersService {
         return this.prisma.user.findMany({
             where: {
                 isActive: true,
-                role: { in: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF] },
+                role: { in: [client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF, client_1.Role.TELECALLER, client_1.Role.ACCOUNTANT, client_1.Role.OFFICE_ASSISTANT] },
             },
             select: {
                 id: true,
@@ -252,7 +252,7 @@ let UsersService = class UsersService {
     async listAllStaff() {
         return this.prisma.user.findMany({
             where: {
-                role: { in: [client_1.Role.STAFF] },
+                role: { in: [client_1.Role.STAFF, client_1.Role.TELECALLER, client_1.Role.ACCOUNTANT, client_1.Role.OFFICE_ASSISTANT, client_1.Role.ADMIN] },
             },
             select: {
                 id: true,
@@ -264,6 +264,22 @@ let UsersService = class UsersService {
                 createdAt: true,
             },
             orderBy: { name: "asc" },
+        });
+    }
+    async deleteUser(id) {
+        const user = await this.prisma.user.findUnique({ where: { id } });
+        if (!user)
+            throw new common_1.NotFoundException("User not found");
+        return this.prisma.user.update({
+            where: { id },
+            data: { isActive: false },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                isActive: true,
+            },
         });
     }
 };

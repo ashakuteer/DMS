@@ -96,5 +96,12 @@ export declare class UsersController {
         success: boolean;
         message: string;
     }>;
+    deleteUser(id: string): Promise<{
+        email: string;
+        name: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+        isActive: boolean;
+    }>;
 }
 export {};

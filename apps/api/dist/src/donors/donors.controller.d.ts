@@ -109,6 +109,7 @@ export declare class DonorsController {
         country: string | null;
         pincode: string | null;
         profession: string | null;
+        visited: boolean;
         approximateAge: number | null;
         gender: import(".prisma/client").$Enums.Gender | null;
         incomeSpectrum: import(".prisma/client").$Enums.IncomeSpectrum | null;
@@ -443,6 +444,7 @@ export declare class DonorsController {
         country: string | null;
         pincode: string | null;
         profession: string | null;
+        visited: boolean;
         approximateAge: number | null;
         gender: import(".prisma/client").$Enums.Gender | null;
         incomeSpectrum: import(".prisma/client").$Enums.IncomeSpectrum | null;
@@ -508,6 +510,7 @@ export declare class DonorsController {
         country: string | null;
         pincode: string | null;
         profession: string | null;
+        visited: boolean;
         approximateAge: number | null;
         gender: import(".prisma/client").$Enums.Gender | null;
         incomeSpectrum: import(".prisma/client").$Enums.IncomeSpectrum | null;
@@ -573,6 +576,7 @@ export declare class DonorsController {
         country: string | null;
         pincode: string | null;
         profession: string | null;
+        visited: boolean;
         approximateAge: number | null;
         gender: import(".prisma/client").$Enums.Gender | null;
         incomeSpectrum: import(".prisma/client").$Enums.IncomeSpectrum | null;
@@ -638,6 +642,7 @@ export declare class DonorsController {
         country: string | null;
         pincode: string | null;
         profession: string | null;
+        visited: boolean;
         approximateAge: number | null;
         gender: import(".prisma/client").$Enums.Gender | null;
         incomeSpectrum: import(".prisma/client").$Enums.IncomeSpectrum | null;
@@ -783,6 +788,7 @@ export declare class DonorsController {
         country: string | null;
         pincode: string | null;
         profession: string | null;
+        visited: boolean;
         approximateAge: number | null;
         gender: import(".prisma/client").$Enums.Gender | null;
         incomeSpectrum: import(".prisma/client").$Enums.IncomeSpectrum | null;
@@ -850,6 +856,7 @@ export declare class DonorsController {
         country: string | null;
         pincode: string | null;
         profession: string | null;
+        visited: boolean;
         approximateAge: number | null;
         gender: import(".prisma/client").$Enums.Gender | null;
         incomeSpectrum: import(".prisma/client").$Enums.IncomeSpectrum | null;

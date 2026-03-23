@@ -1,4 +1,4 @@
-type Role = 'FOUNDER' | 'ADMIN' | 'STAFF';
+type Role = 'FOUNDER' | 'ADMIN' | 'STAFF' | 'TELECALLER' | 'ACCOUNTANT' | 'OFFICE_ASSISTANT';
 
 export const DEFAULT_PERMISSIONS: Record<string, Record<string, Role[]>> = {
   donors: {
@@ -169,6 +169,8 @@ export function clearApiPermissions() {
   _apiPermissions = null;
 }
 
+const STAFF_EQUIVALENT_ROLES = ['TELECALLER', 'ACCOUNTANT', 'OFFICE_ASSISTANT'];
+
 export function hasPermission(
   userRole: string | undefined | null,
   module: string,
@@ -183,11 +185,12 @@ export function hasPermission(
     return modulePerms.includes(action);
   }
 
+  const effectiveRole = STAFF_EQUIVALENT_ROLES.includes(userRole) ? 'STAFF' : userRole;
   const modulePerms = PERMISSIONS[module];
   if (!modulePerms) return false;
   const allowedRoles = (modulePerms as Record<string, Role[]>)[action];
   if (!allowedRoles) return false;
-  return allowedRoles.includes(userRole as Role);
+  return allowedRoles.includes(effectiveRole as Role);
 }
 
 export function canAccessModule(
@@ -197,10 +200,17 @@ export function canAccessModule(
   return hasPermission(userRole, module, 'view');
 }
 
-export const ALL_ROLES: Role[] = ['FOUNDER', 'ADMIN', 'STAFF'];
+export const ALL_ROLES: Role[] = ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'ACCOUNTANT', 'OFFICE_ASSISTANT'];
 
 export const ROLE_LABELS: Record<string, string> = {
   FOUNDER: 'Founder',
   ADMIN: 'Admin',
   STAFF: 'Staff',
+  TELECALLER: 'Telecaller',
+  ACCOUNTANT: 'Accountant',
+  OFFICE_ASSISTANT: 'Office Assistant',
 };
+
+export function isAdmin(user: { role?: string } | null | undefined): boolean {
+  return user?.role === 'FOUNDER' || user?.role === 'ADMIN';
+}

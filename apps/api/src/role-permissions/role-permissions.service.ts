@@ -17,145 +17,155 @@ export interface PermissionMatrix {
   };
 }
 
+const STAFF_LIKE_ROLES = [Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT, Role.OFFICE_ASSISTANT];
+const ADMIN_LIKE_ROLES = [Role.FOUNDER, Role.ADMIN];
+const ALL_ACTIVE_ROLES = [...ADMIN_LIKE_ROLES, ...STAFF_LIKE_ROLES];
+
 const DEFAULT_PERMISSIONS: Record<string, Record<string, Role[]>> = {
   donors: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    create: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    edit: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    delete: [Role.FOUNDER, Role.ADMIN],
-    export: [Role.FOUNDER, Role.ADMIN],
-    addNotes: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    viewSensitive: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    create: ALL_ACTIVE_ROLES,
+    edit: ALL_ACTIVE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
+    export: ADMIN_LIKE_ROLES,
+    addNotes: ALL_ACTIVE_ROLES,
+    viewSensitive: ADMIN_LIKE_ROLES,
   },
   donations: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    create: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    edit: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    delete: [Role.FOUNDER, Role.ADMIN],
-    export: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    create: ALL_ACTIVE_ROLES,
+    edit: ALL_ACTIVE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
+    export: ADMIN_LIKE_ROLES,
   },
   beneficiaries: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    create: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    edit: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    delete: [Role.FOUNDER, Role.ADMIN],
-    export: [Role.FOUNDER, Role.ADMIN],
-    viewSensitive: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    create: ALL_ACTIVE_ROLES,
+    edit: ALL_ACTIVE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
+    export: ADMIN_LIKE_ROLES,
+    viewSensitive: ADMIN_LIKE_ROLES,
   },
   pledges: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    create: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    edit: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    delete: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    create: ALL_ACTIVE_ROLES,
+    edit: ALL_ACTIVE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
   },
   campaigns: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    create: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    edit: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    delete: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    create: ALL_ACTIVE_ROLES,
+    edit: ALL_ACTIVE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
   },
   reports: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    export: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    export: ADMIN_LIKE_ROLES,
   },
   analytics: {
-    view: [Role.FOUNDER, Role.ADMIN],
+    view: ADMIN_LIKE_ROLES,
   },
   management: {
-    view: [Role.FOUNDER, Role.ADMIN],
+    view: ADMIN_LIKE_ROLES,
   },
   settings: {
-    view: [Role.FOUNDER, Role.ADMIN],
+    view: ADMIN_LIKE_ROLES,
   },
   users: {
-    view: [Role.FOUNDER, Role.ADMIN],
+    view: ADMIN_LIKE_ROLES,
   },
   milestones: {
-    view: [Role.FOUNDER, Role.ADMIN],
+    view: ADMIN_LIKE_ROLES,
   },
   dailyActions: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
+    view: ALL_ACTIVE_ROLES,
   },
   reminders: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
+    view: ALL_ACTIVE_ROLES,
   },
   followUps: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    create: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    edit: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    delete: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    create: ALL_ACTIVE_ROLES,
+    edit: ALL_ACTIVE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
   },
   templates: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
+    view: ALL_ACTIVE_ROLES,
   },
   reportCampaigns: {
-    view: [Role.FOUNDER, Role.ADMIN],
+    view: ADMIN_LIKE_ROLES,
   },
   emailQueue: {
-    view: [Role.FOUNDER, Role.ADMIN],
+    view: ADMIN_LIKE_ROLES,
   },
   auditLog: {
-    view: [Role.FOUNDER, Role.ADMIN],
+    view: ADMIN_LIKE_ROLES,
   },
   backup: {
-    view: [Role.FOUNDER, Role.ADMIN],
-    create: [Role.FOUNDER, Role.ADMIN],
-    restore: [Role.FOUNDER, Role.ADMIN],
+    view: ADMIN_LIKE_ROLES,
+    create: ADMIN_LIKE_ROLES,
+    restore: ADMIN_LIKE_ROLES,
   },
   birthdayWishes: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    send: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    manageTemplates: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    send: ALL_ACTIVE_ROLES,
+    manageTemplates: ADMIN_LIKE_ROLES,
   },
   donorUpdates: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    create: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    send: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    delete: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    create: ALL_ACTIVE_ROLES,
+    send: ALL_ACTIVE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
   },
   donorReports: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    generate: [Role.FOUNDER, Role.ADMIN],
-    share: [Role.FOUNDER, Role.ADMIN],
-    delete: [Role.FOUNDER, Role.ADMIN],
-    manageTemplates: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    generate: ADMIN_LIKE_ROLES,
+    share: ADMIN_LIKE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
+    manageTemplates: ADMIN_LIKE_ROLES,
   },
   progressReports: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    generate: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    share: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    delete: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    generate: ALL_ACTIVE_ROLES,
+    share: ALL_ACTIVE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
   },
   homeSummary: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    export: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
+    view: ALL_ACTIVE_ROLES,
+    export: ALL_ACTIVE_ROLES,
   },
   impact: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
+    view: ALL_ACTIVE_ROLES,
   },
   retention: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
+    view: ALL_ACTIVE_ROLES,
   },
   ngoDocuments: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    upload: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    edit: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    delete: [Role.FOUNDER, Role.ADMIN],
-    accessLog: [Role.FOUNDER, Role.ADMIN],
+    view: ALL_ACTIVE_ROLES,
+    upload: ALL_ACTIVE_ROLES,
+    edit: ALL_ACTIVE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
+    accessLog: ADMIN_LIKE_ROLES,
   },
   timeMachine: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    create: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    edit: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
-    delete: [Role.FOUNDER, Role.ADMIN],
-    uploadPhoto: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
+    view: ALL_ACTIVE_ROLES,
+    create: ALL_ACTIVE_ROLES,
+    edit: ALL_ACTIVE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
+    uploadPhoto: ALL_ACTIVE_ROLES,
   },
   permissions: {
-    view: [Role.FOUNDER, Role.ADMIN],
-    manage: [Role.FOUNDER, Role.ADMIN],
+    view: ADMIN_LIKE_ROLES,
+    manage: ADMIN_LIKE_ROLES,
   },
   dashboard: {
-    view: [Role.FOUNDER, Role.ADMIN, Role.STAFF],
+    view: ALL_ACTIVE_ROLES,
+  },
+  staffTasks: {
+    view: ALL_ACTIVE_ROLES,
+    create: ADMIN_LIKE_ROLES,
+    update: ALL_ACTIVE_ROLES,
+    delete: ADMIN_LIKE_ROLES,
   },
 };
 
@@ -176,6 +186,11 @@ export class RolePermissionsService implements OnModuleInit {
       console.error("[RolePermissionsService] seedDefaultPermissions failed (non-fatal):", err);
     }
     try {
+      await this.ensureNewRolePermissions();
+    } catch (err) {
+      console.error("[RolePermissionsService] ensureNewRolePermissions failed (non-fatal):", err);
+    }
+    try {
       await this.refreshCache();
     } catch (err) {
       console.error("[RolePermissionsService] refreshCache failed (non-fatal):", err);
@@ -191,6 +206,29 @@ export class RolePermissionsService implements OnModuleInit {
       this.cacheInitialized = true;
       console.log("[RolePermissionsService] Fallback: cache populated from DEFAULT_PERMISSIONS");
     }
+  }
+
+  private async ensureNewRolePermissions() {
+    const allRoles = Object.values(Role);
+    const data: { role: Role; module: string; action: string; allowed: boolean }[] = [];
+
+    for (const [module, actions] of Object.entries(DEFAULT_PERMISSIONS)) {
+      for (const [action, allowedRoles] of Object.entries(actions)) {
+        for (const role of allRoles) {
+          data.push({
+            role,
+            module,
+            action,
+            allowed: allowedRoles.includes(role),
+          });
+        }
+      }
+    }
+
+    await this.prisma.rolePermission.createMany({
+      data,
+      skipDuplicates: true,
+    });
   }
 
   private async seedDefaultPermissions() {
@@ -243,7 +281,7 @@ export class RolePermissionsService implements OnModuleInit {
   }
 
   hasPermission(role: Role, module: string, action: string): boolean {
-    if (role === Role.ADMIN) return true;
+    if (role === Role.FOUNDER || role === Role.ADMIN) return true;
     if (!this.cacheInitialized) return false;
     return this.permissionCache.has(`${role}:${module}:${action}`);
   }
@@ -310,8 +348,8 @@ export class RolePermissionsService implements OnModuleInit {
   }
 
   private getMyPermissionsFromCache(role: Role): Record<string, string[]> {
-    if (role === Role.ADMIN) {
-      // ADMIN has all permissions — reconstruct from DEFAULT_PERMISSIONS
+    if (role === Role.FOUNDER || role === Role.ADMIN) {
+      // FOUNDER and ADMIN have all permissions — reconstruct from DEFAULT_PERMISSIONS
       const result: Record<string, string[]> = {};
       for (const [module, actions] of Object.entries(DEFAULT_PERMISSIONS)) {
         result[module] = Object.keys(actions);
