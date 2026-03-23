@@ -252,9 +252,9 @@ model Donation {
   donationType      DonationType       @default(CASH)
   donationMode      DonationMode?
   donationPurpose   DonationPurpose?
-  donationCategory  DonationCategory?
-  donationOccasion  DonationOccasion?
-  scheduleType      DonationSchedule?
+  donationCategory  String?
+donationOccasion  String?
+scheduleType      String?
   transactionId     String?
   remarks           String?
   quantity          Decimal?           @db.Decimal(10, 2)
