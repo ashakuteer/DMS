@@ -37,7 +37,7 @@ export class SmartReportsService {
     if (filters.city) where.city = { contains: filters.city, mode: 'insensitive' };
     if (filters.state) where.state = { contains: filters.state, mode: 'insensitive' };
     if (filters.country) where.country = { contains: filters.country, mode: 'insensitive' };
-    if (filters.profession) where.professionType = filters.profession;
+    if (filters.profession) where.profession = filters.profession;
     if (filters.visited !== undefined) where.visited = filters.visited;
     return where;
   }
@@ -72,7 +72,7 @@ export class SmartReportsService {
         city: true,
         state: true,
         country: true,
-        professionType: true,
+        profession: true,
         donations: {
           where: donationWhere,
           select: {
@@ -100,7 +100,7 @@ export class SmartReportsService {
       } else if (groupBy === 'country') {
         keys = [donor.country || 'India'];
       } else if (groupBy === 'profession') {
-        keys = [donor.professionType || 'OTHER'];
+        keys = [donor.profession || 'OTHER'];
       } else if (groupBy === 'category') {
         const cats = [...new Set(donor.donations.map(d => d.donationCategory || 'OTHER'))];
         keys = cats;
@@ -288,12 +288,12 @@ export class SmartReportsService {
           donationCategory: true,
           donationOccasion: true,
           scheduleType: true,
-          donor: { select: { id: true, city: true, state: true, country: true, professionType: true } },
+          donor: { select: { id: true, city: true, state: true, country: true, profession: true } },
         },
       }),
       this.prisma.donor.findMany({
         where: { deletedAt: null },
-        select: { id: true, professionType: true },
+        select: { id: true, profession: true },
       }),
       this.prisma.donor.findMany({
         where: { deletedAt: null, donations: { some: { deletedAt: null } } },
@@ -343,7 +343,7 @@ export class SmartReportsService {
     // 2. Profession stats
     const profMap = new Map<string, number>();
     for (const d of donorWithProfession) {
-      const key = d.professionType || 'OTHER';
+      const key = d.profession || 'OTHER';
       profMap.set(key, (profMap.get(key) || 0) + 1);
     }
     const professionStats = Array.from(profMap.entries()).map(([profession, count]) => ({ profession, count }))
