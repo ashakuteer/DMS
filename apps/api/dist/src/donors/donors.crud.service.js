@@ -332,40 +332,16 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         }
     }
     async update(user, id, data, ipAddress, userAgent) {
-        const existing = await this.getActiveDonorOrThrow(id);
-        const { individualProfile, volunteerProfile, influencerProfile, csrProfile, ...donorData } = data;
+        await this.getActiveDonorOrThrow(id);
+        const { individualProfile, volunteerProfile, influencerProfile, csrProfile, visited, visitedHome, professionType, ...rest } = data;
+        const donorData = {
+            ...rest,
+            profession: rest.profession || professionType || null,
+        };
         const donor = await this.prisma.donor.update({
             where: { id },
             data: donorData,
         });
-        if (individualProfile !== undefined) {
-            await this.prisma.individualDonorProfile.upsert({
-                where: { donorId: id },
-                create: { donorId: id, ...individualProfile },
-                update: individualProfile,
-            });
-        }
-        if (volunteerProfile !== undefined) {
-            await this.prisma.volunteerProfile.upsert({
-                where: { donorId: id },
-                create: { donorId: id, ...volunteerProfile },
-                update: volunteerProfile,
-            });
-        }
-        if (influencerProfile !== undefined) {
-            await this.prisma.influencerProfile.upsert({
-                where: { donorId: id },
-                create: { donorId: id, ...influencerProfile },
-                update: influencerProfile,
-            });
-        }
-        if (csrProfile !== undefined) {
-            await this.prisma.cSRProfile.upsert({
-                where: { donorId: id },
-                create: { donorId: id, ...csrProfile },
-                update: csrProfile,
-            });
-        }
         return donor;
     }
     async softDelete(user, id, deleteReason, ipAddress, userAgent) {
