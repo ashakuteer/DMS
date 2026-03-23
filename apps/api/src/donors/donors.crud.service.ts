@@ -406,7 +406,7 @@ if (assignedToUserId) {
   }
 }
 
-  async update(
+ async update(
   user: UserContext,
   id: string,
   data: any,
@@ -420,23 +420,22 @@ if (assignedToUserId) {
     volunteerProfile,
     influencerProfile,
     csrProfile,
-    ...rawData
+    professionType, // ❌ remove from input
+    ...rest
   } = data;
 
-  // ✅ FIX: Map frontend wrong fields → correct DB fields
+  // ✅ Build CLEAN object (only valid DB fields)
   const donorData: any = {
-    ...rawData,
-    profession: rawData.profession || rawData.professionType || null,
+    ...rest,
+    profession: rest.profession || professionType || null,
   };
-
-  // ❌ Remove invalid field to avoid Prisma crash
-  delete donorData.professionType;
 
   const donor = await this.prisma.donor.update({
     where: { id },
     data: donorData,
   });
 
+  // ✅ profiles (unchanged)
   if (individualProfile !== undefined) {
     await this.prisma.individualDonorProfile.upsert({
       where: { donorId: id },
