@@ -414,15 +414,6 @@ async update(
 ) {
   await this.getActiveDonorOrThrow(id);
 
-  async update(
-  user: any,
-  id: string,
-  data: any,
-  ipAddress?: string,
-  userAgent?: string,
-) {
-  await this.getActiveDonorOrThrow(id);
-
   const {
     individualProfile,
     volunteerProfile,
@@ -444,19 +435,29 @@ async update(
   return donor;
 }
 
-    await this.getActiveDonorOrThrow(id);
-
-    return this.prisma.donor.update({
-      where: { id },
-      data: {
-        isDeleted: true,
-        deletedAt: new Date(),
-        deletedBy: user.id,
-        deleteReason: deleteReason ?? null,
-      },
-    });
+async softDelete(
+  user: UserContext,
+  id: string,
+  deleteReason?: string,
+  ipAddress?: string,
+  userAgent?: string,
+) {
+  if (user.role !== Role.ADMIN) {
+    throw new ForbiddenException("Only administrators can delete donors");
   }
 
+  await this.getActiveDonorOrThrow(id);
+
+  return this.prisma.donor.update({
+    where: { id },
+    data: {
+      isDeleted: true,
+      deletedAt: new Date(),
+      deletedBy: user.id,
+      deleteReason: deleteReason ?? null,
+    },
+  });
+}
   async restore(user: UserContext, id: string) {
     if (user.role !== Role.ADMIN) {
       throw new ForbiddenException("Only administrators can restore donors");
