@@ -26,7 +26,7 @@ let StaffTasksController = class StaffTasksController {
     isAdminOrManager(role) {
         return role === client_1.Role.FOUNDER || role === client_1.Role.ADMIN;
     }
-    async findAll(status, priority, assignedToId, category, search, page, limit, isRecurring, req) {
+    async findAll(status, priority, assignedToId, createdById, category, search, page, limit, isRecurring, req) {
         const filters = {
             status,
             priority,
@@ -35,6 +35,9 @@ let StaffTasksController = class StaffTasksController {
             page: page ? parseInt(page) : 1,
             limit: limit ? parseInt(limit) : 50,
         };
+        if (createdById && this.isAdminOrManager(req.user.role)) {
+            filters.createdById = createdById;
+        }
         if (isRecurring !== undefined && isRecurring !== '') {
             filters.isRecurring = isRecurring === 'true';
         }
@@ -124,14 +127,15 @@ __decorate([
     __param(0, (0, common_1.Query)('status')),
     __param(1, (0, common_1.Query)('priority')),
     __param(2, (0, common_1.Query)('assignedToId')),
-    __param(3, (0, common_1.Query)('category')),
-    __param(4, (0, common_1.Query)('search')),
-    __param(5, (0, common_1.Query)('page')),
-    __param(6, (0, common_1.Query)('limit')),
-    __param(7, (0, common_1.Query)('isRecurring')),
-    __param(8, (0, common_1.Req)()),
+    __param(3, (0, common_1.Query)('createdById')),
+    __param(4, (0, common_1.Query)('category')),
+    __param(5, (0, common_1.Query)('search')),
+    __param(6, (0, common_1.Query)('page')),
+    __param(7, (0, common_1.Query)('limit')),
+    __param(8, (0, common_1.Query)('isRecurring')),
+    __param(9, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, Object]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String, Object]),
     __metadata("design:returntype", Promise)
 ], StaffTasksController.prototype, "findAll", null);
 __decorate([

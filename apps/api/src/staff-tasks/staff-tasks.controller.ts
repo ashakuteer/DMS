@@ -32,6 +32,7 @@ export class StaffTasksController {
     @Query('status') status: string,
     @Query('priority') priority: string,
     @Query('assignedToId') assignedToId: string,
+    @Query('createdById') createdById: string,
     @Query('category') category: string,
     @Query('search') search: string,
     @Query('page') page: string,
@@ -47,6 +48,10 @@ export class StaffTasksController {
       page: page ? parseInt(page) : 1,
       limit: limit ? parseInt(limit) : 50,
     };
+
+    if (createdById && this.isAdminOrManager(req.user.role)) {
+      filters.createdById = createdById;
+    }
 
     if (isRecurring !== undefined && isRecurring !== '') {
       filters.isRecurring = isRecurring === 'true';

@@ -1,5 +1,23 @@
 # NGO Donor Management System
 
+## Recent Changes (Task Management Restructure — Mar 2026)
+
+### Schema
+- Added `isRecurringInstance`, `missedAt`, `delayDays`, `reminderBefore`, `escalationLevel` fields to `StaffTask` model
+
+### Backend
+- Added `createdById` query filter to `GET /api/staff-tasks` (FOUNDER/ADMIN only)
+
+### Navigation (sidebar)
+- Removed "My Tasks" (daily-checklist) nav link from Staff group
+- Added "Founder Tasks" → `/dashboard/founder-tasks` (FOUNDER-only) above Staff Tasks
+
+### Pages
+- **`/dashboard/staff-tasks`**: Removed My Tasks tab. Now has two sections:
+  - Section A: Recurring Task Templates (Founder only, full CRUD via TemplatesTab)
+  - Section B: Active Tasks (staff sees MyTasksView; Founder/Admin sees TaskTable)
+- **`/dashboard/founder-tasks`** (NEW): Founder's personal tasks + tasks assigned to staff. Two sections with stats, search/filter, and inline edit/view actions.
+
 ## Recent Changes (User + Role Stability Fix — Mar 2026)
 
 ### Role System Overhaul

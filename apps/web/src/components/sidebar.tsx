@@ -49,6 +49,7 @@ interface NavItem {
   href: string;
   icon: React.ElementType;
   permissionModule?: string;
+  roles?: string[];
 }
 
 interface NavGroup {
@@ -111,8 +112,8 @@ const navGroups: NavGroup[] = [
       { title: "Staff Salary", tKey: "nav.staff_salary", href: "/dashboard/salary", icon: Banknote, permissionModule: "users" },
       { title: "Staff Leaves", tKey: "nav.staff_leaves", href: "/dashboard/leaves", icon: CalendarOff, permissionModule: "users" },
       { title: "Attendance", tKey: "nav.attendance", href: "/dashboard/attendance", icon: ClipboardCheck, permissionModule: "users" },
+      { title: "Founder Tasks", tKey: "nav.founder_tasks", href: "/dashboard/founder-tasks", icon: ClipboardList, permissionModule: "staffTasks", roles: ["FOUNDER"] },
       { title: "Staff Tasks", tKey: "nav.staff_tasks", href: "/dashboard/staff-tasks", icon: ListChecks, permissionModule: "staffTasks" },
-      { title: "My Tasks", tKey: "nav.daily_checklist", href: "/dashboard/daily-checklist", icon: ClipboardList, permissionModule: "staffTasks" },
       { title: "Missed Tasks", tKey: "nav.missed_tasks", href: "/dashboard/missed-tasks", icon: AlertTriangle, permissionModule: "staffTasks" },
       { title: "Performance", tKey: "nav.performance", href: "/dashboard/performance", icon: Trophy, permissionModule: "staffTasks" },
       { title: "Staff Contacts", tKey: "nav.staff_contacts", href: "/dashboard/staff-management", icon: Phone, permissionModule: "users" },
@@ -183,7 +184,11 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
     setExpandedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
 
   const getFilteredItems = (group: NavGroup): NavItem[] =>
-    group.items.filter((item) => !item.permissionModule || canAccessModule(item.permissionModule));
+    group.items.filter((item) => {
+      if (item.permissionModule && !canAccessModule(item.permissionModule)) return false;
+      if (item.roles && user && !item.roles.includes(user.role)) return false;
+      return true;
+    });
 
   if (!mounted) return null;
 

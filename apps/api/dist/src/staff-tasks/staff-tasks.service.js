@@ -31,7 +31,7 @@ let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
         };
     }
     async findAll(query) {
-        const { status, priority, assignedToId, category, search } = query;
+        const { status, priority, assignedToId, createdById, category, search } = query;
         const page = query.page || 1;
         const limit = query.limit || 50;
         const where = { deletedAt: null };
@@ -41,6 +41,8 @@ let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
             where.priority = priority;
         if (assignedToId)
             where.assignedToId = assignedToId;
+        if (createdById)
+            where.createdById = createdById;
         if (category)
             where.category = category;
         if (query.isRecurring !== undefined)

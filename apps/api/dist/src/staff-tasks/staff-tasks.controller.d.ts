@@ -3,7 +3,7 @@ export declare class StaffTasksController {
     private staffTasksService;
     constructor(staffTasksService: StaffTasksService);
     private isAdminOrManager;
-    findAll(status: string, priority: string, assignedToId: string, category: string, search: string, page: string, limit: string, isRecurring: string, req: any): Promise<{
+    findAll(status: string, priority: string, assignedToId: string, createdById: string, category: string, search: string, page: string, limit: string, isRecurring: string, req: any): Promise<{
         items: ({
             createdBy: {
                 name: string;
@@ -39,10 +39,15 @@ export declare class StaffTasksController {
             linkedDonorId: string | null;
             startedAt: Date | null;
             isRecurring: boolean;
+            isRecurringInstance: boolean;
             recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
             parentTaskId: string | null;
             checklist: import("@prisma/client/runtime/library").JsonValue | null;
             minutesTaken: number | null;
+            missedAt: Date | null;
+            delayDays: number | null;
+            reminderBefore: number | null;
+            escalationLevel: number | null;
         })[];
         total: number;
         page: number;
@@ -119,10 +124,15 @@ export declare class StaffTasksController {
             linkedDonorId: string | null;
             startedAt: Date | null;
             isRecurring: boolean;
+            isRecurringInstance: boolean;
             recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
             parentTaskId: string | null;
             checklist: import("@prisma/client/runtime/library").JsonValue | null;
             minutesTaken: number | null;
+            missedAt: Date | null;
+            delayDays: number | null;
+            reminderBefore: number | null;
+            escalationLevel: number | null;
         })[];
         IN_PROGRESS: ({
             createdBy: {
@@ -159,10 +169,15 @@ export declare class StaffTasksController {
             linkedDonorId: string | null;
             startedAt: Date | null;
             isRecurring: boolean;
+            isRecurringInstance: boolean;
             recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
             parentTaskId: string | null;
             checklist: import("@prisma/client/runtime/library").JsonValue | null;
             minutesTaken: number | null;
+            missedAt: Date | null;
+            delayDays: number | null;
+            reminderBefore: number | null;
+            escalationLevel: number | null;
         })[];
         COMPLETED: ({
             createdBy: {
@@ -199,10 +214,15 @@ export declare class StaffTasksController {
             linkedDonorId: string | null;
             startedAt: Date | null;
             isRecurring: boolean;
+            isRecurringInstance: boolean;
             recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
             parentTaskId: string | null;
             checklist: import("@prisma/client/runtime/library").JsonValue | null;
             minutesTaken: number | null;
+            missedAt: Date | null;
+            delayDays: number | null;
+            reminderBefore: number | null;
+            escalationLevel: number | null;
         })[];
         OVERDUE: ({
             createdBy: {
@@ -239,10 +259,15 @@ export declare class StaffTasksController {
             linkedDonorId: string | null;
             startedAt: Date | null;
             isRecurring: boolean;
+            isRecurringInstance: boolean;
             recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
             parentTaskId: string | null;
             checklist: import("@prisma/client/runtime/library").JsonValue | null;
             minutesTaken: number | null;
+            missedAt: Date | null;
+            delayDays: number | null;
+            reminderBefore: number | null;
+            escalationLevel: number | null;
         })[];
     }>;
     findOne(id: string, req: any): Promise<{
@@ -280,10 +305,15 @@ export declare class StaffTasksController {
         linkedDonorId: string | null;
         startedAt: Date | null;
         isRecurring: boolean;
+        isRecurringInstance: boolean;
         recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
         parentTaskId: string | null;
         checklist: import("@prisma/client/runtime/library").JsonValue | null;
         minutesTaken: number | null;
+        missedAt: Date | null;
+        delayDays: number | null;
+        reminderBefore: number | null;
+        escalationLevel: number | null;
     }>;
     create(body: any, req: any): Promise<{
         createdBy: {
@@ -320,10 +350,15 @@ export declare class StaffTasksController {
         linkedDonorId: string | null;
         startedAt: Date | null;
         isRecurring: boolean;
+        isRecurringInstance: boolean;
         recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
         parentTaskId: string | null;
         checklist: import("@prisma/client/runtime/library").JsonValue | null;
         minutesTaken: number | null;
+        missedAt: Date | null;
+        delayDays: number | null;
+        reminderBefore: number | null;
+        escalationLevel: number | null;
     }>;
     update(id: string, body: any, req: any): Promise<{
         createdBy: {
@@ -360,10 +395,15 @@ export declare class StaffTasksController {
         linkedDonorId: string | null;
         startedAt: Date | null;
         isRecurring: boolean;
+        isRecurringInstance: boolean;
         recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
         parentTaskId: string | null;
         checklist: import("@prisma/client/runtime/library").JsonValue | null;
         minutesTaken: number | null;
+        missedAt: Date | null;
+        delayDays: number | null;
+        reminderBefore: number | null;
+        escalationLevel: number | null;
     }>;
     updateStatus(id: string, body: any, req: any): Promise<{
         createdBy: {
@@ -400,10 +440,15 @@ export declare class StaffTasksController {
         linkedDonorId: string | null;
         startedAt: Date | null;
         isRecurring: boolean;
+        isRecurringInstance: boolean;
         recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
         parentTaskId: string | null;
         checklist: import("@prisma/client/runtime/library").JsonValue | null;
         minutesTaken: number | null;
+        missedAt: Date | null;
+        delayDays: number | null;
+        reminderBefore: number | null;
+        escalationLevel: number | null;
     }>;
     remove(id: string): Promise<{
         id: string;
@@ -424,10 +469,15 @@ export declare class StaffTasksController {
         linkedDonorId: string | null;
         startedAt: Date | null;
         isRecurring: boolean;
+        isRecurringInstance: boolean;
         recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
         parentTaskId: string | null;
         checklist: import("@prisma/client/runtime/library").JsonValue | null;
         minutesTaken: number | null;
+        missedAt: Date | null;
+        delayDays: number | null;
+        reminderBefore: number | null;
+        escalationLevel: number | null;
     }>;
     calculatePerformance(body: any): Promise<{
         id: string;

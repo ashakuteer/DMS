@@ -1907,13 +1907,18 @@ model StaffTask {
   startedAt       DateTime?
   completedAt     DateTime?
   notes           String?
-  isRecurring     Boolean        @default(false)
-  recurrenceType  RecurrenceType @default(NONE)
-  parentTaskId    String?
-  checklist       Json?
-  templateId      String?
-  minutesTaken    Int?
-  createdAt       DateTime       @default(now())
+  isRecurring          Boolean        @default(false)
+  isRecurringInstance  Boolean        @default(false)
+  recurrenceType       RecurrenceType @default(NONE)
+  parentTaskId         String?
+  checklist            Json?
+  templateId           String?
+  minutesTaken         Int?
+  missedAt             DateTime?
+  delayDays            Int?
+  reminderBefore       Int?
+  escalationLevel      Int?
+  createdAt            DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   deletedAt       DateTime?
 
