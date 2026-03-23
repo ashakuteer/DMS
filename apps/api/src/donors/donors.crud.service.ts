@@ -406,13 +406,7 @@ if (assignedToUserId) {
   }
 }
 
- async update(
-  user: UserContext,
-  id: string,
-  data: any,
-  ipAddress?: string,
-  userAgent?: string,
-) {
+async update(user: any, id: string, data: any) {
   await this.getActiveDonorOrThrow(id);
 
   const {
@@ -420,14 +414,20 @@ if (assignedToUserId) {
     volunteerProfile,
     influencerProfile,
     csrProfile,
-    professionType, // ❌ remove from input
+
+    // ❌ remove wrong fields
+    professionType,
+    visited,
+
     ...rest
   } = data;
 
-  // ✅ Build CLEAN object (only valid DB fields)
   const donorData: any = {
     ...rest,
+
+    // ✅ FIX mappings
     profession: rest.profession || professionType || null,
+    visitedHome: rest.visitedHome ?? visited ?? false,
   };
 
   const donor = await this.prisma.donor.update({
@@ -435,42 +435,8 @@ if (assignedToUserId) {
     data: donorData,
   });
 
-  // ✅ profiles (unchanged)
-  if (individualProfile !== undefined) {
-    await this.prisma.individualDonorProfile.upsert({
-      where: { donorId: id },
-      create: { donorId: id, ...individualProfile },
-      update: individualProfile,
-    });
-  }
-
-  if (volunteerProfile !== undefined) {
-    await this.prisma.volunteerProfile.upsert({
-      where: { donorId: id },
-      create: { donorId: id, ...volunteerProfile },
-      update: volunteerProfile,
-    });
-  }
-
-  if (influencerProfile !== undefined) {
-    await this.prisma.influencerProfile.upsert({
-      where: { donorId: id },
-      create: { donorId: id, ...influencerProfile },
-      update: influencerProfile,
-    });
-  }
-
-  if (csrProfile !== undefined) {
-    await this.prisma.cSRProfile.upsert({
-      where: { donorId: id },
-      create: { donorId: id, ...csrProfile },
-      update: csrProfile,
-    });
-  }
-
   return donor;
 }
-
   async softDelete(
     user: UserContext,
     id: string,
