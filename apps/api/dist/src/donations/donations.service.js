@@ -221,6 +221,7 @@ let DonationsService = DonationsService_1 = class DonationsService {
             },
         });
         await this.auditService.logDonationCreate(user.id, donation.id, { receiptNumber, donorId: data.donorId, amount: data.donationAmount }, ipAddress, userAgent);
+        this.updatePrimaryHomeInterest(data.donorId).catch((err) => this.logger.warn(`primaryHomeInterest compute failed for donor ${data.donorId}: ${err?.message}`));
         const communicationResults = {};
         const orgProfile = await this.orgProfileService.getProfile();
         const notificationParams = {
@@ -729,6 +730,43 @@ let DonationsService = DonationsService_1 = class DonationsService {
             buffer: pdfBuffer,
             filename: `receipt_${donation.receiptNumber}.pdf`,
         };
+    }
+    async updatePrimaryHomeInterest(donorId) {
+        const HOME_THRESHOLD = 4;
+        const AUTO_TAGS = {
+            GIRLS_HOME: "GIRLS_HOME_DONOR",
+            BLIND_BOYS_HOME: "BLIND_HOME_DONOR",
+            OLD_AGE_HOME: "OLD_AGE_HOME_DONOR",
+        };
+        const counts = await this.prisma.donation.groupBy({
+            by: ["donationHomeType"],
+            where: { donorId, isDeleted: false, donationHomeType: { not: null } },
+            _count: { donationHomeType: true },
+        });
+        const qualified = counts.filter((c) => (c._count.donationHomeType ?? 0) >= HOME_THRESHOLD);
+        if (qualified.length === 0)
+            return;
+        qualified.sort((a, b) => (b._count.donationHomeType ?? 0) - (a._count.donationHomeType ?? 0));
+        const topHomeType = qualified[0].donationHomeType;
+        const donor = await this.prisma.donor.findUnique({
+            where: { id: donorId },
+            select: { primaryHomeInterest: true, donorTags: true },
+        });
+        if (!donor)
+            return;
+        if (donor.primaryHomeInterest === topHomeType)
+            return;
+        const autoTag = AUTO_TAGS[topHomeType];
+        const updatedTags = autoTag && !donor.donorTags.includes(autoTag)
+            ? [...donor.donorTags, autoTag]
+            : donor.donorTags;
+        await this.prisma.donor.update({
+            where: { id: donorId },
+            data: {
+                primaryHomeInterest: topHomeType,
+                donorTags: updatedTags,
+            },
+        });
     }
 };
 exports.DonationsService = DonationsService;

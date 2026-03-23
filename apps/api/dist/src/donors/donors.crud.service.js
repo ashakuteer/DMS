@@ -26,6 +26,18 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
     getAccessFilter(_user) {
         return {};
     }
+    computeLocationCategory(donor) {
+        const city = (donor.city || "").trim().toLowerCase();
+        const state = (donor.state || "").trim().toLowerCase();
+        const country = (donor.country || "").trim().toLowerCase();
+        if (city === "hyderabad")
+            return "HYDERABAD";
+        if (state === "telangana")
+            return "TELANGANA_OTHER";
+        if (country === "india" || !country)
+            return "INDIA_OTHER";
+        return "INTERNATIONAL";
+    }
     shouldMaskData(user) {
         return user.role !== client_1.Role.FOUNDER;
     }
@@ -46,7 +58,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         return donor;
     }
     async findAll(user, options = {}) {
-        const { page = 1, limit = 20, search, sortBy = "createdAt", sortOrder = "desc", category, city, country, religion, assignedToUserId, donationFrequency, healthStatus, supportPreferences, } = options;
+        const { page = 1, limit = 20, search, sortBy = "createdAt", sortOrder = "desc", category, city, country, religion, assignedToUserId, donationFrequency, healthStatus, supportPreferences, locationCategory, } = options;
         const safePage = Math.max(1, Number(page) || 1);
         const safeLimit = Math.min(100, Math.max(1, Number(limit) || 20));
         const allowedSortFields = [
@@ -116,6 +128,36 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         if (healthStatus && ["GREEN", "YELLOW", "RED"].includes(healthStatus)) {
             where.healthStatus = healthStatus;
         }
+        if (locationCategory) {
+            if (locationCategory === "HYDERABAD") {
+                where.city = { equals: "Hyderabad", mode: client_1.Prisma.QueryMode.insensitive };
+            }
+            else if (locationCategory === "TELANGANA_OTHER") {
+                where.AND = [
+                    { state: { equals: "Telangana", mode: client_1.Prisma.QueryMode.insensitive } },
+                    { NOT: { city: { equals: "Hyderabad", mode: client_1.Prisma.QueryMode.insensitive } } },
+                ];
+            }
+            else if (locationCategory === "INDIA_OTHER") {
+                where.AND = [
+                    {
+                        OR: [
+                            { country: { equals: "India", mode: client_1.Prisma.QueryMode.insensitive } },
+                            { country: null },
+                            { country: "" },
+                        ],
+                    },
+                    { NOT: { state: { equals: "Telangana", mode: client_1.Prisma.QueryMode.insensitive } } },
+                ];
+            }
+            else if (locationCategory === "INTERNATIONAL") {
+                where.AND = [
+                    { country: { not: null } },
+                    { NOT: { country: { equals: "India", mode: client_1.Prisma.QueryMode.insensitive } } },
+                    { NOT: { country: "" } },
+                ];
+            }
+        }
         const [donors, total] = await Promise.all([
             this.prisma.donor.findMany({
                 where,
@@ -133,6 +175,9 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
                     primaryRole: true,
                     additionalRoles: true,
                     donorTags: true,
+                    languages: true,
+                    preferredHomes: true,
+                    primaryHomeInterest: true,
                     communicationChannels: true,
                     donationFrequency: true,
                     healthScore: true,
@@ -168,6 +213,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
             healthScore: engagementMap[donor.id]?.score ?? donor.healthScore ?? 100,
             healthStatus: engagementMap[donor.id]?.status ?? donor.healthStatus,
             healthReasons: engagementMap[donor.id]?.reasons ?? [],
+            locationCategory: this.computeLocationCategory(donor),
         }));
         const items = this.shouldMaskData(user)
             ? donorsWithHealth.map((donor) => (0, masking_util_1.maskDonorData)(donor))
@@ -252,6 +298,9 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
                     primaryRole: true,
                     additionalRoles: true,
                     donorTags: true,
+                    languages: true,
+                    preferredHomes: true,
+                    primaryHomeInterest: true,
                     communicationChannels: true,
                     preferredCommunicationMethod: true,
                     communicationNotes: true,
@@ -279,10 +328,14 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
             if (!donor) {
                 throw new common_1.NotFoundException("Donor not found");
             }
+            const donorWithComputed = {
+                ...donor,
+                locationCategory: this.computeLocationCategory(donor),
+            };
             if (this.shouldMaskData(user)) {
-                return (0, masking_util_1.maskDonorData)(donor);
+                return (0, masking_util_1.maskDonorData)(donorWithComputed);
             }
-            return donor;
+            return donorWithComputed;
         }
         catch (error) {
             if (error instanceof common_1.NotFoundException || error instanceof common_1.ForbiddenException) {

@@ -6,22 +6,15 @@ export declare class DonorsExportService {
     private readonly auditService;
     constructor(prisma: PrismaService, auditService: AuditService);
     exportDonors(user: UserContext, filters?: any, ipAddress?: string, userAgent?: string): Promise<({
+        assignedToUser: {
+            id: string;
+            name: string;
+        };
         _count: {
             donations: number;
         };
-        assignedToUser: {
-            name: string;
-            id: string;
-        };
     } & {
         id: string;
-        createdAt: Date;
-        assignedToUserId: string | null;
-        updatedAt: Date;
-        pan: string | null;
-        createdById: string;
-        isDeleted: boolean;
-        deletedAt: Date | null;
         donorCode: string;
         firstName: string;
         middleName: string | null;
@@ -60,24 +53,34 @@ export declare class DonorsExportService {
         isDisabled: boolean;
         sourceOfDonor: import(".prisma/client").$Enums.SourceOfDonor | null;
         sourceDetails: string | null;
+        pan: string | null;
         profilePicUrl: string | null;
         supportPreferences: import(".prisma/client").$Enums.SupportPreference[];
         primaryRole: import(".prisma/client").$Enums.PersonRole;
         additionalRoles: import(".prisma/client").$Enums.PersonRole[];
         donorTags: string[];
+        languages: string[];
+        preferredHomes: string[];
+        primaryHomeInterest: string | null;
         communicationChannels: string[];
         preferredCommunicationMethod: string | null;
         communicationNotes: string | null;
         engagementLevel: import(".prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        createdById: string;
+        isDeleted: boolean;
+        deletedAt: Date | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
         dobDay: number | null;
         dobMonth: number | null;
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        assignedToUserId: string | null;
     })[]>;
     exportMasterDonorExcel(user: UserContext, filters?: {
         home?: string;

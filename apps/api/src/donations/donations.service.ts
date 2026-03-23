@@ -248,6 +248,11 @@ export class DonationsService {
       userAgent,
     );
 
+    // Auto-compute primaryHomeInterest after every donation (non-blocking)
+    this.updatePrimaryHomeInterest(data.donorId).catch((err) =>
+      this.logger.warn(`primaryHomeInterest compute failed for donor ${data.donorId}: ${err?.message}`)
+    );
+
     const communicationResults: {
       emailStatus?: string;
       whatsAppStatus?: string;
@@ -916,5 +921,47 @@ export class DonationsService {
       buffer: pdfBuffer,
       filename: `receipt_${donation.receiptNumber}.pdf`,
     };
+  }
+
+  private async updatePrimaryHomeInterest(donorId: string): Promise<void> {
+    const HOME_THRESHOLD = 4;
+    const AUTO_TAGS: Record<string, string> = {
+      GIRLS_HOME:    "GIRLS_HOME_DONOR",
+      BLIND_BOYS_HOME: "BLIND_HOME_DONOR",
+      OLD_AGE_HOME:  "OLD_AGE_HOME_DONOR",
+    };
+
+    const counts = await this.prisma.donation.groupBy({
+      by: ["donationHomeType"],
+      where: { donorId, isDeleted: false, donationHomeType: { not: null } },
+      _count: { donationHomeType: true },
+    });
+
+    const qualified = counts.filter((c) => (c._count.donationHomeType ?? 0) >= HOME_THRESHOLD);
+    if (qualified.length === 0) return;
+
+    qualified.sort((a, b) => (b._count.donationHomeType ?? 0) - (a._count.donationHomeType ?? 0));
+    const topHomeType = qualified[0].donationHomeType as string;
+
+    const donor = await this.prisma.donor.findUnique({
+      where: { id: donorId },
+      select: { primaryHomeInterest: true, donorTags: true },
+    });
+    if (!donor) return;
+
+    if (donor.primaryHomeInterest === topHomeType) return;
+
+    const autoTag = AUTO_TAGS[topHomeType];
+    const updatedTags = autoTag && !donor.donorTags.includes(autoTag)
+      ? [...donor.donorTags, autoTag]
+      : donor.donorTags;
+
+    await this.prisma.donor.update({
+      where: { id: donorId },
+      data: {
+        primaryHomeInterest: topHomeType,
+        donorTags: updatedTags,
+      },
+    });
   }
 }

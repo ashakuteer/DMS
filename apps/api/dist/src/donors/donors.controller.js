@@ -40,7 +40,7 @@ let DonorsController = class DonorsController {
         const userAgent = req.headers["user-agent"] || "unknown";
         return { ipAddress, userAgent };
     }
-    async findAll(user, page, limit, search, sortBy, sortOrder, category, city, country, religion, assignedToUserId, donationFrequency, healthStatus, supportPreferences) {
+    async findAll(user, page, limit, search, sortBy, sortOrder, category, city, country, religion, assignedToUserId, donationFrequency, healthStatus, supportPreferences, locationCategory) {
         return this.donorsService.findAll(user, {
             page: page ? parseInt(page, 10) : undefined,
             limit: limit ? parseInt(limit, 10) : undefined,
@@ -55,6 +55,7 @@ let DonorsController = class DonorsController {
             donationFrequency,
             healthStatus,
             supportPreferences,
+            locationCategory,
         });
     }
     async checkDuplicate(phone, email) {
@@ -203,8 +204,9 @@ __decorate([
     __param(11, (0, common_1.Query)("donationFrequency")),
     __param(12, (0, common_1.Query)("healthStatus")),
     __param(13, (0, common_1.Query)("supportPreferences")),
+    __param(14, (0, common_1.Query)("locationCategory")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, String, String, String, String, String, String, String, String, String, String, String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String, String, String, String, String, String, String, String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], DonorsController.prototype, "findAll", null);
 __decorate([

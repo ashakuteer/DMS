@@ -99,10 +99,13 @@ const SUPPORT_TYPES = [
 ];
 
 const DONOR_TAGS = [
-  "Champion Donor", "Regular Donor", "Festival Donor", "Anniversary Donor",
-  "Birthday Donor", "Corporate Link", "Social Connector", "Event Organizer",
-  "Food Donor", "Education Patron", "Health Patron", "Spiritual Donor", "Sponsorship",
+  "Regular Donor", "Festival Donor", "Birthday Donor", "Anniversary Donor",
+  "Champion Donor", "Corporate Link", "Social Connector", "Event Organizer",
+  "Education Patron", "Health Patron", "Spiritual Donor",
 ];
+
+const LANGUAGE_OPTIONS = ["English", "Hindi", "Telugu"];
+const PREFERRED_HOME_OPTIONS = ["Girls Home", "Blind Home", "Old Age Home"];
 
 const RELIGIONS = [
   { value: "Hinduism", label: "Hinduism" },
@@ -226,6 +229,8 @@ export default function NewDonorPage() {
     primaryRole: "INDIVIDUAL",
     additionalRoles: [] as string[],
     donorTags: [] as string[],
+    languages: [] as string[],
+    preferredHomes: [] as string[],
     communicationChannels: [] as string[],
     preferredCommunicationMethod: "",
     communicationNotes: "",
@@ -418,6 +423,8 @@ export default function NewDonorPage() {
       payload.primaryRole = formData.primaryRole;
       payload.additionalRoles = formData.additionalRoles;
       payload.donorTags = formData.donorTags;
+      payload.languages = formData.languages;
+      payload.preferredHomes = formData.preferredHomes;
       payload.isUnder18Helper = formData.isUnder18Helper;
       payload.isSeniorCitizen = formData.isSeniorCitizen;
       payload.isSingleParent = formData.isSingleParent;
@@ -856,25 +863,6 @@ export default function NewDonorPage() {
                     })}
                   </div>
                 </div>
-                <div>
-                  <Label className="mb-2 block">Donor Role Tags</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {DONOR_TAGS.map((tag) => {
-                      const isSelected = individualProfile.donorTags.includes(tag);
-                      return (
-                        <Badge
-                          key={tag}
-                          variant={isSelected ? "secondary" : "outline"}
-                          className="cursor-pointer px-3 py-1.5"
-                          onClick={() => setIndividualProfile((p) => ({ ...p, donorTags: toggleArrayItem(p.donorTags, tag) }))}
-                          data-testid={`donor-tag-${tag.replace(/\s+/g, '-').toLowerCase()}`}
-                        >
-                          {tag}
-                        </Badge>
-                      );
-                    })}
-                  </div>
-                </div>
               </TabsContent>
 
               {/* CSR Tab */}
@@ -1218,17 +1206,17 @@ export default function NewDonorPage() {
           </CardContent>
         </Card>
 
-        {/* 6. Tags & Smart Fields */}
+        {/* 6. Donor Tags, Languages & Preferred Homes */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Tag className="h-5 w-5" />
-              Tags &amp; Smart Fields
+              Donor Tags
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div>
-              <Label className="mb-2 block text-sm font-medium">Donor Tags</Label>
+              <Label className="mb-2 block text-sm font-medium">Tags</Label>
               <div className="flex flex-wrap gap-2">
                 {DONOR_TAGS.map((tag) => {
                   const isSelected = formData.donorTags.includes(tag);
@@ -1241,6 +1229,44 @@ export default function NewDonorPage() {
                       data-testid={`donor-tag-${tag.toLowerCase().replace(/\s+/g, "-")}`}
                     >
                       {tag}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <Label className="mb-2 block text-sm font-medium">Languages</Label>
+              <div className="flex flex-wrap gap-2">
+                {LANGUAGE_OPTIONS.map((lang) => {
+                  const isSelected = formData.languages.includes(lang);
+                  return (
+                    <Badge
+                      key={lang}
+                      variant={isSelected ? "default" : "outline"}
+                      className="cursor-pointer px-3 py-1.5"
+                      onClick={() => handleChange("languages", toggleArrayItem(formData.languages, lang))}
+                      data-testid={`language-${lang.toLowerCase()}`}
+                    >
+                      {lang}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+            <div>
+              <Label className="mb-2 block text-sm font-medium">Preferred Homes</Label>
+              <div className="flex flex-wrap gap-2">
+                {PREFERRED_HOME_OPTIONS.map((home) => {
+                  const isSelected = formData.preferredHomes.includes(home);
+                  return (
+                    <Badge
+                      key={home}
+                      variant={isSelected ? "default" : "outline"}
+                      className="cursor-pointer px-3 py-1.5"
+                      onClick={() => handleChange("preferredHomes", toggleArrayItem(formData.preferredHomes, home))}
+                      data-testid={`preferred-home-${home.toLowerCase().replace(/\s+/g, "-")}`}
+                    >
+                      {home}
                     </Badge>
                   );
                 })}

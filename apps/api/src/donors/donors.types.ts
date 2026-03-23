@@ -21,6 +21,7 @@ export interface DonorQueryOptions {
   donationFrequency?: string;
   healthStatus?: string;
   supportPreferences?: string;
+  locationCategory?: string;
 }
 
 export enum HealthStatus {

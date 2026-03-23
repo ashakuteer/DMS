@@ -19,6 +19,10 @@ export interface Donor {
   primaryRole?: PersonRole
   additionalRoles?: PersonRole[]
   donorTags?: string[]
+  languages?: string[]
+  preferredHomes?: string[]
+  primaryHomeInterest?: string | null
+  locationCategory?: string
   communicationChannels?: string[]
 
   donorSince?: string

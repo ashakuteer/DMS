@@ -127,6 +127,9 @@ model Donor {
   primaryRole        PersonRole             @default(INDIVIDUAL)
   additionalRoles    PersonRole[]
   donorTags          String[]
+  languages          String[]               @default([])
+  preferredHomes     String[]               @default([])
+  primaryHomeInterest String?
   communicationChannels         String[]
   preferredCommunicationMethod  String?
   communicationNotes            String?

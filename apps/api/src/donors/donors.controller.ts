@@ -68,6 +68,7 @@ export class DonorsController {
     @Query("donationFrequency") donationFrequency?: string,
     @Query("healthStatus") healthStatus?: string,
     @Query("supportPreferences") supportPreferences?: string,
+    @Query("locationCategory") locationCategory?: string,
   ) {
     return this.donorsService.findAll(user, {
       page: page ? parseInt(page, 10) : undefined,
@@ -83,6 +84,7 @@ export class DonorsController {
       donationFrequency,
       healthStatus,
       supportPreferences,
+      locationCategory,
     });
   }
 

@@ -19,6 +19,7 @@ export interface DonorQueryOptions {
     donationFrequency?: string;
     healthStatus?: string;
     supportPreferences?: string;
+    locationCategory?: string;
 }
 export declare enum HealthStatus {
     GREEN = "GREEN",

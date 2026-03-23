@@ -90,10 +90,13 @@ const SUPPORT_TYPES = [
 ];
 
 const DONOR_TAGS = [
-  "Champion Donor", "Regular Donor", "Festival Donor", "Anniversary Donor",
-  "Birthday Donor", "Corporate Link", "Social Connector", "Event Organizer",
-  "Food Donor", "Education Patron", "Health Patron", "Spiritual Donor", "Sponsorship",
+  "Regular Donor", "Festival Donor", "Birthday Donor", "Anniversary Donor",
+  "Champion Donor", "Corporate Link", "Social Connector", "Event Organizer",
+  "Education Patron", "Health Patron", "Spiritual Donor",
 ];
+
+const LANGUAGE_OPTIONS = ["English", "Hindi", "Telugu"];
+const PREFERRED_HOME_OPTIONS = ["Girls Home", "Blind Home", "Old Age Home"];
 
 const COMM_CHANNELS = [
   { value: "email", label: "Email" },
@@ -226,6 +229,8 @@ export default function EditDonorPage() {
     primaryRole: "INDIVIDUAL",
     additionalRoles: [] as string[],
     donorTags: [] as string[],
+    languages: [] as string[],
+    preferredHomes: [] as string[],
     communicationChannels: [] as string[],
     preferredCommunicationMethod: "",
     communicationNotes: "",
@@ -338,6 +343,8 @@ export default function EditDonorPage() {
           primaryRole: donor.primaryRole || "INDIVIDUAL",
           additionalRoles: donor.additionalRoles || [],
           donorTags: donor.donorTags || [],
+          languages: donor.languages || [],
+          preferredHomes: donor.preferredHomes || [],
           communicationChannels: donor.communicationChannels || [],
           preferredCommunicationMethod: donor.preferredCommunicationMethod || "",
           communicationNotes: donor.communicationNotes || "",
@@ -575,6 +582,8 @@ export default function EditDonorPage() {
       payload.primaryRole = formData.primaryRole;
       payload.additionalRoles = formData.additionalRoles;
       payload.donorTags = formData.donorTags;
+      payload.languages = formData.languages;
+      payload.preferredHomes = formData.preferredHomes;
       payload.communicationChannels = formData.communicationChannels;
       if (formData.preferredCommunicationMethod) payload.preferredCommunicationMethod = formData.preferredCommunicationMethod;
       if (formData.communicationNotes) payload.communicationNotes = formData.communicationNotes;
@@ -993,26 +1002,6 @@ export default function EditDonorPage() {
                     ))}
                   </div>
                 </div>
-                <div>
-                  <Label className="mb-2 block">Donor Tags (Profile)</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {DONOR_TAGS.map((tag) => (
-                      <button
-                        key={tag}
-                        type="button"
-                        onClick={() => setIndividualProfile((p) => ({ ...p, donorTags: toggleArrayItem(p.donorTags, tag) }))}
-                        className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
-                          individualProfile.donorTags.includes(tag)
-                            ? "border-primary bg-primary/10 text-primary"
-                            : "border-border hover:border-primary/50"
-                        }`}
-                        data-testid={`profile-tag-${tag.toLowerCase().replace(/\s+/g, "-")}`}
-                      >
-                        {tag}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </TabsContent>
 
               <TabsContent value="csr" className="space-y-6">
@@ -1367,17 +1356,17 @@ export default function EditDonorPage() {
           </CardContent>
         </Card>
 
-        {/* 7. Donor Tags & Smart Fields */}
+        {/* 7. Donor Tags */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Tag className="h-5 w-5" />
-              Tags & Smart Fields
+              Donor Tags
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
             <div>
-              <Label className="mb-2 block">Donor Tags</Label>
+              <Label className="mb-2 block text-sm font-medium">Tags</Label>
               <div className="flex flex-wrap gap-2">
                 {DONOR_TAGS.map((tag) => (
                   <button
@@ -1388,6 +1377,38 @@ export default function EditDonorPage() {
                     data-testid={`donor-tag-${tag.toLowerCase().replace(/\s+/g, "-")}`}
                   >
                     {tag}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="mb-2 block text-sm font-medium">Languages</Label>
+              <div className="flex flex-wrap gap-2">
+                {LANGUAGE_OPTIONS.map((lang) => (
+                  <button
+                    key={lang}
+                    type="button"
+                    onClick={() => handleChange("languages", toggleArrayItem(formData.languages, lang))}
+                    className={`px-3 py-1.5 rounded-full text-sm border transition-all ${formData.languages.includes(lang) ? "border-primary bg-primary/10 text-primary" : "border-border hover:border-primary/50"}`}
+                    data-testid={`language-${lang.toLowerCase()}`}
+                  >
+                    {lang}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <Label className="mb-2 block text-sm font-medium">Preferred Homes</Label>
+              <div className="flex flex-wrap gap-2">
+                {PREFERRED_HOME_OPTIONS.map((home) => (
+                  <button
+                    key={home}
+                    type="button"
+                    onClick={() => handleChange("preferredHomes", toggleArrayItem(formData.preferredHomes, home))}
+                    className={`px-3 py-1.5 rounded-full text-sm border transition-all ${formData.preferredHomes.includes(home) ? "border-primary bg-primary/10 text-primary" : "border-border hover:border-primary/50"}`}
+                    data-testid={`preferred-home-${home.toLowerCase().replace(/\s+/g, "-")}`}
+                  >
+                    {home}
                   </button>
                 ))}
               </div>

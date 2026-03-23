@@ -1,0 +1,204 @@
+FINAL DONOR SYSTEM (CLEAN + INTELLIGENT + NO DUPLICATION)
+
+We are building a structured donor management system.
+Keep it simple, consistent, and future-ready.
+
+---------------------------------------
+1. REMOVE DUPLICATION (IMPORTANT)
+---------------------------------------
+
+REMOVE:
+
+- Donor Role Tags
+- Tags & Smart Fields
+
+REPLACE WITH:
+
+👉 ONE SYSTEM: "Donor Tags"
+
+---------------------------------------
+2. DONOR TAGS (FINAL SYSTEM)
+---------------------------------------
+
+Use predefined tags ONLY (no free typing)
+
+Example tags:
+
+- Regular Donor
+- Festival Donor
+- Birthday Donor
+- Anniversary Donor
+- Champion Donor
+- Corporate Link
+- Social Connector
+- Event Organizer
+- Education Patron
+- Health Patron
+- Spiritual Donor
+
+Rules:
+
+- Multi-select allowed
+- Only Founder/Admin can manage tags
+- Staff cannot create/edit tags
+
+---------------------------------------
+3. SUPPORT TYPE (KEEP SEPARATE)
+---------------------------------------
+
+Support Type is NOT a tag.
+
+Examples:
+- Groceries
+- Medicines
+- Sponsorship
+
+---------------------------------------
+4. LANGUAGES (MANDATORY FIELD)
+---------------------------------------
+
+Field:
+
+languages: string[]
+
+Options:
+- English
+- Hindi
+- Telugu
+
+Rules:
+
+- Mandatory selection
+- Multi-select allowed
+
+---------------------------------------
+5. PREFERRED HOME (MANUAL FIELD)
+---------------------------------------
+
+Field:
+
+preferredHomes: string[]
+
+Options:
+- Girls Home
+- Blind Home
+- Old Age Home
+
+Rules:
+
+- Multi-select allowed
+- This is manual input (what donor says)
+
+---------------------------------------
+6. DONATION HISTORY (IMPORTANT)
+---------------------------------------
+
+Each donation must include:
+
+homeType:
+- GIRLS_HOME
+- BLIND_HOME
+- OLD_AGE_HOME
+
+---------------------------------------
+7. AUTO HOME INTELLIGENCE (CRITICAL)
+---------------------------------------
+
+Add field:
+
+primaryHomeInterest: string (nullable)
+
+Logic:
+
+If donor makes ≥ 4 donations to same home:
+
+→ set primaryHomeInterest
+
+Example:
+4 donations to BLIND_HOME
+→ primaryHomeInterest = BLIND_HOME
+
+---------------------------------------
+8. AUTO TAGGING (SMART FEATURE)
+---------------------------------------
+
+When primaryHomeInterest is set:
+
+Automatically add tag:
+
+BLIND_HOME → "BLIND_HOME_DONOR"
+GIRLS_HOME → "GIRLS_HOME_DONOR"
+OLD_AGE_HOME → "OLD_AGE_HOME_DONOR"
+
+---------------------------------------
+9. DO NOT OVERRIDE PREFERRED HOME
+---------------------------------------
+
+Important rule:
+
+- preferredHomes = what donor says
+- primaryHomeInterest = what donor actually does
+
+Both must exist separately
+
+---------------------------------------
+10. LOCATION SYSTEM (HEAT MAP READY)
+---------------------------------------
+
+Use existing fields:
+
+- city
+- state
+- country
+
+Add computed field:
+
+locationCategory
+
+Logic:
+
+IF city = "Hyderabad"
+→ HYDERABAD
+
+ELSE IF state = "Telangana"
+→ TELANGANA_OTHER
+
+ELSE IF country = "India"
+→ INDIA_OTHER
+
+ELSE
+→ INTERNATIONAL
+
+---------------------------------------
+11. FILTERING POWER (IMPORTANT)
+---------------------------------------
+
+System must support filtering by:
+
+- Donor Tags
+- Preferred Home
+- Primary Home Interest
+- Location Category
+- Language
+
+---------------------------------------
+12. UI RULES (CLEAN)
+---------------------------------------
+
+- Show ONE "Donor Tags" section
+- No duplicate tag systems
+- Multi-select dropdowns
+- Clean layout
+
+---------------------------------------
+FINAL RESULT:
+
+✔ Clean donor structure
+✔ No duplication
+✔ Smart donor segmentation
+✔ Language-aware communication
+✔ Home-based targeting
+✔ Future-ready analytics
+✔ Heat map ready data
+
+THIS SYSTEM IS FINAL. DO NOT ADD DUPLICATES.

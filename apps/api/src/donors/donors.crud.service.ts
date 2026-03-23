@@ -32,6 +32,16 @@ export class DonorsCrudService {
     return {};
   }
 
+  private computeLocationCategory(donor: { city?: string | null; state?: string | null; country?: string | null }): string {
+    const city = (donor.city || "").trim().toLowerCase();
+    const state = (donor.state || "").trim().toLowerCase();
+    const country = (donor.country || "").trim().toLowerCase();
+    if (city === "hyderabad") return "HYDERABAD";
+    if (state === "telangana") return "TELANGANA_OTHER";
+    if (country === "india" || !country) return "INDIA_OTHER";
+    return "INTERNATIONAL";
+  }
+
   private shouldMaskData(user: UserContext): boolean {
     return user.role !== Role.FOUNDER;
   }
@@ -74,6 +84,7 @@ export class DonorsCrudService {
       donationFrequency,
       healthStatus,
       supportPreferences,
+      locationCategory,
     } = options;
 
     const safePage = Math.max(1, Number(page) || 1);
@@ -161,6 +172,34 @@ if (assignedToUserId) {
       where.healthStatus = healthStatus as HealthStatus;
     }
 
+    if (locationCategory) {
+      if (locationCategory === "HYDERABAD") {
+        where.city = { equals: "Hyderabad", mode: Prisma.QueryMode.insensitive };
+      } else if (locationCategory === "TELANGANA_OTHER") {
+        where.AND = [
+          { state: { equals: "Telangana", mode: Prisma.QueryMode.insensitive } },
+          { NOT: { city: { equals: "Hyderabad", mode: Prisma.QueryMode.insensitive } } },
+        ];
+      } else if (locationCategory === "INDIA_OTHER") {
+        where.AND = [
+          {
+            OR: [
+              { country: { equals: "India", mode: Prisma.QueryMode.insensitive } },
+              { country: null },
+              { country: "" },
+            ],
+          },
+          { NOT: { state: { equals: "Telangana", mode: Prisma.QueryMode.insensitive } } },
+        ];
+      } else if (locationCategory === "INTERNATIONAL") {
+        where.AND = [
+          { country: { not: null } },
+          { NOT: { country: { equals: "India", mode: Prisma.QueryMode.insensitive } } },
+          { NOT: { country: "" } },
+        ];
+      }
+    }
+
     const [donors, total] = await Promise.all([
       this.prisma.donor.findMany({
         where,
@@ -178,6 +217,9 @@ if (assignedToUserId) {
           primaryRole: true,
           additionalRoles: true,
           donorTags: true,
+          languages: true,
+          preferredHomes: true,
+          primaryHomeInterest: true,
           communicationChannels: true,
           donationFrequency: true,
           healthScore: true,
@@ -217,6 +259,7 @@ if (assignedToUserId) {
       healthScore: engagementMap[donor.id]?.score ?? donor.healthScore ?? 100,
       healthStatus: engagementMap[donor.id]?.status ?? donor.healthStatus,
       healthReasons: engagementMap[donor.id]?.reasons ?? [],
+      locationCategory: this.computeLocationCategory(donor),
     }));
 
     const items = this.shouldMaskData(user)
@@ -306,6 +349,9 @@ if (assignedToUserId) {
         primaryRole: true,
         additionalRoles: true,
         donorTags: true,
+        languages: true,
+        preferredHomes: true,
+        primaryHomeInterest: true,
         communicationChannels: true,
         preferredCommunicationMethod: true,
         communicationNotes: true,
@@ -335,11 +381,16 @@ if (assignedToUserId) {
       throw new NotFoundException("Donor not found");
     }
 
+    const donorWithComputed = {
+      ...donor,
+      locationCategory: this.computeLocationCategory(donor),
+    };
+
     if (this.shouldMaskData(user)) {
-      return maskDonorData(donor);
+      return maskDonorData(donorWithComputed);
     }
 
-    return donor;
+    return donorWithComputed;
     } catch (error) {
       if (error instanceof NotFoundException || error instanceof ForbiddenException) {
         throw error;

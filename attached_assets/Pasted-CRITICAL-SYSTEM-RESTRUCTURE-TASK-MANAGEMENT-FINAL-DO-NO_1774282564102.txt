@@ -1,0 +1,324 @@
+CRITICAL SYSTEM RESTRUCTURE — TASK MANAGEMENT (FINAL)
+
+DO NOT ADD EXTRA FEATURES.
+DO NOT CHANGE STRUCTURE.
+ONLY IMPLEMENT EXACTLY AS DEFINED.
+
+---------------------------------------
+1. PAGE RESTRUCTURE (VERY IMPORTANT)
+---------------------------------------
+
+REMOVE / CLEAN:
+
+❌ Remove from "Staff & Tasks":
+- My Tasks
+- Performance tab
+- Recurring Tasks tab
+
+❌ REMOVE separate "Daily Checklist" page completely
+
+---------------------------------------
+
+CREATE NEW STRUCTURE:
+
+✅ PAGE 1: "Founder Tasks"
+
+Purpose:
+- Personal tasks of Founder
+- Assign tasks to staff
+
+Features:
+
+1. My Personal Tasks
+   - Only visible to Founder
+   - Create / edit / complete tasks
+
+2. Assign Task to Staff
+   - Select staff (User)
+   - Title
+   - Description
+   - Due Date
+   - Estimated Time (number + unit: hours/days)
+   - Priority (Smart Priority system)
+   - Notes
+
+3. Task Actions:
+   - Mark Complete
+   - Add Notes
+
+---------------------------------------
+
+✅ PAGE 2: "Staff Tasks"  (MAIN TASK ENGINE)
+
+This replaces:
+- Staff & Tasks
+- Daily Checklist
+
+---------------------------------------
+
+2. STAFF TASKS PAGE STRUCTURE
+---------------------------------------
+
+Divide into TWO sections:
+
+---------------------------------------
+
+(A) RECURRING TASKS (TEMPLATES)
+
+👉 Visible ONLY to Founder (create/edit/delete)
+
+Each template contains:
+
+- Title
+- Assigned Staff (userId)
+- Frequency:
+    DAILY
+    WEEKLY
+    MONTHLY
+    FORTNIGHT
+    QUARTERLY
+    HALF_YEARLY
+    CUSTOM_DAYS (e.g. every 28 days)
+
+- Days Selection:
+    - Monday to Saturday selectable
+    - OR custom interval
+
+- Start Date
+- Optional End Date
+
+- Estimated Time:
+    value + unit (hours/days)
+
+- Priority (Smart Priority)
+
+- Notes
+
+---------------------------------------
+
+SYSTEM BEHAVIOR:
+
+Every day:
+
+→ Generate real tasks from templates  
+→ Assign to respective staff  
+→ These appear in "Today Tasks"
+
+Staff SHOULD NOT see templates  
+They only see generated tasks
+
+---------------------------------------
+
+(B) ACTIVE TASKS (WORKING AREA)
+
+Visible to:
+- Founder
+- Staff (only their tasks)
+
+Features:
+
+- Task List
+- Filters:
+   - My Tasks
+   - All Tasks (Founder only)
+
+- Fields:
+
+   - Title
+   - Assigned Staff
+   - Due Date
+   - Estimated Time
+   - Priority
+   - Status:
+        Pending
+        In Progress
+        Completed
+        Missed
+
+   - Notes
+
+---------------------------------------
+
+3. SMART PRIORITY SYSTEM (FINAL)
+---------------------------------------
+
+Priority Enum:
+
+CRITICAL   (🔴)
+HIGH       (🟠)
+MEDIUM     (🟡)
+LOW        (🟢)
+
+---------------------------------------
+
+Behavior:
+
+1. AUTO SORTING
+
+Tasks sorted by:
+
+CRITICAL → HIGH → MEDIUM → LOW
+
+---------------------------------------
+
+2. MISSED TASK TRACKING
+
+IF:
+- current date > due date
+- AND status != completed
+
+THEN:
+
+→ mark as "MISSED"
+
+Store:
+- missedAt (DateTime)
+- delayDays (number)
+
+---------------------------------------
+
+3. ALERT READY STRUCTURE
+
+Prepare backend fields for future:
+
+- reminderBefore (minutes/hours)
+- escalationLevel
+
+(NO UI needed now)
+
+---------------------------------------
+
+4. DATA MODEL (IMPORTANT)
+---------------------------------------
+
+Create / update Task model:
+
+model Task {
+  id            String @id @default(cuid())
+  title         String
+  description   String?
+
+  assignedToId  String
+  assignedTo    User @relation(fields: [assignedToId], references: [id])
+
+  createdById   String
+  createdBy     User @relation("CreatedTasks", fields: [createdById], references: [id])
+
+  dueDate       DateTime?
+  estimatedTime Int?
+  timeUnit      String? // "HOURS" | "DAYS"
+
+  priority      Priority
+  status        TaskStatus
+
+  notes         String?
+
+  isRecurringInstance Boolean @default(false)
+
+  missedAt      DateTime?
+  delayDays     Int?
+
+  createdAt     DateTime @default(now())
+}
+
+---------------------------------------
+
+Recurring Template Model:
+
+model RecurringTask {
+  id           String @id @default(cuid())
+
+  title        String
+  description  String?
+
+  assignedToId String
+  assignedTo   User @relation(fields: [assignedToId], references: [id])
+
+  frequency    String
+  customDays   Int?
+
+  daysOfWeek   String? // JSON array
+
+  startDate    DateTime
+  endDate      DateTime?
+
+  estimatedTime Int?
+  timeUnit      String?
+
+  priority     Priority
+
+  notes        String?
+
+  createdById  String
+  createdBy    User @relation(fields: [createdById], references: [id])
+
+  createdAt    DateTime @default(now())
+}
+
+---------------------------------------
+
+5. PERMISSIONS
+---------------------------------------
+
+ONLY FOUNDER:
+
+- Create recurring tasks
+- Edit recurring tasks
+- Delete recurring tasks
+- View all tasks
+
+STAFF:
+
+- View ONLY assigned tasks
+- Mark complete
+- Add notes
+
+---------------------------------------
+
+6. UI CLEANUP (IMPORTANT)
+---------------------------------------
+
+REMOVE:
+
+- Duplicate performance inside Staff & Tasks
+- Recurring Tasks button from old UI
+- Daily Checklist menu
+
+ADD:
+
+Sidebar:
+
+- Founder Tasks
+- Staff Tasks
+- Missed Tasks
+- Performance (separate page)
+
+---------------------------------------
+
+7. PERFORMANCE INTEGRATION
+---------------------------------------
+
+Performance page MUST read from:
+
+Task table ONLY
+
+NO duplicate logic
+
+---------------------------------------
+
+FINAL RESULT:
+
+✔ Clean structure  
+✔ No duplication  
+✔ One task system  
+✔ Recurring + one-time unified  
+✔ Founder full control  
+✔ Staff simple usage  
+✔ Smart priority tracking  
+✔ Missed tracking ready  
+✔ Future alerts ready  
+
+---------------------------------------
+
+DO NOT CHANGE ANYTHING AFTER THIS.
+THIS IS FINAL SYSTEM DESIGN.

@@ -55,6 +55,9 @@ export declare class BeneficiaryRemindersService {
             primaryRole: import(".prisma/client").$Enums.PersonRole;
             additionalRoles: import(".prisma/client").$Enums.PersonRole[];
             donorTags: string[];
+            languages: string[];
+            preferredHomes: string[];
+            primaryHomeInterest: string | null;
             communicationChannels: string[];
             preferredCommunicationMethod: string | null;
             communicationNotes: string | null;

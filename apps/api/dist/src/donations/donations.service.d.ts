@@ -385,4 +385,5 @@ export declare class DonationsService {
         buffer: Buffer;
         filename: string;
     }>;
+    private updatePrimaryHomeInterest;
 }
