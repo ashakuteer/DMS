@@ -183,6 +183,7 @@ export default function EditDonorPage() {
   const router = useRouter();
   const params = useParams();
   const donorId = params.id as string;
+  console.log("Route donorId:", params.id);
   const { toast } = useToast();
   const user = authStorage.getUser();
 
@@ -296,6 +297,10 @@ export default function EditDonorPage() {
   });
 
   const fetchDonor = useCallback(async () => {
+    if (!donorId) {
+      console.warn("fetchDonor called with no donorId — skipping");
+      return;
+    }
     try {
       setLoading(true);
       console.log("Fetching donor ID:", donorId);

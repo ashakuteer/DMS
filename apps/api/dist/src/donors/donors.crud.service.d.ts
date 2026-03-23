@@ -9,6 +9,8 @@ export declare class DonorsCrudService {
     constructor(prisma: PrismaService, engagementService: DonorsEngagementService);
     private getAccessFilter;
     private shouldMaskData;
+    private readonly UUID_REGEX;
+    private isValidUUID;
     private getActiveDonorOrThrow;
     findAll(user: UserContext, options?: DonorQueryOptions): Promise<{
         items: {

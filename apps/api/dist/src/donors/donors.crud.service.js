@@ -21,6 +21,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         this.prisma = prisma;
         this.engagementService = engagementService;
         this.logger = new common_1.Logger(DonorsCrudService_1.name);
+        this.UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     }
     getAccessFilter(_user) {
         return {};
@@ -28,7 +29,13 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
     shouldMaskData(user) {
         return user.role !== client_1.Role.FOUNDER;
     }
+    isValidUUID(id) {
+        return !!id && this.UUID_REGEX.test(id);
+    }
     async getActiveDonorOrThrow(id) {
+        if (!this.isValidUUID(id)) {
+            throw new common_1.NotFoundException("Donor not found");
+        }
         const donor = await this.prisma.donor.findFirst({
             where: { id, isDeleted: false },
             select: { id: true, assignedToUserId: true },
@@ -174,7 +181,11 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         };
     }
     async findOne(user, id) {
-        this.logger.log(`Fetching donor ID: ${id}`);
+        this.logger.log(`API received ID: ${id}`);
+        if (!this.isValidUUID(id)) {
+            this.logger.warn(`Invalid donor ID format: "${id}" — returning 404`);
+            throw new common_1.NotFoundException("Donor not found");
+        }
         try {
             const donor = await this.prisma.donor.findFirst({
                 where: {

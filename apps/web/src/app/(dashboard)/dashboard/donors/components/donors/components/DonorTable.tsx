@@ -86,7 +86,10 @@ export default function DonorTable({ donors, onOpen }: Props) {
           {donors.map((d) => (
             <TableRow
               key={d.id}
-              onClick={() => onOpen(d.id)}
+              onClick={() => {
+                console.log("Clicked donor ID:", d.id);
+                onOpen(d.id);
+              }}
               className="cursor-pointer hover:bg-muted/50"
               data-testid={`row-donor-${d.id}`}
             >
