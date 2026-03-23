@@ -36,13 +36,14 @@ export declare class TaskTemplatesController {
         role: import(".prisma/client").$Enums.Role;
         total: number;
         completed: number;
+        missed: number;
         onTime: number;
         completionRate: number;
-        timelinessScore: number;
         efficiencyScore: number;
         avgMinutesTaken: number;
         score: number;
-        grade: string;
+        statusLevel: string;
+        insight: string;
     }[]>;
     getAccountabilityScore(userId: string, days?: string): Promise<{
         userId: string;

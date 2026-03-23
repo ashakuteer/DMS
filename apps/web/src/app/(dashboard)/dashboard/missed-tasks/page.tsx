@@ -14,6 +14,7 @@ import {
 import {
   Loader2, XCircle, RefreshCw, Search, RotateCcw, AlertTriangle,
 } from "lucide-react";
+
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 import { AccessDenied } from "@/components/access-denied";
@@ -85,6 +86,8 @@ export default function MissedTasksPage() {
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setStaffList(d); })
       .catch(() => {});
+    // Auto-mark overdue tasks as missed on page load
+    fetchWithAuth("/api/task-templates/mark-missed", { method: "POST" }).catch(() => {});
   }, []);
 
   useEffect(() => { loadTasks(); }, [loadTasks]);
@@ -106,17 +109,6 @@ export default function MissedTasksPage() {
       toast({ title: "Error", variant: "destructive" });
     } finally {
       setRestoringId(null);
-    }
-  };
-
-  const markAllMissed = async () => {
-    const res = await fetchWithAuth("/api/task-templates/mark-missed", { method: "POST" });
-    if (res.ok) {
-      const r = await res.json();
-      toast({ title: `Marked ${r.marked} overdue task${r.marked !== 1 ? "s" : ""} as Missed` });
-      loadTasks();
-    } else {
-      toast({ title: "Failed", variant: "destructive" });
     }
   };
 
@@ -152,9 +144,6 @@ export default function MissedTasksPage() {
         <div className="flex gap-2">
           <Button variant="outline" size="sm" onClick={loadTasks} data-testid="button-refresh">
             <RefreshCw className="h-4 w-4 mr-1.5" />Refresh
-          </Button>
-          <Button size="sm" variant="destructive" onClick={markAllMissed} data-testid="button-mark-all-missed">
-            <AlertTriangle className="h-4 w-4 mr-1.5" />Mark Overdue as Missed
           </Button>
         </div>
       </div>

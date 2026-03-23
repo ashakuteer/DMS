@@ -267,9 +267,10 @@ let TaskTemplatesService = class TaskTemplatesService {
         });
         const results = await Promise.all(users.map(async (user) => {
             const baseWhere = { assignedToId: user.id, deletedAt: null, createdAt: { gte: since } };
-            const [total, completed, onTimeRows, timeRows] = await Promise.all([
+            const [total, completed, missed, onTimeRows, timeRows] = await Promise.all([
                 this.prisma.staffTask.count({ where: baseWhere }),
                 this.prisma.staffTask.count({ where: { ...baseWhere, status: client_1.TaskStatus.COMPLETED } }),
+                this.prisma.staffTask.count({ where: { ...baseWhere, status: client_1.TaskStatus.MISSED } }),
                 this.prisma.staffTask.findMany({
                     where: { ...baseWhere, status: client_1.TaskStatus.COMPLETED, completedAt: { not: null }, dueDate: { not: null } },
                     select: { completedAt: true, dueDate: true },
@@ -279,14 +280,28 @@ let TaskTemplatesService = class TaskTemplatesService {
                     select: { minutesTaken: true },
                 }),
             ]);
-            const completionRate = total > 0 ? (completed / total) * 100 : 0;
+            const completionRate = total > 0 ? completed / total : 0;
             const onTimeCount = onTimeRows.filter((t) => t.completedAt <= t.dueDate).length;
-            const timelinessScore = completed > 0 ? (onTimeCount / completed) * 100 : 0;
             const avgMinutes = timeRows.length > 0
                 ? timeRows.reduce((s, t) => s + (t.minutesTaken || 0), 0) / timeRows.length
                 : null;
-            const efficiencyScore = avgMinutes === null ? 80 : avgMinutes < 30 ? 100 : avgMinutes <= 60 ? 80 : 60;
-            const score = Math.round((completionRate + timelinessScore + efficiencyScore) / 3);
+            const efficiencyScore = avgMinutes !== null && avgMinutes <= 60 ? 5 : 0;
+            const rawScore = (completed * 10) - (missed * 15) + (completionRate * 10) + efficiencyScore;
+            const score = Math.max(0, Math.min(100, Math.round(rawScore)));
+            const statusLevel = score >= 90 ? 'Excellent' :
+                score >= 70 ? 'Good' :
+                    score >= 50 ? 'Warning' :
+                        'Critical';
+            let insight = '';
+            if (missed > 5) {
+                insight = 'Needs improvement – missing tasks frequently';
+            }
+            else if (completionRate > 0.9 && total > 0) {
+                insight = 'Excellent and consistent performer';
+            }
+            else if (completionRate < 0.6 && total > 0) {
+                insight = 'High risk – low task completion';
+            }
             return {
                 userId: user.id,
                 name: user.name,
@@ -294,13 +309,14 @@ let TaskTemplatesService = class TaskTemplatesService {
                 role: user.role,
                 total,
                 completed,
+                missed,
                 onTime: onTimeCount,
-                completionRate: Math.round(completionRate),
-                timelinessScore: Math.round(timelinessScore),
+                completionRate: Math.round(completionRate * 100),
                 efficiencyScore,
                 avgMinutesTaken: avgMinutes !== null ? Math.round(avgMinutes) : null,
                 score,
-                grade: score >= 90 ? 'A' : score >= 70 ? 'B' : score >= 50 ? 'C' : score >= 30 ? 'D' : 'F',
+                statusLevel,
+                insight,
             };
         }));
         const sorted = results.sort((a, b) => b.score - a.score);

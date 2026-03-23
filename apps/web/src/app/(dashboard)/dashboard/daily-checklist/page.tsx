@@ -4,9 +4,13 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
 import { Loader2, RefreshCw, CheckSquare, Square, Clock, CheckCircle2, ListChecks, Calendar } from "lucide-react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -28,11 +32,16 @@ type Task = {
   assignedTo: { id: string; name: string } | null;
 };
 
+type TimeDialogState = {
+  task: Task;
+  pendingChecklist?: ChecklistItem[];
+};
+
 const PERIODS = [
   { value: "today", label: "Today" },
   { value: "week", label: "This Week" },
   { value: "month", label: "This Month" },
-  { value: "all", label: "All Pending" },
+  { value: "all", label: "All" },
 ];
 
 function getDateRange(period: string): { from: Date; to: Date } {
@@ -40,9 +49,7 @@ function getDateRange(period: string): { from: Date; to: Date } {
   const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
 
-  if (period === "today") {
-    return { from: startOfDay(now), to: endOfDay(now) };
-  }
+  if (period === "today") return { from: startOfDay(now), to: endOfDay(now) };
   if (period === "week") {
     const day = now.getDay();
     const mon = new Date(now);
@@ -83,7 +90,7 @@ function fmtDueDate(d: string | null) {
 }
 
 function fmtTime(mins: number | null) {
-  if (mins === null) return null;
+  if (mins === null || mins === undefined) return null;
   if (mins < 60) return `${mins} min${mins !== 1 ? "s" : ""}`;
   const h = Math.floor(mins / 60);
   const m = mins % 60;
@@ -100,11 +107,24 @@ export default function DailyChecklistPage() {
   const [period, setPeriod] = useState("today");
   const [togglingItem, setTogglingItem] = useState<string | null>(null);
 
+  // Time-entry dialog state
+  const [timeDialog, setTimeDialog] = useState<TimeDialogState | null>(null);
+  const [timeInput, setTimeInput] = useState("");
+  const [submittingTime, setSubmittingTime] = useState(false);
+
   const generateToday = useCallback(async () => {
     try {
       await fetchWithAuth("/api/task-templates/generate-today", { method: "POST" });
     } catch {
-      // Silent — generation failure shouldn't block the page
+      // Silent
+    }
+  }, []);
+
+  const autoMarkMissed = useCallback(async () => {
+    try {
+      await fetchWithAuth("/api/task-templates/mark-missed", { method: "POST" });
+    } catch {
+      // Silent
     }
   }, []);
 
@@ -124,8 +144,77 @@ export default function DailyChecklistPage() {
   }, [isAdmin, user?.id]);
 
   useEffect(() => {
-    generateToday().then(() => loadTasks());
-  }, [generateToday, loadTasks]);
+    generateToday()
+      .then(() => autoMarkMissed())
+      .then(() => loadTasks());
+  }, [generateToday, autoMarkMissed, loadTasks]);
+
+  // ─── Open time dialog ────────────────────────────────────────────────────
+
+  const openTimeDialog = (task: Task, pendingChecklist?: ChecklistItem[]) => {
+    setTimeInput("");
+    setTimeDialog({ task, pendingChecklist });
+  };
+
+  // ─── Submit time and mark complete ───────────────────────────────────────
+
+  const submitTimeDialog = async () => {
+    if (!timeDialog) return;
+    const { task, pendingChecklist } = timeDialog;
+    const mins = parseInt(timeInput, 10);
+    if (!timeInput || isNaN(mins) || mins < 0) {
+      toast({ title: "Please enter a valid number of minutes", variant: "destructive" });
+      return;
+    }
+    setSubmittingTime(true);
+    const now = new Date().toISOString();
+    const body: any = {
+      status: "COMPLETED",
+      completedAt: now,
+      minutesTaken: mins,
+      startedAt: task.startedAt || now,
+    };
+    if (pendingChecklist) {
+      body.checklist = pendingChecklist;
+    }
+    try {
+      const res = await fetchWithAuth(`/api/staff-tasks/${task.id}`, { method: "PATCH", body: JSON.stringify(body) });
+      if (res.ok) {
+        setTasks((prev) =>
+          prev.map((t) =>
+            t.id === task.id
+              ? { ...t, ...body, checklist: pendingChecklist ?? t.checklist }
+              : t
+          )
+        );
+        toast({ title: `Task completed in ${fmtTime(mins)}!` });
+        setTimeDialog(null);
+      } else {
+        toast({ title: "Failed to mark complete", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Error", variant: "destructive" });
+    } finally {
+      setSubmittingTime(false);
+    }
+  };
+
+  // ─── Un-complete (no time dialog needed) ────────────────────────────────
+
+  const unComplete = async (task: Task) => {
+    const body: any = { status: "PENDING", completedAt: null, minutesTaken: null, startedAt: null };
+    try {
+      const res = await fetchWithAuth(`/api/staff-tasks/${task.id}`, { method: "PATCH", body: JSON.stringify(body) });
+      if (res.ok) {
+        setTasks((prev) => prev.map((t) => t.id === task.id ? { ...t, ...body } : t));
+        toast({ title: "Task marked as not complete" });
+      }
+    } catch {
+      toast({ title: "Error", variant: "destructive" });
+    }
+  };
+
+  // ─── Toggle checklist item ───────────────────────────────────────────────
 
   const toggleItem = async (task: Task, itemId: string) => {
     if (task.status === "MISSED") return;
@@ -140,21 +229,23 @@ export default function DailyChecklistPage() {
     const hadAnyDone = (task.checklist || []).some((c) => c.done);
     const now = new Date().toISOString();
 
+    if (allDone) {
+      // All items done → prompt for time
+      setTogglingItem(null);
+      // Optimistically update checklist items display first
+      setTasks((prev) =>
+        prev.map((t) => t.id === task.id ? { ...t, checklist } : t)
+      );
+      openTimeDialog(task, checklist);
+      return;
+    }
+
     const body: any = { checklist };
     if (!hadAnyDone && doneCount === 1) {
       body.startedAt = now;
       body.status = "IN_PROGRESS";
-    }
-    if (allDone) {
-      body.status = "COMPLETED";
-      body.completedAt = now;
-      if (task.startedAt) {
-        const mins = Math.round((Date.now() - new Date(task.startedAt).getTime()) / 60000);
-        body.minutesTaken = mins;
-      }
     } else if (doneCount > 0) {
       body.status = "IN_PROGRESS";
-      // If was completed and un-checking, clear completion data
       if (task.status === "COMPLETED") {
         body.completedAt = null;
         body.minutesTaken = null;
@@ -174,11 +265,10 @@ export default function DailyChecklistPage() {
         setTasks((prev) =>
           prev.map((t) =>
             t.id === task.id
-              ? { ...t, checklist, status: body.status || t.status, startedAt: body.startedAt || t.startedAt, completedAt: body.completedAt || t.completedAt, minutesTaken: body.minutesTaken ?? t.minutesTaken }
+              ? { ...t, checklist, status: body.status || t.status, startedAt: body.startedAt || t.startedAt, completedAt: body.completedAt ?? t.completedAt, minutesTaken: body.minutesTaken ?? t.minutesTaken }
               : t
           )
         );
-        if (allDone) toast({ title: `Task completed!${body.minutesTaken ? ` (${fmtTime(body.minutesTaken)})` : ""}` });
       } else {
         toast({ title: "Failed to update", variant: "destructive" });
       }
@@ -186,40 +276,6 @@ export default function DailyChecklistPage() {
       toast({ title: "Error", variant: "destructive" });
     } finally {
       setTogglingItem(null);
-    }
-  };
-
-  const toggleNoChecklist = async (task: Task) => {
-    if (task.status === "MISSED") return;
-    const now = new Date().toISOString();
-    const isCompleting = task.status !== "COMPLETED";
-    const body: any = {
-      status: isCompleting ? "COMPLETED" : "PENDING",
-      completedAt: isCompleting ? now : null,
-    };
-    if (isCompleting && task.startedAt) {
-      body.minutesTaken = Math.round((Date.now() - new Date(task.startedAt).getTime()) / 60000);
-    }
-    if (isCompleting && !task.startedAt) {
-      body.startedAt = now;
-    }
-    if (!isCompleting) {
-      body.minutesTaken = null;
-      body.startedAt = null;
-    }
-
-    try {
-      const res = await fetchWithAuth(`/api/staff-tasks/${task.id}`, { method: "PATCH", body: JSON.stringify(body) });
-      if (res.ok) {
-        setTasks((prev) =>
-          prev.map((t) =>
-            t.id === task.id ? { ...t, ...body } : t
-          )
-        );
-        toast({ title: isCompleting ? "Task marked complete!" : "Task marked as not complete" });
-      }
-    } catch {
-      toast({ title: "Error", variant: "destructive" });
     }
   };
 
@@ -241,6 +297,43 @@ export default function DailyChecklistPage() {
 
   return (
     <div className="p-6 space-y-6 max-w-5xl mx-auto">
+
+      {/* Time-entry dialog */}
+      <Dialog open={!!timeDialog} onOpenChange={(open) => { if (!open) setTimeDialog(null); }}>
+        <DialogContent className="sm:max-w-sm" data-testid="dialog-time-entry">
+          <DialogHeader>
+            <DialogTitle>Mark Task Complete</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 space-y-3">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{timeDialog?.task.title}</span>
+            </p>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Time taken (minutes)</label>
+              <Input
+                type="number"
+                min="0"
+                placeholder="e.g. 30"
+                value={timeInput}
+                onChange={(e) => setTimeInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") submitTimeDialog(); }}
+                autoFocus
+                data-testid="input-time-taken"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTimeDialog(null)} disabled={submittingTime}>
+              Cancel
+            </Button>
+            <Button onClick={submitTimeDialog} disabled={submittingTime} data-testid="button-confirm-complete">
+              {submittingTime ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <CheckCircle2 className="h-4 w-4 mr-1.5" />}
+              Mark Complete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
@@ -249,7 +342,7 @@ export default function DailyChecklistPage() {
             <h1 className="text-2xl font-bold">Daily Checklist</h1>
           </div>
           <p className="text-muted-foreground text-sm mt-0.5">
-            {isAdmin ? "Track all staff task completion" : "Your tasks for today — tick off as you go"}
+            {isAdmin ? "Track all staff task completion" : "Your tasks — tick off as you complete them"}
           </p>
         </div>
         <div className="flex gap-2 items-center">
@@ -262,7 +355,7 @@ export default function DailyChecklistPage() {
               {PERIODS.map((p) => <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={loadTasks} data-testid="button-refresh">
+          <Button variant="outline" size="sm" onClick={() => { autoMarkMissed().then(() => loadTasks()); }} data-testid="button-refresh">
             <RefreshCw className="h-4 w-4 mr-1.5" />Refresh
           </Button>
         </div>
@@ -301,7 +394,7 @@ export default function DailyChecklistPage() {
         <div className="flex flex-col items-center gap-3 py-16 text-muted-foreground border rounded-lg">
           <CheckCircle2 className="h-10 w-10 opacity-25" />
           <p className="text-sm">No tasks for this period.</p>
-          <p className="text-xs">Generate tasks from templates in Staff &amp; Tasks to get started.</p>
+          <p className="text-xs">Recurring tasks from templates will appear here automatically.</p>
         </div>
       ) : (
         <div className="space-y-6">
@@ -334,13 +427,14 @@ export default function DailyChecklistPage() {
                         <CardHeader className="pb-0 pt-4 px-4">
                           <div className="flex items-start justify-between gap-3">
                             <div className="flex items-start gap-3 flex-1 min-w-0">
-                              {/* Checkbox / toggle for tasks without checklist items */}
+
+                              {/* Checkbox for tasks without checklist */}
                               {!hasChecklist && (
                                 <button
-                                  onClick={() => toggleNoChecklist(task)}
+                                  onClick={() => isCompleted ? unComplete(task) : openTimeDialog(task)}
                                   disabled={isMissed}
                                   title={isCompleted ? "Click to mark as not complete" : "Click to mark as complete"}
-                                  className={`mt-0.5 shrink-0 group disabled:opacity-50 transition-colors ${isCompleted ? "text-green-600 hover:text-muted-foreground" : "text-muted-foreground hover:text-green-600"}`}
+                                  className={`mt-0.5 shrink-0 disabled:opacity-50 transition-colors ${isCompleted ? "text-green-600 hover:text-muted-foreground" : "text-muted-foreground hover:text-green-600"}`}
                                   data-testid={`checkbox-task-${task.id}`}
                                 >
                                   {isCompleted
@@ -348,6 +442,7 @@ export default function DailyChecklistPage() {
                                     : <Square className="h-5 w-5" />}
                                 </button>
                               )}
+
                               <div className="flex-1 min-w-0">
                                 <p className={`font-medium text-sm ${isCompleted ? "line-through text-muted-foreground" : ""}`}>
                                   {task.title}
@@ -357,7 +452,9 @@ export default function DailyChecklistPage() {
                                 )}
                                 <div className="flex gap-2 mt-1 flex-wrap">
                                   {statusBadge(task.status)}
-                                  <span className="text-xs text-muted-foreground">{task.category?.replace(/_/g, " ")}</span>
+                                  {isAdmin && task.assignedTo && (
+                                    <span className="text-xs text-muted-foreground">{task.assignedTo.name}</span>
+                                  )}
                                   {task.dueDate && (
                                     <span className="flex items-center gap-1 text-xs text-muted-foreground">
                                       <Calendar className="h-3 w-3" />
@@ -373,7 +470,20 @@ export default function DailyChecklistPage() {
                                 </div>
                               </div>
                             </div>
-                            {hasChecklist && (
+
+                            {/* Un-complete button for checklist tasks */}
+                            {hasChecklist && isCompleted && (
+                              <button
+                                onClick={() => unComplete(task)}
+                                title="Click to mark as not complete"
+                                className="mt-0.5 shrink-0 text-green-600 hover:text-muted-foreground transition-colors"
+                                data-testid={`uncomplete-task-${task.id}`}
+                              >
+                                <CheckSquare className="h-5 w-5" />
+                              </button>
+                            )}
+
+                            {hasChecklist && !isCompleted && (
                               <span className={`text-sm font-semibold shrink-0 ${taskPct === 100 ? "text-green-600" : "text-muted-foreground"}`}>
                                 {doneCnt}/{checklist.length}
                               </span>
@@ -394,7 +504,7 @@ export default function DailyChecklistPage() {
                         </CardHeader>
 
                         {/* Checklist items */}
-                        {hasChecklist && (
+                        {hasChecklist && !isCompleted && (
                           <CardContent className="px-4 pt-3 pb-4 space-y-2">
                             {checklist.map((item) => {
                               const toggleKey = `${task.id}-${item.id}`;
@@ -420,14 +530,16 @@ export default function DailyChecklistPage() {
                                 </button>
                               );
                             })}
+                          </CardContent>
+                        )}
 
-                            {/* Time taken display */}
-                            {isCompleted && task.minutesTaken !== null && (
-                              <div className="pt-1 flex items-center gap-1.5 text-xs text-green-600 font-medium">
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                                Completed in {fmtTime(task.minutesTaken)}
-                              </div>
-                            )}
+                        {/* Completed time display */}
+                        {isCompleted && task.minutesTaken !== null && (
+                          <CardContent className="px-4 pt-0 pb-3">
+                            <div className="flex items-center gap-1.5 text-xs text-green-600 font-medium">
+                              <CheckCircle2 className="h-3.5 w-3.5" />
+                              Completed in {fmtTime(task.minutesTaken)}
+                            </div>
                           </CardContent>
                         )}
                       </Card>

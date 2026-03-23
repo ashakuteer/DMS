@@ -178,14 +178,6 @@ export default function TemplatesTab({ staffList }: Props) {
     finally { setDeletingId(null); }
   };
 
-  const handleMarkMissed = async () => {
-    const res = await fetchWithAuth("/api/task-templates/mark-missed", { method: "POST" });
-    if (res.ok) {
-      const r = await res.json();
-      toast({ title: `Marked ${r.marked} overdue task${r.marked !== 1 ? "s" : ""} as Missed` });
-    } else toast({ title: "Failed", variant: "destructive" });
-  };
-
   const addItem = async (templateId: string) => {
     const text = (newItemText[templateId] || "").trim();
     if (!text) return;
@@ -225,9 +217,6 @@ export default function TemplatesTab({ staffList }: Props) {
           Recurring tasks are auto-generated daily for your team based on frequency — manage them here
         </p>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={handleMarkMissed} data-testid="button-mark-missed">
-            Mark Overdue as Missed
-          </Button>
           <Button size="sm" onClick={() => { setShowForm(!showForm); setEditId(null); resetForm(); }} data-testid="button-new-template">
             <Plus className="mr-1.5 h-4 w-4" />New Recurring Task
           </Button>
