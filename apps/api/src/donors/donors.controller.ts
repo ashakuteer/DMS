@@ -259,6 +259,7 @@ export class DonorsController {
   @Get(":id")
   @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
   async findOne(@CurrentUser() user: UserContext, @Param("id") id: string) {
+    console.log("Fetching donor ID:", id);
     return this.donorsService.findOne(user, id);
   }
 

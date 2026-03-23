@@ -115,6 +115,7 @@ let DonorsController = class DonorsController {
         return this.donorsService.findArchived(user, search, page ? parseInt(page) : 1, limit ? parseInt(limit) : 20);
     }
     async findOne(user, id) {
+        console.log("Fetching donor ID:", id);
         return this.donorsService.findOne(user, id);
     }
     async create(user, data, req) {

@@ -223,6 +223,8 @@ if (assignedToUserId) {
   }
 
   async findOne(user: UserContext, id: string) {
+    this.logger.log(`Fetching donor ID: ${id}`);
+    try {
     const donor = await this.prisma.donor.findFirst({
       where: {
         id,
@@ -322,6 +324,13 @@ if (assignedToUserId) {
     }
 
     return donor;
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error;
+      }
+      this.logger.error(`Error fetching donor ${id}: ${error instanceof Error ? error.message : String(error)}`);
+      throw new InternalServerErrorException("Failed to fetch donor");
+    }
   }
 
  async create(

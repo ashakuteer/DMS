@@ -174,102 +174,112 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         };
     }
     async findOne(user, id) {
-        const donor = await this.prisma.donor.findFirst({
-            where: {
-                id,
-                isDeleted: false,
-                ...this.getAccessFilter(user),
-            },
-            select: {
-                id: true,
-                donorCode: true,
-                firstName: true,
-                middleName: true,
-                lastName: true,
-                primaryPhone: true,
-                primaryPhoneCode: true,
-                alternatePhone: true,
-                alternatePhoneCode: true,
-                whatsappPhone: true,
-                whatsappPhoneCode: true,
-                personalEmail: true,
-                officialEmail: true,
-                address: true,
-                city: true,
-                state: true,
-                country: true,
-                pincode: true,
-                profession: true,
-                approximateAge: true,
-                gender: true,
-                incomeSpectrum: true,
-                religion: true,
-                donationMethods: true,
-                donationFrequency: true,
-                notes: true,
-                prefEmail: true,
-                prefWhatsapp: true,
-                prefSms: true,
-                prefReminders: true,
-                timezone: true,
-                category: true,
-                isUnder18Helper: true,
-                isSeniorCitizen: true,
-                isSingleParent: true,
-                isDisabled: true,
-                sourceOfDonor: true,
-                sourceDetails: true,
-                pan: true,
-                profilePicUrl: true,
-                supportPreferences: true,
-                engagementLevel: true,
-                referredByDonorId: true,
-                createdById: true,
-                isDeleted: true,
-                deletedAt: true,
-                donorSince: true,
-                createdAt: true,
-                updatedAt: true,
-                dobDay: true,
-                dobMonth: true,
-                healthScore: true,
-                healthStatus: true,
-                lastHealthCheck: true,
-                assignedToUserId: true,
-                primaryRole: true,
-                additionalRoles: true,
-                donorTags: true,
-                communicationChannels: true,
-                preferredCommunicationMethod: true,
-                communicationNotes: true,
-                assignedToUser: { select: { id: true, name: true, email: true } },
-                createdBy: { select: { id: true, name: true } },
-                specialOccasions: true,
-                familyMembers: true,
-                donations: {
-                    where: { isDeleted: false },
-                    orderBy: { donationDate: "desc" },
-                    take: 5,
+        this.logger.log(`Fetching donor ID: ${id}`);
+        try {
+            const donor = await this.prisma.donor.findFirst({
+                where: {
+                    id,
+                    isDeleted: false,
+                    ...this.getAccessFilter(user),
                 },
-                pledges: {
-                    where: { isDeleted: false },
-                    orderBy: { createdAt: "desc" },
-                    take: 5,
+                select: {
+                    id: true,
+                    donorCode: true,
+                    firstName: true,
+                    middleName: true,
+                    lastName: true,
+                    primaryPhone: true,
+                    primaryPhoneCode: true,
+                    alternatePhone: true,
+                    alternatePhoneCode: true,
+                    whatsappPhone: true,
+                    whatsappPhoneCode: true,
+                    personalEmail: true,
+                    officialEmail: true,
+                    address: true,
+                    city: true,
+                    state: true,
+                    country: true,
+                    pincode: true,
+                    profession: true,
+                    approximateAge: true,
+                    gender: true,
+                    incomeSpectrum: true,
+                    religion: true,
+                    donationMethods: true,
+                    donationFrequency: true,
+                    notes: true,
+                    prefEmail: true,
+                    prefWhatsapp: true,
+                    prefSms: true,
+                    prefReminders: true,
+                    timezone: true,
+                    category: true,
+                    isUnder18Helper: true,
+                    isSeniorCitizen: true,
+                    isSingleParent: true,
+                    isDisabled: true,
+                    sourceOfDonor: true,
+                    sourceDetails: true,
+                    pan: true,
+                    profilePicUrl: true,
+                    supportPreferences: true,
+                    engagementLevel: true,
+                    referredByDonorId: true,
+                    createdById: true,
+                    isDeleted: true,
+                    deletedAt: true,
+                    donorSince: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    dobDay: true,
+                    dobMonth: true,
+                    healthScore: true,
+                    healthStatus: true,
+                    lastHealthCheck: true,
+                    assignedToUserId: true,
+                    primaryRole: true,
+                    additionalRoles: true,
+                    donorTags: true,
+                    communicationChannels: true,
+                    preferredCommunicationMethod: true,
+                    communicationNotes: true,
+                    assignedToUser: { select: { id: true, name: true, email: true } },
+                    createdBy: { select: { id: true, name: true } },
+                    specialOccasions: true,
+                    familyMembers: true,
+                    donations: {
+                        where: { isDeleted: false },
+                        orderBy: { donationDate: "desc" },
+                        take: 5,
+                    },
+                    pledges: {
+                        where: { isDeleted: false },
+                        orderBy: { createdAt: "desc" },
+                        take: 5,
+                    },
+                    sponsorships: true,
+                    individualProfile: true,
+                    volunteerProfile: true,
+                    influencerProfile: true,
+                    csrProfile: true,
                 },
-                sponsorships: true,
-                individualProfile: true,
-                volunteerProfile: true,
-                influencerProfile: true,
-                csrProfile: true,
-            },
-        });
-        if (!donor) {
-            throw new common_1.NotFoundException("Donor not found");
+            });
+            if (!donor) {
+                throw new common_1.NotFoundException("Donor not found");
+            }
+            if (this.shouldMaskData(user)) {
+                return (0, masking_util_1.maskDonorData)(donor);
+            }
+            return donor;
         }
-        if (this.shouldMaskData(user)) {
-            return (0, masking_util_1.maskDonorData)(donor);
+        catch (error) {
+            if (error instanceof common_1.NotFoundException || error instanceof common_1.ForbiddenException) {
+                throw error;
+            }
+            this.logger.error(`Error fetching donor ${id}: ${error instanceof Error ? error.message : String(error)}`);
+            throw new common_1.InternalServerErrorException("Failed to fetch donor");
         }
-        return donor;
     }
     async create(user, data, ipAddress, userAgent) {
         const donorCode = `AKF-DNR-${Date.now()}`;

@@ -298,6 +298,7 @@ export default function EditDonorPage() {
   const fetchDonor = useCallback(async () => {
     try {
       setLoading(true);
+      console.log("Fetching donor ID:", donorId);
       const res = await fetchWithAuth(`/api/donors/${donorId}`);
       if (res.ok) {
         const donor = await res.json();
@@ -415,15 +416,25 @@ export default function EditDonorPage() {
         else if (role === "INFLUENCER") setActiveTab("influencer");
         else setActiveTab("individual");
 
+      } else if (res.status === 401) {
+        toast({ title: "Session Expired", description: "Please log in again", variant: "destructive" });
+        router.push("/login");
       } else if (res.status === 403) {
         toast({ title: "Access Denied", description: "You do not have permission to edit this donor", variant: "destructive" });
         router.push("/dashboard/donors");
       } else if (res.status === 404) {
         toast({ title: "Not Found", description: "Donor not found", variant: "destructive" });
         router.push("/dashboard/donors");
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        const message = (errData as { message?: string }).message || "An unexpected error occurred";
+        console.error("Error fetching donor:", res.status, message);
+        toast({ title: "Error", description: message, variant: "destructive" });
+        router.push("/dashboard/donors");
       }
     } catch (error) {
       console.error("Error fetching donor:", error);
+      toast({ title: "Error", description: "Failed to load donor. Please try again.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
