@@ -407,58 +407,70 @@ if (assignedToUserId) {
 }
 
   async update(
-    user: UserContext,
-    id: string,
-    data: any,
-    ipAddress?: string,
-    userAgent?: string,
-  ) {
-    const existing = await this.getActiveDonorOrThrow(id);
+  user: UserContext,
+  id: string,
+  data: any,
+  ipAddress?: string,
+  userAgent?: string,
+) {
+  await this.getActiveDonorOrThrow(id);
 
-    const {
-      individualProfile,
-      volunteerProfile,
-      influencerProfile,
-      csrProfile,
-      ...donorData
-    } = data;
+  const {
+    individualProfile,
+    volunteerProfile,
+    influencerProfile,
+    csrProfile,
+    ...rawData
+  } = data;
 
-    const donor = await this.prisma.donor.update({
-      where: { id },
-      data: donorData,
+  // ✅ FIX: Map frontend wrong fields → correct DB fields
+  const donorData: any = {
+    ...rawData,
+    profession: rawData.profession || rawData.professionType || null,
+  };
+
+  // ❌ Remove invalid field to avoid Prisma crash
+  delete donorData.professionType;
+
+  const donor = await this.prisma.donor.update({
+    where: { id },
+    data: donorData,
+  });
+
+  if (individualProfile !== undefined) {
+    await this.prisma.individualDonorProfile.upsert({
+      where: { donorId: id },
+      create: { donorId: id, ...individualProfile },
+      update: individualProfile,
     });
-
-    if (individualProfile !== undefined) {
-      await this.prisma.individualDonorProfile.upsert({
-        where: { donorId: id },
-        create: { donorId: id, ...individualProfile },
-        update: individualProfile,
-      });
-    }
-    if (volunteerProfile !== undefined) {
-      await this.prisma.volunteerProfile.upsert({
-        where: { donorId: id },
-        create: { donorId: id, ...volunteerProfile },
-        update: volunteerProfile,
-      });
-    }
-    if (influencerProfile !== undefined) {
-      await this.prisma.influencerProfile.upsert({
-        where: { donorId: id },
-        create: { donorId: id, ...influencerProfile },
-        update: influencerProfile,
-      });
-    }
-    if (csrProfile !== undefined) {
-      await this.prisma.cSRProfile.upsert({
-        where: { donorId: id },
-        create: { donorId: id, ...csrProfile },
-        update: csrProfile,
-      });
-    }
-
-    return donor;
   }
+
+  if (volunteerProfile !== undefined) {
+    await this.prisma.volunteerProfile.upsert({
+      where: { donorId: id },
+      create: { donorId: id, ...volunteerProfile },
+      update: volunteerProfile,
+    });
+  }
+
+  if (influencerProfile !== undefined) {
+    await this.prisma.influencerProfile.upsert({
+      where: { donorId: id },
+      create: { donorId: id, ...influencerProfile },
+      update: influencerProfile,
+    });
+  }
+
+  if (csrProfile !== undefined) {
+    await this.prisma.cSRProfile.upsert({
+      where: { donorId: id },
+      create: { donorId: id, ...csrProfile },
+      update: csrProfile,
+    });
+  }
+
+  return donor;
+}
 
   async softDelete(
     user: UserContext,
