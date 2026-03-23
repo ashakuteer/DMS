@@ -406,7 +406,13 @@ if (assignedToUserId) {
   }
 }
 
-async update(user: any, id: string, data: any) {
+async update(
+  user: any,
+  id: string,
+  data: any,
+  ipAddress?: string,
+  userAgent?: string,
+) {
   await this.getActiveDonorOrThrow(id);
 
   const {
