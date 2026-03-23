@@ -3,7 +3,7 @@ export declare class StaffTasksController {
     private staffTasksService;
     constructor(staffTasksService: StaffTasksService);
     private isAdminOrManager;
-    findAll(status: string, priority: string, assignedToId: string, category: string, search: string, page: string, limit: string, req: any): Promise<{
+    findAll(status: string, priority: string, assignedToId: string, category: string, search: string, page: string, limit: string, isRecurring: string, req: any): Promise<{
         items: ({
             createdBy: {
                 name: string;

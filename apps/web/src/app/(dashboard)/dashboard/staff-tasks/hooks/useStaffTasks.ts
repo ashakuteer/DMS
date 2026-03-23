@@ -5,35 +5,23 @@ export interface Task {
   id: string;
   title: string;
   description?: string | null;
-  type: string;
   status: string;
   priority: string;
+  category: string;
   dueDate?: string | null;
   completedAt?: string | null;
-  assignedTo?: string | null;
-  donorId?: string | null;
-  createdAt: string;
-  donor?: { id: string; donorCode: string; firstName: string; lastName: string } | null;
-  assignedUser?: { id: string; name: string; email: string } | null;
-  // Compatibility fields for staff-tasks components
-  category: string;
+  startedAt?: string | null;
+  assignedToId?: string | null;
+  assignedTo?: { id: string; name: string; email: string } | null;
+  createdBy?: { id: string; name: string } | null;
+  linkedDonor?: { id: string; donorCode: string; firstName: string; lastName: string } | null;
+  checklist?: any[] | null;
+  minutesTaken?: number | null;
   notes?: string | null;
-  minutesTaken?: null;
-  isRecurring?: false;
-  recurrenceType?: string;
-  checklist?: any[];
-}
-
-function mapTask(t: any): Task {
-  return {
-    ...t,
-    category: t.type,           // components use 'category', we map from 'type'
-    notes: t.description ?? null,
-    minutesTaken: null,
-    isRecurring: false,
-    recurrenceType: "NONE",
-    checklist: [],
-  };
+  isRecurring?: boolean;
+  recurrenceType?: string | null;
+  templateId?: string | null;
+  createdAt: string;
 }
 
 export function useStaffTasks() {
@@ -44,31 +32,31 @@ export function useStaffTasks() {
   const fetchTasks = useCallback(async (params?: URLSearchParams) => {
     setLoading(true);
     try {
-      const query = params?.toString() || "";
-      const res = await fetchWithAuth(`/api/tasks${query ? `?${query}` : ""}`);
+      const p = params ? new URLSearchParams(params.toString()) : new URLSearchParams();
+      p.set("isRecurring", "false");
+      const res = await fetchWithAuth(`/api/staff-tasks?${p}`);
       if (res.ok) {
         const data = await res.json();
-        // /api/tasks returns a flat array
         const items = Array.isArray(data) ? data : (data.items || []);
-        setTasks(items.map(mapTask));
-        setTotalPages(1);
+        setTasks(items);
+        setTotalPages(data.totalPages || 1);
       }
     } catch (err) {
-      console.error("Failed to fetch tasks", err);
+      console.error("Failed to fetch staff tasks", err);
     } finally {
       setLoading(false);
     }
   }, []);
 
   const deleteTask = async (taskId: string) => {
-    const res = await fetchWithAuth(`/api/tasks/${taskId}`, {
+    const res = await fetchWithAuth(`/api/staff-tasks/${taskId}`, {
       method: "DELETE",
     });
     return res.ok;
   };
 
   const updateStatus = async (taskId: string, status: string) => {
-    const res = await fetchWithAuth(`/api/tasks/${taskId}/status`, {
+    const res = await fetchWithAuth(`/api/staff-tasks/${taskId}/status`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
     });

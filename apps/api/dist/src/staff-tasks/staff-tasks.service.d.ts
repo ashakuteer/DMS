@@ -13,6 +13,7 @@ export declare class StaffTasksService {
         search?: string;
         page?: number;
         limit?: number;
+        isRecurring?: boolean;
     }): Promise<{
         items: ({
             createdBy: {

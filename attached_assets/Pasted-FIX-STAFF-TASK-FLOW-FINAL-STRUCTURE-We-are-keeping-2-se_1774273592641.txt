@@ -1,0 +1,138 @@
+FIX STAFF TASK FLOW (FINAL STRUCTURE)
+
+We are keeping 2 separate systems:
+
+-----------------------------------
+1. STAFF TASKS (MANUAL)
+-----------------------------------
+
+Used for:
+- Non-defined work
+- One-time assignments
+
+Fix:
+
+- Ensure Task.category = 'STAFF'
+- These tasks appear in:
+  → Staff & Tasks page
+
+- When creating task:
+  MUST include:
+  assignedTo
+  dueDate
+
+-----------------------------------
+2. DAILY CHECKLIST (RECURRING)
+-----------------------------------
+
+Used for:
+- Daily / Weekly / Monthly work
+
+Fix:
+
+STEP 1: Create TaskTemplate table (if not exists)
+
+STEP 2: Add predefined tasks (from admin)
+
+STEP 3: AUTO GENERATE TASKS
+
+When opening Daily Checklist page:
+
+Run function:
+
+generateTodayTasks()
+
+Logic:
+
+- Get all templates
+- For each template:
+   if frequency matches today:
+      check if task already exists for today
+      if NOT:
+         create Task:
+           title
+           category = 'STAFF'
+           assignedTo
+           dueDate = today
+           templateId
+
+-----------------------------------
+3. DAILY CHECKLIST PAGE FIX
+-----------------------------------
+
+Fetch:
+
+where:
+category = 'STAFF'
+dueDate = today
+
+Show:
+- Task title
+- Assigned staff
+- Checkbox (completed)
+
+-----------------------------------
+4. TASK COMPLETION FLOW
+-----------------------------------
+
+When staff clicks "Mark Done":
+
+update Task:
+completed = true
+
+-----------------------------------
+5. FOUNDER VIEW (VERY IMPORTANT)
+-----------------------------------
+
+On Daily Checklist page:
+
+Group by staff:
+
+Staff A:
+✔ Task 1
+❌ Task 2
+
+Staff B:
+✔ Task 1
+
+-----------------------------------
+6. PERFORMANCE FIX
+-----------------------------------
+
+Performance should calculate:
+
+- total tasks assigned
+- completed tasks
+- completion %
+
+-----------------------------------
+7. CRITICAL BUG FIX
+-----------------------------------
+
+Right now tasks are NOT appearing because:
+
+- Tasks are not being generated
+OR
+- dueDate mismatch
+OR
+- assignedTo is null
+
+Fix all filters properly
+
+-----------------------------------
+FINAL RESULT:
+
+Founder:
+→ Assign manual tasks (Staff & Tasks)
+
+System:
+→ Auto generate recurring tasks (Daily Checklist)
+
+Staff:
+→ See tasks → mark complete
+
+Founder:
+→ Track completion (Daily Checklist + Performance)
+
+DO NOT MIX BOTH SYSTEMS
+KEEP THEM SEPARATE

@@ -43,6 +43,8 @@ let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
             where.assignedToId = assignedToId;
         if (category)
             where.category = category;
+        if (query.isRecurring !== undefined)
+            where.isRecurring = query.isRecurring;
         if (search) {
             where.OR = [
                 { title: { contains: search, mode: 'insensitive' } },

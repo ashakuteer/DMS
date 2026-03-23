@@ -163,6 +163,88 @@ let TaskTemplatesService = class TaskTemplatesService {
         }
         return { generated: created.length, total: userIds.length, taskIds: created };
     }
+    shouldGenerateToday(recurrenceType, date) {
+        const day = date.getDay();
+        const d = date.getDate();
+        const m = date.getMonth();
+        switch (recurrenceType) {
+            case 'DAILY': return true;
+            case 'WEEKLY': return day === 1;
+            case 'MONTHLY': return d === 1;
+            case 'QUARTERLY': return d === 1 && [0, 3, 6, 9].includes(m);
+            case 'HALF_YEARLY': return d === 1 && [0, 6].includes(m);
+            case 'ANNUAL': return d === 1 && m === 0;
+            default: return false;
+        }
+    }
+    async generateTodayForAll(createdById) {
+        const today = new Date();
+        const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+        const templates = await this.prisma.taskTemplate.findMany({
+            where: { isActive: true },
+            include: { items: { orderBy: { orderIndex: 'asc' } } },
+        });
+        let generated = 0;
+        let skipped = 0;
+        for (const template of templates) {
+            if (!this.shouldGenerateToday(template.recurrenceType, today)) {
+                skipped++;
+                continue;
+            }
+            let userIds = [];
+            if (template.assignedToId) {
+                userIds = [template.assignedToId];
+            }
+            else if (template.assignedToRole) {
+                const users = await this.prisma.user.findMany({
+                    where: { isActive: true, role: template.assignedToRole },
+                    select: { id: true },
+                });
+                userIds = users.map((u) => u.id);
+            }
+            else {
+                const users = await this.prisma.user.findMany({
+                    where: { isActive: true },
+                    select: { id: true },
+                });
+                userIds = users.map((u) => u.id);
+            }
+            for (const userId of userIds) {
+                const existing = await this.prisma.staffTask.findFirst({
+                    where: {
+                        templateId: template.id,
+                        assignedToId: userId,
+                        dueDate: { gte: startOfToday, lte: endOfToday },
+                        deletedAt: null,
+                    },
+                });
+                if (existing)
+                    continue;
+                const checklist = template.items?.length > 0
+                    ? template.items.map((item) => ({ id: item.id, text: item.itemText, done: false }))
+                    : null;
+                await this.prisma.staffTask.create({
+                    data: {
+                        title: template.title,
+                        description: template.description ?? null,
+                        status: client_1.TaskStatus.PENDING,
+                        priority: template.priority,
+                        category: template.category,
+                        assignedToId: userId,
+                        createdById,
+                        dueDate: startOfToday,
+                        isRecurring: true,
+                        recurrenceType: template.recurrenceType,
+                        templateId: template.id,
+                        checklist,
+                    },
+                });
+                generated++;
+            }
+        }
+        return { generated, skipped, templates: templates.length };
+    }
     async markOverdueMissed() {
         const now = new Date();
         const result = await this.prisma.staffTask.updateMany({

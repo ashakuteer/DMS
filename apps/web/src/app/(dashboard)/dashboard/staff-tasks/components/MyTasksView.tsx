@@ -86,23 +86,16 @@ export default function MyTasksView({ userId }: Props) {
 
   const loadTasks = useCallback(() => {
     setLoading(true);
-    const params = new URLSearchParams({ assignedTo: userId });
+    const params = new URLSearchParams({ assignedToId: userId, isRecurring: "false" });
     if (filterStatus !== "ACTIVE" && filterStatus !== "ALL") {
       params.set("status", filterStatus);
     }
 
-    fetchWithAuth(`/api/tasks?${params.toString()}`)
+    fetchWithAuth(`/api/staff-tasks?${params.toString()}`)
       .then((r) => r.json())
       .then((d) => {
         const items = Array.isArray(d) ? d : (d?.items || []);
-        setTasks(items.map((t: any) => ({
-          ...t,
-          category: t.type,
-          notes: t.description ?? null,
-          startedAt: null,
-          minutesTaken: null,
-          checklist: [],
-        })));
+        setTasks(items);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -137,7 +130,7 @@ export default function MyTasksView({ userId }: Props) {
   const submitStatus = async (id: string, status: string, extra: any) => {
     setActionId(id);
     try {
-      const res = await fetchWithAuth(`/api/tasks/${id}/status`, {
+      const res = await fetchWithAuth(`/api/staff-tasks/${id}/status`, {
         method: "PATCH",
         body: JSON.stringify({ status }),
       });

@@ -43,6 +43,12 @@ export class TaskTemplatesController {
     return this.service.findOne(id);
   }
 
+  @Post('generate-today')
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  generateToday(@Request() req: any) {
+    return this.service.generateTodayForAll(req.user.id);
+  }
+
   @Post()
   @Roles(Role.FOUNDER, Role.ADMIN)
   create(@Body() body: any, @Request() req: any) {

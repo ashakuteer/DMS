@@ -18,14 +18,13 @@ import { useToast } from "@/hooks/use-toast";
 
 const STATUSES = ["PENDING", "IN_PROGRESS", "COMPLETED", "MISSED"];
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
-const TASK_TYPES = [
+const TASK_CATEGORIES = [
   { value: "GENERAL", label: "General" },
   { value: "INTERNAL", label: "Internal" },
   { value: "MANUAL", label: "Manual" },
-  { value: "BIRTHDAY", label: "Birthday" },
-  { value: "FOLLOW_UP", label: "Follow Up" },
-  { value: "PLEDGE", label: "Pledge" },
-  { value: "REMINDER", label: "Reminder" },
+  { value: "DONOR_FOLLOWUP", label: "Donor Follow-up" },
+  { value: "REPORTING", label: "Reporting" },
+  { value: "ADMIN", label: "Admin" },
 ];
 
 const STATUS_COLORS: Record<string, string> = {
@@ -62,15 +61,15 @@ export default function EditTaskDialog({
       description: task.description || task.notes || "",
       status: task.status || "PENDING",
       priority: task.priority || "MEDIUM",
-      type: task.type || task.category || "GENERAL",
-      assignedTo: task.assignedTo || task.assignedToId || "",
+      category: task.category || "GENERAL",
+      assignedToId: task.assignedTo?.id || task.assignedToId || "",
       dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
     });
   }, [task]);
 
   useEffect(() => {
     if (!open || !isAdminOrManager) return;
-    fetchWithAuth("/api/tasks/staff")
+    fetchWithAuth("/api/staff-tasks/staff-list")
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setStaffList(d); })
       .catch(() => {});
@@ -92,14 +91,14 @@ export default function EditTaskDialog({
         description: form.description || undefined,
         status: form.status,
         priority: form.priority,
-        type: form.type,
+        category: form.category,
         dueDate: form.dueDate || undefined,
       };
       if (isAdminOrManager) {
-        payload.assignedTo = form.assignedTo || null;
+        payload.assignedToId = form.assignedToId || null;
       }
 
-      const res = await fetchWithAuth(`/api/tasks/${task.id}`, {
+      const res = await fetchWithAuth(`/api/staff-tasks/${task.id}`, {
         method: "PATCH",
         body: JSON.stringify(payload),
       });
@@ -185,13 +184,13 @@ export default function EditTaskDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Type</Label>
-              <Select value={form.type} onValueChange={set("type")}>
-                <SelectTrigger data-testid="select-edit-type">
+              <Label>Category</Label>
+              <Select value={form.category} onValueChange={set("category")}>
+                <SelectTrigger data-testid="select-edit-category">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TASK_TYPES.map((t) => (
+                  {TASK_CATEGORIES.map((t) => (
                     <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
                   ))}
                 </SelectContent>
@@ -212,7 +211,7 @@ export default function EditTaskDialog({
           {isAdminOrManager && staffList.length > 0 && (
             <div className="space-y-1.5">
               <Label>Assigned To</Label>
-              <Select value={form.assignedTo || ""} onValueChange={set("assignedTo")}>
+              <Select value={form.assignedToId || ""} onValueChange={set("assignedToId")}>
                 <SelectTrigger data-testid="select-edit-assigned">
                   <SelectValue placeholder="Select staff member" />
                 </SelectTrigger>

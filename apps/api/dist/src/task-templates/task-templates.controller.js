@@ -35,6 +35,9 @@ let TaskTemplatesController = class TaskTemplatesController {
     findOne(id) {
         return this.service.findOne(id);
     }
+    generateToday(req) {
+        return this.service.generateTodayForAll(req.user.id);
+    }
     create(body, req) {
         return this.service.create(body, req.user.id);
     }
@@ -95,6 +98,14 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], TaskTemplatesController.prototype, "findOne", null);
+__decorate([
+    (0, common_1.Post)('generate-today'),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], TaskTemplatesController.prototype, "generateToday", null);
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN),

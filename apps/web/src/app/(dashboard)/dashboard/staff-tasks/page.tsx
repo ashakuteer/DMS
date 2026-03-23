@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { fetchWithAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, RefreshCw, ClipboardList, Users, BarChart3, Repeat, CheckSquare } from "lucide-react";
@@ -52,15 +53,31 @@ deleteTask,
 updateStatus
 } = useStaffTasks();
 
-const [taskStats, setTaskStats] = useState({
-total: 0,
-pending: 0,
-inProgress: 0,
-completed: 0
-});
+const taskStats = {
+  total: tasks.length,
+  pending: tasks.filter((t) => t.status === "PENDING").length,
+  inProgress: tasks.filter((t) => t.status === "IN_PROGRESS").length,
+  completed: tasks.filter((t) => t.status === "COMPLETED").length,
+};
 
 const [staffList, setStaffList] = useState<any[]>([]);
-const [performanceData, setPerformanceData] = useState<any>(null);
+const [performanceData, setPerformanceData] = useState<any[]>([]);
+
+const loadAdminData = useCallback(async (role: string) => {
+  if (role !== "FOUNDER" && role !== "ADMIN") return;
+  try {
+    const [staffRes, perfRes] = await Promise.all([
+      fetchWithAuth("/api/staff-tasks/staff-list"),
+      fetchWithAuth("/api/task-templates/performance-all?days=30"),
+    ]);
+    const staffData = await staffRes.json();
+    const perfData = await perfRes.json();
+    if (Array.isArray(staffData)) setStaffList(staffData);
+    if (Array.isArray(perfData)) setPerformanceData(perfData);
+  } catch {
+    // non-blocking
+  }
+}, []);
 
 useEffect(() => {
 const stored = authStorage.getUser();
@@ -69,11 +86,12 @@ if (stored) {
   // Admin/Founder default to All Tasks view; Staff default to My Tasks
   if (stored.role === "FOUNDER" || stored.role === "ADMIN") {
     setActiveTab("tasks");
+    loadAdminData(stored.role);
   } else {
     setActiveTab("my-tasks");
   }
 }
-}, []);
+}, [loadAdminData]);
 
 // Refetch with filters whenever the tasks tab is active or filters change
 useEffect(() => {

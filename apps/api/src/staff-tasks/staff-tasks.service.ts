@@ -28,6 +28,7 @@ export class StaffTasksService {
     search?: string;
     page?: number;
     limit?: number;
+    isRecurring?: boolean;
   }) {
     const { status, priority, assignedToId, category, search } = query;
     const page = query.page || 1;
@@ -39,6 +40,7 @@ export class StaffTasksService {
     if (priority) where.priority = priority as TaskPriority;
     if (assignedToId) where.assignedToId = assignedToId;
     if (category) where.category = category as TaskCategory;
+    if (query.isRecurring !== undefined) where.isRecurring = query.isRecurring;
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },

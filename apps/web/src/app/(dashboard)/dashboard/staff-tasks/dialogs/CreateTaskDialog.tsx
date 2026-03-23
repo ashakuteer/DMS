@@ -22,18 +22,21 @@ import { useToast } from "@/hooks/use-toast";
 
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "URGENT"];
 
-const TASK_TYPES = [
+const TASK_CATEGORIES = [
   { value: "GENERAL", label: "General" },
   { value: "INTERNAL", label: "Internal" },
   { value: "MANUAL", label: "Manual" },
+  { value: "DONOR_FOLLOWUP", label: "Donor Follow-up" },
+  { value: "REPORTING", label: "Reporting" },
+  { value: "ADMIN", label: "Admin" },
 ];
 
 const EMPTY = {
   title: "",
   description: "",
-  assignedTo: "",
+  assignedToId: "",
   priority: "MEDIUM",
-  type: "GENERAL",
+  category: "GENERAL",
   dueDate: new Date().toISOString().split("T")[0],
 };
 
@@ -60,7 +63,7 @@ export default function CreateTaskDialog({
     setForm({ ...EMPTY });
     if (!isAdminOrManager) return;
     setLoadingStaff(true);
-    fetchWithAuth("/api/tasks/staff")
+    fetchWithAuth("/api/staff-tasks/staff-list")
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setStaffList(d); })
       .catch(() => {})
@@ -80,15 +83,15 @@ export default function CreateTaskDialog({
       const payload: any = {
         title: form.title.trim(),
         description: form.description || undefined,
-        type: form.type,
+        category: form.category,
         priority: form.priority,
         dueDate: form.dueDate,
       };
-      if (isAdminOrManager && form.assignedTo) {
-        payload.assignedTo = form.assignedTo;
+      if (isAdminOrManager && form.assignedToId) {
+        payload.assignedToId = form.assignedToId;
       }
 
-      const res = await fetchWithAuth("/api/tasks", {
+      const res = await fetchWithAuth("/api/staff-tasks", {
         method: "POST",
         body: JSON.stringify(payload),
       });
@@ -146,7 +149,7 @@ export default function CreateTaskDialog({
           {isAdminOrManager && (
             <div className="space-y-1.5">
               <Label>Assign To <span className="text-muted-foreground font-normal">(optional)</span></Label>
-              <Select value={form.assignedTo} onValueChange={set("assignedTo")}>
+              <Select value={form.assignedToId} onValueChange={set("assignedToId")}>
                 <SelectTrigger data-testid="select-assigned-to">
                   <SelectValue placeholder={loadingStaff ? "Loading staff..." : "Select staff member"} />
                 </SelectTrigger>
@@ -163,13 +166,13 @@ export default function CreateTaskDialog({
 
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
-              <Label>Type</Label>
-              <Select value={form.type} onValueChange={set("type")}>
-                <SelectTrigger data-testid="select-task-type">
+              <Label>Category</Label>
+              <Select value={form.category} onValueChange={set("category")}>
+                <SelectTrigger data-testid="select-task-category">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {TASK_TYPES.map((t) => (
+                  {TASK_CATEGORIES.map((t) => (
                     <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
                   ))}
                 </SelectContent>

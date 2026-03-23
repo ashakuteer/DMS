@@ -156,6 +156,12 @@ export declare class TaskTemplatesService {
         taskIds: string[];
         message?: undefined;
     }>;
+    private shouldGenerateToday;
+    generateTodayForAll(createdById: string): Promise<{
+        generated: number;
+        skipped: number;
+        templates: number;
+    }>;
     markOverdueMissed(): Promise<{
         marked: number;
     }>;

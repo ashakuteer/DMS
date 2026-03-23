@@ -36,6 +36,7 @@ export class StaffTasksController {
     @Query('search') search: string,
     @Query('page') page: string,
     @Query('limit') limit: string,
+    @Query('isRecurring') isRecurring: string,
     @Req() req: any,
   ) {
     const filters: any = {
@@ -46,6 +47,10 @@ export class StaffTasksController {
       page: page ? parseInt(page) : 1,
       limit: limit ? parseInt(limit) : 50,
     };
+
+    if (isRecurring !== undefined && isRecurring !== '') {
+      filters.isRecurring = isRecurring === 'true';
+    }
 
     if (this.isAdminOrManager(req.user.role)) {
       filters.assignedToId = assignedToId || undefined;

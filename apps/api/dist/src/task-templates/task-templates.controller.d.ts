@@ -86,6 +86,11 @@ export declare class TaskTemplatesController {
         recurrenceType: string;
         assignedToRole: string | null;
     }>;
+    generateToday(req: any): Promise<{
+        generated: number;
+        skipped: number;
+        templates: number;
+    }>;
     create(body: any, req: any): Promise<{
         id: string;
         createdAt: Date;

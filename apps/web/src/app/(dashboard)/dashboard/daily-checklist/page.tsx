@@ -100,10 +100,18 @@ export default function DailyChecklistPage() {
   const [period, setPeriod] = useState("today");
   const [togglingItem, setTogglingItem] = useState<string | null>(null);
 
+  const generateToday = useCallback(async () => {
+    try {
+      await fetchWithAuth("/api/task-templates/generate-today", { method: "POST" });
+    } catch {
+      // Silent — generation failure shouldn't block the page
+    }
+  }, []);
+
   const loadTasks = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ limit: "300" });
+      const params = new URLSearchParams({ limit: "300", isRecurring: "true" });
       if (!isAdmin) params.set("assignedToId", user?.id || "");
       const res = await fetchWithAuth(`/api/staff-tasks?${params}`);
       const data = await res.json();
@@ -115,7 +123,9 @@ export default function DailyChecklistPage() {
     }
   }, [isAdmin, user?.id]);
 
-  useEffect(() => { loadTasks(); }, [loadTasks]);
+  useEffect(() => {
+    generateToday().then(() => loadTasks());
+  }, [generateToday, loadTasks]);
 
   const toggleItem = async (task: Task, itemId: string) => {
     if (task.status === "COMPLETED" || task.status === "MISSED") return;
