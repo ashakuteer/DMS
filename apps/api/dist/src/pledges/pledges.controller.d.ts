@@ -90,9 +90,9 @@ export declare class PledgesController {
             donorId: string;
             createdById: string;
             donationPurpose: import(".prisma/client").$Enums.DonationPurpose | null;
-            donationCategory: import(".prisma/client").$Enums.DonationCategory | null;
-            donationOccasion: import(".prisma/client").$Enums.DonationOccasion | null;
-            scheduleType: import(".prisma/client").$Enums.DonationSchedule | null;
+            donationCategory: string | null;
+            donationOccasion: string | null;
+            scheduleType: string | null;
             transactionId: string | null;
             remarks: string | null;
             quantity: import("@prisma/client/runtime/library").Decimal | null;
@@ -213,9 +213,9 @@ export declare class PledgesController {
             donorId: string;
             createdById: string;
             donationPurpose: import(".prisma/client").$Enums.DonationPurpose | null;
-            donationCategory: import(".prisma/client").$Enums.DonationCategory | null;
-            donationOccasion: import(".prisma/client").$Enums.DonationOccasion | null;
-            scheduleType: import(".prisma/client").$Enums.DonationSchedule | null;
+            donationCategory: string | null;
+            donationOccasion: string | null;
+            scheduleType: string | null;
             transactionId: string | null;
             remarks: string | null;
             quantity: import("@prisma/client/runtime/library").Decimal | null;

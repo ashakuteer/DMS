@@ -521,6 +521,19 @@ export default function LoginPage() {
                     t("login.sign_in")
                   )}
                 </button>
+
+                <div className="text-center pt-1">
+                  <a
+                    href="/forgot-password"
+                    className="text-xs transition-colors"
+                    style={{ color: TEAL }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+                    data-testid="link-forgot-password"
+                  >
+                    Forgot Password?
+                  </a>
+                </div>
               </form>
             </>
           )}

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, ArrowLeft, User, CheckCircle2 } from "lucide-react";
 
 export default function ForgotPasswordPage() {
-  const [username, setUsername] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -23,7 +23,7 @@ export default function ForgotPasswordPage() {
       const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim() }),
+        body: JSON.stringify({ identifier: identifier.trim() }),
       });
 
       const data = await res.json();
@@ -70,8 +70,17 @@ export default function ForgotPasswordPage() {
             Forgot your password?
           </h1>
           <p className="text-blue-100 text-lg leading-relaxed">
-            Enter your username or email address and the admin will receive a secure reset link.
+            Enter your login ID and a secure reset link will be sent to the registered recovery email.
           </p>
+          <div className="mt-4 bg-white/10 rounded-xl p-4 space-y-2">
+            <p className="text-blue-200 text-sm font-semibold">You can enter:</p>
+            <ul className="text-blue-100 text-sm space-y-1 list-none">
+              <li>• <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded text-xs">founder</span></li>
+              <li>• <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded text-xs">admin</span></li>
+              <li>• <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded text-xs">staff</span></li>
+              <li>• Or your full login email</li>
+            </ul>
+          </div>
         </div>
         <div className="relative z-10">
           <p className="text-blue-300 text-xs">
@@ -101,21 +110,21 @@ export default function ForgotPasswordPage() {
                   </div>
                   <h2 className="text-2xl font-bold text-foreground">Reset password</h2>
                   <p className="text-muted-foreground text-sm mt-1">
-                    Enter your username or email to request a password reset
+                    Enter your login ID to receive a reset link
                   </p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="space-y-2">
-                    <Label htmlFor="username" className="text-sm font-medium">
-                      Username or Email
+                    <Label htmlFor="identifier" className="text-sm font-medium">
+                      Login ID or Email
                     </Label>
                     <Input
-                      id="username"
+                      id="identifier"
                       type="text"
-                      placeholder="e.g. admin or staff@ashakuteer.org"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="e.g. founder, admin, staff"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
                       required
                       disabled={isLoading}
                       autoComplete="username"
@@ -123,7 +132,7 @@ export default function ForgotPasswordPage() {
                       data-testid="input-forgot-username"
                     />
                     <p className="text-xs text-muted-foreground">
-                      Enter your username (if assigned) or your email address.
+                      Enter <strong>founder</strong>, <strong>admin</strong>, <strong>staff</strong>, or your full login email.
                     </p>
                   </div>
 
@@ -159,12 +168,13 @@ export default function ForgotPasswordPage() {
                   <CheckCircle2 className="h-7 w-7 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-foreground">Request sent!</h2>
+                  <h2 className="text-xl font-bold text-foreground">Reset link sent!</h2>
                   <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
-                    If <strong className="text-foreground font-semibold">{username}</strong> matches an account,
-                    the admin has received a reset link at the registered inbox.
+                    Reset link sent to registered recovery email.
                     <br /><br />
-                    Please contact your admin to get the new password.
+                    The admin will use this link to set a new password for{" "}
+                    <strong className="text-foreground font-semibold">{identifier}</strong>.
+                    Please contact your admin to get your updated credentials.
                   </p>
                 </div>
               </div>

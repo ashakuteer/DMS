@@ -196,12 +196,19 @@ let AuthService = class AuthService {
     }
     async forgotPassword(dto) {
         try {
-            console.log('Reset requested for email:', dto.email);
+            const ALIAS_MAP = {
+                'founder': 'founder@ngo.org',
+                'admin': 'admin@ngo.org',
+                'staff': 'staff@ngo.org',
+            };
+            const raw = dto.identifier.trim();
+            const resolved = ALIAS_MAP[raw.toLowerCase()] ?? raw;
+            console.log('Reset requested for identifier:', raw, '→ resolved:', resolved);
             const user = await this.prisma.user.findFirst({
                 where: {
                     OR: [
-                        { email: dto.email },
-                        { username: dto.email },
+                        { email: resolved },
+                        { username: raw },
                     ],
                 },
             });
@@ -219,7 +226,7 @@ let AuthService = class AuthService {
             });
             const appUrl = process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:5000';
             const resetLink = `${appUrl}/reset-password?token=${rawToken}`;
-            const adminEmail = process.env.SMTP_USER || 'ashakuteer@gmail.com';
+            const adminEmail = process.env.RECOVERY_EMAIL || 'ashakuteer@gmail.com';
             const displayId = user.username || user.email;
             const roleBadgeColor = user.role === 'FOUNDER' ? '#7c3aed' : user.role === 'ADMIN' ? '#1d4ed8' : '#0f766e';
             const html = `

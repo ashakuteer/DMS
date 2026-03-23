@@ -17,7 +17,6 @@ exports.ForgotPasswordDto = ForgotPasswordDto;
 __decorate([
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.IsEmail)(),
     __metadata("design:type", String)
-], ForgotPasswordDto.prototype, "email", void 0);
+], ForgotPasswordDto.prototype, "identifier", void 0);
 //# sourceMappingURL=forgot-password.dto.js.map
