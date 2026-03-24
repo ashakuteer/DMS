@@ -123,7 +123,7 @@ let StaffTasksController = class StaffTasksController {
 exports.StaffTasksController = StaffTasksController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF, client_1.Role.TELECALLER, client_1.Role.ACCOUNTANT, client_1.Role.OFFICE_ASSISTANT),
     __param(0, (0, common_1.Query)('status')),
     __param(1, (0, common_1.Query)('priority')),
     __param(2, (0, common_1.Query)('assignedToId')),
@@ -140,7 +140,7 @@ __decorate([
 ], StaffTasksController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('stats'),
-    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF, client_1.Role.TELECALLER, client_1.Role.ACCOUNTANT, client_1.Role.OFFICE_ASSISTANT),
     __param(0, (0, common_1.Query)('userId')),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
@@ -165,7 +165,7 @@ __decorate([
 ], StaffTasksController.prototype, "getStaffPerformance", null);
 __decorate([
     (0, common_1.Get)('kanban'),
-    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF, client_1.Role.TELECALLER, client_1.Role.ACCOUNTANT, client_1.Role.OFFICE_ASSISTANT),
     __param(0, (0, common_1.Query)('assignedToId')),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
@@ -174,7 +174,7 @@ __decorate([
 ], StaffTasksController.prototype, "getKanbanBoard", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF, client_1.Role.TELECALLER, client_1.Role.ACCOUNTANT, client_1.Role.OFFICE_ASSISTANT),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
@@ -183,7 +183,7 @@ __decorate([
 ], StaffTasksController.prototype, "findOne", null);
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF, client_1.Role.TELECALLER, client_1.Role.ACCOUNTANT, client_1.Role.OFFICE_ASSISTANT),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Req)()),
     __metadata("design:type", Function),
@@ -192,7 +192,7 @@ __decorate([
 ], StaffTasksController.prototype, "create", null);
 __decorate([
     (0, common_1.Patch)(':id'),
-    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF, client_1.Role.TELECALLER, client_1.Role.ACCOUNTANT, client_1.Role.OFFICE_ASSISTANT),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Req)()),
@@ -202,7 +202,7 @@ __decorate([
 ], StaffTasksController.prototype, "update", null);
 __decorate([
     (0, common_1.Patch)(':id/status'),
-    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF, client_1.Role.TELECALLER, client_1.Role.ACCOUNTANT, client_1.Role.OFFICE_ASSISTANT),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __param(2, (0, common_1.Req)()),

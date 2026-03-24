@@ -51,7 +51,7 @@ export default function CreateRecurringTaskDialog({
   const [saving, setSaving] = useState(false);
 
   const [title, setTitle] = useState("");
-  const [assignedToId, setAssignedToId] = useState("");
+  const [assignedToId, setAssignedToId] = useState("NONE");
   const [priority, setPriority] = useState("MEDIUM");
   const [estimatedTime, setEstimatedTime] = useState("");
   const [frequency, setFrequency] = useState("DAILY");
@@ -62,7 +62,7 @@ export default function CreateRecurringTaskDialog({
   useEffect(() => {
     if (!open) {
       setTitle("");
-      setAssignedToId("");
+      setAssignedToId("NONE");
       setPriority("MEDIUM");
       setEstimatedTime("");
       setFrequency("DAILY");
@@ -95,7 +95,7 @@ export default function CreateRecurringTaskDialog({
 
       const body: Record<string, unknown> = {
         title: title.trim(),
-        assignedToId: assignedToId || undefined,
+        assignedToId: (assignedToId && assignedToId !== "NONE") ? assignedToId : undefined,
         priority,
         estimatedMinutes: estimatedTime ? Number(estimatedTime) : undefined,
         recurrenceType,
@@ -153,7 +153,7 @@ export default function CreateRecurringTaskDialog({
                 <SelectValue placeholder="All active staff" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All active staff</SelectItem>
+                <SelectItem value="NONE">All active staff</SelectItem>
                 {staffList.map((s) => (
                   <SelectItem key={s.id} value={s.id}>
                     {s.name}

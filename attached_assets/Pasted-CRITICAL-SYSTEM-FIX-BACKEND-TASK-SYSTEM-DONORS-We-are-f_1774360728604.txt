@@ -1,0 +1,125 @@
+CRITICAL SYSTEM FIX – BACKEND + TASK SYSTEM + DONORS
+
+We are facing multiple 500 errors across the system.
+
+This is NOT a UI issue. Backend APIs are failing.
+
+---------------------------------------
+
+ISSUES:
+
+1. Donors page not loading (500 error)
+2. Personal tasks not saving
+3. Staff task assignment failing
+4. Recurring tasks not opening
+5. Console error: Select.Item value issue
+
+---------------------------------------
+
+STEP 1: FIX BACKEND ERRORS (TOP PRIORITY)
+
+1. Go to NestJS backend logs
+
+2. Identify exact error for:
+   - GET /donors
+   - POST /tasks
+   - GET /recurring-tasks
+
+3. Fix Prisma query issues:
+
+   - Ensure new fields are OPTIONAL:
+     languages String[]?
+     preferredHomes String[]?
+
+   - Add null safety in all queries
+
+   - Fix DTO validation if required
+
+---------------------------------------
+
+STEP 2: VERIFY DONOR SERVICE
+
+In donors service:
+
+- Ensure findMany() works without selecting missing fields
+- Remove strict selection if causing crash
+
+Example fix:
+DO NOT break if languages is null
+
+---------------------------------------
+
+STEP 3: FIX TASK CREATION API
+
+Check:
+
+- POST /tasks is failing
+
+Fix:
+- Validate input properly
+- Ensure assignedTo is optional
+- Ensure category, priority exist
+
+---------------------------------------
+
+STEP 4: FIX RECURRING TASK API
+
+- Ensure route exists
+- Ensure no undefined fields
+- Add try-catch logs
+
+---------------------------------------
+
+STEP 5: FIX UI SELECT ERROR
+
+Error:
+<Select.Item /> must have non-empty value
+
+Fix:
+
+- Ensure all dropdown options have value
+- No empty string "" values
+- Assign fallback value
+
+---------------------------------------
+
+STEP 6: FIX FOUNDER TASK FORM
+
+In "My Personal Tasks":
+
+REMOVE:
+- Assign To field completely
+
+Ensure:
+- Personal task saves WITHOUT assignedTo
+
+---------------------------------------
+
+STEP 7: REMOVE DUPLICATION
+
+- Remove "Assign task to staff" from Founder Tasks page
+
+Keep assignment ONLY in Staff Tasks page
+
+---------------------------------------
+
+STEP 8: TEST AFTER FIX
+
+Must confirm:
+
+✔ Donors page loads  
+✔ Personal task saves  
+✔ Staff task saves  
+✔ Recurring tasks open  
+
+---------------------------------------
+
+IMPORTANT:
+
+Do NOT add features  
+Do NOT redesign UI  
+ONLY FIX errors
+
+---------------------------------------
+
+START NOW WITH BACKEND ERROR LOGS

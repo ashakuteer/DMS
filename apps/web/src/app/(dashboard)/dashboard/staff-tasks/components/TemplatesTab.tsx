@@ -32,7 +32,7 @@ const CATEGORIES = [
 ];
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
 const ROLES = [
-  { value: "", label: "All Active Staff" },
+  { value: "ALL_STAFF", label: "All Active Staff" },
   { value: "STAFF", label: "Staff Only" },
   { value: "ADMIN", label: "Admin Only" },
   { value: "FOUNDER", label: "Founder Only" },
@@ -83,7 +83,7 @@ export default function TemplatesTab({ staffList }: Props) {
   const [form, setForm] = useState({
     title: "", description: "", recurrenceType: "DAILY",
     category: "GENERAL", priority: "MEDIUM",
-    assignedToRole: "", assignedToId: "",
+    assignedToRole: "ALL_STAFF", assignedToId: "NONE",
   });
 
   const loadTemplates = useCallback(() => {
@@ -107,7 +107,7 @@ export default function TemplatesTab({ staffList }: Props) {
 
   const resetForm = () => setForm({
     title: "", description: "", recurrenceType: "DAILY",
-    category: "GENERAL", priority: "MEDIUM", assignedToRole: "", assignedToId: "",
+    category: "GENERAL", priority: "MEDIUM", assignedToRole: "ALL_STAFF", assignedToId: "NONE",
   });
 
   const startEdit = (t: Template) => {
@@ -115,7 +115,7 @@ export default function TemplatesTab({ staffList }: Props) {
     setForm({
       title: t.title, description: t.description || "",
       recurrenceType: t.recurrenceType, category: t.category, priority: t.priority,
-      assignedToRole: t.assignedToRole || "", assignedToId: t.assignedToId || "",
+      assignedToRole: t.assignedToRole || "ALL_STAFF", assignedToId: t.assignedToId || "NONE",
     });
     setShowForm(true);
   };
@@ -127,7 +127,8 @@ export default function TemplatesTab({ staffList }: Props) {
       const payload = {
         title: form.title, description: form.description || undefined,
         recurrenceType: form.recurrenceType, category: form.category, priority: form.priority,
-        assignedToRole: form.assignedToRole || undefined, assignedToId: form.assignedToId || undefined,
+        assignedToRole: (form.assignedToRole && form.assignedToRole !== "ALL_STAFF") ? form.assignedToRole : undefined,
+        assignedToId: (form.assignedToId && form.assignedToId !== "NONE") ? form.assignedToId : undefined,
       };
       const res = editId
         ? await fetchWithAuth(`/api/task-templates/${editId}`, { method: "PATCH", body: JSON.stringify(payload) })
@@ -269,17 +270,17 @@ export default function TemplatesTab({ staffList }: Props) {
               </div>
               <div className="space-y-1.5">
                 <Label>Assign To (Role)</Label>
-                <Select value={form.assignedToRole} onValueChange={(v) => setForm((p) => ({ ...p, assignedToRole: v, assignedToId: "" }))}>
+                <Select value={form.assignedToRole} onValueChange={(v) => setForm((p) => ({ ...p, assignedToRole: v, assignedToId: "NONE" }))}>
                   <SelectTrigger data-testid="select-role"><SelectValue /></SelectTrigger>
                   <SelectContent>{ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div className="space-y-1.5 sm:col-span-2">
                 <Label>Or Assign To Specific Staff <span className="text-muted-foreground font-normal">(overrides role)</span></Label>
-                <Select value={form.assignedToId} onValueChange={(v) => setForm((p) => ({ ...p, assignedToId: v, assignedToRole: "" }))}>
+                <Select value={form.assignedToId} onValueChange={(v) => setForm((p) => ({ ...p, assignedToId: v, assignedToRole: "ALL_STAFF" }))}>
                   <SelectTrigger data-testid="select-specific-staff"><SelectValue placeholder="Select a specific staff member (optional)" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No specific staff (use role)</SelectItem>
+                    <SelectItem value="NONE">No specific staff (use role)</SelectItem>
                     {staffList.map((s) => <SelectItem key={s.id} value={s.id}>{s.name} — {s.role}</SelectItem>)}
                   </SelectContent>
                 </Select>

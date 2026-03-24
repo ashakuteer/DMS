@@ -27,7 +27,7 @@ export class StaffTasksController {
   }
 
   @Get()
-  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT, Role.OFFICE_ASSISTANT)
   async findAll(
     @Query('status') status: string,
     @Query('priority') priority: string,
@@ -67,7 +67,7 @@ export class StaffTasksController {
   }
 
   @Get('stats')
-  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT, Role.OFFICE_ASSISTANT)
   async getStats(@Query('userId') userId: string, @Req() req: any) {
     if (this.isAdminOrManager(req.user.role)) {
       return this.staffTasksService.getStats(userId || undefined);
@@ -91,7 +91,7 @@ export class StaffTasksController {
   }
 
   @Get('kanban')
-  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT, Role.OFFICE_ASSISTANT)
   async getKanbanBoard(@Query('assignedToId') assignedToId: string, @Req() req: any) {
     if (this.isAdminOrManager(req.user.role)) {
       return this.staffTasksService.getKanbanBoard(assignedToId || undefined);
@@ -100,7 +100,7 @@ export class StaffTasksController {
   }
 
   @Get(':id')
-  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT, Role.OFFICE_ASSISTANT)
   async findOne(@Param('id') id: string, @Req() req: any) {
     const task = await this.staffTasksService.findOne(id);
     if (!this.isAdminOrManager(req.user.role) && task.assignedToId !== req.user.id) {
@@ -110,7 +110,7 @@ export class StaffTasksController {
   }
 
   @Post()
-  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT, Role.OFFICE_ASSISTANT)
   async create(@Body() body: any, @Req() req: any) {
     const assignedToId = this.isAdminOrManager(req.user.role)
       ? body.assignedToId || req.user.id
@@ -133,7 +133,7 @@ export class StaffTasksController {
   }
 
   @Patch(':id')
-  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT, Role.OFFICE_ASSISTANT)
   async update(@Param('id') id: string, @Body() body: any, @Req() req: any) {
     if (!this.isAdminOrManager(req.user.role)) {
       const task = await this.staffTasksService.findOne(id);
@@ -145,7 +145,7 @@ export class StaffTasksController {
   }
 
   @Patch(':id/status')
-  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT, Role.OFFICE_ASSISTANT)
   async updateStatus(@Param('id') id: string, @Body() body: any, @Req() req: any) {
     if (!this.isAdminOrManager(req.user.role)) {
       const task = await this.staffTasksService.findOne(id);
