@@ -18,12 +18,14 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: true,
+    origin: [
+      "https://dms-sepia-gamma.vercel.app",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   });
-  console.log("CORS ENABLED");
+  console.log("CORS ENABLED - origin: dms-sepia-gamma.vercel.app");
 
   app.setGlobalPrefix("api");
 

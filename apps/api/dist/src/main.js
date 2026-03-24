@@ -49,12 +49,14 @@ BigInt.prototype.toJSON = function () {
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
-        origin: true,
+        origin: [
+            "https://dms-sepia-gamma.vercel.app",
+        ],
         credentials: true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],
     });
-    console.log("CORS ENABLED");
+    console.log("CORS ENABLED - origin: dms-sepia-gamma.vercel.app");
     app.setGlobalPrefix("api");
     app.use("/uploads", express.static((0, path_1.join)(process.cwd(), "uploads")));
     app.useGlobalPipes(new common_1.ValidationPipe({
