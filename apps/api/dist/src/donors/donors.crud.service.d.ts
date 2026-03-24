@@ -15,6 +15,13 @@ export declare class DonorsCrudService {
     private getActiveDonorOrThrow;
     findAll(user: UserContext, options?: DonorQueryOptions): Promise<{
         items: {
+            languages: any;
+            preferredHomes: any;
+            donorTags: any;
+            additionalRoles: any;
+            communicationChannels: any;
+            donationMethods: any;
+            supportPreferences: any;
             healthScore: number;
             healthStatus: import(".prisma/client").$Enums.HealthStatus | import("./donors.types").HealthStatus;
             healthReasons: string[];
@@ -43,12 +50,7 @@ export declare class DonorsCrudService {
             category: import(".prisma/client").$Enums.DonorCategory;
             profilePicUrl: string;
             primaryRole: import(".prisma/client").$Enums.PersonRole;
-            additionalRoles: import(".prisma/client").$Enums.PersonRole[];
-            donorTags: string[];
-            languages: string[];
-            preferredHomes: string[];
             primaryHomeInterest: string;
-            communicationChannels: string[];
             donorSince: Date;
             assignedToUser: {
                 email: string;

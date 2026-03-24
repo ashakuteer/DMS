@@ -13,6 +13,13 @@ export declare class DonorsController {
     private getClientInfo;
     findAll(user: UserContext, page?: string, limit?: string, search?: string, sortBy?: string, sortOrder?: "asc" | "desc", category?: string, city?: string, country?: string, religion?: string, assignedToUserId?: string, donationFrequency?: string, healthStatus?: string, supportPreferences?: string, locationCategory?: string): Promise<{
         items: {
+            languages: any;
+            preferredHomes: any;
+            donorTags: any;
+            additionalRoles: any;
+            communicationChannels: any;
+            donationMethods: any;
+            supportPreferences: any;
             healthScore: number;
             healthStatus: import(".prisma/client").$Enums.HealthStatus | import("./donors.types").HealthStatus;
             healthReasons: string[];
@@ -41,12 +48,7 @@ export declare class DonorsController {
             category: import(".prisma/client").$Enums.DonorCategory;
             profilePicUrl: string;
             primaryRole: import(".prisma/client").$Enums.PersonRole;
-            additionalRoles: import(".prisma/client").$Enums.PersonRole[];
-            donorTags: string[];
-            languages: string[];
-            preferredHomes: string[];
             primaryHomeInterest: string;
-            communicationChannels: string[];
             donorSince: Date;
             assignedToUser: {
                 email: string;

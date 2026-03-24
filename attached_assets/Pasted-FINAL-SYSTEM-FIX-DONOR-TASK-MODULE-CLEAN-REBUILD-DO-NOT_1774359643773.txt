@@ -1,0 +1,264 @@
+FINAL SYSTEM FIX — DONOR + TASK MODULE (CLEAN REBUILD)
+
+DO NOT ADD EXTRA FEATURES
+DO NOT CHANGE STRUCTURE
+ONLY FIX AND ALIGN SYSTEM
+
+---
+
+1. FIX DONOR DATA (CRITICAL)
+
+---
+
+ISSUE:
+Old donors from Supabase are not loading.
+
+FIX:
+
+* Ensure Prisma is connected to correct database (Supabase Postgres)
+
+* Verify connection string in .env
+
+* Check Donor model matches DB schema
+
+* Ensure API:
+
+GET /donors
+
+returns all existing donors
+
+* Remove any filters blocking results
+
+* Fix mapping issues:
+
+  * languages
+  * preferredHomes
+  * tags
+
+* If fields are missing:
+  → return fallback (empty array), NOT crash
+
+FINAL RESULT:
+✔ All old donors must load correctly
+
+---
+
+2. CLEAN DONOR PAGE
+
+---
+
+REMOVE:
+
+* Location filter dropdown
+* Analytics clutter
+
+KEEP:
+
+* Donor list
+* Search
+* Add donor
+
+---
+
+3. DASHBOARD HEATMAP (SIMPLE VERSION)
+
+---
+
+Add section on Dashboard:
+
+"Donor Distribution"
+
+Show cards:
+
+* Hyderabad
+* Telangana (excluding Hyderabad)
+* India (excluding Telangana)
+* International
+
+Logic:
+
+IF city = Hyderabad → Hyderabad
+ELSE IF state = Telangana → Telangana
+ELSE IF country = India → India
+ELSE → International
+
+---
+
+4. FOUNDER TASKS PAGE FIX
+
+---
+
+Page: Founder Tasks
+
+KEEP ONLY:
+
+✔ Personal Tasks (Founder only)
+
+REMOVE:
+
+❌ Assign to staff field
+❌ Staff selection
+
+Fields:
+
+* Title
+* Notes
+* Due Date
+* Estimated Time
+* Priority
+
+---
+
+5. STAFF TASKS PAGE (MAIN ENGINE)
+
+---
+
+This is the ONLY page for staff work.
+
+---
+
+SECTION 1: RECURRING TASKS
+
+* Created by Founder only
+* Assigned to staff
+
+Fields:
+
+* Title
+
+* Assigned staff
+
+* Frequency:
+  DAILY / WEEKLY / MONTHLY / QUARTERLY / HALF_YEARLY / CUSTOM
+
+* Days selection (Mon–Sat)
+
+* Estimated time (number + unit)
+
+* Notes
+
+* Priority
+
+SYSTEM:
+
+* Auto generate tasks daily
+* Staff sees only generated tasks
+
+---
+
+SECTION 2: NORMAL TASKS
+
+* One-time tasks
+* Assigned to staff
+
+Fields:
+
+* Title
+* Assigned staff
+* Due date
+* Estimated time
+* Priority
+* Notes
+
+---
+
+6. REMOVE DUPLICATION
+
+---
+
+REMOVE:
+
+* Assign task option from Founder Tasks page
+* Duplicate task creation anywhere else
+
+KEEP:
+
+✔ Task creation ONLY inside Staff Tasks page
+
+---
+
+7. FIX TASK CREATION (CRITICAL BUG)
+
+---
+
+ISSUE:
+
+* Task creation failing (500 error)
+
+FIX:
+
+* Validate payload before saving
+
+* Ensure required fields exist:
+  assignedToId
+  title
+  priority
+
+* Fix Prisma create() mapping
+
+* Add error logging
+
+FINAL RESULT:
+✔ Task creation must work without error
+
+---
+
+8. FIX RECURRING TASK SYSTEM
+
+---
+
+ISSUE:
+
+* Recurring tasks not opening / not working
+
+FIX:
+
+* Ensure RecurringTask table exists
+
+* Fix API:
+  POST /recurring-tasks
+  GET /recurring-tasks
+
+* Ensure frontend calls correct endpoints
+
+---
+
+9. STAFF TASK VIEW
+
+---
+
+Staff can:
+
+✔ View tasks
+✔ Mark complete
+✔ Add notes
+
+RULE:
+
+* Critical / High → notes mandatory
+
+---
+
+10. PERFORMANCE PAGE
+
+---
+
+Keep separate
+
+REMOVE duplication from other pages
+
+---
+
+FINAL RESULT:
+
+✔ Donor data restored
+✔ Clean donor page
+✔ Dashboard heatmap added
+✔ Founder tasks clean
+✔ Staff tasks unified
+✔ Recurring working
+✔ Task creation fixed
+✔ No duplication
+✔ System stable
+
+DO NOT MODIFY AFTER THIS

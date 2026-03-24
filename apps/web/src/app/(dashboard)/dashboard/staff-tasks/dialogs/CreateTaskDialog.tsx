@@ -24,11 +24,13 @@ const PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
 
 const TASK_CATEGORIES = [
   { value: "GENERAL", label: "General" },
-  { value: "INTERNAL", label: "Internal" },
-  { value: "MANUAL", label: "Manual" },
   { value: "DONOR_FOLLOWUP", label: "Donor Follow-up" },
+  { value: "BENEFICIARY_UPDATE", label: "Beneficiary Update" },
+  { value: "DATA_ENTRY", label: "Data Entry" },
   { value: "REPORTING", label: "Reporting" },
-  { value: "ADMIN", label: "Admin" },
+  { value: "COMMUNICATION", label: "Communication" },
+  { value: "EVENT", label: "Event" },
+  { value: "OTHER", label: "Other" },
 ];
 
 const EMPTY = {

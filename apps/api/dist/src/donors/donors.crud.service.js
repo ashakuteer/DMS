@@ -210,6 +210,13 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
             : {};
         const donorsWithHealth = donors.map((donor) => ({
             ...donor,
+            languages: donor.languages ?? [],
+            preferredHomes: donor.preferredHomes ?? [],
+            donorTags: donor.donorTags ?? [],
+            additionalRoles: donor.additionalRoles ?? [],
+            communicationChannels: donor.communicationChannels ?? [],
+            donationMethods: donor.donationMethods ?? [],
+            supportPreferences: donor.supportPreferences ?? [],
             healthScore: engagementMap[donor.id]?.score ?? donor.healthScore ?? 100,
             healthStatus: engagementMap[donor.id]?.status ?? donor.healthStatus,
             healthReasons: engagementMap[donor.id]?.reasons ?? [],

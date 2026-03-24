@@ -232,6 +232,60 @@ function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; load
   );
 }
 
+// ─── Donor Distribution Card ──────────────────────────────────────────────────
+interface LocationBucket { key: string; label: string; count: number; description: string; color: string; bg: string; }
+
+function DonorDistributionSection({ loading }: { loading: boolean }) {
+  const [buckets, setBuckets] = useState<LocationBucket[]>([]);
+  const [fetching, setFetching] = useState(true);
+
+  useEffect(() => {
+    const categories = [
+      { key: "HYDERABAD",      label: "Hyderabad",                description: "City donors",          color: "#5FA8A8", bg: "rgba(95,168,168,0.10)" },
+      { key: "TELANGANA_OTHER", label: "Telangana",               description: "Outside Hyderabad",    color: "#7FAFD4", bg: "rgba(127,175,212,0.10)" },
+      { key: "INDIA_OTHER",    label: "India (Other)",            description: "Outside Telangana",    color: "#10b981", bg: "rgba(16,185,129,0.10)"  },
+      { key: "INTERNATIONAL",  label: "International",            description: "Outside India",        color: "#8b5cf6", bg: "rgba(139,92,246,0.10)"  },
+    ];
+    Promise.all(
+      categories.map((c) =>
+        fetchWithAuth(`/api/donors?locationCategory=${c.key}&limit=1`)
+          .then((r) => r.json())
+          .then((d) => ({ ...c, count: d.total ?? 0 }))
+          .catch(() => ({ ...c, count: 0 }))
+      )
+    ).then((results) => {
+      setBuckets(results);
+      setFetching(false);
+    });
+  }, []);
+
+  return (
+    <section>
+      <SectionHeader title="Donor Distribution" subtitle="Geographic breakdown of all donors" icon={Users} />
+      {loading || fetching ? (
+        <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+        </div>
+      ) : (
+        <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+          {buckets.map((b) => (
+            <Card key={b.key} className="border-0 shadow-sm hover:-translate-y-0.5 transition-all duration-200" style={{ background: b.bg, border: `1px solid ${b.color}22` }}>
+              <CardContent className="p-5">
+                <div className="inline-flex p-2 rounded-xl mb-3" style={{ background: `${b.color}22` }}>
+                  <Building2 className="h-4 w-4" style={{ color: b.color }} />
+                </div>
+                <p className="text-2xl font-bold leading-tight text-[#1E293B]" data-testid={`distribution-count-${b.key}`}>{b.count}</p>
+                <p className="text-sm font-medium text-[#1E293B] mt-0.5">{b.label}</p>
+                <p className="text-xs text-[#64748B] mt-0.5">{b.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </section>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { t } = useTranslation();
@@ -417,6 +471,9 @@ export default function DashboardPage() {
           )}
         </section>
 
+
+        {/* ── DONOR DISTRIBUTION ────────────────────────────────────────────── */}
+        <DonorDistributionSection loading={loading} />
 
         {/* ── CHARTS ────────────────────────────────────────────────────────── */}
         {(loading || trends.length > 0 || modeSplit.length > 0) && (

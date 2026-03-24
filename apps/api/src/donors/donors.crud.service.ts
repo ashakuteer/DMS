@@ -256,6 +256,13 @@ if (assignedToUserId) {
 
     const donorsWithHealth = donors.map((donor) => ({
       ...donor,
+      languages: (donor as any).languages ?? [],
+      preferredHomes: (donor as any).preferredHomes ?? [],
+      donorTags: (donor as any).donorTags ?? [],
+      additionalRoles: (donor as any).additionalRoles ?? [],
+      communicationChannels: (donor as any).communicationChannels ?? [],
+      donationMethods: (donor as any).donationMethods ?? [],
+      supportPreferences: (donor as any).supportPreferences ?? [],
       healthScore: engagementMap[donor.id]?.score ?? donor.healthScore ?? 100,
       healthStatus: engagementMap[donor.id]?.status ?? donor.healthStatus,
       healthReasons: engagementMap[donor.id]?.reasons ?? [],

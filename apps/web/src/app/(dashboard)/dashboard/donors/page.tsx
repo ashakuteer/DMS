@@ -6,7 +6,6 @@ import { Download, Plus, Upload } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { fetchWithAuth, authStorage } from "@/lib/auth"
 import { hasPermission } from "@/lib/permissions"
 
@@ -17,13 +16,6 @@ import ImportDialog from "./import/ImportDialog"
 import MasterExportDialog from "./export/MasterExportDialog"
 
 import { Donor } from "./types"
-
-const LOCATION_CATEGORIES = [
-  { value: "HYDERABAD", label: "Hyderabad" },
-  { value: "TELANGANA_OTHER", label: "Telangana (Other)" },
-  { value: "INDIA_OTHER", label: "India (Other)" },
-  { value: "INTERNATIONAL", label: "International" },
-]
 
 export default function DonorsPage() {
 
@@ -39,7 +31,6 @@ export default function DonorsPage() {
 
   const [searchInput, setSearchInput] = useState("")
   const [search, setSearch] = useState("")
-  const [locationCategory, setLocationCategory] = useState("")
 
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -57,7 +48,6 @@ export default function DonorsPage() {
       const params = new URLSearchParams()
       params.set("page", String(page))
       if (search) params.set("search", search)
-      if (locationCategory) params.set("locationCategory", locationCategory)
 
       const res = await fetchWithAuth(`/api/donors?${params.toString()}`)
 
@@ -85,15 +75,10 @@ export default function DonorsPage() {
 
   useEffect(() => {
     fetchDonors()
-  }, [page, search, locationCategory])
+  }, [page, search])
 
   const handleSearch = () => {
     setSearch(searchInput)
-    setPage(1)
-  }
-
-  const handleLocationCategoryChange = (v: string) => {
-    setLocationCategory(v === "ALL" ? "" : v)
     setPage(1)
   }
 
@@ -154,17 +139,6 @@ export default function DonorsPage() {
           setSearchInput={setSearchInput}
           handleSearch={handleSearch}
         />
-        <Select value={locationCategory || "ALL"} onValueChange={handleLocationCategoryChange}>
-          <SelectTrigger className="w-52" data-testid="select-location-category">
-            <SelectValue placeholder="All Locations" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Locations</SelectItem>
-            {LOCATION_CATEGORIES.map((lc) => (
-              <SelectItem key={lc.value} value={lc.value}>{lc.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
       {loading ? (
