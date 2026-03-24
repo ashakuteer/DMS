@@ -89,14 +89,14 @@ export class StaffTasksService {
   }, userId: string) {
     const createData: any = {
       title: data.title,
-      description: data.description,
+      description: data.description ?? null,
       status: data.status || TaskStatus.PENDING,
       priority: data.priority || TaskPriority.MEDIUM,
       category: data.category || TaskCategory.GENERAL,
       assignedToId: data.assignedToId,
       createdById: userId,
       linkedDonorId: data.linkedDonorId || null,
-      notes: data.notes,
+      notes: data.notes ?? null,
     };
 
     if (data.dueDate) createData.dueDate = new Date(data.dueDate);

@@ -79,14 +79,14 @@ let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
     async create(data, userId) {
         const createData = {
             title: data.title,
-            description: data.description,
+            description: data.description ?? null,
             status: data.status || client_1.TaskStatus.PENDING,
             priority: data.priority || client_1.TaskPriority.MEDIUM,
             category: data.category || client_1.TaskCategory.GENERAL,
             assignedToId: data.assignedToId,
             createdById: userId,
             linkedDonorId: data.linkedDonorId || null,
-            notes: data.notes,
+            notes: data.notes ?? null,
         };
         if (data.dueDate)
             createData.dueDate = new Date(data.dueDate);
