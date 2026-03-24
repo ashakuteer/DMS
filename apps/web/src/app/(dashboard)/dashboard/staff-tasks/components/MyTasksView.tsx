@@ -87,7 +87,7 @@ export default function MyTasksView({ userId }: Props) {
 
   const loadTasks = useCallback(() => {
     setLoading(true);
-    const params = new URLSearchParams({ assignedToId: userId, isRecurring: "false" });
+    const params = new URLSearchParams({ assignedToId: userId, excludePersonal: "true" });
     if (filterStatus !== "ACTIVE" && filterStatus !== "ALL") {
       params.set("status", filterStatus);
     }

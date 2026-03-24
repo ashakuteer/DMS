@@ -70,7 +70,7 @@ export default function FounderTasksPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetchWithAuth(`/api/staff-tasks?assignedToId=${user.id}&limit=200`);
+      const res = await fetchWithAuth(`/api/staff-tasks?taskType=PERSONAL&assignedToId=${user.id}&limit=200`);
       const data = await res.json();
       if (data?.items) setPersonalTasks(data.items);
     } catch {
@@ -260,6 +260,7 @@ export default function FounderTasksPage() {
         open={showCreateDialog}
         setOpen={setShowCreateDialog}
         onSuccess={loadData}
+        taskType="PERSONAL"
       />
 
       <EditTaskDialog

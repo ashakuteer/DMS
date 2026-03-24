@@ -18,14 +18,25 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.enableCors({
-    origin: [
-      "https://dms-sepia-gamma.vercel.app",
-    ],
+    origin: (origin, callback) => {
+      const allowed = [
+        "https://dms-sepia-gamma.vercel.app",
+        /\.replit\.dev$/,
+        /\.repl\.co$/,
+        /\.replit\.app$/,
+        /\.repl\.run$/,
+      ];
+      if (!origin) return callback(null, true);
+      const isAllowed = allowed.some((pattern) =>
+        typeof pattern === "string" ? pattern === origin : pattern.test(origin)
+      );
+      callback(null, isAllowed);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   });
-  console.log("CORS ENABLED - origin: dms-sepia-gamma.vercel.app");
+  console.log("CORS ENABLED - allowing Vercel and Replit domains");
 
   app.setGlobalPrefix("api");
 

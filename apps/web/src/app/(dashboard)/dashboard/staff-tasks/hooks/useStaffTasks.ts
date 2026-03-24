@@ -33,7 +33,7 @@ export function useStaffTasks() {
     setLoading(true);
     try {
       const p = params ? new URLSearchParams(params.toString()) : new URLSearchParams();
-      p.set("isRecurring", "false");
+      p.set("excludePersonal", "true");
       const res = await fetchWithAuth(`/api/staff-tasks?${p}`);
       if (res.ok) {
         const data = await res.json();
@@ -55,9 +55,10 @@ export function useStaffTasks() {
     return res.ok;
   };
 
-  const updateStatus = async (taskId: string, status: string, notes?: string) => {
+  const updateStatus = async (taskId: string, status: string, notes?: string, minutesTaken?: number) => {
     const body: Record<string, unknown> = { status };
     if (notes !== undefined) body.notes = notes;
+    if (minutesTaken !== undefined) body.minutesTaken = minutesTaken;
     const res = await fetchWithAuth(`/api/staff-tasks/${taskId}/status`, {
       method: "PATCH",
       body: JSON.stringify(body),

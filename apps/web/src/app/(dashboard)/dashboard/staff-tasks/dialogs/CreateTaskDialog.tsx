@@ -46,14 +46,17 @@ export default function CreateTaskDialog({
   open,
   setOpen,
   onSuccess,
+  taskType = "STAFF",
 }: {
   open: boolean;
   setOpen: (v: boolean) => void;
   onSuccess?: () => void;
+  taskType?: "PERSONAL" | "STAFF";
 }) {
   const { toast } = useToast();
   const user = authStorage.getUser();
   const isAdminOrManager = user?.role === "FOUNDER" || user?.role === "ADMIN";
+  const isPersonal = taskType === "PERSONAL";
 
   const [form, setForm] = useState({ ...EMPTY });
   const [submitting, setSubmitting] = useState(false);
@@ -63,14 +66,14 @@ export default function CreateTaskDialog({
   useEffect(() => {
     if (!open) return;
     setForm({ ...EMPTY });
-    if (!isAdminOrManager) return;
+    if (!isAdminOrManager || isPersonal) return;
     setLoadingStaff(true);
     fetchWithAuth("/api/staff-tasks/staff-list")
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setStaffList(d); })
       .catch(() => {})
       .finally(() => setLoadingStaff(false));
-  }, [open, isAdminOrManager]);
+  }, [open, isAdminOrManager, isPersonal]);
 
   const set = (key: string) => (val: string) => setForm((p) => ({ ...p, [key]: val }));
 
@@ -88,8 +91,13 @@ export default function CreateTaskDialog({
         category: form.category,
         priority: form.priority,
         dueDate: form.dueDate,
+        taskType,
       };
-      if (isAdminOrManager && form.assignedToId) {
+
+      if (isPersonal) {
+        // Personal tasks always self-assigned
+        payload.assignedToId = user?.id;
+      } else if (isAdminOrManager && form.assignedToId) {
         payload.assignedToId = form.assignedToId;
       }
 
@@ -117,9 +125,11 @@ export default function CreateTaskDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
+          <DialogTitle>{isPersonal ? "Create Personal Task" : "Create New Task"}</DialogTitle>
           <DialogDescription>
-            Assign a new internal task to a staff member.
+            {isPersonal
+              ? "Add a personal task visible only on your Founder Tasks page."
+              : "Assign a new internal task to a staff member."}
           </DialogDescription>
         </DialogHeader>
 
@@ -131,7 +141,7 @@ export default function CreateTaskDialog({
               id="ct-title"
               value={form.title}
               onChange={(e) => set("title")(e.target.value)}
-              placeholder="e.g. Prepare monthly donation report"
+              placeholder={isPersonal ? "e.g. Review monthly reports" : "e.g. Prepare monthly donation report"}
               data-testid="input-task-title"
             />
           </div>
@@ -148,7 +158,7 @@ export default function CreateTaskDialog({
             />
           </div>
 
-          {isAdminOrManager && (
+          {isAdminOrManager && !isPersonal && (
             <div className="space-y-1.5">
               <Label>Assign To <span className="text-muted-foreground font-normal">(optional)</span></Label>
               <Select value={form.assignedToId} onValueChange={set("assignedToId")}>

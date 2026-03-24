@@ -1854,10 +1854,17 @@ enum RecurrenceType {
   NONE
   DAILY
   WEEKLY
+  FORTNIGHTLY
   MONTHLY
   QUARTERLY
   HALF_YEARLY
   ANNUAL
+}
+
+enum StaffTaskType {
+  PERSONAL
+  STAFF
+  RECURRING_INSTANCE
 }
 
 model TaskTemplate {
@@ -1907,6 +1914,7 @@ model StaffTask {
   startedAt       DateTime?
   completedAt     DateTime?
   notes           String?
+  taskType             StaffTaskType  @default(STAFF)
   isRecurring          Boolean        @default(false)
   isRecurringInstance  Boolean        @default(false)
   recurrenceType       RecurrenceType @default(NONE)

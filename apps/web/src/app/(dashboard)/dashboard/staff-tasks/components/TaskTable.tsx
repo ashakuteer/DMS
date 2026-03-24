@@ -59,19 +59,25 @@ function fmtTime(mins: number | null | undefined) {
   return `${mins}m`;
 }
 
-// ─── Completion notes dialog ───────────────────────────────────────────────────
+// ─── Completion dialog ────────────────────────────────────────────────────────
 
-function CompletionNotesDialog({
+function CompletionDialog({
   task,
   onConfirm,
   onCancel,
 }: {
   task: any;
-  onConfirm: (notes: string) => void;
+  onConfirm: (notes: string, minutesTaken?: number) => void;
   onCancel: () => void;
 }) {
   const [notes, setNotes] = useState("");
+  const [timeInput, setTimeInput] = useState("");
   const isRequired = NOTES_REQUIRED_PRIORITIES.includes(task?.priority);
+
+  const handleConfirm = () => {
+    const mins = timeInput ? parseInt(timeInput, 10) : undefined;
+    onConfirm(notes, mins && !isNaN(mins) && mins > 0 ? mins : undefined);
+  };
 
   return (
     <Dialog open onOpenChange={(open) => { if (!open) onCancel(); }}>
@@ -80,10 +86,27 @@ function CompletionNotesDialog({
           <DialogTitle>Mark Task as Completed</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3 py-1">
+        <div className="space-y-4 py-1">
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{task?.title}</span>
           </p>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="completion-time" className="flex items-center gap-1.5">
+              <Timer className="h-3.5 w-3.5" />
+              Time Taken (minutes)
+            </Label>
+            <input
+              id="completion-time"
+              type="number"
+              min="1"
+              placeholder="e.g. 30"
+              value={timeInput}
+              onChange={(e) => setTimeInput(e.target.value)}
+              className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              data-testid="input-time-taken"
+            />
+          </div>
 
           {isRequired && (
             <p className="text-xs text-red-600 font-medium">
@@ -93,11 +116,11 @@ function CompletionNotesDialog({
 
           <div className="space-y-1.5">
             <Label htmlFor="completion-notes">
-              Completion Notes {isRequired ? <span className="text-red-500">*</span> : "(optional)"}
+              Closing Notes {isRequired ? <span className="text-red-500">*</span> : "(optional)"}
             </Label>
             <Textarea
               id="completion-notes"
-              placeholder="Describe what was done..."
+              placeholder="Describe what was done, any observations..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -111,10 +134,12 @@ function CompletionNotesDialog({
             Cancel
           </Button>
           <Button
-            onClick={() => onConfirm(notes)}
+            onClick={handleConfirm}
             disabled={isRequired && !notes.trim()}
+            className="bg-green-600 hover:bg-green-700"
             data-testid="button-confirm-completion"
           >
+            <CheckCircle2 className="mr-1.5 h-4 w-4" />
             Mark Complete
           </Button>
         </DialogFooter>
@@ -140,7 +165,7 @@ export default function TaskTable({
   onView: (t: any) => void;
   canUpdate?: boolean;
   canDelete?: boolean;
-  updateStatus?: (id: string, status: string, notes?: string) => Promise<boolean>;
+  updateStatus?: (id: string, status: string, notes?: string, minutesTaken?: number) => Promise<boolean>;
 }) {
   const user = authStorage.getUser();
   const isAdminOrManager = user?.role === "FOUNDER" || user?.role === "ADMIN";
@@ -152,7 +177,8 @@ export default function TaskTable({
   const handleStatusChange = async (task: any, newStatus: string) => {
     if (!updateStatus) return;
 
-    if (newStatus === "COMPLETED" && NOTES_REQUIRED_PRIORITIES.includes(task.priority)) {
+    // Always show completion dialog when marking COMPLETED
+    if (newStatus === "COMPLETED") {
       setPendingCompletion({ task });
       return;
     }
@@ -162,12 +188,12 @@ export default function TaskTable({
     setUpdatingId(null);
   };
 
-  const confirmCompletion = async (notes: string) => {
+  const confirmCompletion = async (notes: string, minutesTaken?: number) => {
     if (!pendingCompletion || !updateStatus) return;
     const { task } = pendingCompletion;
     setPendingCompletion(null);
     setUpdatingId(task.id);
-    await updateStatus(task.id, "COMPLETED", notes);
+    await updateStatus(task.id, "COMPLETED", notes, minutesTaken);
     setUpdatingId(null);
   };
 
@@ -183,7 +209,7 @@ export default function TaskTable({
   return (
     <>
       {pendingCompletion && (
-        <CompletionNotesDialog
+        <CompletionDialog
           task={pendingCompletion.task}
           onConfirm={confirmCompletion}
           onCancel={() => setPendingCompletion(null)}

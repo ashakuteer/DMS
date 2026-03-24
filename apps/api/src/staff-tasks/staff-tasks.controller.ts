@@ -38,6 +38,8 @@ export class StaffTasksController {
     @Query('page') page: string,
     @Query('limit') limit: string,
     @Query('isRecurring') isRecurring: string,
+    @Query('taskType') taskType: string,
+    @Query('excludePersonal') excludePersonal: string,
     @Req() req: any,
   ) {
     const filters: any = {
@@ -55,6 +57,14 @@ export class StaffTasksController {
 
     if (isRecurring !== undefined && isRecurring !== '') {
       filters.isRecurring = isRecurring === 'true';
+    }
+
+    if (taskType) {
+      filters.taskType = taskType;
+    }
+
+    if (excludePersonal !== undefined && excludePersonal !== '') {
+      filters.excludePersonal = excludePersonal === 'true';
     }
 
     if (this.isAdminOrManager(req.user.role)) {
@@ -123,6 +133,7 @@ export class StaffTasksController {
         status: body.status,
         priority: body.priority,
         category: body.category,
+        taskType: body.taskType,
         assignedToId,
         linkedDonorId: body.linkedDonorId,
         dueDate: body.dueDate,

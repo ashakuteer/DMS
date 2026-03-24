@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { TaskStatus, TaskPriority, TaskCategory } from '@prisma/client';
+import { TaskStatus, TaskPriority, TaskCategory, StaffTaskType } from '@prisma/client';
 
 @Injectable()
 export class StaffTasksService {
@@ -30,6 +30,8 @@ export class StaffTasksService {
     page?: number;
     limit?: number;
     isRecurring?: boolean;
+    taskType?: string;
+    excludePersonal?: boolean;
   }) {
     const { status, priority, assignedToId, createdById, category, search } = query;
     const page = query.page || 1;
@@ -43,6 +45,14 @@ export class StaffTasksService {
     if (createdById) where.createdById = createdById;
     if (category) where.category = category as TaskCategory;
     if (query.isRecurring !== undefined) where.isRecurring = query.isRecurring;
+
+    // taskType filtering: isolate PERSONAL from STAFF/RECURRING_INSTANCE
+    if (query.taskType) {
+      where.taskType = query.taskType as StaffTaskType;
+    } else if (query.excludePersonal) {
+      where.taskType = { not: StaffTaskType.PERSONAL };
+    }
+
     if (search) {
       where.OR = [
         { title: { contains: search, mode: 'insensitive' } },
@@ -82,6 +92,7 @@ export class StaffTasksService {
     status?: TaskStatus;
     priority?: TaskPriority;
     category?: TaskCategory;
+    taskType?: StaffTaskType;
     assignedToId: string;
     linkedDonorId?: string;
     dueDate?: string;
@@ -93,6 +104,7 @@ export class StaffTasksService {
       status: data.status || TaskStatus.PENDING,
       priority: data.priority || TaskPriority.MEDIUM,
       category: data.category || TaskCategory.GENERAL,
+      taskType: data.taskType || StaffTaskType.STAFF,
       assignedToId: data.assignedToId,
       createdById: userId,
       linkedDonorId: data.linkedDonorId || null,
