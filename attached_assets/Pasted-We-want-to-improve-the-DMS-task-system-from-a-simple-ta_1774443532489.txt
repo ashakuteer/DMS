@@ -1,0 +1,143 @@
+We want to improve the DMS task system from a simple task list into a practical office operations reminder system.
+
+IMPORTANT:
+Please do this carefully and step by step.
+Do not break the current working task flow.
+Do not make unnecessary DB changes.
+First inspect existing schema, DTOs, services, and forms before changing anything.
+
+GOAL:
+Enhance recurring and one-time staff tasks with better scheduling, reminders, duration tracking, and notes.
+
+CURRENT NEEDS:
+
+1. RECURRING TASKS NEED BETTER DATE LOGIC
+Right now frequency is too simple.
+We need richer recurrence scheduling.
+
+Support these patterns:
+
+A) Daily
+- every day
+- every X days
+
+B) Weekly
+- every week on selected weekday(s)
+- every X weeks
+
+C) Monthly
+- specific day of month (e.g. 5th)
+- first week / second week / third week / fourth week / last week
+- specific weekday in month if practical
+
+D) Quarterly
+- first month of quarter with selected date
+- first week / last week of quarter if practical
+
+E) Yearly
+- specific month + date
+
+2. BILLS / RENEWALS / RECHARGES USE CASE
+This system should support recurring reminders for things like:
+- ACT Fiber bill
+- phone recharge
+- Tata Sky recharge
+- subscriptions
+- utility bills
+
+For these, we need:
+- start date
+- next due date
+- reminder before due date
+- optional billing amount / reference note if practical
+- clear instructions
+
+3. TASK DURATION
+For both recurring and one-time tasks add:
+- estimated duration
+- actual duration / time taken on completion
+
+Use practical units:
+- minutes
+- hours
+- days
+
+4. NOTES
+Need two kinds of notes:
+- Instructions / explanation before doing the work
+- Completion notes after finishing the work
+
+Examples:
+- instructions: what to do, where to check, account/app details, approval needed or not
+- completion notes: payment made, issue found, amount, reference number, what was completed
+
+5. TRACKING FIELDS
+Please inspect current schema and add only what is needed.
+We likely need stable fields for:
+- startDate
+- dueDate
+- nextDueDate
+- reminderBefore
+- recurrenceRule or recurrencePattern
+- estimatedMinutes (or equivalent)
+- actualMinutesTaken
+- instructions
+- completionNotes
+
+6. FOUNDER VS STAFF RULE
+Do not break this:
+- Founder tasks stay only in My Personal Tasks
+- Staff & Tasks only for actual staff tasks
+- Founder should not appear in staff assignment dropdown
+
+IMPLEMENTATION ORDER:
+
+STEP 1:
+Audit current schema.prisma, task-related DTOs, task template model, staff task model, and forms.
+First understand what already exists.
+
+STEP 2:
+Design the minimum required backend/data structure for:
+- richer recurring scheduling
+- reminder timing
+- duration
+- instructions
+- completion notes
+
+STEP 3:
+If DB changes are truly needed, provide one consolidated SQL patch.
+Do not suggest many tiny DB changes one by one.
+Make naming consistent and compatible with current codebase.
+
+STEP 4:
+Update recurring task create/edit form to support:
+- frequency
+- date rule
+- reminder before
+- estimated duration
+- instructions
+
+STEP 5:
+Update task completion flow to support:
+- actual time taken
+- completion notes
+
+STEP 6:
+Update recurring generation logic so next due date is meaningful and based on the recurrence settings.
+
+STEP 7:
+Keep UI practical and not over-complicated.
+Since this is a small NGO team, prioritize usability.
+
+EXPECTED RESULT:
+- recurring tasks can support monthly, quarterly, and bill-type reminders properly
+- tasks can store estimated and actual time
+- instructions and completion notes are supported
+- next due date and reminder timing are useful and clear
+- founder remains separate from staff task system
+
+Please report back with:
+1. what fields already exist
+2. what additional fields are really needed
+3. exact SQL if needed
+4. which files should be updated first
