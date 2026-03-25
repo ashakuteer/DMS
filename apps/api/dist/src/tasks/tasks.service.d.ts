@@ -157,6 +157,58 @@ export declare class TasksService {
         role: import(".prisma/client").$Enums.Role;
         id: string;
     }[]>;
+    getDebugInfo(): Promise<{
+        serverTime: {
+            nowUTC: string;
+            todayMidnightUTC: string;
+            end7UTC: string;
+            nodeTimezone: string;
+            utcOffset: number;
+        };
+        donors: {
+            total: number;
+            withDobData: number;
+            withoutDobData: number;
+        };
+        occasions: {
+            type: import(".prisma/client").$Enums.OccasionType;
+            count: number;
+        }[];
+        taskSummary: {
+            type: import(".prisma/client").$Enums.TaskType;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            count: number;
+        }[];
+        birthdayTasks: {
+            totalInDB: number;
+            pendingNext7Days: number;
+            pendingNext30Days: number;
+            all: {
+                id: string;
+                title: string;
+                dueDate: Date;
+                dueDateISO: string;
+                status: import(".prisma/client").$Enums.TaskStatus;
+                daysUntil: number;
+            }[];
+        };
+        anniversaryTasks: {
+            totalInDB: number;
+            all: {
+                id: string;
+                title: string;
+                dueDate: Date;
+                dueDateISO: string;
+                status: import(".prisma/client").$Enums.TaskStatus;
+                daysUntil: number;
+            }[];
+        };
+        filterWindowDates: {
+            today: string;
+            end7days: string;
+            end30days: string;
+        };
+    }>;
     getToday(): Promise<{
         dueToday: any[];
         overdue: any[];

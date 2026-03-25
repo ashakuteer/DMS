@@ -330,6 +330,93 @@ let TasksService = class TasksService {
             orderBy: { name: 'asc' },
         });
     }
+    async getDebugInfo() {
+        const now = new Date();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const end7 = new Date(today);
+        end7.setDate(end7.getDate() + 8);
+        const end30 = new Date(today);
+        end30.setDate(end30.getDate() + 31);
+        const [taskCountsByType, birthdayTaskSample, anniversaryTaskSample, donorsWithDob, donorsTotal, occasions,] = await Promise.all([
+            this.prisma.task.groupBy({
+                by: ['type', 'status'],
+                _count: { id: true },
+                orderBy: [{ type: 'asc' }],
+            }),
+            this.prisma.task.findMany({
+                where: { type: client_1.TaskType.BIRTHDAY },
+                select: { id: true, title: true, dueDate: true, status: true, donorId: true },
+                orderBy: { dueDate: 'asc' },
+                take: 20,
+            }),
+            this.prisma.task.findMany({
+                where: { type: client_1.TaskType.ANNIVERSARY },
+                select: { id: true, title: true, dueDate: true, status: true, donorId: true },
+                orderBy: { dueDate: 'asc' },
+                take: 20,
+            }),
+            this.prisma.donor.count({
+                where: { dobMonth: { not: null }, dobDay: { not: null }, isDeleted: false },
+            }),
+            this.prisma.donor.count({ where: { isDeleted: false } }),
+            this.prisma.donorSpecialOccasion.groupBy({
+                by: ['type'],
+                _count: { id: true },
+            }),
+        ]);
+        const birthdayNext7 = birthdayTaskSample.filter(t => t.status === client_1.TaskStatus.PENDING && new Date(t.dueDate) >= today && new Date(t.dueDate) < end7);
+        const birthdayNext30 = birthdayTaskSample.filter(t => t.status === client_1.TaskStatus.PENDING && new Date(t.dueDate) >= today && new Date(t.dueDate) < end30);
+        return {
+            serverTime: {
+                nowUTC: now.toISOString(),
+                todayMidnightUTC: today.toISOString(),
+                end7UTC: end7.toISOString(),
+                nodeTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                utcOffset: -now.getTimezoneOffset(),
+            },
+            donors: {
+                total: donorsTotal,
+                withDobData: donorsWithDob,
+                withoutDobData: donorsTotal - donorsWithDob,
+            },
+            occasions: occasions.map(o => ({ type: o.type, count: o._count.id })),
+            taskSummary: taskCountsByType.map(r => ({
+                type: r.type,
+                status: r.status,
+                count: r._count.id,
+            })),
+            birthdayTasks: {
+                totalInDB: birthdayTaskSample.length,
+                pendingNext7Days: birthdayNext7.length,
+                pendingNext30Days: birthdayNext30.length,
+                all: birthdayTaskSample.map(t => ({
+                    id: t.id,
+                    title: t.title,
+                    dueDate: t.dueDate,
+                    dueDateISO: new Date(t.dueDate).toISOString(),
+                    status: t.status,
+                    daysUntil: Math.round((new Date(t.dueDate).getTime() - today.getTime()) / 86400000),
+                })),
+            },
+            anniversaryTasks: {
+                totalInDB: anniversaryTaskSample.length,
+                all: anniversaryTaskSample.map(t => ({
+                    id: t.id,
+                    title: t.title,
+                    dueDate: t.dueDate,
+                    dueDateISO: new Date(t.dueDate).toISOString(),
+                    status: t.status,
+                    daysUntil: Math.round((new Date(t.dueDate).getTime() - today.getTime()) / 86400000),
+                })),
+            },
+            filterWindowDates: {
+                today: today.toISOString(),
+                end7days: end7.toISOString(),
+                end30days: end30.toISOString(),
+            },
+        };
+    }
     async getToday() {
         try {
             const today = new Date();

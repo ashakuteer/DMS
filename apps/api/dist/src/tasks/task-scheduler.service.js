@@ -23,7 +23,15 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
     async onModuleInit() {
         this.logger.log('Startup: running donor task generation...');
         try {
+            const donorCount = await this.prisma.donor.count({ where: { isDeleted: false } });
+            const donorWithDob = await this.prisma.donor.count({
+                where: { dobMonth: { not: null }, dobDay: { not: null }, isDeleted: false },
+            });
+            const existingTaskCount = await this.prisma.task.count();
+            this.logger.log(`Pre-generation state: ${donorCount} total donors, ${donorWithDob} with DOB, ${existingTaskCount} existing tasks in DB`);
             await this.runDailyTaskGeneration();
+            const afterCount = await this.prisma.task.count();
+            this.logger.log(`Post-generation: ${afterCount} total tasks in DB`);
         }
         catch (err) {
             this.logger.error(`Startup task generation failed: ${err}`);

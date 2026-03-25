@@ -21,7 +21,18 @@ export class TaskSchedulerService implements OnModuleInit {
     // The deduplication checks inside each generator prevent duplicate tasks.
     this.logger.log('Startup: running donor task generation...');
     try {
+      // Log how many donors have birthday data before generating
+      const donorCount = await this.prisma.donor.count({ where: { isDeleted: false } });
+      const donorWithDob = await this.prisma.donor.count({
+        where: { dobMonth: { not: null }, dobDay: { not: null }, isDeleted: false },
+      });
+      const existingTaskCount = await this.prisma.task.count();
+      this.logger.log(
+        `Pre-generation state: ${donorCount} total donors, ${donorWithDob} with DOB, ${existingTaskCount} existing tasks in DB`,
+      );
       await this.runDailyTaskGeneration();
+      const afterCount = await this.prisma.task.count();
+      this.logger.log(`Post-generation: ${afterCount} total tasks in DB`);
     } catch (err) {
       this.logger.error(`Startup task generation failed: ${err}`);
     }

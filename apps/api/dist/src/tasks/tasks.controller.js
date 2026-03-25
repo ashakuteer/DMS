@@ -43,6 +43,9 @@ let TasksController = class TasksController {
     findAll(status, type, category, dueDate, timeWindow, assignedTo, priority, donorId) {
         return this.tasksService.findAll({ status, type, category, dueDate, timeWindow, assignedTo, priority, donorId });
     }
+    getDebugInfo() {
+        return this.tasksService.getDebugInfo();
+    }
     findOne(id) {
         return this.tasksService.findOne(id);
     }
@@ -112,6 +115,13 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, String, String, String, String, String]),
     __metadata("design:returntype", void 0)
 ], TasksController.prototype, "findAll", null);
+__decorate([
+    (0, public_decorator_1.Public)(),
+    (0, common_1.Get)('debug'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], TasksController.prototype, "getDebugInfo", null);
 __decorate([
     (0, public_decorator_1.Public)(),
     (0, common_1.Get)(':id'),

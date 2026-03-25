@@ -69,6 +69,12 @@ export class TasksController {
   }
 
   @Public()
+  @Get('debug')
+  getDebugInfo() {
+    return this.tasksService.getDebugInfo();
+  }
+
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.tasksService.findOne(id);

@@ -86,6 +86,58 @@ export declare class TasksController {
         id: string;
     }[]>;
     findAll(status: string, type: string, category: string, dueDate: string, timeWindow: string, assignedTo: string, priority: string, donorId: string): Promise<any[]>;
+    getDebugInfo(): Promise<{
+        serverTime: {
+            nowUTC: string;
+            todayMidnightUTC: string;
+            end7UTC: string;
+            nodeTimezone: string;
+            utcOffset: number;
+        };
+        donors: {
+            total: number;
+            withDobData: number;
+            withoutDobData: number;
+        };
+        occasions: {
+            type: import(".prisma/client").$Enums.OccasionType;
+            count: number;
+        }[];
+        taskSummary: {
+            type: import(".prisma/client").$Enums.TaskType;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            count: number;
+        }[];
+        birthdayTasks: {
+            totalInDB: number;
+            pendingNext7Days: number;
+            pendingNext30Days: number;
+            all: {
+                id: string;
+                title: string;
+                dueDate: Date;
+                dueDateISO: string;
+                status: import(".prisma/client").$Enums.TaskStatus;
+                daysUntil: number;
+            }[];
+        };
+        anniversaryTasks: {
+            totalInDB: number;
+            all: {
+                id: string;
+                title: string;
+                dueDate: Date;
+                dueDateISO: string;
+                status: import(".prisma/client").$Enums.TaskStatus;
+                daysUntil: number;
+            }[];
+        };
+        filterWindowDates: {
+            today: string;
+            end7days: string;
+            end30days: string;
+        };
+    }>;
     findOne(id: string): Promise<any>;
     logContact(id: string, dto: LogContactDto, req: any): Promise<{
         id: string;
