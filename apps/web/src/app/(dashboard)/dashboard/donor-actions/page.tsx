@@ -17,28 +17,48 @@ import Link from "next/link"
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const TYPE_META: Record<string, { label: string; color: string; bg: string; border: string; icon: any }> = {
-  BIRTHDAY:       { label: "Birthday",        color: "text-pink-700",   bg: "bg-pink-50",   border: "border-pink-300",   icon: Gift },
-  ANNIVERSARY:    { label: "Anniversary",     color: "text-rose-700",   bg: "bg-rose-50",   border: "border-rose-300",   icon: Heart },
-  REMEMBRANCE:    { label: "Remembrance",     color: "text-slate-600",  bg: "bg-slate-100", border: "border-slate-300",  icon: Star },
-  FOLLOW_UP:      { label: "Follow-up",       color: "text-blue-700",   bg: "bg-blue-50",   border: "border-blue-300",   icon: PhoneCall },
-  PLEDGE:         { label: "Pledge",          color: "text-purple-700", bg: "bg-purple-50", border: "border-purple-300", icon: HandHeart },
-  SMART_REMINDER: { label: "Smart Reminder",  color: "text-amber-700",  bg: "bg-amber-50",  border: "border-amber-300",  icon: TrendingUp },
-  SPONSOR_UPDATE: { label: "Sponsor Update",  color: "text-teal-700",   bg: "bg-teal-50",   border: "border-teal-300",   icon: Send },
-  REMINDER:       { label: "Reminder",        color: "text-yellow-700", bg: "bg-yellow-50", border: "border-yellow-300", icon: Clock },
-  GENERAL:        { label: "General",         color: "text-gray-500",   bg: "bg-gray-50",   border: "border-gray-200",   icon: ChevronRight },
+const TYPE_META: Record<string, { label: string; color: string; bg: string; icon: any }> = {
+  BIRTHDAY:       { label: "Birthday",        color: "text-pink-700",   bg: "bg-pink-100",   icon: Gift },
+  ANNIVERSARY:    { label: "Anniversary",     color: "text-rose-700",   bg: "bg-rose-100",   icon: Heart },
+  REMEMBRANCE:    { label: "Remembrance",     color: "text-slate-600",  bg: "bg-slate-200",  icon: Star },
+  FOLLOW_UP:      { label: "Follow-up",       color: "text-blue-700",   bg: "bg-blue-100",   icon: PhoneCall },
+  PLEDGE:         { label: "Pledge",          color: "text-purple-700", bg: "bg-purple-100", icon: HandHeart },
+  SMART_REMINDER: { label: "Smart Reminder",  color: "text-amber-700",  bg: "bg-amber-100",  icon: TrendingUp },
+  SPONSOR_UPDATE: { label: "Sponsor Update",  color: "text-teal-700",   bg: "bg-teal-100",   icon: Send },
+  REMINDER:       { label: "Reminder",        color: "text-yellow-700", bg: "bg-yellow-100", icon: Clock },
+  GENERAL:        { label: "General",         color: "text-gray-500",   bg: "bg-gray-100",   icon: ChevronRight },
 }
 
-const TIME_WINDOWS: { value: TimeWindow; label: string; icon?: any; color: string; activeColor: string }[] = [
-  { value: "overdue", label: "Overdue",     icon: AlertTriangle, color: "text-red-600",    activeColor: "bg-red-600 text-white" },
-  { value: "today",   label: "Today",       icon: Calendar,      color: "text-amber-600",  activeColor: "bg-amber-500 text-white" },
-  { value: "7days",   label: "Next 7 Days", color: "text-gray-600",  activeColor: "bg-teal-600 text-white" },
-  { value: "15days",  label: "15 Days",     color: "text-gray-600",  activeColor: "bg-teal-600 text-white" },
-  { value: "30days",  label: "30 Days",     color: "text-gray-600",  activeColor: "bg-teal-600 text-white" },
+const TIME_WINDOWS: { value: TimeWindow; label: string; icon?: any; activeCls: string; inactiveCls: string }[] = [
+  {
+    value: "overdue", label: "Overdue", icon: AlertTriangle,
+    activeCls: "bg-red-600 text-white border-red-600 shadow-sm",
+    inactiveCls: "bg-white text-red-600 border-red-200 hover:bg-red-50",
+  },
+  {
+    value: "today", label: "Today", icon: Calendar,
+    activeCls: "bg-amber-500 text-white border-amber-500 shadow-sm",
+    inactiveCls: "bg-white text-amber-600 border-amber-200 hover:bg-amber-50",
+  },
+  {
+    value: "7days", label: "Next 7 Days",
+    activeCls: "bg-teal-600 text-white border-teal-600 shadow-sm",
+    inactiveCls: "bg-white text-teal-700 border-teal-200 hover:bg-teal-50",
+  },
+  {
+    value: "15days", label: "15 Days",
+    activeCls: "bg-teal-600 text-white border-teal-600 shadow-sm",
+    inactiveCls: "bg-white text-teal-700 border-teal-200 hover:bg-teal-50",
+  },
+  {
+    value: "30days", label: "30 Days",
+    activeCls: "bg-teal-600 text-white border-teal-600 shadow-sm",
+    inactiveCls: "bg-white text-teal-700 border-teal-200 hover:bg-teal-50",
+  },
 ]
 
 const TYPE_FILTERS = [
-  { value: "ALL",            label: "All Actions" },
+  { value: "ALL",            label: "All" },
   { value: "BIRTHDAY",       label: "Birthdays" },
   { value: "ANNIVERSARY",    label: "Anniversaries" },
   { value: "REMEMBRANCE",    label: "Remembrance" },
@@ -57,7 +77,7 @@ const CONTACT_METHODS = [
   { value: "IN_PERSON",       label: "In Person" },
 ]
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function isOverdue(task: TaskItem): boolean {
   return (
@@ -108,7 +128,7 @@ function sortActions(tasks: TaskItem[]): TaskItem[] {
   })
 }
 
-// ─── Log Contact Dialog ──────────────────────────────────────────────────────
+// ─── Log Contact Dialog ───────────────────────────────────────────────────────
 
 function LogContactDialog({
   task,
@@ -139,9 +159,9 @@ function LogContactDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-7" onClick={e => e.stopPropagation()}>
-        <div className="flex items-start justify-between mb-5">
+        <div className="flex items-start justify-between mb-6">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Log Contact</h3>
+            <h3 className="text-xl font-bold text-gray-900">Log Contact</h3>
             <p className="text-sm text-gray-500 mt-0.5">{donorName} · {task.title}</p>
           </div>
           <button
@@ -187,7 +207,9 @@ function LogContactDialog({
           </div>
 
           <div>
-            <label className="text-sm font-semibold text-gray-700 block mb-1.5">Notes <span className="font-normal text-gray-400">(optional)</span></label>
+            <label className="text-sm font-semibold text-gray-700 block mb-1.5">
+              Notes <span className="font-normal text-gray-400">(optional)</span>
+            </label>
             <textarea
               className="w-full border-2 border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-teal-400 transition-colors resize-none"
               rows={3}
@@ -223,7 +245,7 @@ function LogContactDialog({
   )
 }
 
-// ─── Action Row ──────────────────────────────────────────────────────────────
+// ─── Action Row ───────────────────────────────────────────────────────────────
 
 function ActionRow({
   task,
@@ -253,25 +275,24 @@ function ActionRow({
   const autoWA = task.autoWhatsAppPossible
   const dueLabel = formatDue(task.dueDate)
 
-  // Row left-border accent by urgency
   const rowBg = completed
     ? "bg-white opacity-50"
     : overdue
-    ? "bg-red-50 border-l-4 border-l-red-400"
+    ? "bg-red-50 border-l-[5px] border-l-red-400"
     : today
-    ? "bg-amber-50/60 border-l-4 border-l-amber-400"
-    : "bg-white border-l-4 border-l-transparent"
+    ? "bg-amber-50/70 border-l-[5px] border-l-amber-400"
+    : "bg-white border-l-[5px] border-l-transparent"
 
   return (
     <div
       data-testid={`action-row-${task.id}`}
-      className={`flex items-stretch gap-4 px-5 py-4 border-b border-gray-100 hover:bg-gray-50/70 transition-colors group ${rowBg}`}
+      className={`flex items-stretch gap-5 px-6 py-5 border-b border-gray-100 hover:bg-gray-50/60 transition-colors group ${rowBg}`}
     >
       {/* Check button */}
       <button
         onClick={completed ? onReopen : onComplete}
         disabled={isCompleting}
-        className="flex-shrink-0 self-center text-gray-300 hover:text-teal-500 transition-colors"
+        className="flex-shrink-0 self-center text-gray-300 hover:text-teal-500 transition-colors mt-0.5"
         data-testid={`checkbox-action-${task.id}`}
         aria-label={completed ? "Reopen" : "Mark done"}
       >
@@ -284,12 +305,12 @@ function ActionRow({
       </button>
 
       {/* Main content */}
-      <div className="flex-1 min-w-0 py-0.5">
-        {/* Donor name — large and prominent */}
+      <div className="flex-1 min-w-0">
+        {/* Donor name row */}
         {donorName && (
-          <div className="flex items-center gap-2 flex-wrap mb-1">
+          <div className="flex items-center gap-2.5 flex-wrap mb-1.5">
             <span
-              className={`text-base font-bold leading-snug ${
+              className={`text-lg font-bold leading-tight ${
                 completed ? "line-through text-gray-400" : overdue ? "text-red-900" : "text-gray-900"
               }`}
               data-testid={`action-donor-${task.id}`}
@@ -298,8 +319,8 @@ function ActionRow({
             </span>
             {ownerName && (
               <span
-                className="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full"
-                title="Relationship owner"
+                className="flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100"
+                title="Relationship owner / telecaller"
                 data-testid={`action-owner-${task.id}`}
               >
                 <Star className="h-3 w-3" />
@@ -307,7 +328,7 @@ function ActionRow({
               </span>
             )}
             {autoWA && !completed && (
-              <span className="flex items-center gap-1 text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full" title="Auto WhatsApp eligible">
+              <span className="flex items-center gap-1 text-xs font-semibold text-green-700 bg-green-50 px-2.5 py-1 rounded-full border border-green-200" title="Auto WhatsApp eligible">
                 <MessageCircle className="h-3 w-3" />
                 Auto WA
               </span>
@@ -316,41 +337,37 @@ function ActionRow({
         )}
 
         {/* Action title */}
-        <p className={`text-sm leading-snug mb-2 ${completed ? "text-gray-400 line-through" : "text-gray-600"}`}>
+        <p className={`text-sm font-medium leading-snug mb-2.5 ${completed ? "text-gray-400 line-through" : "text-gray-600"}`}>
           {task.title}
         </p>
 
-        {/* Meta row */}
-        <div className="flex items-center gap-3 flex-wrap">
-          {/* Type badge */}
-          <span className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${meta.bg} ${meta.color}`}>
-            <TypeIcon className="h-3 w-3" />
+        {/* Meta chips */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${meta.bg} ${meta.color}`}>
+            <TypeIcon className="h-3.5 w-3.5" />
             {meta.label}
           </span>
 
-          {/* Due date */}
-          <span className={`flex items-center gap-1 text-xs font-semibold ${
-            overdue && !completed ? "text-red-600" : today ? "text-amber-600" : "text-gray-400"
+          <span className={`flex items-center gap-1.5 text-sm font-semibold ${
+            overdue && !completed ? "text-red-600" : today ? "text-amber-600" : "text-gray-500"
           }`}>
-            <Calendar className="h-3 w-3" />
+            <Calendar className="h-3.5 w-3.5" />
             {dueLabel}
           </span>
 
-          {/* Contact history */}
           {task.contactCount > 0 && (
             <span
-              className="flex items-center gap-1 text-xs text-gray-400"
+              className="flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-200"
               title={`Last contacted: ${formatShortDate(task.lastContactedAt)}`}
               data-testid={`action-contact-count-${task.id}`}
             >
               <PhoneCall className="h-3 w-3" />
-              {task.contactCount}× contacted · {formatShortDate(task.lastContactedAt)}
+              {task.contactCount}× · {formatShortDate(task.lastContactedAt)}
             </span>
           )}
 
-          {/* Beneficiary for sponsor updates */}
           {task.sourceSponsorship?.beneficiary && (
-            <span className="flex items-center gap-1 text-xs text-teal-600 font-medium">
+            <span className="flex items-center gap-1.5 text-xs font-semibold text-teal-600 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
               <Heart className="h-3 w-3" />
               {task.sourceSponsorship.beneficiary.fullName}
             </span>
@@ -358,71 +375,66 @@ function ActionRow({
         </div>
       </div>
 
-      {/* Action buttons — right side */}
+      {/* Action buttons */}
       {!completed && (
-        <div className="flex items-center gap-1 flex-shrink-0 self-center opacity-70 group-hover:opacity-100 transition-opacity">
-          {/* Log contact */}
+        <div className="flex items-center gap-1.5 flex-shrink-0 self-center opacity-60 group-hover:opacity-100 transition-opacity">
           <button
             onClick={onLogContact}
             title="Log contact"
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors border border-blue-100"
             data-testid={`button-log-contact-${task.id}`}
           >
-            <PhoneCall className="h-3.5 w-3.5" />
+            <PhoneCall className="h-4 w-4" />
             Log
           </button>
 
-          {/* Call */}
           {phone && (
             <a
               href={`tel:${phone}`}
               title="Call donor"
-              className="p-2 text-gray-500 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
+              className="p-2.5 text-gray-500 hover:text-green-700 hover:bg-green-50 rounded-xl transition-colors border border-transparent hover:border-green-200"
               data-testid={`button-call-${task.id}`}
             >
-              <Phone className="h-4 w-4" />
+              <Phone className="h-5 w-5" />
             </a>
           )}
 
-          {/* WhatsApp */}
           {(whatsapp || phone) && (
             <a
               href={whatsappUrl(whatsapp || phone, donorName || "there")}
               target="_blank"
               rel="noreferrer"
               title={autoWA ? "WhatsApp (Auto eligible)" : "WhatsApp"}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`p-2.5 rounded-xl transition-colors border border-transparent ${
                 autoWA
-                  ? "text-green-600 hover:text-green-700 hover:bg-green-50"
-                  : "text-gray-500 hover:text-green-600 hover:bg-green-50"
+                  ? "text-green-600 hover:text-green-700 hover:bg-green-50 hover:border-green-200"
+                  : "text-gray-500 hover:text-green-600 hover:bg-green-50 hover:border-green-200"
               }`}
               data-testid={`button-whatsapp-${task.id}`}
             >
-              <MessageCircle className="h-4 w-4" />
+              <MessageCircle className="h-5 w-5" />
             </a>
           )}
 
-          {/* View donor */}
           {task.donorId && (
             <Link
               href={`/dashboard/donors/${task.donorId}`}
               title="View donor profile"
-              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+              className="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors border border-transparent hover:border-blue-200"
               data-testid={`button-view-donor-${task.id}`}
             >
-              <User className="h-4 w-4" />
+              <User className="h-5 w-5" />
             </Link>
           )}
 
-          {/* Mark done */}
           <button
             onClick={onComplete}
             disabled={isCompleting}
             title="Mark as done"
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 px-3.5 py-2.5 text-sm font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 rounded-xl transition-colors border border-teal-100"
             data-testid={`button-done-${task.id}`}
           >
-            <CheckCheck className="h-3.5 w-3.5" />
+            <CheckCheck className="h-4 w-4" />
             Done
           </button>
         </div>
@@ -431,7 +443,7 @@ function ActionRow({
   )
 }
 
-// ─── Main Page ───────────────────────────────────────────────────────────────
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function DonorActionsPage() {
   const {
@@ -450,12 +462,11 @@ export default function DonorActionsPage() {
   const todayCount  = tasks.filter(t => isDueToday(t) && t.status !== "COMPLETED").length
   const doneCount   = tasks.filter(t => t.status === "COMPLETED").length
 
-  const activeWindowLabel = TIME_WINDOWS.find(w => w.value === timeWindow)?.label || "Today"
-  const activeFilterLabel = TYPE_FILTERS.find(f => f.value === typeFilter)?.label || "All Actions"
+  const activeWindow = TIME_WINDOWS.find(w => w.value === timeWindow)
+  const activeFilterLabel = TYPE_FILTERS.find(f => f.value === typeFilter)?.label || "All"
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      {/* Log Contact Dialog */}
+    <div className="w-full px-6 py-8">
       {logTarget && (
         <LogContactDialog
           task={logTarget}
@@ -469,38 +480,44 @@ export default function DonorActionsPage() {
 
       {/* ── Header ── */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight" data-testid="text-donor-actions-title">
+        <h1
+          className="text-4xl font-bold text-gray-900 tracking-tight"
+          data-testid="text-donor-actions-title"
+        >
           Donor Actions
         </h1>
-        <p className="text-base text-gray-500 mt-1">
-          Your daily donor workboard — actions generated from donor profiles, occasions, pledges &amp; giving patterns
+        <p className="text-base text-gray-500 mt-2">
+          Daily workboard — auto-generated from donor profiles, special occasions, pledges &amp; giving patterns
         </p>
 
         {/* Summary pills */}
-        <div className="flex items-center gap-3 mt-4 flex-wrap">
+        <div className="flex items-center gap-3 mt-5 flex-wrap">
           {overdueCount > 0 && (
-            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-700 bg-red-100 px-3 py-1.5 rounded-full">
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-red-700 bg-red-100 px-4 py-2 rounded-full border border-red-200">
               <AlertTriangle className="h-4 w-4" />
               {overdueCount} overdue
             </span>
           )}
           {todayCount > 0 && (
-            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-700 bg-amber-100 px-3 py-1.5 rounded-full">
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-amber-700 bg-amber-100 px-4 py-2 rounded-full border border-amber-200">
               <Calendar className="h-4 w-4" />
               {todayCount} due today
             </span>
           )}
           {doneCount > 0 && (
-            <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-teal-700 bg-teal-100 px-3 py-1.5 rounded-full">
+            <span className="inline-flex items-center gap-2 text-sm font-bold text-teal-700 bg-teal-100 px-4 py-2 rounded-full border border-teal-200">
               <CheckCircle2 className="h-4 w-4" />
               {doneCount} completed
             </span>
+          )}
+          {overdueCount === 0 && todayCount === 0 && doneCount === 0 && (
+            <span className="text-sm text-gray-400">No actions generated yet — actions appear here once the daily engine runs</span>
           )}
         </div>
       </div>
 
       {/* ── Time-Window Tabs ── */}
-      <div className="flex gap-2 mb-5 flex-wrap" data-testid="time-window-tabs">
+      <div className="flex gap-2.5 mb-5 flex-wrap" data-testid="time-window-tabs">
         {TIME_WINDOWS.map(w => {
           const Icon = w.icon
           const isActive = timeWindow === w.value
@@ -509,10 +526,8 @@ export default function DonorActionsPage() {
               key={w.value}
               onClick={() => changeTimeWindow(w.value)}
               data-testid={`tab-window-${w.value}`}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all border ${
-                isActive
-                  ? `${w.activeColor} border-transparent shadow-sm`
-                  : `bg-white ${w.color} border-gray-200 hover:border-gray-300 hover:bg-gray-50`
+              className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-sm font-bold transition-all border-2 ${
+                isActive ? w.activeCls : w.inactiveCls
               }`}
             >
               {Icon && <Icon className="h-4 w-4" />}
@@ -523,13 +538,13 @@ export default function DonorActionsPage() {
       </div>
 
       {/* ── Action Type Filters ── */}
-      <div className="flex gap-2 flex-wrap mb-6">
+      <div className="flex gap-2 flex-wrap items-center mb-6">
         {TYPE_FILTERS.map(f => (
           <button
             key={f.value}
             onClick={() => changeTypeFilter(f.value)}
             data-testid={`filter-type-${f.value.toLowerCase()}`}
-            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
+            className={`px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border-2 ${
               typeFilter === f.value
                 ? "bg-gray-900 text-white border-gray-900"
                 : "bg-white text-gray-600 border-gray-200 hover:border-gray-400 hover:text-gray-900"
@@ -541,10 +556,10 @@ export default function DonorActionsPage() {
         <button
           onClick={() => setShowCompleted(v => !v)}
           data-testid="filter-show-completed"
-          className={`ml-auto px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
+          className={`ml-auto px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border-2 ${
             showCompleted
               ? "bg-teal-50 text-teal-700 border-teal-300"
-              : "bg-white text-gray-400 border-gray-200 hover:border-gray-300"
+              : "bg-white text-gray-400 border-gray-200 hover:border-gray-300 hover:text-gray-600"
           }`}
         >
           {showCompleted ? "Hide completed" : "Show completed"}
@@ -553,39 +568,46 @@ export default function DonorActionsPage() {
 
       {/* ── Action List ── */}
       <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm" data-testid="action-list">
-        {/* List header */}
-        <div className="px-5 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-          <span className="text-sm font-semibold text-gray-700">
-            {sorted.length} action{sorted.length !== 1 ? "s" : ""} · {activeWindowLabel}
-            {typeFilter !== "ALL" && ` · ${activeFilterLabel}`}
-          </span>
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <span className="flex items-center gap-1">
-              <span className="inline-block w-2.5 h-2.5 rounded-sm bg-red-400" /> Overdue
+        {/* List header bar */}
+        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-base font-bold text-gray-800">
+              {sorted.length} action{sorted.length !== 1 ? "s" : ""}
             </span>
-            <span className="flex items-center gap-1">
-              <span className="inline-block w-2.5 h-2.5 rounded-sm bg-amber-400" /> Today
+            <span className="text-sm text-gray-400">
+              {activeWindow?.label}
+              {typeFilter !== "ALL" && ` · ${activeFilterLabel}`}
             </span>
-            <span className="flex items-center gap-1">
-              <Star className="h-3 w-3 text-blue-500" /> Owner
+          </div>
+          <div className="flex items-center gap-3 text-xs text-gray-400">
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block w-3 h-3 rounded-sm bg-red-400" /> Overdue
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="inline-block w-3 h-3 rounded-sm bg-amber-400" /> Today
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Star className="h-3 w-3 text-blue-500" /> Owner / Telecaller
             </span>
           </div>
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <Loader2 className="h-8 w-8 animate-spin text-teal-500" />
-            <p className="text-sm text-gray-400">Loading donor actions...</p>
+          <div className="flex flex-col items-center justify-center py-24 gap-4">
+            <Loader2 className="h-10 w-10 animate-spin text-teal-500" />
+            <p className="text-base text-gray-400 font-medium">Loading donor actions...</p>
           </div>
         ) : sorted.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-400" data-testid="empty-state">
-            <CheckCircle2 className="h-12 w-12 opacity-25" />
-            <p className="text-base font-semibold text-gray-500">
+          <div className="flex flex-col items-center justify-center py-24 gap-4 text-gray-400" data-testid="empty-state">
+            <CheckCircle2 className="h-14 w-14 opacity-20" />
+            <p className="text-lg font-bold text-gray-500">
               {typeFilter !== "ALL"
-                ? `No ${activeFilterLabel} for ${activeWindowLabel}`
-                : `No actions for ${activeWindowLabel}`}
+                ? `No ${activeFilterLabel} for ${activeWindow?.label}`
+                : `No actions for ${activeWindow?.label}`}
             </p>
-            <p className="text-sm text-gray-400">Actions are auto-generated from donor data each morning</p>
+            <p className="text-sm text-gray-400 max-w-sm text-center">
+              Actions are auto-generated each morning from donor data — birthdays, anniversaries, pledges, and giving patterns
+            </p>
           </div>
         ) : (
           <div>
@@ -604,8 +626,8 @@ export default function DonorActionsPage() {
       </div>
 
       {sorted.length > 0 && (
-        <p className="text-xs text-center text-gray-400 mt-4">
-          Actions are generated automatically from donor profiles, occasions, pledges and giving patterns
+        <p className="text-xs text-center text-gray-400 mt-5">
+          Actions generated automatically from donor profiles, occasions, pledges and giving patterns each morning
         </p>
       )}
     </div>
