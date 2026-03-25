@@ -15,8 +15,12 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const DONOR_TYPES = [
     client_1.TaskType.BIRTHDAY,
+    client_1.TaskType.ANNIVERSARY,
+    client_1.TaskType.REMEMBRANCE,
     client_1.TaskType.FOLLOW_UP,
     client_1.TaskType.PLEDGE,
+    client_1.TaskType.SMART_REMINDER,
+    client_1.TaskType.SPONSOR_UPDATE,
     client_1.TaskType.REMINDER,
 ];
 const STAFF_TYPES = [
@@ -35,6 +39,11 @@ let TasksService = class TasksService {
                     firstName: true,
                     lastName: true,
                     primaryPhone: true,
+                    whatsappPhone: true,
+                    prefWhatsapp: true,
+                    assignedToUser: {
+                        select: { id: true, name: true, email: true },
+                    },
                 },
             },
             beneficiary: {
@@ -45,6 +54,19 @@ let TasksService = class TasksService {
             },
             assignedUser: {
                 select: { id: true, name: true, email: true },
+            },
+            sourceOccasion: {
+                select: { id: true, type: true, relatedPersonName: true, month: true, day: true },
+            },
+            sourceSponsorship: {
+                select: {
+                    id: true,
+                    sponsorshipType: true,
+                    beneficiary: { select: { id: true, fullName: true } },
+                },
+            },
+            sourcePledge: {
+                select: { id: true, pledgeType: true, amount: true, expectedFulfillmentDate: true },
             },
         };
     }
@@ -73,11 +95,18 @@ let TasksService = class TasksService {
             donorId: task.donorId ?? null,
             beneficiaryId: task.beneficiaryId ?? null,
             assignedTo: task.assignedTo ?? null,
+            autoWhatsAppPossible: task.autoWhatsAppPossible ?? false,
+            manualRequired: task.manualRequired ?? true,
+            contactCount: task.contactCount ?? 0,
+            lastContactedAt: task.lastContactedAt ?? null,
             createdAt: task.createdAt ?? null,
             updatedAt: task.updatedAt ?? null,
             donor: task.donor ?? null,
             beneficiary: task.beneficiary ?? null,
             assignedUser: task.assignedUser ?? null,
+            sourceOccasion: task.sourceOccasion ?? null,
+            sourceSponsorship: task.sourceSponsorship ?? null,
+            sourcePledge: task.sourcePledge ?? null,
         };
     }
     async create(dto) {
@@ -91,6 +120,11 @@ let TasksService = class TasksService {
                 donorId: dto.donorId,
                 beneficiaryId: dto.beneficiaryId,
                 assignedTo: dto.assignedTo,
+                autoWhatsAppPossible: dto.autoWhatsAppPossible ?? false,
+                manualRequired: dto.manualRequired ?? true,
+                sourceOccasionId: dto.sourceOccasionId,
+                sourceSponsorshipId: dto.sourceSponsorshipId,
+                sourcePledgeId: dto.sourcePledgeId,
             },
             include: this.includeRelations,
         });
@@ -125,7 +159,43 @@ let TasksService = class TasksService {
         if (query.assignedTo) {
             where.assignedTo = query.assignedTo;
         }
-        if (query.dueDate === 'today') {
+        if (query.donorId) {
+            where.donorId = query.donorId;
+        }
+        if (query.timeWindow) {
+            switch (query.timeWindow) {
+                case 'today':
+                    where.status = client_1.TaskStatus.PENDING;
+                    where.dueDate = { gte: today, lt: tomorrow };
+                    break;
+                case '7days': {
+                    const end7 = new Date(today);
+                    end7.setDate(end7.getDate() + 8);
+                    where.status = client_1.TaskStatus.PENDING;
+                    where.dueDate = { gte: today, lt: end7 };
+                    break;
+                }
+                case '15days': {
+                    const end15 = new Date(today);
+                    end15.setDate(end15.getDate() + 16);
+                    where.status = client_1.TaskStatus.PENDING;
+                    where.dueDate = { gte: today, lt: end15 };
+                    break;
+                }
+                case '30days': {
+                    const end30 = new Date(today);
+                    end30.setDate(end30.getDate() + 31);
+                    where.status = client_1.TaskStatus.PENDING;
+                    where.dueDate = { gte: today, lt: end30 };
+                    break;
+                }
+                case 'overdue':
+                    where.status = client_1.TaskStatus.PENDING;
+                    where.dueDate = { lt: today };
+                    break;
+            }
+        }
+        else if (query.dueDate === 'today') {
             where.dueDate = { gte: today, lt: tomorrow };
         }
         else if (query.dueDate === 'overdue') {
@@ -191,6 +261,54 @@ let TasksService = class TasksService {
     async deleteTask(id) {
         await this.findOne(id);
         return this.prisma.task.delete({ where: { id } });
+    }
+    async logContact(taskId, dto, userId) {
+        const task = await this.prisma.task.findUnique({
+            where: { id: taskId },
+            select: { id: true, donorId: true, contactCount: true },
+        });
+        if (!task)
+            throw new common_1.NotFoundException('Task not found');
+        const now = new Date();
+        const channel = dto.contactMethod === 'EMAIL'
+            ? client_1.CommunicationChannel.EMAIL
+            : client_1.CommunicationChannel.WHATSAPP;
+        const logEntry = await this.prisma.communicationLog.create({
+            data: {
+                donorId: task.donorId ?? '',
+                taskId: taskId,
+                channel,
+                type: client_1.CommunicationType.FOLLOW_UP,
+                status: client_1.CommunicationStatus.SENT,
+                contactMethod: dto.contactMethod,
+                outcome: dto.outcome,
+                messagePreview: dto.notes,
+                sentById: userId,
+            },
+        });
+        await this.prisma.task.update({
+            where: { id: taskId },
+            data: {
+                contactCount: { increment: 1 },
+                lastContactedAt: now,
+            },
+        });
+        return logEntry;
+    }
+    async getContactLogs(taskId) {
+        const task = await this.prisma.task.findUnique({
+            where: { id: taskId },
+            select: { id: true },
+        });
+        if (!task)
+            throw new common_1.NotFoundException('Task not found');
+        return this.prisma.communicationLog.findMany({
+            where: { taskId },
+            include: {
+                sentBy: { select: { id: true, name: true } },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
     }
     async getStaffList() {
         return this.prisma.user.findMany({

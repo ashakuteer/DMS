@@ -1,5 +1,37 @@
 # NGO Donor Management System
 
+## Recent Changes (Donor Action Engine — Mar 2026)
+
+### Schema (Prisma)
+- Added `TaskType` enum values: `ANNIVERSARY`, `REMEMBRANCE`, `SMART_REMINDER`, `SPONSOR_UPDATE`
+- Added to `Task`: `autoWhatsAppPossible`, `manualRequired`, `sourceOccasionId`, `sourceSponsorshipId`, `sourcePledgeId`, `contactCount`, `lastContactedAt`
+- Added to `CommunicationLog`: `taskId` (FK → tasks), `contactMethod`, `outcome`
+- New indexes on `tasks(source_occasion_id/source_sponsorship_id/source_pledge_id)` and `communication_logs(task_id)`
+
+### Backend (`apps/api/src/tasks/`)
+- **task-scheduler.service.ts**: 7 auto-generators (birthday, anniversary, remembrance with 7-day advance, pledge follow-up, post-donation 30-day follow-up, quarterly sponsor update, smart monthly/quarterly donation reminders). Runs daily at 07:00.
+- **tasks.service.ts**: `timeWindow` filter (overdue/today/7days/15days/30days), `category=donor` filter (all 8 donor TaskTypes), `logContact()` and `getContactLogs()` methods with CommunicationLog entries and contactCount increment.
+- **tasks.controller.ts**: Added `POST /api/tasks/:id/contact` and `GET /api/tasks/:id/contacts` endpoints; `?timeWindow=` query param on `GET /api/tasks`.
+- **tasks.dto.ts**: Added `LogContactDto` (contactMethod, outcome, notes).
+
+### Frontend (`apps/web/src/app/(dashboard)/dashboard/daily-actions/`)
+- **useTaskInbox.ts**: Full TaskType union (8 donor types), TimeWindow type, `changeTimeWindow()`, `changeTypeFilter()`, `logContact()` function; builds API URL with `category=donor&timeWindow=` params.
+- **page.tsx** (Task Inbox): Time-window tabs (Overdue/Today/7/15/30 days), 9 category filter chips, donor owner display with ★ icon, Auto-WA badge (green for WhatsApp-eligible), contact count + last-contact date, Log Contact dialog with 6 method options, Generate button for admin/founder.
+
+### SQL to run in Supabase (CRITICAL — not yet applied)
+```sql
+ALTER TYPE "TaskType" ADD VALUE IF NOT EXISTS 'ANNIVERSARY';
+ALTER TYPE "TaskType" ADD VALUE IF NOT EXISTS 'REMEMBRANCE';
+ALTER TYPE "TaskType" ADD VALUE IF NOT EXISTS 'SMART_REMINDER';
+ALTER TYPE "TaskType" ADD VALUE IF NOT EXISTS 'SPONSOR_UPDATE';
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS auto_whatsapp_possible BOOLEAN NOT NULL DEFAULT FALSE, ADD COLUMN IF NOT EXISTS manual_required BOOLEAN NOT NULL DEFAULT TRUE, ADD COLUMN IF NOT EXISTS source_occasion_id TEXT REFERENCES donor_special_occasions(id) ON DELETE SET NULL, ADD COLUMN IF NOT EXISTS source_sponsorship_id TEXT REFERENCES sponsorships(id) ON DELETE SET NULL, ADD COLUMN IF NOT EXISTS source_pledge_id TEXT REFERENCES pledges(id) ON DELETE SET NULL, ADD COLUMN IF NOT EXISTS contact_count INTEGER NOT NULL DEFAULT 0, ADD COLUMN IF NOT EXISTS last_contacted_at TIMESTAMP;
+ALTER TABLE communication_logs ADD COLUMN IF NOT EXISTS task_id TEXT REFERENCES tasks(id) ON DELETE SET NULL, ADD COLUMN IF NOT EXISTS contact_method TEXT, ADD COLUMN IF NOT EXISTS outcome TEXT;
+CREATE INDEX IF NOT EXISTS idx_tasks_source_occasion ON tasks(source_occasion_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_source_sponsorship ON tasks(source_sponsorship_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_source_pledge ON tasks(source_pledge_id);
+CREATE INDEX IF NOT EXISTS idx_communication_logs_task ON communication_logs(task_id);
+```
+
 ## Recent Changes (Task Management Restructure — Mar 2026)
 
 ### Schema

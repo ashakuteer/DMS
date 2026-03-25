@@ -26,9 +26,12 @@ export declare class CommunicationLogService {
         donorId: string;
         donationId: string | null;
         templateId: string | null;
+        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
+        contactMethod: string | null;
+        outcome: string | null;
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
@@ -37,8 +40,8 @@ export declare class CommunicationLogService {
     findByDonorId(donorId: string): Promise<({
         donation: {
             id: string;
-            receiptNumber: string;
             donationAmount: import("@prisma/client/runtime/library").Decimal;
+            receiptNumber: string;
         };
         sentBy: {
             name: string;
@@ -58,9 +61,12 @@ export declare class CommunicationLogService {
         donorId: string;
         donationId: string | null;
         templateId: string | null;
+        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
+        contactMethod: string | null;
+        outcome: string | null;
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
@@ -85,9 +91,12 @@ export declare class CommunicationLogService {
         donorId: string;
         donationId: string | null;
         templateId: string | null;
+        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
+        contactMethod: string | null;
+        outcome: string | null;
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
@@ -101,9 +110,12 @@ export declare class CommunicationLogService {
         donorId: string;
         donationId: string | null;
         templateId: string | null;
+        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
+        contactMethod: string | null;
+        outcome: string | null;
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
@@ -128,9 +140,12 @@ export declare class CommunicationLogService {
         donorId: string;
         donationId: string | null;
         templateId: string | null;
+        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
+        contactMethod: string | null;
+        outcome: string | null;
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
@@ -152,9 +167,12 @@ export declare class CommunicationLogService {
         donorId: string;
         donationId: string | null;
         templateId: string | null;
+        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
+        contactMethod: string | null;
+        outcome: string | null;
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
@@ -174,9 +192,12 @@ export declare class CommunicationLogService {
         donorId: string;
         donationId: string | null;
         templateId: string | null;
+        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
+        contactMethod: string | null;
+        outcome: string | null;
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;

@@ -1,12 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { TaskStatus, TaskPriority, TaskType, Role } from '@prisma/client';
-import { CreateTaskDto, UpdateTaskDto } from './tasks.dto';
+import { TaskStatus, TaskPriority, TaskType, Role, CommunicationChannel, CommunicationStatus, CommunicationType } from '@prisma/client';
+import { CreateTaskDto, UpdateTaskDto, LogContactDto } from './tasks.dto';
 
 const DONOR_TYPES: TaskType[] = [
   TaskType.BIRTHDAY,
+  TaskType.ANNIVERSARY,
+  TaskType.REMEMBRANCE,
   TaskType.FOLLOW_UP,
   TaskType.PLEDGE,
+  TaskType.SMART_REMINDER,
+  TaskType.SPONSOR_UPDATE,
   TaskType.REMINDER,
 ];
 
@@ -28,6 +32,11 @@ export class TasksService {
         firstName: true,
         lastName: true,
         primaryPhone: true,
+        whatsappPhone: true,
+        prefWhatsapp: true,
+        assignedToUser: {
+          select: { id: true, name: true, email: true },
+        },
       },
     },
     beneficiary: {
@@ -38,6 +47,19 @@ export class TasksService {
     },
     assignedUser: {
       select: { id: true, name: true, email: true },
+    },
+    sourceOccasion: {
+      select: { id: true, type: true, relatedPersonName: true, month: true, day: true },
+    },
+    sourceSponsorship: {
+      select: {
+        id: true,
+        sponsorshipType: true,
+        beneficiary: { select: { id: true, fullName: true } },
+      },
+    },
+    sourcePledge: {
+      select: { id: true, pledgeType: true, amount: true, expectedFulfillmentDate: true },
     },
   };
 
@@ -55,36 +77,48 @@ export class TasksService {
   private safeMapTask(task: any): any {
     if (!task) return null;
     return {
-      id:            task.id            ?? null,
-      title:         task.title         ?? '',
-      description:   task.description   ?? null,
-      type:          task.type          ?? null,
-      status:        task.status        ?? null,
-      priority:      task.priority      ?? null,
-      dueDate:       task.dueDate       ?? null,
-      completedAt:   task.completedAt   ?? null,
-      donorId:       task.donorId       ?? null,
-      beneficiaryId: task.beneficiaryId ?? null,
-      assignedTo:    task.assignedTo    ?? null,
-      createdAt:     task.createdAt     ?? null,
-      updatedAt:     task.updatedAt     ?? null,
-      donor:         task.donor         ?? null,
-      beneficiary:   task.beneficiary   ?? null,
-      assignedUser:  task.assignedUser  ?? null,
+      id:                   task.id            ?? null,
+      title:                task.title         ?? '',
+      description:          task.description   ?? null,
+      type:                 task.type          ?? null,
+      status:               task.status        ?? null,
+      priority:             task.priority      ?? null,
+      dueDate:              task.dueDate       ?? null,
+      completedAt:          task.completedAt   ?? null,
+      donorId:              task.donorId       ?? null,
+      beneficiaryId:        task.beneficiaryId ?? null,
+      assignedTo:           task.assignedTo    ?? null,
+      autoWhatsAppPossible: task.autoWhatsAppPossible ?? false,
+      manualRequired:       task.manualRequired       ?? true,
+      contactCount:         task.contactCount         ?? 0,
+      lastContactedAt:      task.lastContactedAt      ?? null,
+      createdAt:            task.createdAt     ?? null,
+      updatedAt:            task.updatedAt     ?? null,
+      donor:                task.donor         ?? null,
+      beneficiary:          task.beneficiary   ?? null,
+      assignedUser:         task.assignedUser  ?? null,
+      sourceOccasion:       task.sourceOccasion    ?? null,
+      sourceSponsorship:    task.sourceSponsorship ?? null,
+      sourcePledge:         task.sourcePledge      ?? null,
     };
   }
 
   async create(dto: CreateTaskDto) {
     return this.prisma.task.create({
       data: {
-        title: dto.title,
-        description: dto.description,
-        type: dto.type,
-        priority: dto.priority ?? TaskPriority.MEDIUM,
-        dueDate: new Date(dto.dueDate),
-        donorId: dto.donorId,
-        beneficiaryId: dto.beneficiaryId,
-        assignedTo: dto.assignedTo,
+        title:                dto.title,
+        description:          dto.description,
+        type:                 dto.type,
+        priority:             dto.priority ?? TaskPriority.MEDIUM,
+        dueDate:              new Date(dto.dueDate),
+        donorId:              dto.donorId,
+        beneficiaryId:        dto.beneficiaryId,
+        assignedTo:           dto.assignedTo,
+        autoWhatsAppPossible: dto.autoWhatsAppPossible ?? false,
+        manualRequired:       dto.manualRequired ?? true,
+        sourceOccasionId:     dto.sourceOccasionId,
+        sourceSponsorshipId:  dto.sourceSponsorshipId,
+        sourcePledgeId:       dto.sourcePledgeId,
       },
       include: this.includeRelations,
     });
@@ -95,8 +129,10 @@ export class TasksService {
     type?: string;
     category?: string;
     dueDate?: string;
+    timeWindow?: string;
     assignedTo?: string;
     priority?: string;
+    donorId?: string;
   }) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -121,7 +157,6 @@ export class TasksService {
     } else if (query.category === 'staff') {
       where.type = { in: STAFF_TYPES };
     } else if (query.type) {
-      // Single type filter
       where.type = query.type as TaskType;
     }
 
@@ -135,8 +170,45 @@ export class TasksService {
       where.assignedTo = query.assignedTo;
     }
 
-    // Due date filter
-    if (query.dueDate === 'today') {
+    // Donor filter
+    if (query.donorId) {
+      where.donorId = query.donorId;
+    }
+
+    // Time-window filter (overrides dueDate if both present)
+    if (query.timeWindow) {
+      switch (query.timeWindow) {
+        case 'today':
+          where.status = TaskStatus.PENDING;
+          where.dueDate = { gte: today, lt: tomorrow };
+          break;
+        case '7days': {
+          const end7 = new Date(today);
+          end7.setDate(end7.getDate() + 8);
+          where.status = TaskStatus.PENDING;
+          where.dueDate = { gte: today, lt: end7 };
+          break;
+        }
+        case '15days': {
+          const end15 = new Date(today);
+          end15.setDate(end15.getDate() + 16);
+          where.status = TaskStatus.PENDING;
+          where.dueDate = { gte: today, lt: end15 };
+          break;
+        }
+        case '30days': {
+          const end30 = new Date(today);
+          end30.setDate(end30.getDate() + 31);
+          where.status = TaskStatus.PENDING;
+          where.dueDate = { gte: today, lt: end30 };
+          break;
+        }
+        case 'overdue':
+          where.status = TaskStatus.PENDING;
+          where.dueDate = { lt: today };
+          break;
+      }
+    } else if (query.dueDate === 'today') {
       where.dueDate = { gte: today, lt: tomorrow };
     } else if (query.dueDate === 'overdue') {
       where.status = TaskStatus.PENDING;
@@ -203,6 +275,64 @@ export class TasksService {
   async deleteTask(id: string) {
     await this.findOne(id);
     return this.prisma.task.delete({ where: { id } });
+  }
+
+  async logContact(taskId: string, dto: LogContactDto, userId: string) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: { id: true, donorId: true, contactCount: true },
+    });
+    if (!task) throw new NotFoundException('Task not found');
+
+    const now = new Date();
+
+    // Determine channel from contactMethod
+    const channel: CommunicationChannel =
+      dto.contactMethod === 'EMAIL'
+        ? CommunicationChannel.EMAIL
+        : CommunicationChannel.WHATSAPP;
+
+    // Create communication log entry
+    const logEntry = await this.prisma.communicationLog.create({
+      data: {
+        donorId:      task.donorId ?? '',
+        taskId:       taskId,
+        channel,
+        type:         CommunicationType.FOLLOW_UP,
+        status:       CommunicationStatus.SENT,
+        contactMethod: dto.contactMethod,
+        outcome:      dto.outcome,
+        messagePreview: dto.notes,
+        sentById:     userId,
+      },
+    });
+
+    // Increment contactCount and update lastContactedAt on the task
+    await this.prisma.task.update({
+      where: { id: taskId },
+      data: {
+        contactCount:    { increment: 1 },
+        lastContactedAt: now,
+      },
+    });
+
+    return logEntry;
+  }
+
+  async getContactLogs(taskId: string) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: { id: true },
+    });
+    if (!task) throw new NotFoundException('Task not found');
+
+    return this.prisma.communicationLog.findMany({
+      where: { taskId },
+      include: {
+        sentBy: { select: { id: true, name: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async getStaffList() {

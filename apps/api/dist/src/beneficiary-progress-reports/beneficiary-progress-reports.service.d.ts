@@ -106,8 +106,8 @@ export declare class BeneficiaryProgressReportsService {
         deleted: boolean;
     }>;
     searchBeneficiaries(q: string): Promise<{
-        code: string;
         id: string;
+        code: string;
         fullName: string;
         homeType: import(".prisma/client").$Enums.HomeType;
     }[]>;

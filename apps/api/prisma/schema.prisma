@@ -221,6 +221,7 @@ model DonorSpecialOccasion {
   day               Int
   donor             Donor          @relation(fields: [donorId], references: [id], onDelete: Cascade)
   reminderTasks     ReminderTask[] @relation("ReminderTaskSourceOccasion")
+  actionTasks       Task[]         @relation("TaskSourceOccasion")
 
   @@index([donorId])
   @@map("donor_special_occasions")
@@ -329,6 +330,7 @@ model Pledge {
   donor                     Donor        @relation(fields: [donorId], references: [id])
   fulfilledDonation         Donation?    @relation("PledgeFulfilledByDonation", fields: [fulfilledDonationId], references: [id])
   reminderTasks             ReminderTask[] @relation("ReminderTaskSourcePledge")
+  actionTasks               Task[]       @relation("TaskSourcePledge")
 
   @@index([donorId])
   @@index([status])
@@ -496,6 +498,7 @@ model Sponsorship {
   sponsorshipReminders SponsorshipReminder[]
   payments             SponsorshipPayment[]
   statusHistory        SponsorshipStatusHistory[]
+  actionTasks          Task[]               @relation("TaskSourceSponsorship")
 
   @@unique([donorId, beneficiaryId, sponsorshipType], name: "unique_active_sponsorship")
   @@index([donorId])
@@ -854,9 +857,12 @@ model CommunicationLog {
   donorId        String
   donationId     String?
   templateId     String?
+  taskId         String?
   channel        CommunicationChannel
   type           CommunicationType
   status         CommunicationStatus
+  contactMethod  String?
+  outcome        String?
   recipient      String?
   subject        String?
   messagePreview String?
@@ -868,9 +874,11 @@ model CommunicationLog {
   donor          Donor                  @relation(fields: [donorId], references: [id], onDelete: Cascade)
   sentBy         User?                  @relation("CommunicationSentBy", fields: [sentById], references: [id])
   template       CommunicationTemplate? @relation(fields: [templateId], references: [id])
+  task           Task?                  @relation("CommunicationLogTask", fields: [taskId], references: [id], onDelete: SetNull)
 
   @@index([donorId])
   @@index([donationId])
+  @@index([taskId])
   @@index([channel])
   @@index([status])
   @@index([createdAt])
@@ -2307,23 +2315,34 @@ model SalaryPayment {
 // ─── Central Task Engine ─────────────────────────────────────────
 
 model Task {
-  id              String       @id @default(uuid())
-  title           String
-  description     String?
-  type            TaskType
-  status          TaskStatus   @default(PENDING)
-  priority        TaskPriority @default(MEDIUM)
-  dueDate         DateTime
-  completedAt     DateTime?
-  donorId         String?
-  beneficiaryId   String?
-  assignedTo      String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id                    String       @id @default(uuid())
+  title                 String
+  description           String?
+  type                  TaskType
+  status                TaskStatus   @default(PENDING)
+  priority              TaskPriority @default(MEDIUM)
+  dueDate               DateTime
+  completedAt           DateTime?
+  donorId               String?
+  beneficiaryId         String?
+  assignedTo            String?
+  autoWhatsAppPossible  Boolean      @default(false)
+  manualRequired        Boolean      @default(true)
+  sourceOccasionId      String?
+  sourceSponsorshipId   String?
+  sourcePledgeId        String?
+  contactCount          Int          @default(0)
+  lastContactedAt       DateTime?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
 
-  donor           Donor?       @relation("TaskDonor", fields: [donorId], references: [id], onDelete: SetNull)
-  beneficiary     Beneficiary? @relation("TaskBeneficiary", fields: [beneficiaryId], references: [id], onDelete: SetNull)
-  assignedUser    User?        @relation("TaskAssignedUser", fields: [assignedTo], references: [id], onDelete: SetNull)
+  donor           Donor?               @relation("TaskDonor", fields: [donorId], references: [id], onDelete: SetNull)
+  beneficiary     Beneficiary?         @relation("TaskBeneficiary", fields: [beneficiaryId], references: [id], onDelete: SetNull)
+  assignedUser    User?                @relation("TaskAssignedUser", fields: [assignedTo], references: [id], onDelete: SetNull)
+  sourceOccasion  DonorSpecialOccasion? @relation("TaskSourceOccasion", fields: [sourceOccasionId], references: [id], onDelete: SetNull)
+  sourceSponsorship Sponsorship?       @relation("TaskSourceSponsorship", fields: [sourceSponsorshipId], references: [id], onDelete: SetNull)
+  sourcePledge    Pledge?              @relation("TaskSourcePledge", fields: [sourcePledgeId], references: [id], onDelete: SetNull)
+  contactLogs     CommunicationLog[]   @relation("CommunicationLogTask")
 
   @@index([status])
   @@index([type])
@@ -2333,13 +2352,20 @@ model Task {
   @@index([beneficiaryId])
   @@index([assignedTo])
   @@index([status, dueDate])
+  @@index([sourceOccasionId])
+  @@index([sourceSponsorshipId])
+  @@index([sourcePledgeId])
   @@map("tasks")
 }
 
 enum TaskType {
   BIRTHDAY
+  ANNIVERSARY
+  REMEMBRANCE
   FOLLOW_UP
   PLEDGE
+  SMART_REMINDER
+  SPONSOR_UPDATE
   REMINDER
   MANUAL
   GENERAL

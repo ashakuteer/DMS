@@ -16,10 +16,10 @@ export declare class BeneficiariesController {
         };
     }>;
     exportExcel(user: UserContext): Promise<{
-        code: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        code: string;
         status: import(".prisma/client").$Enums.BeneficiaryStatus;
         createdById: string;
         isDeleted: boolean;
@@ -57,8 +57,8 @@ export declare class BeneficiariesController {
     bulkUpload(user: UserContext, file: Express.Multer.File, mode?: string): Promise<void>;
     findArchived(user: UserContext, search?: string, page?: string, limit?: string): Promise<{
         data: {
-            code: string;
             id: string;
+            code: string;
             status: import(".prisma/client").$Enums.BeneficiaryStatus;
             deletedAt: Date;
             deletedBy: string;
@@ -74,18 +74,18 @@ export declare class BeneficiariesController {
         };
     }>;
     quickSearch(q: string): Promise<{
-        code: string;
         id: string;
+        code: string;
         fullName: string;
         homeType: import(".prisma/client").$Enums.HomeType;
     }[]>;
     findById(id: string): Promise<{
         activeSponsorsCount: number;
         updatesCount: number;
-        code: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        code: string;
         status: import(".prisma/client").$Enums.BeneficiaryStatus;
         createdById: string;
         createdBy: {
@@ -111,11 +111,11 @@ export declare class BeneficiariesController {
             createdAt: Date;
             isActive: boolean;
             updatedAt: Date;
-            currency: string;
             startDate: Date;
             endDate: Date;
             donorId: string;
             status: import(".prisma/client").$Enums.SponsorshipStatus;
+            currency: string;
             notes: string;
             beneficiaryId: string;
             sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
@@ -185,10 +185,10 @@ export declare class BeneficiariesController {
         }[];
     }>;
     create(user: UserContext, dto: CreateBeneficiaryDto): Promise<{
-        code: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        code: string;
         status: import(".prisma/client").$Enums.BeneficiaryStatus;
         createdById: string;
         isDeleted: boolean;
@@ -257,11 +257,11 @@ export declare class BeneficiariesController {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
         status: import(".prisma/client").$Enums.SponsorshipStatus;
+        currency: string;
         notes: string | null;
         beneficiaryId: string;
         sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
@@ -485,8 +485,8 @@ export declare class SponsorshipsController {
     getSummary(): Promise<number>;
     getByDonor(donorId: string): Promise<({
         beneficiary: {
-            code: string;
             id: string;
+            code: string;
             status: import(".prisma/client").$Enums.BeneficiaryStatus;
             fullName: string;
             homeType: import(".prisma/client").$Enums.HomeType;
@@ -504,11 +504,11 @@ export declare class SponsorshipsController {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
         status: import(".prisma/client").$Enums.SponsorshipStatus;
+        currency: string;
         notes: string | null;
         beneficiaryId: string;
         sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
@@ -532,11 +532,11 @@ export declare class SponsorshipsController {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
         status: import(".prisma/client").$Enums.SponsorshipStatus;
+        currency: string;
         notes: string | null;
         beneficiaryId: string;
         sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
@@ -548,8 +548,8 @@ export declare class SponsorshipsController {
     })[]>;
     create(user: UserContext, dto: any): Promise<{
         beneficiary: {
-            code: string;
             id: string;
+            code: string;
             status: import(".prisma/client").$Enums.BeneficiaryStatus;
             fullName: string;
             homeType: import(".prisma/client").$Enums.HomeType;
@@ -560,11 +560,11 @@ export declare class SponsorshipsController {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
         status: import(".prisma/client").$Enums.SponsorshipStatus;
+        currency: string;
         notes: string | null;
         beneficiaryId: string;
         sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
@@ -579,11 +579,11 @@ export declare class SponsorshipsController {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
         status: import(".prisma/client").$Enums.SponsorshipStatus;
+        currency: string;
         notes: string | null;
         beneficiaryId: string;
         sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
@@ -598,11 +598,11 @@ export declare class SponsorshipsController {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
         status: import(".prisma/client").$Enums.SponsorshipStatus;
+        currency: string;
         notes: string | null;
         beneficiaryId: string;
         sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
@@ -680,11 +680,11 @@ export declare class BeneficiaryUpdatesController {
             createdAt: Date;
             isActive: boolean;
             updatedAt: Date;
-            currency: string;
             startDate: Date | null;
             endDate: Date | null;
             donorId: string;
             status: import(".prisma/client").$Enums.SponsorshipStatus;
+            currency: string;
             notes: string | null;
             beneficiaryId: string;
             sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;

@@ -8,6 +8,11 @@ export declare class CreateTaskDto {
     donorId?: string;
     beneficiaryId?: string;
     assignedTo?: string;
+    autoWhatsAppPossible?: boolean;
+    manualRequired?: boolean;
+    sourceOccasionId?: string;
+    sourceSponsorshipId?: string;
+    sourcePledgeId?: string;
 }
 export declare class UpdateTaskStatusDto {
     status: TaskStatus;
@@ -20,4 +25,9 @@ export declare class UpdateTaskDto {
     status?: TaskStatus;
     dueDate?: string;
     assignedTo?: string | null;
+}
+export declare class LogContactDto {
+    contactMethod: string;
+    outcome?: string;
+    notes?: string;
 }

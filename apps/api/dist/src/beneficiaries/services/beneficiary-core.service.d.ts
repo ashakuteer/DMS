@@ -8,8 +8,8 @@ export declare class BeneficiaryCoreService {
     constructor(prisma: PrismaService, auditService: AuditService, rolePermissionsService: RolePermissionsService);
     private generateBeneficiaryCode;
     quickSearch(q: string): Promise<{
-        code: string;
         id: string;
+        code: string;
         fullName: string;
         homeType: import(".prisma/client").$Enums.HomeType;
     }[]>;
@@ -25,10 +25,10 @@ export declare class BeneficiaryCoreService {
     findById(id: string): Promise<{
         activeSponsorsCount: number;
         updatesCount: number;
-        code: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        code: string;
         status: import(".prisma/client").$Enums.BeneficiaryStatus;
         createdById: string;
         createdBy: {
@@ -54,11 +54,11 @@ export declare class BeneficiaryCoreService {
             createdAt: Date;
             isActive: boolean;
             updatedAt: Date;
-            currency: string;
             startDate: Date;
             endDate: Date;
             donorId: string;
             status: import(".prisma/client").$Enums.SponsorshipStatus;
+            currency: string;
             notes: string;
             beneficiaryId: string;
             sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
@@ -128,10 +128,10 @@ export declare class BeneficiaryCoreService {
         }[];
     }>;
     create(user: any, dto: any): Promise<{
-        code: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        code: string;
         status: import(".prisma/client").$Enums.BeneficiaryStatus;
         createdById: string;
         isDeleted: boolean;
@@ -166,10 +166,10 @@ export declare class BeneficiaryCoreService {
         photoPath: string;
     }>;
     update(user: any, id: string, dto: any): Promise<{
-        code: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        code: string;
         status: import(".prisma/client").$Enums.BeneficiaryStatus;
         createdById: string;
         isDeleted: boolean;
@@ -206,10 +206,10 @@ export declare class BeneficiaryCoreService {
         photoPath: string | null;
     }>;
     updatePhoto(id: string, url: string | null, path: string | null): Promise<{
-        code: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        code: string;
         status: import(".prisma/client").$Enums.BeneficiaryStatus;
         createdById: string;
         isDeleted: boolean;
@@ -269,8 +269,8 @@ export declare class BeneficiaryCoreService {
     }>;
     findArchived(user: any, search?: string, page?: number, limit?: number): Promise<{
         data: {
-            code: string;
             id: string;
+            code: string;
             status: import(".prisma/client").$Enums.BeneficiaryStatus;
             deletedAt: Date;
             deletedBy: string;

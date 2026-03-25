@@ -18,12 +18,12 @@ export declare class CommunicationsController {
         status: import(".prisma/client").$Enums.CommStatus;
         errorMessage: string | null;
         sentAt: Date | null;
-        errorCode: string | null;
         provider: import(".prisma/client").$Enums.CommProvider;
         providerMessageId: string | null;
         templateName: string | null;
         templateKey: string | null;
         templateVariables: import("@prisma/client/runtime/library").JsonValue | null;
+        errorCode: string | null;
         createdByUserId: string | null;
         deliveredAt: Date | null;
         readAt: Date | null;

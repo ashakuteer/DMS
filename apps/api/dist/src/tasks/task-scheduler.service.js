@@ -21,96 +21,249 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
         this.logger = new common_1.Logger(TaskSchedulerService_1.name);
     }
     async runDailyTaskGeneration() {
-        this.logger.log('Daily task generation started');
+        this.logger.log('Daily donor task generation started');
         const results = await Promise.allSettled([
             this.generateBirthdayTasks(),
+            this.generateAnniversaryTasks(),
+            this.generateRemembranceTasks(),
             this.generatePledgeFollowUpTasks(),
             this.generateDonationFollowUpTasks(),
+            this.generateSponsorUpdateTasks(),
+            this.generateSmartDonationReminderTasks(),
         ]);
         results.forEach((r, i) => {
-            const names = ['birthday', 'pledge', 'donation'];
+            const names = ['birthday', 'anniversary', 'remembrance', 'pledge', 'donation-followup', 'sponsor-update', 'smart-reminder'];
             if (r.status === 'rejected') {
                 this.logger.error(`${names[i]} task generation failed: ${r.reason}`);
             }
+            else {
+                this.logger.log(`${names[i]}: ${r.value} tasks created`);
+            }
         });
-        this.logger.log('Daily task generation complete');
+        this.logger.log('Daily donor task generation complete');
+    }
+    todayBounds() {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const tomorrow = new Date(todayStart);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return { todayStart, tomorrow };
+    }
+    autoWhatsApp(donor) {
+        return !!(donor.prefWhatsapp && donor.whatsappPhone);
+    }
+    futureDueDate(offsetDays) {
+        const d = new Date();
+        d.setHours(0, 0, 0, 0);
+        d.setDate(d.getDate() + offsetDays);
+        return d;
     }
     async generateBirthdayTasks() {
         const today = new Date();
         const month = today.getMonth() + 1;
         const day = today.getDate();
-        const todayStart = new Date(today);
-        todayStart.setHours(0, 0, 0, 0);
-        const tomorrow = new Date(todayStart);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+        const { todayStart, tomorrow } = this.todayBounds();
         const donors = await this.prisma.donor.findMany({
             where: { dobMonth: month, dobDay: day, isDeleted: false },
-            select: { id: true, firstName: true, lastName: true },
+            select: { id: true, firstName: true, lastName: true, prefWhatsapp: true, whatsappPhone: true },
         });
         let created = 0;
         for (const donor of donors) {
             const existing = await this.prisma.task.findFirst({
-                where: {
-                    type: client_1.TaskType.BIRTHDAY,
-                    donorId: donor.id,
-                    dueDate: { gte: todayStart, lt: tomorrow },
-                },
+                where: { type: client_1.TaskType.BIRTHDAY, donorId: donor.id, dueDate: { gte: todayStart, lt: tomorrow } },
             });
             if (!existing) {
                 await this.prisma.task.create({
                     data: {
-                        title: `Wish ${donor.firstName} ${donor.lastName} happy birthday`,
+                        title: `Birthday: ${donor.firstName} ${donor.lastName || ''}`.trim(),
                         type: client_1.TaskType.BIRTHDAY,
                         priority: client_1.TaskPriority.HIGH,
                         status: client_1.TaskStatus.PENDING,
                         dueDate: todayStart,
                         donorId: donor.id,
+                        autoWhatsAppPossible: this.autoWhatsApp(donor),
+                        manualRequired: true,
                     },
                 });
                 created++;
             }
         }
-        this.logger.log(`Birthday tasks: ${created} created (${donors.length} donors have birthday today)`);
+        return created;
+    }
+    async generateAnniversaryTasks() {
+        const today = new Date();
+        const month = today.getMonth() + 1;
+        const day = today.getDate();
+        const { todayStart, tomorrow } = this.todayBounds();
+        const occasions = await this.prisma.donorSpecialOccasion.findMany({
+            where: {
+                type: client_1.OccasionType.ANNIVERSARY,
+                month,
+                day,
+                donor: { isDeleted: false },
+            },
+            include: {
+                donor: { select: { id: true, firstName: true, lastName: true, prefWhatsapp: true, whatsappPhone: true } },
+            },
+        });
+        let created = 0;
+        for (const occ of occasions) {
+            const existing = await this.prisma.task.findFirst({
+                where: { type: client_1.TaskType.ANNIVERSARY, donorId: occ.donorId, dueDate: { gte: todayStart, lt: tomorrow } },
+            });
+            if (!existing) {
+                const name = [occ.donor.firstName, occ.donor.lastName].filter(Boolean).join(' ');
+                await this.prisma.task.create({
+                    data: {
+                        title: `Anniversary: ${name}${occ.relatedPersonName ? ` & ${occ.relatedPersonName}` : ''}`,
+                        type: client_1.TaskType.ANNIVERSARY,
+                        priority: client_1.TaskPriority.HIGH,
+                        status: client_1.TaskStatus.PENDING,
+                        dueDate: todayStart,
+                        donorId: occ.donorId,
+                        sourceOccasionId: occ.id,
+                        autoWhatsAppPossible: this.autoWhatsApp(occ.donor),
+                        manualRequired: true,
+                    },
+                });
+                created++;
+            }
+        }
+        return created;
+    }
+    async generateRemembranceTasks() {
+        const today = new Date();
+        const month = today.getMonth() + 1;
+        const day = today.getDate();
+        const { todayStart, tomorrow } = this.todayBounds();
+        const sevenDaysLater = new Date(today);
+        sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
+        const advMonth = sevenDaysLater.getMonth() + 1;
+        const advDay = sevenDaysLater.getDate();
+        const [todayOccasions, advanceOccasions] = await Promise.all([
+            this.prisma.donorSpecialOccasion.findMany({
+                where: {
+                    type: client_1.OccasionType.DEATH_ANNIVERSARY,
+                    month,
+                    day,
+                    donor: { isDeleted: false },
+                },
+                include: {
+                    donor: { select: { id: true, firstName: true, lastName: true, prefWhatsapp: true, whatsappPhone: true } },
+                },
+            }),
+            this.prisma.donorSpecialOccasion.findMany({
+                where: {
+                    type: client_1.OccasionType.DEATH_ANNIVERSARY,
+                    month: advMonth,
+                    day: advDay,
+                    donor: { isDeleted: false },
+                },
+                include: {
+                    donor: { select: { id: true, firstName: true, lastName: true, prefWhatsapp: true, whatsappPhone: true } },
+                },
+            }),
+        ]);
+        let created = 0;
+        for (const occ of todayOccasions) {
+            const existing = await this.prisma.task.findFirst({
+                where: { type: client_1.TaskType.REMEMBRANCE, donorId: occ.donorId, dueDate: { gte: todayStart, lt: tomorrow } },
+            });
+            if (!existing) {
+                const name = [occ.donor.firstName, occ.donor.lastName].filter(Boolean).join(' ');
+                await this.prisma.task.create({
+                    data: {
+                        title: `Remembrance: ${occ.relatedPersonName || 'Loved One'} (${name})`,
+                        type: client_1.TaskType.REMEMBRANCE,
+                        priority: client_1.TaskPriority.HIGH,
+                        status: client_1.TaskStatus.PENDING,
+                        dueDate: todayStart,
+                        donorId: occ.donorId,
+                        sourceOccasionId: occ.id,
+                        autoWhatsAppPossible: false,
+                        manualRequired: true,
+                    },
+                });
+                created++;
+            }
+        }
+        const advanceDue = this.futureDueDate(7);
+        for (const occ of advanceOccasions) {
+            const existing = await this.prisma.task.findFirst({
+                where: {
+                    type: client_1.TaskType.REMEMBRANCE,
+                    donorId: occ.donorId,
+                    dueDate: { gte: advanceDue, lt: new Date(advanceDue.getTime() + 86400000) },
+                },
+            });
+            if (!existing) {
+                const name = [occ.donor.firstName, occ.donor.lastName].filter(Boolean).join(' ');
+                await this.prisma.task.create({
+                    data: {
+                        title: `Remembrance in 7 days: ${occ.relatedPersonName || 'Loved One'} (${name})`,
+                        type: client_1.TaskType.REMEMBRANCE,
+                        priority: client_1.TaskPriority.MEDIUM,
+                        status: client_1.TaskStatus.PENDING,
+                        dueDate: advanceDue,
+                        donorId: occ.donorId,
+                        sourceOccasionId: occ.id,
+                        autoWhatsAppPossible: false,
+                        manualRequired: true,
+                    },
+                });
+                created++;
+            }
+        }
         return created;
     }
     async generatePledgeFollowUpTasks() {
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
+        const { todayStart } = this.todayBounds();
         const sevenDaysAgo = new Date(todayStart);
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         const pendingPledges = await this.prisma.pledge.findMany({
-            where: { status: client_1.PledgeStatus.PENDING, isDeleted: false },
-            select: { id: true, donorId: true },
+            where: {
+                status: client_1.PledgeStatus.PENDING,
+                isDeleted: false,
+                expectedFulfillmentDate: { lte: todayStart },
+            },
+            select: {
+                id: true,
+                donorId: true,
+                pledgeType: true,
+                amount: true,
+                donor: { select: { prefWhatsapp: true, whatsappPhone: true } },
+            },
         });
         let created = 0;
         for (const pledge of pendingPledges) {
             const existing = await this.prisma.task.findFirst({
                 where: {
                     type: client_1.TaskType.PLEDGE,
-                    donorId: pledge.donorId,
+                    sourcePledgeId: pledge.id,
                     createdAt: { gte: sevenDaysAgo },
                 },
             });
             if (!existing) {
                 await this.prisma.task.create({
                     data: {
-                        title: `Follow up for pledge`,
+                        title: `Pledge follow-up — ${pledge.pledgeType}${pledge.amount ? ` ₹${pledge.amount}` : ''}`,
                         type: client_1.TaskType.PLEDGE,
-                        priority: client_1.TaskPriority.MEDIUM,
+                        priority: client_1.TaskPriority.HIGH,
                         status: client_1.TaskStatus.PENDING,
                         dueDate: todayStart,
                         donorId: pledge.donorId,
+                        sourcePledgeId: pledge.id,
+                        autoWhatsAppPossible: this.autoWhatsApp(pledge.donor),
+                        manualRequired: true,
                     },
                 });
                 created++;
             }
         }
-        this.logger.log(`Pledge follow-up tasks: ${created} created (${pendingPledges.length} pending pledges checked)`);
         return created;
     }
     async generateDonationFollowUpTasks() {
-        const todayStart = new Date();
-        todayStart.setHours(0, 0, 0, 0);
+        const { todayStart } = this.todayBounds();
         const thirtyDaysAgo = new Date(todayStart);
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const thirtyOneDaysAgo = new Date(todayStart);
@@ -120,7 +273,11 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
                 donationDate: { gte: thirtyOneDaysAgo, lt: thirtyDaysAgo },
                 isDeleted: false,
             },
-            select: { id: true, donorId: true },
+            select: {
+                id: true,
+                donorId: true,
+                donor: { select: { prefWhatsapp: true, whatsappPhone: true } },
+            },
         });
         let created = 0;
         for (const donation of donations) {
@@ -134,24 +291,177 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
             if (!existing) {
                 await this.prisma.task.create({
                     data: {
-                        title: `Call donor for feedback`,
+                        title: `Follow-up call — 30-day check-in`,
                         type: client_1.TaskType.FOLLOW_UP,
                         priority: client_1.TaskPriority.MEDIUM,
                         status: client_1.TaskStatus.PENDING,
                         dueDate: todayStart,
                         donorId: donation.donorId,
+                        autoWhatsAppPossible: this.autoWhatsApp(donation.donor),
+                        manualRequired: true,
                     },
                 });
                 created++;
             }
         }
-        this.logger.log(`Donation follow-up tasks: ${created} created (${donations.length} donations hit 30-day mark)`);
+        return created;
+    }
+    async generateSponsorUpdateTasks() {
+        const { todayStart } = this.todayBounds();
+        const sponsorships = await this.prisma.sponsorship.findMany({
+            where: { isActive: true, status: 'ACTIVE' },
+            select: {
+                id: true,
+                donorId: true,
+                sponsorshipType: true,
+                beneficiary: { select: { id: true, fullName: true } },
+                donor: { select: { prefWhatsapp: true, whatsappPhone: true } },
+            },
+        });
+        const ninetyDaysAgo = new Date(todayStart);
+        ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+        let created = 0;
+        for (const sp of sponsorships) {
+            const existing = await this.prisma.task.findFirst({
+                where: {
+                    type: client_1.TaskType.SPONSOR_UPDATE,
+                    sourceSponsorshipId: sp.id,
+                    createdAt: { gte: ninetyDaysAgo },
+                },
+            });
+            if (!existing) {
+                await this.prisma.task.create({
+                    data: {
+                        title: `Send sponsor update — ${sp.beneficiary.fullName}`,
+                        description: `Quarterly update for ${sp.sponsorshipType} sponsorship`,
+                        type: client_1.TaskType.SPONSOR_UPDATE,
+                        priority: client_1.TaskPriority.MEDIUM,
+                        status: client_1.TaskStatus.PENDING,
+                        dueDate: todayStart,
+                        donorId: sp.donorId,
+                        beneficiaryId: sp.beneficiary.id,
+                        sourceSponsorshipId: sp.id,
+                        autoWhatsAppPossible: this.autoWhatsApp(sp.donor),
+                        manualRequired: true,
+                    },
+                });
+                created++;
+            }
+        }
+        return created;
+    }
+    async generateSmartDonationReminderTasks() {
+        const { todayStart } = this.todayBounds();
+        const today = new Date();
+        const dayOfMonth = today.getDate();
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        const quarterMonth = Math.floor(today.getMonth() / 3) * 3;
+        const quarterStart = new Date(today.getFullYear(), quarterMonth, 1);
+        if (dayOfMonth < 10)
+            return 0;
+        const [monthlyDonors, quarterlyDonors] = await Promise.all([
+            this.prisma.donor.findMany({
+                where: {
+                    isDeleted: false,
+                    donationFrequency: client_1.DonationFrequency.MONTHLY,
+                },
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    prefWhatsapp: true,
+                    whatsappPhone: true,
+                    donations: {
+                        where: { donationDate: { gte: monthStart }, isDeleted: false },
+                        select: { id: true },
+                        take: 1,
+                    },
+                },
+            }),
+            this.prisma.donor.findMany({
+                where: {
+                    isDeleted: false,
+                    donationFrequency: client_1.DonationFrequency.QUARTERLY,
+                },
+                select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    prefWhatsapp: true,
+                    whatsappPhone: true,
+                    donations: {
+                        where: { donationDate: { gte: quarterStart }, isDeleted: false },
+                        select: { id: true },
+                        take: 1,
+                    },
+                },
+            }),
+        ]);
+        const sevenDaysAgo = new Date(todayStart);
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        let created = 0;
+        for (const donor of monthlyDonors) {
+            if (donor.donations.length > 0)
+                continue;
+            const existing = await this.prisma.task.findFirst({
+                where: {
+                    type: client_1.TaskType.SMART_REMINDER,
+                    donorId: donor.id,
+                    createdAt: { gte: sevenDaysAgo },
+                },
+            });
+            if (!existing) {
+                const name = [donor.firstName, donor.lastName].filter(Boolean).join(' ');
+                await this.prisma.task.create({
+                    data: {
+                        title: `Smart reminder — Monthly donation due (${name})`,
+                        description: `${name} is a monthly donor and hasn't donated this month yet.`,
+                        type: client_1.TaskType.SMART_REMINDER,
+                        priority: client_1.TaskPriority.MEDIUM,
+                        status: client_1.TaskStatus.PENDING,
+                        dueDate: todayStart,
+                        donorId: donor.id,
+                        autoWhatsAppPossible: this.autoWhatsApp(donor),
+                        manualRequired: true,
+                    },
+                });
+                created++;
+            }
+        }
+        for (const donor of quarterlyDonors) {
+            if (donor.donations.length > 0)
+                continue;
+            const existing = await this.prisma.task.findFirst({
+                where: {
+                    type: client_1.TaskType.SMART_REMINDER,
+                    donorId: donor.id,
+                    createdAt: { gte: sevenDaysAgo },
+                },
+            });
+            if (!existing) {
+                const name = [donor.firstName, donor.lastName].filter(Boolean).join(' ');
+                await this.prisma.task.create({
+                    data: {
+                        title: `Smart reminder — Quarterly donation due (${name})`,
+                        description: `${name} is a quarterly donor and hasn't donated this quarter yet.`,
+                        type: client_1.TaskType.SMART_REMINDER,
+                        priority: client_1.TaskPriority.MEDIUM,
+                        status: client_1.TaskStatus.PENDING,
+                        dueDate: todayStart,
+                        donorId: donor.id,
+                        autoWhatsAppPossible: this.autoWhatsApp(donor),
+                        manualRequired: true,
+                    },
+                });
+                created++;
+            }
+        }
         return created;
     }
 };
 exports.TaskSchedulerService = TaskSchedulerService;
 __decorate([
-    (0, schedule_1.Cron)('0 8 * * *'),
+    (0, schedule_1.Cron)('0 7 * * *'),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

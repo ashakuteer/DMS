@@ -73,10 +73,10 @@ export declare class BeneficiaryRemindersService {
             lastHealthCheck: Date | null;
         };
         beneficiary: {
-            code: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            code: string;
             status: import(".prisma/client").$Enums.BeneficiaryStatus;
             createdById: string;
             isDeleted: boolean;
@@ -117,11 +117,11 @@ export declare class BeneficiaryRemindersService {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
         status: import(".prisma/client").$Enums.SponsorshipStatus;
+        currency: string;
         notes: string | null;
         beneficiaryId: string;
         sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;

@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsDateString,
   IsNotEmpty,
+  IsBoolean,
 } from 'class-validator';
 import { TaskType, TaskStatus, TaskPriority } from '@prisma/client';
 
@@ -37,6 +38,26 @@ export class CreateTaskDto {
   @IsOptional()
   @IsString()
   assignedTo?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  autoWhatsAppPossible?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  manualRequired?: boolean;
+
+  @IsOptional()
+  @IsString()
+  sourceOccasionId?: string;
+
+  @IsOptional()
+  @IsString()
+  sourceSponsorshipId?: string;
+
+  @IsOptional()
+  @IsString()
+  sourcePledgeId?: string;
 }
 
 export class UpdateTaskStatusDto {
@@ -72,4 +93,18 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsString()
   assignedTo?: string | null;
+}
+
+export class LogContactDto {
+  @IsString()
+  @IsNotEmpty()
+  contactMethod: string;
+
+  @IsOptional()
+  @IsString()
+  outcome?: string;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
 }

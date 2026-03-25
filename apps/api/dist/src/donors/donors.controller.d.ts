@@ -231,15 +231,13 @@ export declare class DonorsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            receiptNumber: string | null;
-            donationAmount: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
-            donationDate: Date;
-            donationMode: import(".prisma/client").$Enums.DonationMode | null;
-            donationType: import(".prisma/client").$Enums.DonationType;
-            kindDescription: string | null;
             donorId: string;
             createdById: string;
+            donationDate: Date;
+            donationAmount: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            donationType: import(".prisma/client").$Enums.DonationType;
+            donationMode: import(".prisma/client").$Enums.DonationMode | null;
             donationPurpose: import(".prisma/client").$Enums.DonationPurpose | null;
             donationCategory: string | null;
             donationOccasion: string | null;
@@ -250,10 +248,12 @@ export declare class DonorsController {
             unit: string | null;
             itemDescription: string | null;
             kindCategory: import(".prisma/client").$Enums.KindCategory | null;
+            kindDescription: string | null;
             donationHomeType: import(".prisma/client").$Enums.DonationHomeType | null;
             homeId: string | null;
             visitedHome: boolean;
             servedFood: boolean;
+            receiptNumber: string | null;
             financialYear: string | null;
             receiptPdfUrl: string | null;
             attachmentUrl: string | null;
@@ -265,10 +265,10 @@ export declare class DonorsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            currency: string;
             donorId: string;
             status: import(".prisma/client").$Enums.PledgeStatus;
             createdById: string;
+            currency: string;
             quantity: string | null;
             isDeleted: boolean;
             deletedAt: Date | null;
@@ -379,11 +379,11 @@ export declare class DonorsController {
             createdAt: Date;
             isActive: boolean;
             updatedAt: Date;
-            currency: string;
             startDate: Date | null;
             endDate: Date | null;
             donorId: string;
             status: import(".prisma/client").$Enums.SponsorshipStatus;
+            currency: string;
             notes: string | null;
             beneficiaryId: string;
             sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
@@ -735,8 +735,8 @@ export declare class DonorsController {
     }>;
     getDonorSponsorships(id: string): Promise<({
         beneficiary: {
-            code: string;
             id: string;
+            code: string;
             status: import(".prisma/client").$Enums.BeneficiaryStatus;
             fullName: string;
             homeType: import(".prisma/client").$Enums.HomeType;
@@ -754,11 +754,11 @@ export declare class DonorsController {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
         status: import(".prisma/client").$Enums.SponsorshipStatus;
+        currency: string;
         notes: string | null;
         beneficiaryId: string;
         sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;

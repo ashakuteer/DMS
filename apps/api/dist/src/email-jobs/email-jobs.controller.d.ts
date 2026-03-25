@@ -30,11 +30,11 @@ export declare class EmailJobsController {
             createdAt: Date;
             updatedAt: Date;
             subject: string;
-            body: string;
             donorId: string | null;
             type: import(".prisma/client").$Enums.EmailJobType;
             status: import(".prisma/client").$Enums.EmailJobStatus;
             toEmail: string;
+            body: string;
             sentAt: Date | null;
             relatedId: string | null;
             attempts: number;
@@ -57,11 +57,11 @@ export declare class EmailJobsController {
         createdAt: Date;
         updatedAt: Date;
         subject: string;
-        body: string;
         donorId: string | null;
         type: import(".prisma/client").$Enums.EmailJobType;
         status: import(".prisma/client").$Enums.EmailJobStatus;
         toEmail: string;
+        body: string;
         sentAt: Date | null;
         relatedId: string | null;
         attempts: number;
