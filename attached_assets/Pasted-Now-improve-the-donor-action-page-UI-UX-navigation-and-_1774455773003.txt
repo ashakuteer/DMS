@@ -1,0 +1,106 @@
+Now improve the donor action page UI/UX, navigation, and behavior.
+
+DECISIONS LOCKED:
+
+1. Rename page:
+- Change “Task Inbox” to “Donor Actions”
+
+2. Move navigation:
+- Remove this page from Daily Actions
+- Add it under CORE section
+- Place it near Donors / Donations area because this is core donor operations
+
+3. Remove unnecessary top buttons:
+- Remove “Generate”
+- Remove “Refresh”
+- Remove “New Task”
+This page should not feel like a manual admin task page.
+It should be an action/work screen.
+
+4. Make the UI bigger and clearer:
+- Increase page title size
+- Increase row height
+- Increase donor name font size
+- Increase important labels/buttons slightly
+- Improve spacing/padding so staff can read easily
+- Make it look less technical and more operational
+
+5. Time filters must remain and be prominent:
+- Today
+- Next 7 Days
+- Next 15 Days
+- Next 30 Days
+- Overdue
+
+6. Action type filters must remain:
+- All
+- Birthdays
+- Anniversaries
+- Remembrance
+- Pledges
+- Smart Reminders
+- Sponsor Updates
+- Follow-ups
+
+7. Each donor action row must clearly show:
+- Donor name (large and prominent)
+- Action type
+- Due date
+- Relationship owner / assigned telecaller
+- Auto WhatsApp eligible or not
+- Contact history indicator
+- Last contacted date if available
+- Contact count if available
+- Status
+
+8. Improve visual hierarchy:
+- Overdue items should stand out clearly
+- Today’s items should be more visible
+- Upcoming items should be calmer
+- Use good badge/color hierarchy for urgency
+
+9. Add quick operational actions in each row where already supported:
+- Call / WhatsApp / View / Mark done / Add note
+Do not overcomplicate, but make it action-oriented.
+
+10. This page should feel like:
+- a daily donor workboard
+- easy for founder and telecaller to scan quickly
+- not like a developer table or raw task inbox
+
+11. Do not break the donor action engine logic already implemented.
+Only improve:
+- naming
+- navigation placement
+- layout
+- readability
+- usability
+
+12. Important behavior:
+This page is not for manual task creation.
+Do not add manual data-entry behavior here.
+
+This page must be fully data-driven from donor records and related donor systems:
+- donor profiles
+- donor special occasions
+- pledges
+- sponsorships
+- donation history / monthly donor patterns
+- donor owner / telecaller assignment
+- communication/contact logs
+
+It should behave like an action/workboard generated from donor data, not a manual task entry page.
+
+13. Before changing code, inspect:
+- current route for Daily Actions donor page
+- sidebar config / nav config
+- page component for donor actions
+- reusable table/card/filter components
+
+14. Then implement safely and report:
+- files changed
+- route moved/renamed
+- nav changes
+- any redirects added from old route to new route
+
+15. If the route is moved from Daily Actions to CORE, keep the old URL temporarily redirecting to the new page so existing links do not break.

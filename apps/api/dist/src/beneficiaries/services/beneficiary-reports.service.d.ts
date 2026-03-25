@@ -42,10 +42,10 @@ export declare class BeneficiaryReportsService {
         emailsSent: number;
     }>;
     exportToExcel(user: any): Promise<{
+        code: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        code: string;
         status: import(".prisma/client").$Enums.BeneficiaryStatus;
         createdById: string;
         isDeleted: boolean;

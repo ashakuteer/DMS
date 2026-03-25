@@ -13,9 +13,9 @@ export declare class RemindersController {
         };
         donation: {
             id: string;
-            donationDate: Date;
-            donationAmount: import("@prisma/client/runtime/library").Decimal;
             receiptNumber: string;
+            donationAmount: import("@prisma/client/runtime/library").Decimal;
+            donationDate: Date;
         };
         createdBy: {
             name: string;

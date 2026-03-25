@@ -7,8 +7,8 @@ export declare class CommunicationLogController {
     getByDonorId(donorId: string): Promise<({
         donation: {
             id: string;
-            donationAmount: import("@prisma/client/runtime/library").Decimal;
             receiptNumber: string;
+            donationAmount: import("@prisma/client/runtime/library").Decimal;
         };
         sentBy: {
             name: string;
