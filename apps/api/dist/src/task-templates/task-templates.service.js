@@ -13,6 +13,8 @@ exports.TaskTemplatesService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const EXCLUDED_FROM_STAFF = [client_1.Role.FOUNDER];
+const ITEM_SELECT = { id: true, itemText: true, orderIndex: true };
 const RECURRENCE_DAYS = {
     DAILY: 1,
     WEEKLY: 7,
@@ -45,7 +47,7 @@ let TaskTemplatesService = class TaskTemplatesService {
                     orderBy: { createdAt: 'desc' },
                     take: 20,
                 },
-                items: { orderBy: { orderIndex: 'asc' } },
+                items: { orderBy: { orderIndex: 'asc' }, select: ITEM_SELECT },
             },
         });
         if (!t)
@@ -112,14 +114,14 @@ let TaskTemplatesService = class TaskTemplatesService {
         }
         else if (template.assignedToRole) {
             const users = await this.prisma.user.findMany({
-                where: { isActive: true, role: template.assignedToRole },
+                where: { isActive: true, role: template.assignedToRole, NOT: { role: { in: EXCLUDED_FROM_STAFF } } },
                 select: { id: true },
             });
             userIds = users.map((u) => u.id);
         }
         else {
             const users = await this.prisma.user.findMany({
-                where: { isActive: true },
+                where: { isActive: true, NOT: { role: { in: EXCLUDED_FROM_STAFF } } },
                 select: { id: true },
             });
             userIds = users.map((u) => u.id);
@@ -185,7 +187,7 @@ let TaskTemplatesService = class TaskTemplatesService {
         const endOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
         const templates = await this.prisma.taskTemplate.findMany({
             where: { isActive: true },
-            include: { items: { orderBy: { orderIndex: 'asc' } } },
+            include: { items: { orderBy: { orderIndex: 'asc' }, select: ITEM_SELECT } },
         });
         let generated = 0;
         let skipped = 0;
@@ -200,14 +202,14 @@ let TaskTemplatesService = class TaskTemplatesService {
             }
             else if (template.assignedToRole) {
                 const users = await this.prisma.user.findMany({
-                    where: { isActive: true, role: template.assignedToRole },
+                    where: { isActive: true, role: template.assignedToRole, NOT: { role: { in: EXCLUDED_FROM_STAFF } } },
                     select: { id: true },
                 });
                 userIds = users.map((u) => u.id);
             }
             else {
                 const users = await this.prisma.user.findMany({
-                    where: { isActive: true },
+                    where: { isActive: true, NOT: { role: { in: EXCLUDED_FROM_STAFF } } },
                     select: { id: true },
                 });
                 userIds = users.map((u) => u.id);
@@ -265,7 +267,7 @@ let TaskTemplatesService = class TaskTemplatesService {
         const since = new Date();
         since.setDate(since.getDate() - days);
         const users = await this.prisma.user.findMany({
-            where: { isActive: true },
+            where: { isActive: true, NOT: { role: { in: EXCLUDED_FROM_STAFF } } },
             select: { id: true, name: true, email: true, role: true },
             orderBy: { name: 'asc' },
         });

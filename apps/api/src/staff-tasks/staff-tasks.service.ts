@@ -1,6 +1,9 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { TaskStatus, TaskPriority, TaskCategory, StaffTaskType } from '@prisma/client';
+import { TaskStatus, TaskPriority, TaskCategory, StaffTaskType, Role } from '@prisma/client';
+
+// Roles excluded from staff task lists and assignment dropdowns
+const EXCLUDED_FROM_STAFF_LIST = [Role.FOUNDER];
 
 @Injectable()
 export class StaffTasksService {
@@ -201,7 +204,7 @@ export class StaffTasksService {
 
   async getStaffList() {
     const users = await this.prisma.user.findMany({
-      where: { isActive: true },
+      where: { isActive: true, NOT: { role: { in: EXCLUDED_FROM_STAFF_LIST } } },
       select: {
         id: true,
         name: true,

@@ -35,7 +35,7 @@ const ROLES = [
   { value: "ALL_STAFF", label: "All Active Staff" },
   { value: "STAFF", label: "Staff Only" },
   { value: "ADMIN", label: "Admin Only" },
-  { value: "FOUNDER", label: "Founder Only" },
+  { value: "OFFICE_ASSISTANT", label: "Office Assistant Only" },
 ];
 
 interface TemplateItem {

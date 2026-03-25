@@ -59,8 +59,6 @@ export declare class TaskTemplatesController {
     findOne(id: string): Promise<{
         items: {
             id: string;
-            createdAt: Date;
-            templateId: string;
             orderIndex: number;
             itemText: string;
         }[];

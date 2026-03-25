@@ -1,6 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { TaskStatus, TaskPriority } from '@prisma/client';
+import { TaskStatus, TaskPriority, Role } from '@prisma/client';
+
+// Roles that must never appear in staff task assignment or performance scoring
+const EXCLUDED_FROM_STAFF = [Role.FOUNDER];
+
+// Safe explicit select for task_template_items — avoids fetching columns that
+// may not yet exist in the production DB (e.g. createdAt before migration)
+const ITEM_SELECT = { id: true, itemText: true, orderIndex: true } as const;
 
 // How many days ahead to schedule per recurrence type
 const RECURRENCE_DAYS: Record<string, number> = {
@@ -39,7 +46,8 @@ export class TaskTemplatesService {
           orderBy: { createdAt: 'desc' },
           take: 20,
         },
-        items: { orderBy: { orderIndex: 'asc' } },
+        // Explicit select — never fetches columns that may not exist in the DB yet (e.g. createdAt)
+        items: { orderBy: { orderIndex: 'asc' }, select: ITEM_SELECT },
       },
     });
     if (!t) throw new NotFoundException('Task template not found');
@@ -138,14 +146,14 @@ export class TaskTemplatesService {
       userIds = [template.assignedToId];
     } else if (template.assignedToRole) {
       const users = await this.prisma.user.findMany({
-        where: { isActive: true, role: template.assignedToRole as any },
+        where: { isActive: true, role: template.assignedToRole as any, NOT: { role: { in: EXCLUDED_FROM_STAFF } } },
         select: { id: true },
       });
       userIds = users.map((u) => u.id);
     } else {
-      // Assign to all active users
+      // Assign to all active staff — FOUNDER is intentionally excluded
       const users = await this.prisma.user.findMany({
-        where: { isActive: true },
+        where: { isActive: true, NOT: { role: { in: EXCLUDED_FROM_STAFF } } },
         select: { id: true },
       });
       userIds = users.map((u) => u.id);
@@ -222,7 +230,8 @@ export class TaskTemplatesService {
 
     const templates = await this.prisma.taskTemplate.findMany({
       where: { isActive: true },
-      include: { items: { orderBy: { orderIndex: 'asc' } } },
+      // Explicit select on items — avoids columns not yet in production DB (e.g. createdAt)
+      include: { items: { orderBy: { orderIndex: 'asc' }, select: ITEM_SELECT } },
     });
 
     let generated = 0;
@@ -234,19 +243,19 @@ export class TaskTemplatesService {
         continue;
       }
 
-      // Determine assignees
+      // Determine assignees — FOUNDER is always excluded
       let userIds: string[] = [];
       if (template.assignedToId) {
         userIds = [template.assignedToId];
       } else if (template.assignedToRole) {
         const users = await this.prisma.user.findMany({
-          where: { isActive: true, role: template.assignedToRole as any },
+          where: { isActive: true, role: template.assignedToRole as any, NOT: { role: { in: EXCLUDED_FROM_STAFF } } },
           select: { id: true },
         });
         userIds = users.map((u) => u.id);
       } else {
         const users = await this.prisma.user.findMany({
-          where: { isActive: true },
+          where: { isActive: true, NOT: { role: { in: EXCLUDED_FROM_STAFF } } },
           select: { id: true },
         });
         userIds = users.map((u) => u.id);
@@ -314,7 +323,7 @@ export class TaskTemplatesService {
     since.setDate(since.getDate() - days);
 
     const users = await this.prisma.user.findMany({
-      where: { isActive: true },
+      where: { isActive: true, NOT: { role: { in: EXCLUDED_FROM_STAFF } } },
       select: { id: true, name: true, email: true, role: true },
       orderBy: { name: 'asc' },
     });

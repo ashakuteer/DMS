@@ -14,6 +14,7 @@ exports.StaffTasksService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const EXCLUDED_FROM_STAFF_LIST = [client_1.Role.FOUNDER];
 let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -180,7 +181,7 @@ let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
     }
     async getStaffList() {
         const users = await this.prisma.user.findMany({
-            where: { isActive: true },
+            where: { isActive: true, NOT: { role: { in: EXCLUDED_FROM_STAFF_LIST } } },
             select: {
                 id: true,
                 name: true,
