@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { fetchWithAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCw, Repeat, ClipboardList } from "lucide-react";
@@ -24,38 +24,57 @@ import CreateTaskDialog from "./dialogs/CreateTaskDialog";
 import EditTaskDialog from "./dialogs/EditTaskDialog";
 import TaskDetailDialog from "./dialogs/TaskDetailDialog";
 
+// Return whether a task's dueDate (or createdAt) falls within the time range
+function matchesTimeRange(task: any, range: string): boolean {
+  if (range === "ALL") return true;
+  const ref = task.dueDate || task.createdAt;
+  if (!ref) return range === "ALL";
+  const d = new Date(ref);
+  const now = new Date();
+  if (range === "TODAY") {
+    return (
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate()
+    );
+  }
+  if (range === "WEEK") {
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+    return d >= startOfWeek && d < endOfWeek;
+  }
+  if (range === "MONTH") {
+    return (
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth()
+    );
+  }
+  return true;
+}
+
 export default function StaffTasksPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
 
   const [user, setUser] = useState<any>(null);
+  const [staffList, setStaffList] = useState<any[]>([]);
 
+  // Filters
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [priorityFilter, setPriorityFilter] = useState("ALL");
+  const [taskTypeFilter, setTaskTypeFilter] = useState("ALL");
+  const [timeRangeFilter, setTimeRangeFilter] = useState("ALL");
+  const [staffIdFilter, setStaffIdFilter] = useState("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
-
   const [selectedTask, setSelectedTask] = useState<any>(null);
 
-  const {
-    tasks,
-    loading,
-    fetchTasks,
-    deleteTask,
-    updateStatus,
-  } = useStaffTasks();
-
-  const taskStats = {
-    total: tasks.length,
-    pending: tasks.filter((t) => t.status === "PENDING").length,
-    inProgress: tasks.filter((t) => t.status === "IN_PROGRESS").length,
-    completed: tasks.filter((t) => t.status === "COMPLETED").length,
-  };
-
-  const [staffList, setStaffList] = useState<any[]>([]);
+  const { tasks, loading, fetchTasks, deleteTask, updateStatus } = useStaffTasks();
 
   const loadAdminData = useCallback(async () => {
     try {
@@ -77,13 +96,28 @@ export default function StaffTasksPage() {
     }
   }, [loadAdminData]);
 
+  // Build API query params from filters (server-side filtering where supported)
   useEffect(() => {
     const params = new URLSearchParams();
     if (statusFilter !== "ALL") params.set("status", statusFilter);
-    if (priorityFilter !== "ALL") params.set("priority", priorityFilter);
+    if (staffIdFilter !== "ALL") params.set("assignedToId", staffIdFilter);
+    if (taskTypeFilter !== "ALL") params.set("taskType", taskTypeFilter);
     if (searchQuery) params.set("search", searchQuery);
     fetchTasks(params);
-  }, [fetchTasks, statusFilter, priorityFilter, searchQuery]);
+  }, [fetchTasks, statusFilter, staffIdFilter, taskTypeFilter, searchQuery]);
+
+  // Apply time-range filter on the client side
+  const visibleTasks = useMemo(() => {
+    if (timeRangeFilter === "ALL") return tasks;
+    return tasks.filter((t) => matchesTimeRange(t, timeRangeFilter));
+  }, [tasks, timeRangeFilter]);
+
+  const taskStats = {
+    total: visibleTasks.length,
+    pending: visibleTasks.filter((t) => t.status === "PENDING").length,
+    inProgress: visibleTasks.filter((t) => t.status === "IN_PROGRESS").length,
+    completed: visibleTasks.filter((t) => t.status === "COMPLETED").length,
+  };
 
   if (!user) return null;
 
@@ -92,8 +126,6 @@ export default function StaffTasksPage() {
   }
 
   const isAdminOrManager = user.role === "FOUNDER" || user.role === "ADMIN";
-  const isFounder = user.role === "FOUNDER";
-
   const canCreate = hasPermission(user.role, "staffTasks", "create");
   const canDelete = hasPermission(user.role, "staffTasks", "delete");
   const canUpdate = hasPermission(user.role, "staffTasks", "update");
@@ -144,8 +176,8 @@ export default function StaffTasksPage() {
         </div>
       </div>
 
-      {/* ── Section A: Recurring Task Templates (Founder only) ── */}
-      {isFounder && (
+      {/* ── Section A: Recurring Task Templates (Admin and Founder) ── */}
+      {isAdminOrManager && (
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <Repeat className="h-5 w-5 text-primary" />
@@ -172,13 +204,18 @@ export default function StaffTasksPage() {
             <TaskFilters
               status={statusFilter}
               setStatus={setStatusFilter}
-              priority={priorityFilter}
-              setPriority={setPriorityFilter}
+              taskType={taskTypeFilter}
+              setTaskType={setTaskTypeFilter}
+              timeRange={timeRangeFilter}
+              setTimeRange={setTimeRangeFilter}
+              staffId={staffIdFilter}
+              setStaffId={setStaffIdFilter}
               search={searchQuery}
               setSearch={setSearchQuery}
+              staffList={staffList}
             />
             <TaskTable
-              tasks={tasks}
+              tasks={visibleTasks}
               onEdit={openEditDialog}
               onDelete={handleDelete}
               onView={openDetailDialog}
