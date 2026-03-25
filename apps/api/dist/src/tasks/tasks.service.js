@@ -363,6 +363,7 @@ let TasksService = class TasksService {
             this.prisma.donorSpecialOccasion.groupBy({
                 by: ['type'],
                 _count: { id: true },
+                orderBy: { type: 'asc' },
             }),
         ]);
         const birthdayNext7 = birthdayTaskSample.filter(t => t.status === client_1.TaskStatus.PENDING && new Date(t.dueDate) >= today && new Date(t.dueDate) < end7);

@@ -88,44 +88,63 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
     }
     async generateBirthdayTasks() {
         const LOOK_AHEAD_DAYS = 30;
-        const donors = await this.prisma.donor.findMany({
-            where: { dobMonth: { not: null }, dobDay: { not: null }, isDeleted: false },
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                dobMonth: true,
-                dobDay: true,
-                prefWhatsapp: true,
-                whatsappPhone: true,
+        const birthdayOccasions = await this.prisma.donorSpecialOccasion.findMany({
+            where: {
+                type: { in: [client_1.OccasionType.DOB_SELF, client_1.OccasionType.DOB_SPOUSE, client_1.OccasionType.DOB_CHILD] },
+                donor: { isDeleted: false },
+            },
+            include: {
+                donor: {
+                    select: {
+                        id: true,
+                        firstName: true,
+                        lastName: true,
+                        prefWhatsapp: true,
+                        whatsappPhone: true,
+                    },
+                },
             },
         });
         let created = 0;
-        for (const donor of donors) {
-            if (!donor.dobMonth || !donor.dobDay)
+        for (const occ of birthdayOccasions) {
+            if (!occ.month || !occ.day)
                 continue;
-            const { dueDate, daysUntil } = this.nextAnnualDate(donor.dobMonth, donor.dobDay);
+            const { dueDate, daysUntil } = this.nextAnnualDate(occ.month, occ.day);
             if (daysUntil > LOOK_AHEAD_DAYS)
                 continue;
             const nextDay = new Date(dueDate.getTime() + 86400000);
             const existing = await this.prisma.task.findFirst({
                 where: {
                     type: client_1.TaskType.BIRTHDAY,
-                    donorId: donor.id,
+                    donorId: occ.donorId,
+                    sourceOccasionId: occ.id,
                     dueDate: { gte: dueDate, lt: nextDay },
                 },
             });
             if (!existing) {
-                const name = [donor.firstName, donor.lastName].filter(Boolean).join(' ');
+                const donorName = [occ.donor.firstName, occ.donor.lastName].filter(Boolean).join(' ');
+                let title;
+                if (occ.type === client_1.OccasionType.DOB_SELF) {
+                    title = `Birthday: ${donorName}`;
+                }
+                else if (occ.type === client_1.OccasionType.DOB_SPOUSE) {
+                    const spouseName = occ.relatedPersonName || 'Spouse';
+                    title = `Birthday: ${spouseName} (Spouse of ${donorName})`;
+                }
+                else {
+                    const childName = occ.relatedPersonName || 'Child';
+                    title = `Birthday: ${childName} (Child of ${donorName})`;
+                }
                 await this.prisma.task.create({
                     data: {
-                        title: `Birthday: ${name}`,
+                        title,
                         type: client_1.TaskType.BIRTHDAY,
                         priority: daysUntil <= 1 ? client_1.TaskPriority.HIGH : client_1.TaskPriority.MEDIUM,
                         status: client_1.TaskStatus.PENDING,
                         dueDate,
-                        donorId: donor.id,
-                        autoWhatsAppPossible: this.autoWhatsApp(donor),
+                        donorId: occ.donorId,
+                        sourceOccasionId: occ.id,
+                        autoWhatsAppPossible: this.autoWhatsApp(occ.donor),
                         manualRequired: true,
                     },
                 });

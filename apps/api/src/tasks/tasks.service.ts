@@ -398,10 +398,11 @@ export class TasksService {
       }),
       // Total active donors
       this.prisma.donor.count({ where: { isDeleted: false } }),
-      // Special occasions
+      // Special occasions grouped by type
       this.prisma.donorSpecialOccasion.groupBy({
         by: ['type'],
         _count: { id: true },
+        orderBy: { type: 'asc' },
       }),
     ]);
 
