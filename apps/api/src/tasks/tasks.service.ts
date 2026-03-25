@@ -152,10 +152,19 @@ export class TasksService {
     }
 
     // Category virtual filter: 'donor' or 'staff'
+    // When a specific type is also requested, narrow within the category
     if (query.category === 'donor') {
-      where.type = { in: DONOR_TYPES };
+      if (query.type) {
+        where.type = query.type as TaskType;
+      } else {
+        where.type = { in: DONOR_TYPES };
+      }
     } else if (query.category === 'staff') {
-      where.type = { in: STAFF_TYPES };
+      if (query.type) {
+        where.type = query.type as TaskType;
+      } else {
+        where.type = { in: STAFF_TYPES };
+      }
     } else if (query.type) {
       where.type = query.type as TaskType;
     }

@@ -1,0 +1,86 @@
+Please do one cleanup + bug-fix pass for Donor Actions and sidebar labels.
+
+1. Sidebar label cleanup
+   Replace raw translation keys showing in sidebar.
+
+Fix:
+
+* `nav.donor_actions` → `Donor Actions`
+
+Also inspect all sidebar/nav items under STAFF and other sections for any labels still showing like:
+
+* `nav.staff_profiles`
+* `nav.staff_salary`
+* `nav.staff_leaves`
+* `nav.attendance`
+* `nav.founder_tasks`
+* `nav.missed_tasks`
+* `nav.performance`
+  or any other raw `nav.*` key
+
+Show proper human-readable labels everywhere.
+
+2. Donor Actions filter bug
+   The page is loading actions now, but the action-type filters are not working correctly.
+
+Please inspect and fix filtering for:
+
+* All
+* Birthdays
+* Anniversaries
+* Remembrance
+* Pledges
+* Smart Reminders
+* Sponsor Updates
+* Follow-ups
+
+Current issue:
+Changing these filter buttons does not correctly narrow the list.
+
+What to check:
+
+* selected action-type state in frontend
+* API request params being sent
+* backend query logic for filtering by task type
+* mapping between UI labels and enum/database values
+
+Examples to verify:
+
+* Birthdays should show only birthday tasks
+* Anniversaries should show only anniversary tasks
+* Smart Reminders should show only smart reminder tasks
+* Pledges should show only pledge tasks
+* All should show all donor-action task types
+
+3. Also verify time-window filters still work with action-type filters together:
+
+* Today
+* Next 7 Days
+* 15 Days
+* 30 Days
+* Overdue
+
+Make sure combined filtering works correctly, for example:
+
+* Next 7 Days + Birthdays
+* Next 7 Days + Anniversaries
+* Today + Smart Reminders
+* Overdue + Follow-ups
+
+4. Do not change layout unnecessarily.
+   Only:
+
+* fix sidebar labels
+* fix action-type filtering
+* confirm working combinations
+
+5. Before finishing, test these exact cases and report results:
+
+* Donor Actions → Birthdays
+* Donor Actions → Anniversaries
+* Donor Actions → Smart Reminders
+* Donor Actions → All
+* STAFF sidebar labels showing correctly
+* CORE sidebar labels showing correctly
+
+6. After fix, push to GitHub.
