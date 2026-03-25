@@ -13,7 +13,14 @@ export declare class AuthService {
     private emailService;
     constructor(prisma: PrismaService, jwtService: JwtService, configService: ConfigService, auditService: AuditService, emailService: EmailService);
     register(dto: RegisterDto): Promise<{
-        user: any;
+        user: {
+            email: string;
+            name: string;
+            phone: string;
+            role: import(".prisma/client").$Enums.Role;
+            id: string;
+            isActive: boolean;
+        };
         tokens: {
             accessToken: string;
             refreshToken: string;
@@ -21,11 +28,11 @@ export declare class AuthService {
     }>;
     login(dto: LoginDto): Promise<{
         user: {
-            id: any;
-            email: any;
-            name: any;
-            role: any;
-            isActive: any;
+            id: string;
+            email: string;
+            name: string;
+            role: import(".prisma/client").$Enums.Role;
+            isActive: true;
         };
         tokens: {
             accessToken: string;
@@ -37,18 +44,26 @@ export declare class AuthService {
     }>;
     refreshTokens(dto: RefreshTokenDto): Promise<{
         user: {
-            id: any;
-            email: any;
-            name: any;
-            role: any;
-            isActive: any;
+            id: string;
+            email: string;
+            name: string;
+            role: import(".prisma/client").$Enums.Role;
+            isActive: true;
         };
         tokens: {
             accessToken: string;
             refreshToken: string;
         };
     }>;
-    getProfile(userId: string): Promise<any>;
+    getProfile(userId: string): Promise<{
+        email: string;
+        name: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        updatedAt: Date;
+    }>;
     forgotPassword(dto: ForgotPasswordDto): Promise<{
         message: string;
     }>;

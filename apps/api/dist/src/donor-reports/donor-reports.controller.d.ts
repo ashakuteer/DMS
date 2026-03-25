@@ -13,17 +13,121 @@ export declare class DonorReportsController {
         campaignId?: string;
         templateId?: string;
         title?: string;
-    }, user: any): Promise<any>;
+    }, user: any): Promise<{
+        donor: {
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
+        template: {
+            name: string;
+            headerText: string;
+            footerText: string;
+            showDonationSummary: boolean;
+            showDonationBreakdown: boolean;
+            showBeneficiaries: boolean;
+            showCampaigns: boolean;
+            showUsageSummary: boolean;
+        };
+        generatedBy: {
+            name: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        donorId: string | null;
+        templateId: string | null;
+        type: import(".prisma/client").$Enums.DonorReportType;
+        status: import(".prisma/client").$Enums.DonorReportStatus;
+        campaignId: string | null;
+        title: string;
+        periodStart: Date;
+        periodEnd: Date;
+        reportData: import("@prisma/client/runtime/library").JsonValue | null;
+        pdfUrl: string | null;
+        excelUrl: string | null;
+        sharedAt: Date | null;
+        sharedTo: string[];
+        generatedById: string;
+    }>;
     findAll(page?: string, limit?: string, type?: string, donorId?: string): Promise<{
-        data: any;
+        data: any[];
         total: number;
         page: number;
         totalPages: number;
     }>;
-    getTemplates(): Promise<any>;
-    getCampaigns(): Promise<any>;
-    searchDonors(search: string, limit?: string): Promise<any>;
-    findOne(id: string): Promise<any>;
+    getTemplates(): Promise<({
+        createdBy: {
+            name: string;
+        };
+    } & {
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        createdById: string;
+        isDefault: boolean;
+        headerText: string | null;
+        footerText: string | null;
+        showDonationSummary: boolean;
+        showDonationBreakdown: boolean;
+        showBeneficiaries: boolean;
+        showCampaigns: boolean;
+        showUsageSummary: boolean;
+        customSections: import("@prisma/client/runtime/library").JsonValue | null;
+    })[]>;
+    getCampaigns(): Promise<{
+        name: string;
+        id: string;
+        status: import(".prisma/client").$Enums.CampaignStatus;
+    }[]>;
+    searchDonors(search: string, limit?: string): Promise<{
+        id: string;
+        donorCode: string;
+        firstName: string;
+        lastName: string;
+        personalEmail: string;
+        officialEmail: string;
+    }[]>;
+    findOne(id: string): Promise<{
+        donor: {
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
+        template: {
+            name: string;
+            headerText: string;
+            footerText: string;
+            showDonationSummary: boolean;
+            showDonationBreakdown: boolean;
+            showBeneficiaries: boolean;
+            showCampaigns: boolean;
+            showUsageSummary: boolean;
+        };
+        generatedBy: {
+            name: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        donorId: string | null;
+        templateId: string | null;
+        type: import(".prisma/client").$Enums.DonorReportType;
+        status: import(".prisma/client").$Enums.DonorReportStatus;
+        campaignId: string | null;
+        title: string;
+        periodStart: Date;
+        periodEnd: Date;
+        reportData: import("@prisma/client/runtime/library").JsonValue | null;
+        pdfUrl: string | null;
+        excelUrl: string | null;
+        sharedAt: Date | null;
+        sharedTo: string[];
+        generatedById: string;
+    }>;
     downloadPdf(id: string, res: Response): Promise<void>;
     downloadExcel(id: string, res: Response): Promise<void>;
     shareReport(id: string, body: {
@@ -45,7 +149,26 @@ export declare class DonorReportsController {
         showCampaigns?: boolean;
         showUsageSummary?: boolean;
         isDefault?: boolean;
-    }, user: any): Promise<any>;
+    }, user: any): Promise<{
+        createdBy: {
+            name: string;
+        };
+    } & {
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        createdById: string;
+        isDefault: boolean;
+        headerText: string | null;
+        footerText: string | null;
+        showDonationSummary: boolean;
+        showDonationBreakdown: boolean;
+        showBeneficiaries: boolean;
+        showCampaigns: boolean;
+        showUsageSummary: boolean;
+        customSections: import("@prisma/client/runtime/library").JsonValue | null;
+    }>;
     updateTemplate(id: string, body: {
         name?: string;
         headerText?: string;
@@ -56,7 +179,26 @@ export declare class DonorReportsController {
         showCampaigns?: boolean;
         showUsageSummary?: boolean;
         isDefault?: boolean;
-    }): Promise<any>;
+    }): Promise<{
+        createdBy: {
+            name: string;
+        };
+    } & {
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        createdById: string;
+        isDefault: boolean;
+        headerText: string | null;
+        footerText: string | null;
+        showDonationSummary: boolean;
+        showDonationBreakdown: boolean;
+        showBeneficiaries: boolean;
+        showCampaigns: boolean;
+        showUsageSummary: boolean;
+        customSections: import("@prisma/client/runtime/library").JsonValue | null;
+    }>;
     deleteTemplate(id: string): Promise<{
         message: string;
     }>;

@@ -18,14 +18,42 @@ export declare class BirthdayWishController {
         success: boolean;
     }>;
     getSentLog(page?: string, limit?: string): Promise<{
-        logs: any;
-        total: any;
+        logs: {
+            id: string;
+            type: import(".prisma/client").$Enums.OutboundMessageType;
+            channel: import(".prisma/client").$Enums.MessageChannel;
+            donorId: string;
+            donorName: string;
+            donorCode: string;
+            beneficiaryIds: string[];
+            status: import(".prisma/client").$Enums.OutboundMessageStatus;
+            createdAt: Date;
+            createdBy: string;
+        }[];
+        total: number;
         page: number;
         totalPages: number;
     }>;
-    getTemplates(): Promise<any>;
+    getTemplates(): Promise<{
+        variables: string[];
+        id: string;
+        updatedAt: Date;
+        subject: string | null;
+        body: string;
+        channel: import(".prisma/client").$Enums.MessageChannel;
+        updatedById: string | null;
+        key: string;
+    }[]>;
     updateTemplate(id: string, body: {
         subject?: string;
         body: string;
-    }, user: any): Promise<any>;
+    }, user: any): Promise<{
+        id: string;
+        updatedAt: Date;
+        subject: string | null;
+        body: string;
+        channel: import(".prisma/client").$Enums.MessageChannel;
+        updatedById: string | null;
+        key: string;
+    }>;
 }

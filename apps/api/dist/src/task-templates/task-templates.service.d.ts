@@ -2,8 +2,62 @@ import { PrismaService } from '../prisma/prisma.service';
 export declare class TaskTemplatesService {
     private prisma;
     constructor(prisma: PrismaService);
-    findAll(includeInactive?: boolean): Promise<any>;
-    findOne(id: string): Promise<any>;
+    findAll(includeInactive?: boolean): Promise<({
+        items: {
+            id: string;
+            orderIndex: number;
+            itemText: string;
+        }[];
+        tasks: {
+            id: string;
+            createdAt: Date;
+            status: import(".prisma/client").$Enums.TaskStatus;
+        }[];
+    } & {
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        updatedAt: Date;
+        priority: string;
+        description: string | null;
+        createdById: string;
+        title: string;
+        category: string;
+        assignedToId: string | null;
+        recurrenceType: string;
+        assignedToRole: string | null;
+    })[]>;
+    findOne(id: string): Promise<{
+        items: {
+            id: string;
+            createdAt: Date;
+            templateId: string;
+            orderIndex: number;
+            itemText: string;
+        }[];
+        tasks: {
+            id: string;
+            createdAt: Date;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            assignedTo: {
+                name: string;
+                id: string;
+            };
+        }[];
+    } & {
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        updatedAt: Date;
+        priority: string;
+        description: string | null;
+        createdById: string;
+        title: string;
+        category: string;
+        assignedToId: string | null;
+        recurrenceType: string;
+        assignedToRole: string | null;
+    }>;
     create(data: {
         title: string;
         description?: string;
@@ -12,7 +66,20 @@ export declare class TaskTemplatesService {
         priority: string;
         assignedToRole?: string;
         assignedToId?: string;
-    }, createdById: string): Promise<any>;
+    }, createdById: string): Promise<{
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        updatedAt: Date;
+        priority: string;
+        description: string | null;
+        createdById: string;
+        title: string;
+        category: string;
+        assignedToId: string | null;
+        recurrenceType: string;
+        assignedToRole: string | null;
+    }>;
     update(id: string, data: {
         title?: string;
         description?: string;
@@ -22,14 +89,58 @@ export declare class TaskTemplatesService {
         assignedToRole?: string;
         assignedToId?: string;
         isActive?: boolean;
-    }): Promise<any>;
-    delete(id: string): Promise<any>;
-    addItem(templateId: string, itemText: string, orderIndex?: number): Promise<any>;
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        updatedAt: Date;
+        priority: string;
+        description: string | null;
+        createdById: string;
+        title: string;
+        category: string;
+        assignedToId: string | null;
+        recurrenceType: string;
+        assignedToRole: string | null;
+    }>;
+    delete(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        updatedAt: Date;
+        priority: string;
+        description: string | null;
+        createdById: string;
+        title: string;
+        category: string;
+        assignedToId: string | null;
+        recurrenceType: string;
+        assignedToRole: string | null;
+    }>;
+    addItem(templateId: string, itemText: string, orderIndex?: number): Promise<{
+        id: string;
+        createdAt: Date;
+        templateId: string;
+        orderIndex: number;
+        itemText: string;
+    }>;
     updateItem(itemId: string, data: {
         itemText?: string;
         orderIndex?: number;
-    }): Promise<any>;
-    deleteItem(itemId: string): Promise<any>;
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        templateId: string;
+        orderIndex: number;
+        itemText: string;
+    }>;
+    deleteItem(itemId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        templateId: string;
+        orderIndex: number;
+        itemText: string;
+    }>;
     generateTasks(templateId: string, options: {
         forDate?: string;
         targetUserIds?: string[];
@@ -49,19 +160,36 @@ export declare class TaskTemplatesService {
     generateTodayForAll(createdById: string): Promise<{
         generated: number;
         skipped: number;
-        templates: any;
+        templates: number;
     }>;
     markOverdueMissed(): Promise<{
-        marked: any;
+        marked: number;
     }>;
-    getPerformanceAll(days?: number): Promise<any[]>;
+    getPerformanceAll(days?: number): Promise<{
+        rank: number;
+        isTopPerformer: boolean;
+        userId: string;
+        name: string;
+        email: string;
+        role: import(".prisma/client").$Enums.Role;
+        total: number;
+        completed: number;
+        missed: number;
+        onTime: number;
+        completionRate: number;
+        efficiencyScore: number;
+        avgMinutesTaken: number;
+        score: number;
+        statusLevel: string;
+        insight: string;
+    }[]>;
     getAccountabilityScore(userId: string, days?: number): Promise<{
         userId: string;
         days: number;
-        assigned: any;
-        completed: any;
-        missed: any;
-        onTime: any;
+        assigned: number;
+        completed: number;
+        missed: number;
+        onTime: number;
         score: number;
         grade: string;
         avgMinutesTaken: number;

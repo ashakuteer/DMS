@@ -10,24 +10,85 @@ export declare class UsersController {
     private usersService;
     constructor(usersService: UsersService);
     private getClientInfo;
-    listStaff(): Promise<any>;
-    listAllStaff(): Promise<any>;
-    createStaff(data: Record<string, any>): Promise<any>;
+    listStaff(): Promise<{
+        email: string;
+        name: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+    }[]>;
+    listAllStaff(): Promise<{
+        email: string;
+        name: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+    }[]>;
+    createStaff(data: Record<string, any>): Promise<{
+        email: string;
+        name: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+    }>;
     findAll(page?: string, limit?: string): Promise<{
-        items: any;
-        total: any;
+        items: {
+            email: string;
+            name: string;
+            phone: string;
+            role: import(".prisma/client").$Enums.Role;
+            id: string;
+            createdAt: Date;
+            isActive: boolean;
+            updatedAt: Date;
+        }[];
+        total: number;
         page: number;
         limit: number;
         totalPages: number;
     }>;
-    findOne(id: string): Promise<any>;
-    updateRole(id: string, role: Role, user: UserContext, req: Request): Promise<any>;
+    findOne(id: string): Promise<{
+        email: string;
+        name: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+        createdAt: Date;
+        isActive: boolean;
+        updatedAt: Date;
+    }>;
+    updateRole(id: string, role: Role, user: UserContext, req: Request): Promise<{
+        email: string;
+        name: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+        isActive: boolean;
+    }>;
     updateUser(id: string, data: {
         name?: string;
         phone?: string;
         role?: Role;
-    }): Promise<any>;
-    toggleActive(id: string): Promise<any>;
+    }): Promise<{
+        email: string;
+        name: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+        isActive: boolean;
+        updatedAt: Date;
+    }>;
+    toggleActive(id: string): Promise<{
+        email: string;
+        name: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+        isActive: boolean;
+    }>;
     resetPassword(id: string, newPassword: string): Promise<{
         message: string;
     }>;
@@ -35,6 +96,12 @@ export declare class UsersController {
         success: boolean;
         message: string;
     }>;
-    deleteUser(id: string): Promise<any>;
+    deleteUser(id: string): Promise<{
+        email: string;
+        name: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+        isActive: boolean;
+    }>;
 }
 export {};

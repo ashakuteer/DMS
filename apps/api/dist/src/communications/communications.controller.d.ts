@@ -8,7 +8,26 @@ export declare class CommunicationsController {
         toE164: string;
         contentSid: string;
         variables?: Record<string, string>;
-    }, req: any): Promise<any>;
+    }, req: any): Promise<{
+        id: string;
+        createdAt: Date;
+        to: string;
+        donorId: string | null;
+        donationId: string | null;
+        channel: import(".prisma/client").$Enums.CommChannel;
+        status: import(".prisma/client").$Enums.CommStatus;
+        errorMessage: string | null;
+        sentAt: Date | null;
+        errorCode: string | null;
+        provider: import(".prisma/client").$Enums.CommProvider;
+        providerMessageId: string | null;
+        templateName: string | null;
+        templateKey: string | null;
+        templateVariables: import("@prisma/client/runtime/library").JsonValue | null;
+        createdByUserId: string | null;
+        deliveredAt: Date | null;
+        readAt: Date | null;
+    }>;
     sendByTemplateKey(body: {
         donorId: string;
         toE164: string;
@@ -21,8 +40,8 @@ export declare class CommunicationsController {
         messageId?: undefined;
     } | {
         success: boolean;
-        status: any;
-        messageId: any;
+        status: string;
+        messageId: string;
         templateKey: WhatsAppTemplateKey;
     }>;
     sendFreeform(body: {
@@ -32,8 +51,8 @@ export declare class CommunicationsController {
         type?: string;
     }, req: any): Promise<{
         success: boolean;
-        status: any;
-        messageId: any;
+        status: string;
+        messageId: string;
         error?: undefined;
     } | {
         success: boolean;

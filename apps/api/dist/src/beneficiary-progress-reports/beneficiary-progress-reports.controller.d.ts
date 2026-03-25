@@ -4,17 +4,75 @@ export declare class BeneficiaryProgressReportsController {
     private readonly service;
     constructor(service: BeneficiaryProgressReportsService);
     generate(body: any, req: any): Promise<{
-        id: any;
+        id: string;
         status: string;
     }>;
     findAll(page?: string, limit?: string, beneficiaryId?: string): Promise<{
-        items: any;
-        total: any;
+        items: ({
+            beneficiary: {
+                code: string;
+                fullName: string;
+                homeType: import(".prisma/client").$Enums.HomeType;
+            };
+            generatedBy: {
+                name: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import(".prisma/client").$Enums.ProgressReportStatus;
+            title: string;
+            beneficiaryId: string;
+            periodStart: Date;
+            periodEnd: Date;
+            reportData: import("@prisma/client/runtime/library").JsonValue | null;
+            sharedAt: Date | null;
+            sharedTo: string[];
+            generatedById: string;
+            includePhotos: boolean;
+            includeHealth: boolean;
+            includeEducation: boolean;
+            includeUpdates: boolean;
+        })[];
+        total: number;
         page: number;
         totalPages: number;
     }>;
-    searchBeneficiaries(q: string): Promise<any>;
-    findOne(id: string): Promise<any>;
+    searchBeneficiaries(q: string): Promise<{
+        code: string;
+        id: string;
+        fullName: string;
+        homeType: import(".prisma/client").$Enums.HomeType;
+    }[]>;
+    findOne(id: string): Promise<{
+        beneficiary: {
+            code: string;
+            fullName: string;
+            homeType: import(".prisma/client").$Enums.HomeType;
+            photoUrl: string;
+        };
+        generatedBy: {
+            name: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.ProgressReportStatus;
+        title: string;
+        beneficiaryId: string;
+        periodStart: Date;
+        periodEnd: Date;
+        reportData: import("@prisma/client/runtime/library").JsonValue | null;
+        sharedAt: Date | null;
+        sharedTo: string[];
+        generatedById: string;
+        includePhotos: boolean;
+        includeHealth: boolean;
+        includeEducation: boolean;
+        includeUpdates: boolean;
+    }>;
     downloadPdf(id: string, res: Response): Promise<void>;
     shareWithSponsors(id: string, req: any): Promise<{
         sharedCount: number;

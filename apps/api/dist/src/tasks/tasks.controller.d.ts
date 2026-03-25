@@ -8,17 +8,66 @@ export declare class TasksController {
     triggerGeneration(): Promise<{
         message: string;
     }>;
-    create(dto: CreateTaskDto): Promise<any>;
-    getToday(): Promise<{
-        dueToday: any;
-        overdue: any;
-        total: any;
+    create(dto: CreateTaskDto): Promise<{
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+            primaryPhone: string;
+        };
+        beneficiary: {
+            id: string;
+            fullName: string;
+        };
+        assignedUser: {
+            email: string;
+            name: string;
+            id: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import(".prisma/client").$Enums.TaskPriority;
+        donorId: string | null;
+        type: import(".prisma/client").$Enums.TaskType;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        description: string | null;
+        title: string;
+        dueDate: Date;
+        completedAt: Date | null;
+        beneficiaryId: string | null;
+        assignedTo: string | null;
     }>;
-    getStaffList(): Promise<any>;
-    findAll(status: string, type: string, category: string, dueDate: string, assignedTo: string, priority: string): Promise<any>;
+    getToday(): Promise<{
+        dueToday: any[];
+        overdue: any[];
+        total: number;
+    }>;
+    getStaffList(): Promise<{
+        name: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+    }[]>;
+    findAll(status: string, type: string, category: string, dueDate: string, assignedTo: string, priority: string): Promise<any[]>;
     findOne(id: string): Promise<any>;
     completeTask(id: string): Promise<any>;
     updateStatus(id: string, dto: UpdateTaskStatusDto): Promise<any>;
     updateTask(id: string, dto: UpdateTaskDto): Promise<any>;
-    deleteTask(id: string): Promise<any>;
+    deleteTask(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import(".prisma/client").$Enums.TaskPriority;
+        donorId: string | null;
+        type: import(".prisma/client").$Enums.TaskType;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        description: string | null;
+        title: string;
+        dueDate: Date;
+        completedAt: Date | null;
+        beneficiaryId: string | null;
+        assignedTo: string | null;
+    }>;
 }

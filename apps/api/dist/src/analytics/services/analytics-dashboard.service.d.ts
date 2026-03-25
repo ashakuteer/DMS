@@ -12,17 +12,32 @@ export declare class AnalyticsDashboardService {
         summary: any;
         charts: {
             monthlyDonations: {
-                monthlyDonations: any;
-                donationsByType: any;
-                donationsByHome: any;
-                sponsorshipsDue: any;
+                monthlyDonations: any[];
+                donationsByType: any[];
+                donationsByHome: any[];
+                sponsorshipsDue: any[];
             };
         };
         segments: {
-            topDonors: any;
+            topDonors: {
+                donorId: string;
+                donorCode: string;
+                donorName: string;
+                totalAmount: number;
+                donationCount: number;
+            }[];
         };
         risks: {
-            atRiskDonors: any;
+            atRiskDonors: {
+                donorId: string;
+                donorCode: string;
+                donorName: string;
+                lastDonationDate: Date;
+                lastDonationAmount: number;
+                daysSinceLastDonation: number;
+                hasEmail: boolean;
+                hasPhone: boolean;
+            }[];
         };
         generatedAt: Date;
     }>;

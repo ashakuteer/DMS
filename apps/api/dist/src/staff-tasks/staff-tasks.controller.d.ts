@@ -4,31 +4,504 @@ export declare class StaffTasksController {
     constructor(staffTasksService: StaffTasksService);
     private isAdminOrManager;
     findAll(status: string, priority: string, assignedToId: string, createdById: string, category: string, search: string, page: string, limit: string, isRecurring: string, taskType: string, excludePersonal: string, req: any): Promise<{
-        items: any;
-        total: any;
+        items: ({
+            createdBy: {
+                name: string;
+                id: string;
+            };
+            assignedTo: {
+                email: string;
+                name: string;
+                id: string;
+            };
+            linkedDonor: {
+                id: string;
+                donorCode: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            priority: import(".prisma/client").$Enums.TaskPriority;
+            templateId: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            description: string | null;
+            createdById: string;
+            deletedAt: Date | null;
+            title: string;
+            dueDate: Date | null;
+            completedAt: Date | null;
+            notes: string | null;
+            category: import(".prisma/client").$Enums.TaskCategory;
+            assignedToId: string;
+            linkedDonorId: string | null;
+            startedAt: Date | null;
+            taskType: import(".prisma/client").$Enums.StaffTaskType;
+            isRecurring: boolean;
+            isRecurringInstance: boolean;
+            recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
+            parentTaskId: string | null;
+            checklist: import("@prisma/client/runtime/library").JsonValue | null;
+            minutesTaken: number | null;
+            missedAt: Date | null;
+            delayDays: number | null;
+            reminderBefore: number | null;
+            escalationLevel: number | null;
+        })[];
+        total: number;
         page: number;
         limit: number;
         totalPages: number;
     }>;
     getStats(userId: string, req: any): Promise<{
-        pending: any;
-        inProgress: any;
-        completed: any;
-        overdue: any;
-        total: any;
+        pending: number;
+        inProgress: number;
+        completed: number;
+        overdue: number;
+        total: number;
     }>;
-    getStaffList(): Promise<any[]>;
-    getStaffPerformance(userId: string, year: string): Promise<any>;
+    getStaffList(): Promise<{
+        taskStats: {
+            assigned: number;
+            completed: number;
+            overdue: number;
+        };
+        latestPerformanceScore: number;
+        email: string;
+        name: string;
+        role: import(".prisma/client").$Enums.Role;
+        id: string;
+    }[]>;
+    getStaffPerformance(userId: string, year: string): Promise<{
+        id: string;
+        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        year: number;
+        month: number;
+        score: number;
+        tasksAssigned: number;
+        tasksCompleted: number;
+        tasksOnTime: number;
+        tasksOverdue: number;
+        followUpsDone: number;
+        donorResponses: number;
+    }[]>;
     getKanbanBoard(assignedToId: string, req: any): Promise<{
-        PENDING: any;
-        IN_PROGRESS: any;
-        COMPLETED: any;
-        OVERDUE: any;
+        PENDING: ({
+            createdBy: {
+                name: string;
+                id: string;
+            };
+            assignedTo: {
+                email: string;
+                name: string;
+                id: string;
+            };
+            linkedDonor: {
+                id: string;
+                donorCode: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            priority: import(".prisma/client").$Enums.TaskPriority;
+            templateId: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            description: string | null;
+            createdById: string;
+            deletedAt: Date | null;
+            title: string;
+            dueDate: Date | null;
+            completedAt: Date | null;
+            notes: string | null;
+            category: import(".prisma/client").$Enums.TaskCategory;
+            assignedToId: string;
+            linkedDonorId: string | null;
+            startedAt: Date | null;
+            taskType: import(".prisma/client").$Enums.StaffTaskType;
+            isRecurring: boolean;
+            isRecurringInstance: boolean;
+            recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
+            parentTaskId: string | null;
+            checklist: import("@prisma/client/runtime/library").JsonValue | null;
+            minutesTaken: number | null;
+            missedAt: Date | null;
+            delayDays: number | null;
+            reminderBefore: number | null;
+            escalationLevel: number | null;
+        })[];
+        IN_PROGRESS: ({
+            createdBy: {
+                name: string;
+                id: string;
+            };
+            assignedTo: {
+                email: string;
+                name: string;
+                id: string;
+            };
+            linkedDonor: {
+                id: string;
+                donorCode: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            priority: import(".prisma/client").$Enums.TaskPriority;
+            templateId: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            description: string | null;
+            createdById: string;
+            deletedAt: Date | null;
+            title: string;
+            dueDate: Date | null;
+            completedAt: Date | null;
+            notes: string | null;
+            category: import(".prisma/client").$Enums.TaskCategory;
+            assignedToId: string;
+            linkedDonorId: string | null;
+            startedAt: Date | null;
+            taskType: import(".prisma/client").$Enums.StaffTaskType;
+            isRecurring: boolean;
+            isRecurringInstance: boolean;
+            recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
+            parentTaskId: string | null;
+            checklist: import("@prisma/client/runtime/library").JsonValue | null;
+            minutesTaken: number | null;
+            missedAt: Date | null;
+            delayDays: number | null;
+            reminderBefore: number | null;
+            escalationLevel: number | null;
+        })[];
+        COMPLETED: ({
+            createdBy: {
+                name: string;
+                id: string;
+            };
+            assignedTo: {
+                email: string;
+                name: string;
+                id: string;
+            };
+            linkedDonor: {
+                id: string;
+                donorCode: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            priority: import(".prisma/client").$Enums.TaskPriority;
+            templateId: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            description: string | null;
+            createdById: string;
+            deletedAt: Date | null;
+            title: string;
+            dueDate: Date | null;
+            completedAt: Date | null;
+            notes: string | null;
+            category: import(".prisma/client").$Enums.TaskCategory;
+            assignedToId: string;
+            linkedDonorId: string | null;
+            startedAt: Date | null;
+            taskType: import(".prisma/client").$Enums.StaffTaskType;
+            isRecurring: boolean;
+            isRecurringInstance: boolean;
+            recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
+            parentTaskId: string | null;
+            checklist: import("@prisma/client/runtime/library").JsonValue | null;
+            minutesTaken: number | null;
+            missedAt: Date | null;
+            delayDays: number | null;
+            reminderBefore: number | null;
+            escalationLevel: number | null;
+        })[];
+        OVERDUE: ({
+            createdBy: {
+                name: string;
+                id: string;
+            };
+            assignedTo: {
+                email: string;
+                name: string;
+                id: string;
+            };
+            linkedDonor: {
+                id: string;
+                donorCode: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            priority: import(".prisma/client").$Enums.TaskPriority;
+            templateId: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
+            description: string | null;
+            createdById: string;
+            deletedAt: Date | null;
+            title: string;
+            dueDate: Date | null;
+            completedAt: Date | null;
+            notes: string | null;
+            category: import(".prisma/client").$Enums.TaskCategory;
+            assignedToId: string;
+            linkedDonorId: string | null;
+            startedAt: Date | null;
+            taskType: import(".prisma/client").$Enums.StaffTaskType;
+            isRecurring: boolean;
+            isRecurringInstance: boolean;
+            recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
+            parentTaskId: string | null;
+            checklist: import("@prisma/client/runtime/library").JsonValue | null;
+            minutesTaken: number | null;
+            missedAt: Date | null;
+            delayDays: number | null;
+            reminderBefore: number | null;
+            escalationLevel: number | null;
+        })[];
     }>;
-    findOne(id: string, req: any): Promise<any>;
-    create(body: any, req: any): Promise<any>;
-    update(id: string, body: any, req: any): Promise<any>;
-    updateStatus(id: string, body: any, req: any): Promise<any>;
-    remove(id: string): Promise<any>;
-    calculatePerformance(body: any): Promise<any>;
+    findOne(id: string, req: any): Promise<{
+        createdBy: {
+            name: string;
+            id: string;
+        };
+        assignedTo: {
+            email: string;
+            name: string;
+            id: string;
+        };
+        linkedDonor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import(".prisma/client").$Enums.TaskPriority;
+        templateId: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        description: string | null;
+        createdById: string;
+        deletedAt: Date | null;
+        title: string;
+        dueDate: Date | null;
+        completedAt: Date | null;
+        notes: string | null;
+        category: import(".prisma/client").$Enums.TaskCategory;
+        assignedToId: string;
+        linkedDonorId: string | null;
+        startedAt: Date | null;
+        taskType: import(".prisma/client").$Enums.StaffTaskType;
+        isRecurring: boolean;
+        isRecurringInstance: boolean;
+        recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
+        parentTaskId: string | null;
+        checklist: import("@prisma/client/runtime/library").JsonValue | null;
+        minutesTaken: number | null;
+        missedAt: Date | null;
+        delayDays: number | null;
+        reminderBefore: number | null;
+        escalationLevel: number | null;
+    }>;
+    create(body: any, req: any): Promise<{
+        createdBy: {
+            name: string;
+            id: string;
+        };
+        assignedTo: {
+            email: string;
+            name: string;
+            id: string;
+        };
+        linkedDonor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import(".prisma/client").$Enums.TaskPriority;
+        templateId: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        description: string | null;
+        createdById: string;
+        deletedAt: Date | null;
+        title: string;
+        dueDate: Date | null;
+        completedAt: Date | null;
+        notes: string | null;
+        category: import(".prisma/client").$Enums.TaskCategory;
+        assignedToId: string;
+        linkedDonorId: string | null;
+        startedAt: Date | null;
+        taskType: import(".prisma/client").$Enums.StaffTaskType;
+        isRecurring: boolean;
+        isRecurringInstance: boolean;
+        recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
+        parentTaskId: string | null;
+        checklist: import("@prisma/client/runtime/library").JsonValue | null;
+        minutesTaken: number | null;
+        missedAt: Date | null;
+        delayDays: number | null;
+        reminderBefore: number | null;
+        escalationLevel: number | null;
+    }>;
+    update(id: string, body: any, req: any): Promise<{
+        createdBy: {
+            name: string;
+            id: string;
+        };
+        assignedTo: {
+            email: string;
+            name: string;
+            id: string;
+        };
+        linkedDonor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import(".prisma/client").$Enums.TaskPriority;
+        templateId: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        description: string | null;
+        createdById: string;
+        deletedAt: Date | null;
+        title: string;
+        dueDate: Date | null;
+        completedAt: Date | null;
+        notes: string | null;
+        category: import(".prisma/client").$Enums.TaskCategory;
+        assignedToId: string;
+        linkedDonorId: string | null;
+        startedAt: Date | null;
+        taskType: import(".prisma/client").$Enums.StaffTaskType;
+        isRecurring: boolean;
+        isRecurringInstance: boolean;
+        recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
+        parentTaskId: string | null;
+        checklist: import("@prisma/client/runtime/library").JsonValue | null;
+        minutesTaken: number | null;
+        missedAt: Date | null;
+        delayDays: number | null;
+        reminderBefore: number | null;
+        escalationLevel: number | null;
+    }>;
+    updateStatus(id: string, body: any, req: any): Promise<{
+        createdBy: {
+            name: string;
+            id: string;
+        };
+        assignedTo: {
+            email: string;
+            name: string;
+            id: string;
+        };
+        linkedDonor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import(".prisma/client").$Enums.TaskPriority;
+        templateId: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        description: string | null;
+        createdById: string;
+        deletedAt: Date | null;
+        title: string;
+        dueDate: Date | null;
+        completedAt: Date | null;
+        notes: string | null;
+        category: import(".prisma/client").$Enums.TaskCategory;
+        assignedToId: string;
+        linkedDonorId: string | null;
+        startedAt: Date | null;
+        taskType: import(".prisma/client").$Enums.StaffTaskType;
+        isRecurring: boolean;
+        isRecurringInstance: boolean;
+        recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
+        parentTaskId: string | null;
+        checklist: import("@prisma/client/runtime/library").JsonValue | null;
+        minutesTaken: number | null;
+        missedAt: Date | null;
+        delayDays: number | null;
+        reminderBefore: number | null;
+        escalationLevel: number | null;
+    }>;
+    remove(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import(".prisma/client").$Enums.TaskPriority;
+        templateId: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
+        description: string | null;
+        createdById: string;
+        deletedAt: Date | null;
+        title: string;
+        dueDate: Date | null;
+        completedAt: Date | null;
+        notes: string | null;
+        category: import(".prisma/client").$Enums.TaskCategory;
+        assignedToId: string;
+        linkedDonorId: string | null;
+        startedAt: Date | null;
+        taskType: import(".prisma/client").$Enums.StaffTaskType;
+        isRecurring: boolean;
+        isRecurringInstance: boolean;
+        recurrenceType: import(".prisma/client").$Enums.RecurrenceType;
+        parentTaskId: string | null;
+        checklist: import("@prisma/client/runtime/library").JsonValue | null;
+        minutesTaken: number | null;
+        missedAt: Date | null;
+        delayDays: number | null;
+        reminderBefore: number | null;
+        escalationLevel: number | null;
+    }>;
+    calculatePerformance(body: any): Promise<{
+        id: string;
+        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
+        year: number;
+        month: number;
+        score: number;
+        tasksAssigned: number;
+        tasksCompleted: number;
+        tasksOnTime: number;
+        tasksOverdue: number;
+        followUpsDone: number;
+        donorResponses: number;
+    }>;
 }

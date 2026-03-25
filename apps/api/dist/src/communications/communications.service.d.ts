@@ -19,7 +19,26 @@ export declare class CommunicationsService {
     getConfiguredTemplates(): Record<WhatsAppTemplateKey, boolean>;
     getContentSidForKey(templateKey: WhatsAppTemplateKey): string | null;
     private mapTwilioStatusToCommStatus;
-    sendWhatsAppTemplate(dto: SendWhatsAppTemplateDto, userId?: string): Promise<any>;
+    sendWhatsAppTemplate(dto: SendWhatsAppTemplateDto, userId?: string): Promise<{
+        id: string;
+        createdAt: Date;
+        to: string;
+        donorId: string | null;
+        donationId: string | null;
+        channel: import(".prisma/client").$Enums.CommChannel;
+        status: import(".prisma/client").$Enums.CommStatus;
+        errorMessage: string | null;
+        sentAt: Date | null;
+        errorCode: string | null;
+        provider: import(".prisma/client").$Enums.CommProvider;
+        providerMessageId: string | null;
+        templateName: string | null;
+        templateKey: string | null;
+        templateVariables: import("@prisma/client/runtime/library").JsonValue | null;
+        createdByUserId: string | null;
+        deliveredAt: Date | null;
+        readAt: Date | null;
+    }>;
     sendByTemplateKey(templateKey: WhatsAppTemplateKey, donorId: string, toE164: string, variables?: Record<string, string>, userId?: string, donationId?: string): Promise<{
         success: boolean;
         status: string;
@@ -27,14 +46,14 @@ export declare class CommunicationsService {
         messageId?: undefined;
     } | {
         success: boolean;
-        status: any;
-        messageId: any;
+        status: string;
+        messageId: string;
         templateKey: WhatsAppTemplateKey;
     }>;
     sendFreeform(donorId: string, toE164: string, message: string, type?: string, userId?: string): Promise<{
         success: boolean;
-        status: any;
-        messageId: any;
+        status: string;
+        messageId: string;
         error?: undefined;
     } | {
         success: boolean;
@@ -42,6 +61,36 @@ export declare class CommunicationsService {
         status?: undefined;
         messageId?: undefined;
     }>;
-    getWhatsAppStatusForDonor(donorId: string, limit?: number): Promise<any>;
-    updateStatusFromWebhook(providerMessageId: string, twilioStatus: string, errorCode?: string, errorMessage?: string): Promise<any>;
+    getWhatsAppStatusForDonor(donorId: string, limit?: number): Promise<{
+        id: string;
+        createdAt: Date;
+        to: string;
+        status: import(".prisma/client").$Enums.CommStatus;
+        errorMessage: string;
+        sentAt: Date;
+        errorCode: string;
+        providerMessageId: string;
+        templateKey: string;
+        deliveredAt: Date;
+    }[]>;
+    updateStatusFromWebhook(providerMessageId: string, twilioStatus: string, errorCode?: string, errorMessage?: string): Promise<{
+        id: string;
+        createdAt: Date;
+        to: string;
+        donorId: string | null;
+        donationId: string | null;
+        channel: import(".prisma/client").$Enums.CommChannel;
+        status: import(".prisma/client").$Enums.CommStatus;
+        errorMessage: string | null;
+        sentAt: Date | null;
+        errorCode: string | null;
+        provider: import(".prisma/client").$Enums.CommProvider;
+        providerMessageId: string | null;
+        templateName: string | null;
+        templateKey: string | null;
+        templateVariables: import("@prisma/client/runtime/library").JsonValue | null;
+        createdByUserId: string | null;
+        deliveredAt: Date | null;
+        readAt: Date | null;
+    }>;
 }

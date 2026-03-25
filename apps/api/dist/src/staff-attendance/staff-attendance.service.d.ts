@@ -8,13 +8,32 @@ export declare class StaffAttendanceService {
         homeId?: string;
         month?: string;
         year?: string;
-    }): Promise<any>;
+    }): Promise<({
+        staff: {
+            home: {
+                name: string;
+                id: string;
+            };
+            name: string;
+            id: string;
+            designation: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        date: Date;
+        status: string;
+        notes: string | null;
+        staffId: string;
+        checkIn: Date | null;
+        checkOut: Date | null;
+    })[]>;
     getTodaySummary(homeId?: string): Promise<{
         PRESENT: number;
         ABSENT: number;
         HALF_DAY: number;
         LEAVE: number;
-        total: any;
+        total: number;
         date: string;
     }>;
     create(data: {
@@ -24,7 +43,22 @@ export declare class StaffAttendanceService {
         checkIn?: string;
         checkOut?: string;
         notes?: string;
-    }): Promise<any>;
+    }): Promise<{
+        staff: {
+            name: string;
+            id: string;
+            designation: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        date: Date;
+        status: string;
+        notes: string | null;
+        staffId: string;
+        checkIn: Date | null;
+        checkOut: Date | null;
+    }>;
     bulkCreate(date: string, entries: {
         staffId: string;
         status: string;
@@ -41,13 +75,36 @@ export declare class StaffAttendanceService {
         checkIn?: string | null;
         checkOut?: string | null;
         notes?: string | null;
-    }): Promise<any>;
-    delete(id: string): Promise<any>;
+    }): Promise<{
+        staff: {
+            name: string;
+            id: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        date: Date;
+        status: string;
+        notes: string | null;
+        staffId: string;
+        checkIn: Date | null;
+        checkOut: Date | null;
+    }>;
+    delete(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        date: Date;
+        status: string;
+        notes: string | null;
+        staffId: string;
+        checkIn: Date | null;
+        checkOut: Date | null;
+    }>;
     getMonthlySummary(staffId: string, year: number, month: number): Promise<{
         staffId: string;
         year: number;
         month: number;
-        totalRecords: any;
+        totalRecords: number;
         byStatus: Record<string, number>;
     }>;
     private resolveStatus;

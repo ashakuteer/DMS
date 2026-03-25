@@ -24,19 +24,72 @@ export declare class BeneficiaryProgressReportsService {
     private readonly logger;
     constructor(prisma: PrismaService, emailJobsService: EmailJobsService, orgProfileService: OrganizationProfileService);
     generate(dto: GenerateProgressReportDto, user: UserContext): Promise<{
-        id: any;
+        id: string;
         status: string;
     }>;
     private aggregateData;
     findAll(page?: number, limit?: number, filters?: {
         beneficiaryId?: string;
     }): Promise<{
-        items: any;
-        total: any;
+        items: ({
+            beneficiary: {
+                code: string;
+                fullName: string;
+                homeType: import(".prisma/client").$Enums.HomeType;
+            };
+            generatedBy: {
+                name: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import(".prisma/client").$Enums.ProgressReportStatus;
+            title: string;
+            beneficiaryId: string;
+            periodStart: Date;
+            periodEnd: Date;
+            reportData: import("@prisma/client/runtime/library").JsonValue | null;
+            sharedAt: Date | null;
+            sharedTo: string[];
+            generatedById: string;
+            includePhotos: boolean;
+            includeHealth: boolean;
+            includeEducation: boolean;
+            includeUpdates: boolean;
+        })[];
+        total: number;
         page: number;
         totalPages: number;
     }>;
-    findOne(id: string): Promise<any>;
+    findOne(id: string): Promise<{
+        beneficiary: {
+            code: string;
+            fullName: string;
+            homeType: import(".prisma/client").$Enums.HomeType;
+            photoUrl: string;
+        };
+        generatedBy: {
+            name: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.ProgressReportStatus;
+        title: string;
+        beneficiaryId: string;
+        periodStart: Date;
+        periodEnd: Date;
+        reportData: import("@prisma/client/runtime/library").JsonValue | null;
+        sharedAt: Date | null;
+        sharedTo: string[];
+        generatedById: string;
+        includePhotos: boolean;
+        includeHealth: boolean;
+        includeEducation: boolean;
+        includeUpdates: boolean;
+    }>;
     generatePdf(id: string): Promise<Buffer>;
     private addWatermark;
     private addSectionHeader;
@@ -52,7 +105,12 @@ export declare class BeneficiaryProgressReportsService {
     delete(id: string): Promise<{
         deleted: boolean;
     }>;
-    searchBeneficiaries(q: string): Promise<any>;
+    searchBeneficiaries(q: string): Promise<{
+        code: string;
+        id: string;
+        fullName: string;
+        homeType: import(".prisma/client").$Enums.HomeType;
+    }[]>;
     private buildShareEmail;
     private formatDateRange;
     private formatHomeType;
