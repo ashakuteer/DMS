@@ -1,0 +1,175 @@
+We want to redesign donor-related actions into one unified Donor Action Engine.
+
+FINAL DECISION:
+- Merge Birthday Wishes, Reminders, and Follow-ups into Daily Actions -> Task Inbox
+- Task Inbox becomes the main place for all donor-related action tasks
+- Donor Updates stays separate for content/news/update publishing
+- We will support both automatic and manual donor actions
+
+GOAL:
+When donor data is entered or donor behavior is detected, the system should automatically generate actionable tasks in Task Inbox.
+
+WE NEED THESE ACTION TYPES:
+
+1. Birthday
+- donor birthday task
+- auto WhatsApp if donor is eligible
+- also create manual task for call/message
+
+2. Anniversary
+- donor marriage anniversary task
+- auto WhatsApp if eligible
+- also create manual task
+
+3. Remembrance
+- death anniversary of donor’s loved one
+- donor may have multiple reminders
+- create sensitive remembrance/follow-up task
+
+4. Pledge Follow-up
+- when pledged donation due date comes and donation not received
+- create follow-up task
+- support both automatic and manual follow-up
+
+5. Smart Donation Reminder
+- for monthly / quarterly donors based on donation pattern
+- example: if donor usually donates by 6th and current cycle has no donation yet, create reminder task
+- this should be driven by donor history / AI insight logic
+
+6. Sponsorship Update
+- if donor sponsors a beneficiary, create at least one quarterly task to send update
+- task should be linked to donor + beneficiary relationship
+- retrieve this from donor sponsorship data automatically
+
+7. Custom Reminder
+- manual donor reminder dates if needed
+
+WHATSAPP / MANUAL LOGIC:
+- not every donor can receive automated WhatsApp unless they have initiated first
+- therefore every donor action should support:
+  a) auto_possible = true/false
+  b) manual_required = true/false
+- if auto is not possible, task should still appear for staff/founder to call or send manual WhatsApp
+
+TIME WINDOWS REQUIRED:
+Task Inbox must support and clearly show:
+- Today
+- Next 7 Days
+- Next 15 Days
+- Next 30 Days
+- Overdue
+
+This is important because donor communication often needs advance preparation.
+
+DONOR OWNER / STAFF OWNER:
+Each donor action task must show whose donor it is / who owns the relationship.
+Example: if donor belongs to Padma, task row should show that clearly.
+This is required so staff know who should contact that donor.
+
+COMMUNICATION HISTORY / LOG:
+We also need a donor communication log.
+For each donor action task, track:
+- how many times donor was reminded/contacted
+- last contact date
+- contact method (call / WhatsApp auto / WhatsApp manual / SMS / email)
+- who contacted
+- notes / outcome
+
+This should help us understand whether donor was already contacted and what happened.
+
+TASK INBOX CHANGES:
+In Daily Actions -> Task Inbox, support categories/tabs/filters like:
+- All
+- Birthdays
+- Anniversaries
+- Remembrance
+- Pledges
+- Smart Reminders
+- Sponsor Updates
+- Follow-ups
+- General
+
+Also support time-window filters:
+- Today
+- 7 Days
+- 15 Days
+- 30 Days
+- Overdue
+
+Each generated donor action task should show:
+- donor name
+- donor owner / assigned telecaller
+- action type
+- due date
+- time bucket
+- priority
+- auto/manual recommendation
+- assigned user
+- notes/instructions
+- contact count
+- last contact date
+- status
+
+DATA MODEL EXPECTATION:
+Please inspect current donor schema and related tables first.
+We likely need a stable donor-event structure for:
+- birthdays
+- anniversary dates
+- multiple remembrance dates
+- pledge schedules
+- sponsor update reminders
+- custom reminders
+- donor owner / assigned staff
+- donor action contact log
+
+Also inspect donation history so smart monthly/quarterly reminder logic can be created.
+
+IMPORTANT:
+- Do not break working staff task system
+- Do not break donor pages
+- First inspect existing schema and tell what already exists
+- Then propose one clean design
+- If DB changes are needed, provide one consolidated SQL patch only
+- Do not propose many small SQL changes one by one
+
+IMPLEMENTATION ORDER:
+
+STEP 1:
+Audit current donor-related pages and logic:
+- Daily Actions / Task Inbox
+- Birthday Wishes
+- Reminders
+- Follow-ups
+- Donor Updates
+- donor schema
+- pledge data
+- sponsorship data
+- donation history
+- donor owner / assigned telecaller logic if already present
+
+STEP 2:
+Design unified donor action generation logic and categories.
+
+STEP 3:
+Determine minimal DB changes needed to support:
+- multiple donor reminders/remembrance dates
+- pledge due reminders
+- smart donation pattern reminders
+- sponsor quarterly update reminders
+- auto/manual action flags
+- donor owner display
+- donor contact history/log
+
+STEP 4:
+Make Task Inbox the main destination for donor-related generated actions.
+
+STEP 5:
+Keep Donor Updates separate for message/content publishing only.
+
+STEP 6:
+Report back with:
+1. current reusable tables/fields
+2. minimal new fields/tables needed
+3. exact SQL if needed
+4. action-generation flow
+5. which old pages should remain vs be merged
