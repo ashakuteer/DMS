@@ -20,6 +20,15 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
         this.prisma = prisma;
         this.logger = new common_1.Logger(TaskSchedulerService_1.name);
     }
+    async onModuleInit() {
+        this.logger.log('Startup: running donor task generation...');
+        try {
+            await this.runDailyTaskGeneration();
+        }
+        catch (err) {
+            this.logger.error(`Startup task generation failed: ${err}`);
+        }
+    }
     async runDailyTaskGeneration() {
         this.logger.log('Daily donor task generation started');
         const results = await Promise.allSettled([
@@ -58,28 +67,55 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
         d.setDate(d.getDate() + offsetDays);
         return d;
     }
-    async generateBirthdayTasks() {
+    nextAnnualDate(month, day) {
         const today = new Date();
-        const month = today.getMonth() + 1;
-        const day = today.getDate();
-        const { todayStart, tomorrow } = this.todayBounds();
+        today.setHours(0, 0, 0, 0);
+        const year = today.getFullYear();
+        let dueDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+        if (dueDate < today) {
+            dueDate = new Date(year + 1, month - 1, day, 0, 0, 0, 0);
+        }
+        const daysUntil = Math.round((dueDate.getTime() - today.getTime()) / 86400000);
+        return { dueDate, daysUntil };
+    }
+    async generateBirthdayTasks() {
+        const LOOK_AHEAD_DAYS = 30;
         const donors = await this.prisma.donor.findMany({
-            where: { dobMonth: month, dobDay: day, isDeleted: false },
-            select: { id: true, firstName: true, lastName: true, prefWhatsapp: true, whatsappPhone: true },
+            where: { dobMonth: { not: null }, dobDay: { not: null }, isDeleted: false },
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                dobMonth: true,
+                dobDay: true,
+                prefWhatsapp: true,
+                whatsappPhone: true,
+            },
         });
         let created = 0;
         for (const donor of donors) {
+            if (!donor.dobMonth || !donor.dobDay)
+                continue;
+            const { dueDate, daysUntil } = this.nextAnnualDate(donor.dobMonth, donor.dobDay);
+            if (daysUntil > LOOK_AHEAD_DAYS)
+                continue;
+            const nextDay = new Date(dueDate.getTime() + 86400000);
             const existing = await this.prisma.task.findFirst({
-                where: { type: client_1.TaskType.BIRTHDAY, donorId: donor.id, dueDate: { gte: todayStart, lt: tomorrow } },
+                where: {
+                    type: client_1.TaskType.BIRTHDAY,
+                    donorId: donor.id,
+                    dueDate: { gte: dueDate, lt: nextDay },
+                },
             });
             if (!existing) {
+                const name = [donor.firstName, donor.lastName].filter(Boolean).join(' ');
                 await this.prisma.task.create({
                     data: {
-                        title: `Birthday: ${donor.firstName} ${donor.lastName || ''}`.trim(),
+                        title: `Birthday: ${name}`,
                         type: client_1.TaskType.BIRTHDAY,
-                        priority: client_1.TaskPriority.HIGH,
+                        priority: daysUntil <= 1 ? client_1.TaskPriority.HIGH : client_1.TaskPriority.MEDIUM,
                         status: client_1.TaskStatus.PENDING,
-                        dueDate: todayStart,
+                        dueDate,
                         donorId: donor.id,
                         autoWhatsAppPossible: this.autoWhatsApp(donor),
                         manualRequired: true,
@@ -91,25 +127,33 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
         return created;
     }
     async generateAnniversaryTasks() {
-        const today = new Date();
-        const month = today.getMonth() + 1;
-        const day = today.getDate();
-        const { todayStart, tomorrow } = this.todayBounds();
+        const LOOK_AHEAD_DAYS = 30;
         const occasions = await this.prisma.donorSpecialOccasion.findMany({
             where: {
                 type: client_1.OccasionType.ANNIVERSARY,
-                month,
-                day,
                 donor: { isDeleted: false },
             },
             include: {
-                donor: { select: { id: true, firstName: true, lastName: true, prefWhatsapp: true, whatsappPhone: true } },
+                donor: {
+                    select: { id: true, firstName: true, lastName: true, prefWhatsapp: true, whatsappPhone: true },
+                },
             },
         });
         let created = 0;
         for (const occ of occasions) {
+            if (!occ.month || !occ.day)
+                continue;
+            const { dueDate, daysUntil } = this.nextAnnualDate(occ.month, occ.day);
+            if (daysUntil > LOOK_AHEAD_DAYS)
+                continue;
+            const nextDay = new Date(dueDate.getTime() + 86400000);
             const existing = await this.prisma.task.findFirst({
-                where: { type: client_1.TaskType.ANNIVERSARY, donorId: occ.donorId, dueDate: { gte: todayStart, lt: tomorrow } },
+                where: {
+                    type: client_1.TaskType.ANNIVERSARY,
+                    donorId: occ.donorId,
+                    sourceOccasionId: occ.id,
+                    dueDate: { gte: dueDate, lt: nextDay },
+                },
             });
             if (!existing) {
                 const name = [occ.donor.firstName, occ.donor.lastName].filter(Boolean).join(' ');
@@ -117,9 +161,9 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
                     data: {
                         title: `Anniversary: ${name}${occ.relatedPersonName ? ` & ${occ.relatedPersonName}` : ''}`,
                         type: client_1.TaskType.ANNIVERSARY,
-                        priority: client_1.TaskPriority.HIGH,
+                        priority: daysUntil <= 1 ? client_1.TaskPriority.HIGH : client_1.TaskPriority.MEDIUM,
                         status: client_1.TaskStatus.PENDING,
-                        dueDate: todayStart,
+                        dueDate,
                         donorId: occ.donorId,
                         sourceOccasionId: occ.id,
                         autoWhatsAppPossible: this.autoWhatsApp(occ.donor),
@@ -132,79 +176,46 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
         return created;
     }
     async generateRemembranceTasks() {
-        const today = new Date();
-        const month = today.getMonth() + 1;
-        const day = today.getDate();
-        const { todayStart, tomorrow } = this.todayBounds();
-        const sevenDaysLater = new Date(today);
-        sevenDaysLater.setDate(sevenDaysLater.getDate() + 7);
-        const advMonth = sevenDaysLater.getMonth() + 1;
-        const advDay = sevenDaysLater.getDate();
-        const [todayOccasions, advanceOccasions] = await Promise.all([
-            this.prisma.donorSpecialOccasion.findMany({
-                where: {
-                    type: client_1.OccasionType.DEATH_ANNIVERSARY,
-                    month,
-                    day,
-                    donor: { isDeleted: false },
+        const LOOK_AHEAD_DAYS = 30;
+        const occasions = await this.prisma.donorSpecialOccasion.findMany({
+            where: {
+                type: client_1.OccasionType.DEATH_ANNIVERSARY,
+                donor: { isDeleted: false },
+            },
+            include: {
+                donor: {
+                    select: { id: true, firstName: true, lastName: true, prefWhatsapp: true, whatsappPhone: true },
                 },
-                include: {
-                    donor: { select: { id: true, firstName: true, lastName: true, prefWhatsapp: true, whatsappPhone: true } },
-                },
-            }),
-            this.prisma.donorSpecialOccasion.findMany({
-                where: {
-                    type: client_1.OccasionType.DEATH_ANNIVERSARY,
-                    month: advMonth,
-                    day: advDay,
-                    donor: { isDeleted: false },
-                },
-                include: {
-                    donor: { select: { id: true, firstName: true, lastName: true, prefWhatsapp: true, whatsappPhone: true } },
-                },
-            }),
-        ]);
+            },
+        });
         let created = 0;
-        for (const occ of todayOccasions) {
-            const existing = await this.prisma.task.findFirst({
-                where: { type: client_1.TaskType.REMEMBRANCE, donorId: occ.donorId, dueDate: { gte: todayStart, lt: tomorrow } },
-            });
-            if (!existing) {
-                const name = [occ.donor.firstName, occ.donor.lastName].filter(Boolean).join(' ');
-                await this.prisma.task.create({
-                    data: {
-                        title: `Remembrance: ${occ.relatedPersonName || 'Loved One'} (${name})`,
-                        type: client_1.TaskType.REMEMBRANCE,
-                        priority: client_1.TaskPriority.HIGH,
-                        status: client_1.TaskStatus.PENDING,
-                        dueDate: todayStart,
-                        donorId: occ.donorId,
-                        sourceOccasionId: occ.id,
-                        autoWhatsAppPossible: false,
-                        manualRequired: true,
-                    },
-                });
-                created++;
-            }
-        }
-        const advanceDue = this.futureDueDate(7);
-        for (const occ of advanceOccasions) {
+        for (const occ of occasions) {
+            if (!occ.month || !occ.day)
+                continue;
+            const { dueDate, daysUntil } = this.nextAnnualDate(occ.month, occ.day);
+            if (daysUntil > LOOK_AHEAD_DAYS)
+                continue;
+            const nextDay = new Date(dueDate.getTime() + 86400000);
             const existing = await this.prisma.task.findFirst({
                 where: {
                     type: client_1.TaskType.REMEMBRANCE,
                     donorId: occ.donorId,
-                    dueDate: { gte: advanceDue, lt: new Date(advanceDue.getTime() + 86400000) },
+                    sourceOccasionId: occ.id,
+                    dueDate: { gte: dueDate, lt: nextDay },
                 },
             });
             if (!existing) {
                 const name = [occ.donor.firstName, occ.donor.lastName].filter(Boolean).join(' ');
+                const titleSuffix = daysUntil === 0
+                    ? ''
+                    : ` (in ${daysUntil} day${daysUntil === 1 ? '' : 's'})`;
                 await this.prisma.task.create({
                     data: {
-                        title: `Remembrance in 7 days: ${occ.relatedPersonName || 'Loved One'} (${name})`,
+                        title: `Remembrance${titleSuffix}: ${occ.relatedPersonName || 'Loved One'} (${name})`,
                         type: client_1.TaskType.REMEMBRANCE,
-                        priority: client_1.TaskPriority.MEDIUM,
+                        priority: daysUntil <= 3 ? client_1.TaskPriority.HIGH : client_1.TaskPriority.MEDIUM,
                         status: client_1.TaskStatus.PENDING,
-                        dueDate: advanceDue,
+                        dueDate,
                         donorId: occ.donorId,
                         sourceOccasionId: occ.id,
                         autoWhatsAppPossible: false,
