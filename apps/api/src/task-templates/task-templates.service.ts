@@ -58,20 +58,30 @@ export class TaskTemplatesService {
     title: string;
     description?: string;
     recurrenceType: string;
+    recurrenceRule?: any;
     category: string;
     priority: string;
     assignedToRole?: string;
     assignedToId?: string;
+    estimatedMinutes?: number;
+    instructions?: string;
+    startDate?: string;
+    reminderBefore?: number;
   }, createdById: string) {
     return this.prisma.taskTemplate.create({
       data: {
         title: data.title,
         description: data.description ?? null,
         recurrenceType: data.recurrenceType || 'DAILY',
+        recurrenceRule: data.recurrenceRule ?? null,
         category: data.category || 'GENERAL',
         priority: data.priority || 'MEDIUM',
         assignedToRole: data.assignedToRole ?? null,
         assignedToId: data.assignedToId ?? null,
+        estimatedMinutes: data.estimatedMinutes ?? null,
+        instructions: data.instructions ?? null,
+        startDate: data.startDate ? new Date(data.startDate) : null,
+        reminderBefore: data.reminderBefore ?? null,
         createdById,
       },
     });
@@ -81,14 +91,23 @@ export class TaskTemplatesService {
     title?: string;
     description?: string;
     recurrenceType?: string;
+    recurrenceRule?: any;
     category?: string;
     priority?: string;
     assignedToRole?: string;
     assignedToId?: string;
+    estimatedMinutes?: number | null;
+    instructions?: string | null;
+    startDate?: string | null;
+    nextDueDate?: string | null;
+    reminderBefore?: number | null;
     isActive?: boolean;
   }) {
     await this.findOne(id);
-    return this.prisma.taskTemplate.update({ where: { id }, data });
+    const updateData: any = { ...data };
+    if (data.startDate !== undefined) updateData.startDate = data.startDate ? new Date(data.startDate) : null;
+    if (data.nextDueDate !== undefined) updateData.nextDueDate = data.nextDueDate ? new Date(data.nextDueDate) : null;
+    return this.prisma.taskTemplate.update({ where: { id }, data: updateData });
   }
 
   async delete(id: string) {
@@ -185,6 +204,8 @@ export class TaskTemplatesService {
         data: {
           title: template.title,
           description: template.description ?? null,
+          instructions: (template as any).instructions ?? null,
+          estimatedMinutes: (template as any).estimatedMinutes ?? null,
           status: TaskStatus.PENDING,
           priority: template.priority as TaskPriority,
           category: template.category as any,
@@ -208,19 +229,84 @@ export class TaskTemplatesService {
 
   // ─── Auto-generate today's tasks for ALL active templates ────────────────
 
-  private shouldGenerateToday(recurrenceType: string, date: Date): boolean {
-    const day = date.getDay(); // 0=Sun, 1=Mon … 6=Sat
-    const d = date.getDate();
-    const m = date.getMonth(); // 0-indexed
-    switch (recurrenceType) {
+  private shouldGenerateToday(template: any, date: Date): boolean {
+    const rule = (template.recurrenceRule || {}) as any;
+    const day = date.getDay(); // 0=Sun … 6=Sat
+    const d   = date.getDate();
+    const m   = date.getMonth(); // 0-indexed
+
+    // CUSTOM_INTERVAL uses nextDueDate tracking
+    if (template.recurrenceType === 'CUSTOM_INTERVAL') {
+      if (!template.nextDueDate) return false;
+      const due = new Date(template.nextDueDate);
+      return date >= new Date(due.getFullYear(), due.getMonth(), due.getDate());
+    }
+
+    switch (template.recurrenceType) {
       case 'DAILY':       return true;
-      case 'WEEKLY':      return day === 1;               // Monday
-      case 'MONTHLY':     return d === 1;
+      case 'WEEKLY': {
+        const days = rule.daysOfWeek as string[] | undefined;
+        if (days && days.length > 0) {
+          const names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          return days.includes(names[day]);
+        }
+        return day === 1; // fallback Monday
+      }
+      case 'MONTHLY': {
+        if (rule.dayOfMonth) return d === rule.dayOfMonth;
+        return d === 1;
+      }
       case 'QUARTERLY':   return d === 1 && [0, 3, 6, 9].includes(m);
       case 'HALF_YEARLY': return d === 1 && [0, 6].includes(m);
-      case 'ANNUAL':      return d === 1 && m === 0;
+      case 'ANNUAL': {
+        if (rule.month && rule.dayOfMonth) return m === (rule.month - 1) && d === rule.dayOfMonth;
+        return d === 1 && m === 0;
+      }
       default:            return false;
     }
+  }
+
+  private computeNextDueDate(template: any, fromDate: Date): Date {
+    const rule = (template.recurrenceRule || {}) as any;
+    const next = new Date(fromDate);
+
+    switch (template.recurrenceType) {
+      case 'DAILY':
+        next.setDate(next.getDate() + 1);
+        break;
+      case 'CUSTOM_INTERVAL': {
+        const interval = rule.intervalDays ?? 7;
+        next.setDate(next.getDate() + interval);
+        break;
+      }
+      case 'WEEKLY': {
+        const days = (rule.daysOfWeek || ['Mon']) as string[];
+        const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+        const nums = days.map((d: string) => dayMap[d]).filter((n) => n !== undefined).sort((a, b) => a - b);
+        if (nums.length === 0) { next.setDate(next.getDate() + 7); break; }
+        const cur = next.getDay();
+        const nxt = nums.find((n) => n > cur);
+        next.setDate(next.getDate() + (nxt !== undefined ? nxt - cur : 7 - cur + nums[0]));
+        break;
+      }
+      case 'MONTHLY':
+        next.setMonth(next.getMonth() + 1, rule.dayOfMonth ?? 1);
+        break;
+      case 'QUARTERLY':
+        next.setMonth(next.getMonth() + 3, 1);
+        break;
+      case 'HALF_YEARLY':
+        next.setMonth(next.getMonth() + 6, 1);
+        break;
+      case 'ANNUAL': {
+        const mon = (rule.month ?? 1) - 1;
+        next.setFullYear(next.getFullYear() + 1, mon, rule.dayOfMonth ?? 1);
+        break;
+      }
+      default:
+        next.setDate(next.getDate() + 1);
+    }
+    return next;
   }
 
   async generateTodayForAll(createdById: string) {
@@ -238,7 +324,7 @@ export class TaskTemplatesService {
     let skipped = 0;
 
     for (const template of templates) {
-      if (!this.shouldGenerateToday(template.recurrenceType, today)) {
+      if (!this.shouldGenerateToday(template, today)) {
         skipped++;
         continue;
       }
@@ -261,6 +347,7 @@ export class TaskTemplatesService {
         userIds = users.map((u) => u.id);
       }
 
+      let thisTemplateGenerated = 0;
       for (const userId of userIds) {
         const existing = await this.prisma.staffTask.findFirst({
           where: {
@@ -280,6 +367,8 @@ export class TaskTemplatesService {
           data: {
             title: template.title,
             description: template.description ?? null,
+            instructions: (template as any).instructions ?? null,
+            estimatedMinutes: (template as any).estimatedMinutes ?? null,
             status: TaskStatus.PENDING,
             priority: template.priority as TaskPriority,
             category: template.category as any,
@@ -295,6 +384,16 @@ export class TaskTemplatesService {
           },
         });
         generated++;
+        thisTemplateGenerated++;
+      }
+
+      // Update nextDueDate on the template after generating
+      if (thisTemplateGenerated > 0) {
+        const nextDue = this.computeNextDueDate(template, today);
+        await this.prisma.taskTemplate.update({
+          where: { id: template.id },
+          data: { nextDueDate: nextDue },
+        });
       }
     }
 

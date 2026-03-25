@@ -1,0 +1,158 @@
+We want to improve the Staff & Tasks page in a practical, clean way for daily NGO office use.
+
+IMPORTANT:
+- Do not break current working task functionality
+- Do not create too many new pages
+- Keep Staff & Tasks as the main daily operations page
+- Use existing schema first and only add minimal DB changes if truly required
+- Founder must remain excluded from staff assignment and staff task scoring
+
+GOAL:
+Make Staff & Tasks more useful by adding:
+1. estimated duration
+2. actual duration
+3. instructions / notes before work
+4. completion notes after work
+5. next due date
+6. reminder before
+7. better grouping of active tasks
+
+CURRENT DECISION:
+We will keep these pages:
+- Staff & Tasks = main daily work page
+- Missed Tasks = exception/problem page
+- Staff Performance = score/review page
+
+WHAT TO BUILD:
+
+STEP 1: IMPROVE STAFF & TASKS PAGE STRUCTURE
+Keep one page, but organize it into sections:
+
+A) Recurring Task Templates
+Show for each template:
+- title
+- frequency
+- assigned person
+- next due date
+- estimated duration
+- reminder before
+- short instructions preview
+- generate / edit / delete
+
+B) Today’s Active Tasks
+Group active tasks into:
+- Overdue / Missed
+- Due Today
+- In Progress
+
+C) Upcoming Tasks
+Show future pending tasks separately
+
+Do not keep one long flat list without grouping.
+
+STEP 2: DURATION FIELDS
+We need two duration fields:
+
+A) Estimated Duration
+Used when creating/editing task or template
+
+B) Actual Duration
+Entered when task is completed
+
+Please store duration in minutes internally if practical, but show nicely in UI:
+- 15 min
+- 30 min
+- 1 hr
+- 2 hr
+- 1 day
+
+In the form, support practical entry using:
+- duration value
+- duration unit (minutes / hours / days)
+
+STEP 3: NOTES
+We need two different note fields:
+
+A) Instructions
+Before work is done
+Examples:
+- what to do
+- app/account details
+- approval required
+- reference steps
+
+B) Completion Notes
+After work is completed
+Examples:
+- amount paid
+- payment mode
+- issue found
+- work completed summary
+
+STEP 4: DATE / REMINDER / DUE LOGIC
+For recurring templates and useful office reminders, support:
+- start date
+- next due date
+- reminder before due date
+- better recurrence settings already discussed earlier
+
+This is especially important for:
+- internet bills
+- phone recharge
+- Tata Sky recharge
+- subscriptions
+- monthly and quarterly office work
+
+STEP 5: ACTIVE TASK TABLE IMPROVEMENT
+Improve the active task table to show useful columns like:
+- Task
+- Assigned To
+- Status
+- Priority
+- Due Date
+- Est. Time
+- Actual Time
+- Note preview
+- Actions
+
+Do not show full long notes directly in table.
+Show short preview and open full details in a modal/view panel.
+
+STEP 6: ASSIGNMENT RULE
+Recurring tasks should normally be assigned to one responsible person, not all staff, unless explicitly selected.
+This is important for accountability and scoring.
+
+STEP 7: FOUNDER RULE
+Do not break this:
+- Founder personal tasks stay only in My Personal Tasks
+- Founder should not appear in staff assignment dropdown
+- Founder should not be included in staff scoring
+
+STEP 8: SCHEMA / DB APPROACH
+Please first inspect current schema and existing fields.
+If new DB fields are required, provide one clean consolidated SQL patch only.
+Do not propose many small SQL changes one by one.
+
+Likely fields to confirm/use:
+- estimated_minutes
+- actual_minutes_taken
+- instructions
+- completion_notes
+- start_date
+- next_due_date
+- reminder_before
+
+STEP 9: COMPLETION FLOW
+When staff marks a task complete, open a small completion modal asking for:
+- actual time taken
+- completion notes
+
+Then save task as completed.
+
+STEP 10: REPORT BACK
+Please tell me:
+1. what fields already exist
+2. what fields need to be added
+3. exact SQL if needed
+4. which files you changed
+5. what the new Staff & Tasks page flow will look like

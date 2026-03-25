@@ -127,6 +127,14 @@ export default function TaskDetailDialog({
             </div>
           )}
 
+          {/* Instructions */}
+          {task.instructions && (
+            <div className="rounded-md border border-blue-100 bg-blue-50/60 p-3">
+              <p className="text-xs font-semibold text-blue-700 mb-1 uppercase tracking-wide">Instructions</p>
+              <p className="text-sm text-blue-900 whitespace-pre-wrap">{task.instructions}</p>
+            </div>
+          )}
+
           {/* Metadata grid */}
           <div className="grid grid-cols-1 gap-3 border-t pt-3">
             <Field icon={User} label="Assigned To" value={task.assignedTo?.name || task.assignedToId} />
@@ -140,16 +148,28 @@ export default function TaskDetailDialog({
             />
             <Field icon={Clock} label="Started" value={fmt(task.startedAt)} />
             <Field icon={CheckCircle2} label="Completed" value={fmt(task.completedAt)} />
-            {task.minutesTaken && (
+            {/* Estimated vs. actual time */}
+            {(task.estimatedMinutes || task.minutesTaken) && (
               <div className="flex items-start gap-3">
                 <Timer className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                 <div>
-                  <p className="text-xs text-muted-foreground">Time Taken</p>
-                  <p className="text-sm font-medium">
-                    {task.minutesTaken >= 60
-                      ? `${Math.floor(task.minutesTaken / 60)}h ${task.minutesTaken % 60}m`
-                      : `${task.minutesTaken}m`}
-                  </p>
+                  <p className="text-xs text-muted-foreground">Time</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {task.estimatedMinutes && (
+                      <span className="text-sm text-muted-foreground">
+                        Est: {task.estimatedMinutes >= 60
+                          ? `${Math.floor(task.estimatedMinutes / 60)}h ${task.estimatedMinutes % 60}m`
+                          : `${task.estimatedMinutes}m`}
+                      </span>
+                    )}
+                    {task.minutesTaken && (
+                      <span className={`text-sm font-medium ${task.estimatedMinutes && task.minutesTaken > task.estimatedMinutes ? "text-red-600" : "text-green-600"}`}>
+                        Actual: {task.minutesTaken >= 60
+                          ? `${Math.floor(task.minutesTaken / 60)}h ${task.minutesTaken % 60}m`
+                          : `${task.minutesTaken}m`}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
@@ -165,6 +185,19 @@ export default function TaskDetailDialog({
                 <div>
                   <p className="text-xs text-muted-foreground mb-1">Notes</p>
                   <p className="text-sm whitespace-pre-wrap">{task.notes}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Completion Notes */}
+          {task.completionNotes && (
+            <div className="border-t pt-3">
+              <div className="flex items-start gap-3">
+                <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Completion Notes</p>
+                  <p className="text-sm whitespace-pre-wrap">{task.completionNotes}</p>
                 </div>
               </div>
             </div>

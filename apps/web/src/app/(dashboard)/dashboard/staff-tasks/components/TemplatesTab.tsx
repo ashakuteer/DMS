@@ -48,7 +48,10 @@ interface Template {
   id: string;
   title: string;
   description: string | null;
+  instructions: string | null;
+  estimatedMinutes: number | null;
   recurrenceType: string;
+  recurrenceRule: any | null;
   category: string;
   priority: string;
   assignedToRole: string | null;
@@ -81,7 +84,8 @@ export default function TemplatesTab({ staffList }: Props) {
   const [editingItem, setEditingItem] = useState<{ templateId: string; itemId: string; text: string } | null>(null);
 
   const [form, setForm] = useState({
-    title: "", description: "", recurrenceType: "DAILY",
+    title: "", description: "", instructions: "", estimatedMinutes: "",
+    recurrenceType: "DAILY",
     category: "GENERAL", priority: "MEDIUM",
     assignedToRole: "ALL_STAFF", assignedToId: "NONE",
   });
@@ -106,7 +110,7 @@ export default function TemplatesTab({ staffList }: Props) {
   useEffect(() => { loadTemplates(); }, [loadTemplates]);
 
   const resetForm = () => setForm({
-    title: "", description: "", recurrenceType: "DAILY",
+    title: "", description: "", instructions: "", estimatedMinutes: "", recurrenceType: "DAILY",
     category: "GENERAL", priority: "MEDIUM", assignedToRole: "ALL_STAFF", assignedToId: "NONE",
   });
 
@@ -114,6 +118,8 @@ export default function TemplatesTab({ staffList }: Props) {
     setEditId(t.id);
     setForm({
       title: t.title, description: t.description || "",
+      instructions: t.instructions || "",
+      estimatedMinutes: t.estimatedMinutes ? String(t.estimatedMinutes) : "",
       recurrenceType: t.recurrenceType, category: t.category, priority: t.priority,
       assignedToRole: t.assignedToRole || "ALL_STAFF", assignedToId: t.assignedToId || "NONE",
     });
@@ -126,6 +132,8 @@ export default function TemplatesTab({ staffList }: Props) {
     try {
       const payload = {
         title: form.title, description: form.description || undefined,
+        instructions: form.instructions || undefined,
+        estimatedMinutes: form.estimatedMinutes ? Number(form.estimatedMinutes) : undefined,
         recurrenceType: form.recurrenceType, category: form.category, priority: form.priority,
         assignedToRole: (form.assignedToRole && form.assignedToRole !== "ALL_STAFF") ? form.assignedToRole : undefined,
         assignedToId: (form.assignedToId && form.assignedToId !== "NONE") ? form.assignedToId : undefined,
@@ -243,7 +251,15 @@ export default function TemplatesTab({ staffList }: Props) {
               </div>
               <div className="space-y-1.5 sm:col-span-2">
                 <Label>Description <span className="text-muted-foreground font-normal">(optional)</span></Label>
-                <Textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Task instructions or details..." className="h-20" data-testid="input-template-desc" />
+                <Textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Brief overview of the task..." className="h-16" data-testid="input-template-desc" />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label>Instructions <span className="text-muted-foreground font-normal">(optional — shown to assignees)</span></Label>
+                <Textarea value={form.instructions} onChange={(e) => setForm((p) => ({ ...p, instructions: e.target.value }))} placeholder="Step-by-step instructions..." className="h-20" data-testid="input-template-instructions" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Estimated Time <span className="text-muted-foreground font-normal">(minutes, optional)</span></Label>
+                <Input type="number" min="1" placeholder="e.g. 30" value={form.estimatedMinutes} onChange={(e) => setForm((p) => ({ ...p, estimatedMinutes: e.target.value }))} data-testid="input-template-estimated" />
               </div>
               <div className="space-y-1.5">
                 <Label>Frequency *</Label>
@@ -326,7 +342,16 @@ export default function TemplatesTab({ staffList }: Props) {
                         <Badge variant="outline" className="text-xs">{t.priority}</Badge>
                       </div>
                       {t.description && <p className="text-sm text-muted-foreground">{t.description}</p>}
+                      {t.instructions && (
+                        <div className="rounded-md border border-blue-100 bg-blue-50/60 px-3 py-1.5 text-xs text-blue-900 whitespace-pre-wrap line-clamp-2">
+                          <span className="font-semibold text-blue-700 mr-1">Instructions:</span>{t.instructions}
+                        </div>
+                      )}
                       <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                        {t.estimatedMinutes && (
+                          <span>Est: {t.estimatedMinutes >= 60 ? `${Math.floor(t.estimatedMinutes / 60)}h ${t.estimatedMinutes % 60}m` : `${t.estimatedMinutes}m`}</span>
+                        )}
+                        {t.estimatedMinutes && <span>·</span>}
                         <span>Assign to: {t.assignedToRole || (t.assignedToId ? "Specific staff" : "All staff")}</span>
                         <span>·</span>
                         <span>{t.tasks.length} tasks generated</span>

@@ -52,6 +52,9 @@ export declare class StaffTasksService {
             assignedToId: string;
             linkedDonorId: string | null;
             startedAt: Date | null;
+            instructions: string | null;
+            completionNotes: string | null;
+            estimatedMinutes: number | null;
             taskType: import(".prisma/client").$Enums.StaffTaskType;
             isRecurring: boolean;
             isRecurringInstance: boolean;
@@ -103,6 +106,9 @@ export declare class StaffTasksService {
         assignedToId: string;
         linkedDonorId: string | null;
         startedAt: Date | null;
+        instructions: string | null;
+        completionNotes: string | null;
+        estimatedMinutes: number | null;
         taskType: import(".prisma/client").$Enums.StaffTaskType;
         isRecurring: boolean;
         isRecurringInstance: boolean;
@@ -126,6 +132,8 @@ export declare class StaffTasksService {
         linkedDonorId?: string;
         dueDate?: string;
         notes?: string;
+        instructions?: string;
+        estimatedMinutes?: number;
     }, userId: string): Promise<{
         createdBy: {
             name: string;
@@ -160,6 +168,9 @@ export declare class StaffTasksService {
         assignedToId: string;
         linkedDonorId: string | null;
         startedAt: Date | null;
+        instructions: string | null;
+        completionNotes: string | null;
+        estimatedMinutes: number | null;
         taskType: import(".prisma/client").$Enums.StaffTaskType;
         isRecurring: boolean;
         isRecurringInstance: boolean;
@@ -182,6 +193,9 @@ export declare class StaffTasksService {
         linkedDonorId?: string;
         dueDate?: string;
         notes?: string;
+        instructions?: string;
+        completionNotes?: string;
+        estimatedMinutes?: number | null;
     }, userId: string): Promise<{
         createdBy: {
             name: string;
@@ -216,6 +230,9 @@ export declare class StaffTasksService {
         assignedToId: string;
         linkedDonorId: string | null;
         startedAt: Date | null;
+        instructions: string | null;
+        completionNotes: string | null;
+        estimatedMinutes: number | null;
         taskType: import(".prisma/client").$Enums.StaffTaskType;
         isRecurring: boolean;
         isRecurringInstance: boolean;
@@ -246,6 +263,9 @@ export declare class StaffTasksService {
         assignedToId: string;
         linkedDonorId: string | null;
         startedAt: Date | null;
+        instructions: string | null;
+        completionNotes: string | null;
+        estimatedMinutes: number | null;
         taskType: import(".prisma/client").$Enums.StaffTaskType;
         isRecurring: boolean;
         isRecurringInstance: boolean;
@@ -342,6 +362,9 @@ export declare class StaffTasksService {
             assignedToId: string;
             linkedDonorId: string | null;
             startedAt: Date | null;
+            instructions: string | null;
+            completionNotes: string | null;
+            estimatedMinutes: number | null;
             taskType: import(".prisma/client").$Enums.StaffTaskType;
             isRecurring: boolean;
             isRecurringInstance: boolean;
@@ -388,6 +411,9 @@ export declare class StaffTasksService {
             assignedToId: string;
             linkedDonorId: string | null;
             startedAt: Date | null;
+            instructions: string | null;
+            completionNotes: string | null;
+            estimatedMinutes: number | null;
             taskType: import(".prisma/client").$Enums.StaffTaskType;
             isRecurring: boolean;
             isRecurringInstance: boolean;
@@ -434,6 +460,9 @@ export declare class StaffTasksService {
             assignedToId: string;
             linkedDonorId: string | null;
             startedAt: Date | null;
+            instructions: string | null;
+            completionNotes: string | null;
+            estimatedMinutes: number | null;
             taskType: import(".prisma/client").$Enums.StaffTaskType;
             isRecurring: boolean;
             isRecurringInstance: boolean;
@@ -480,6 +509,9 @@ export declare class StaffTasksService {
             assignedToId: string;
             linkedDonorId: string | null;
             startedAt: Date | null;
+            instructions: string | null;
+            completionNotes: string | null;
+            estimatedMinutes: number | null;
             taskType: import(".prisma/client").$Enums.StaffTaskType;
             isRecurring: boolean;
             isRecurringInstance: boolean;
@@ -498,6 +530,7 @@ export declare class StaffTasksService {
         startedAt?: string;
         completedAt?: string;
         notes?: string;
+        completionNotes?: string;
     }): Promise<{
         createdBy: {
             name: string;
@@ -532,6 +565,9 @@ export declare class StaffTasksService {
         assignedToId: string;
         linkedDonorId: string | null;
         startedAt: Date | null;
+        instructions: string | null;
+        completionNotes: string | null;
+        estimatedMinutes: number | null;
         taskType: import(".prisma/client").$Enums.StaffTaskType;
         isRecurring: boolean;
         isRecurringInstance: boolean;

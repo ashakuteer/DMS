@@ -19,12 +19,18 @@ export declare class TaskTemplatesService {
         isActive: boolean;
         updatedAt: Date;
         priority: string;
+        startDate: Date | null;
         description: string | null;
         createdById: string;
         title: string;
         category: string;
+        nextDueDate: Date | null;
         assignedToId: string | null;
+        instructions: string | null;
+        estimatedMinutes: number | null;
         recurrenceType: string;
+        reminderBefore: number | null;
+        recurrenceRule: import("@prisma/client/runtime/library").JsonValue | null;
         assignedToRole: string | null;
     })[]>;
     findOne(id: string): Promise<{
@@ -48,44 +54,67 @@ export declare class TaskTemplatesService {
         isActive: boolean;
         updatedAt: Date;
         priority: string;
+        startDate: Date | null;
         description: string | null;
         createdById: string;
         title: string;
         category: string;
+        nextDueDate: Date | null;
         assignedToId: string | null;
+        instructions: string | null;
+        estimatedMinutes: number | null;
         recurrenceType: string;
+        reminderBefore: number | null;
+        recurrenceRule: import("@prisma/client/runtime/library").JsonValue | null;
         assignedToRole: string | null;
     }>;
     create(data: {
         title: string;
         description?: string;
         recurrenceType: string;
+        recurrenceRule?: any;
         category: string;
         priority: string;
         assignedToRole?: string;
         assignedToId?: string;
+        estimatedMinutes?: number;
+        instructions?: string;
+        startDate?: string;
+        reminderBefore?: number;
     }, createdById: string): Promise<{
         id: string;
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
         priority: string;
+        startDate: Date | null;
         description: string | null;
         createdById: string;
         title: string;
         category: string;
+        nextDueDate: Date | null;
         assignedToId: string | null;
+        instructions: string | null;
+        estimatedMinutes: number | null;
         recurrenceType: string;
+        reminderBefore: number | null;
+        recurrenceRule: import("@prisma/client/runtime/library").JsonValue | null;
         assignedToRole: string | null;
     }>;
     update(id: string, data: {
         title?: string;
         description?: string;
         recurrenceType?: string;
+        recurrenceRule?: any;
         category?: string;
         priority?: string;
         assignedToRole?: string;
         assignedToId?: string;
+        estimatedMinutes?: number | null;
+        instructions?: string | null;
+        startDate?: string | null;
+        nextDueDate?: string | null;
+        reminderBefore?: number | null;
         isActive?: boolean;
     }): Promise<{
         id: string;
@@ -93,12 +122,18 @@ export declare class TaskTemplatesService {
         isActive: boolean;
         updatedAt: Date;
         priority: string;
+        startDate: Date | null;
         description: string | null;
         createdById: string;
         title: string;
         category: string;
+        nextDueDate: Date | null;
         assignedToId: string | null;
+        instructions: string | null;
+        estimatedMinutes: number | null;
         recurrenceType: string;
+        reminderBefore: number | null;
+        recurrenceRule: import("@prisma/client/runtime/library").JsonValue | null;
         assignedToRole: string | null;
     }>;
     delete(id: string): Promise<{
@@ -107,12 +142,18 @@ export declare class TaskTemplatesService {
         isActive: boolean;
         updatedAt: Date;
         priority: string;
+        startDate: Date | null;
         description: string | null;
         createdById: string;
         title: string;
         category: string;
+        nextDueDate: Date | null;
         assignedToId: string | null;
+        instructions: string | null;
+        estimatedMinutes: number | null;
         recurrenceType: string;
+        reminderBefore: number | null;
+        recurrenceRule: import("@prisma/client/runtime/library").JsonValue | null;
         assignedToRole: string | null;
     }>;
     addItem(templateId: string, itemText: string, orderIndex?: number): Promise<{
@@ -155,6 +196,7 @@ export declare class TaskTemplatesService {
         message?: undefined;
     }>;
     private shouldGenerateToday;
+    private computeNextDueDate;
     generateTodayForAll(createdById: string): Promise<{
         generated: number;
         skipped: number;

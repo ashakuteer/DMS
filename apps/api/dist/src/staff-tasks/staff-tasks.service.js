@@ -95,6 +95,8 @@ let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
             createdById: userId,
             linkedDonorId: data.linkedDonorId || null,
             notes: data.notes ?? null,
+            instructions: data.instructions ?? null,
+            estimatedMinutes: data.estimatedMinutes ?? null,
         };
         if (data.dueDate)
             createData.dueDate = new Date(data.dueDate);
@@ -128,6 +130,12 @@ let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
             updateData.dueDate = data.dueDate ? new Date(data.dueDate) : null;
         if (data.notes !== undefined)
             updateData.notes = data.notes;
+        if (data.instructions !== undefined)
+            updateData.instructions = data.instructions ?? null;
+        if (data.completionNotes !== undefined)
+            updateData.completionNotes = data.completionNotes ?? null;
+        if (data.estimatedMinutes !== undefined)
+            updateData.estimatedMinutes = data.estimatedMinutes ?? null;
         if (data.status !== undefined && data.status !== existing.status) {
             updateData.status = data.status;
             if (data.status === client_1.TaskStatus.IN_PROGRESS && !existing.startedAt) {
@@ -349,6 +357,8 @@ let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
         const updateData = { status: newStatus };
         if (extra?.notes !== undefined)
             updateData.notes = extra.notes;
+        if (extra?.completionNotes !== undefined)
+            updateData.completionNotes = extra.completionNotes ?? null;
         if (newStatus === client_1.TaskStatus.IN_PROGRESS && !existing.startedAt) {
             updateData.startedAt = extra?.startedAt ? new Date(extra.startedAt) : new Date();
         }

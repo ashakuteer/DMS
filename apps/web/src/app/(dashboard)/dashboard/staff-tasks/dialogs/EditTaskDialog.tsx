@@ -61,6 +61,8 @@ export default function EditTaskDialog({
     setForm({
       title: task.title || "",
       description: task.description || task.notes || "",
+      instructions: task.instructions || "",
+      estimatedMinutes: task.estimatedMinutes ? String(task.estimatedMinutes) : "",
       status: task.status || "PENDING",
       priority: task.priority || "MEDIUM",
       category: task.category || "GENERAL",
@@ -91,6 +93,8 @@ export default function EditTaskDialog({
       const payload: any = {
         title: form.title.trim(),
         description: form.description || undefined,
+        instructions: form.instructions || undefined,
+        estimatedMinutes: form.estimatedMinutes ? Number(form.estimatedMinutes) : undefined,
         status: form.status,
         priority: form.priority,
         category: form.category,
@@ -153,6 +157,18 @@ export default function EditTaskDialog({
             />
           </div>
 
+          <div className="space-y-1.5">
+            <Label htmlFor="et-instructions">Instructions <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Textarea
+              id="et-instructions"
+              value={form.instructions || ""}
+              onChange={(e) => set("instructions")(e.target.value)}
+              className="h-20 resize-none"
+              placeholder="Step-by-step instructions..."
+              data-testid="input-edit-instructions"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Status</Label>
@@ -208,6 +224,19 @@ export default function EditTaskDialog({
                 data-testid="input-edit-due"
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="et-est-time">Estimated Time <span className="text-muted-foreground font-normal">(minutes, optional)</span></Label>
+            <Input
+              id="et-est-time"
+              type="number"
+              min="1"
+              placeholder="e.g. 30"
+              value={form.estimatedMinutes || ""}
+              onChange={(e) => set("estimatedMinutes")(e.target.value)}
+              data-testid="input-edit-estimated-minutes"
+            />
           </div>
 
           {isAdminOrManager && staffList.length > 0 && (

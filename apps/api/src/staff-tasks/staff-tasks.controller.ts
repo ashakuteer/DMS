@@ -138,6 +138,8 @@ export class StaffTasksController {
         linkedDonorId: body.linkedDonorId,
         dueDate: body.dueDate,
         notes: body.notes,
+        instructions: body.instructions,
+        estimatedMinutes: body.estimatedMinutes,
       },
       req.user.id,
     );
@@ -169,6 +171,7 @@ export class StaffTasksController {
       startedAt: body.startedAt,
       completedAt: body.completedAt,
       notes: body.notes,
+      completionNotes: body.completionNotes,
     });
   }
 

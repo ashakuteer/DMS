@@ -5,6 +5,9 @@ export interface Task {
   id: string;
   title: string;
   description?: string | null;
+  instructions?: string | null;
+  completionNotes?: string | null;
+  estimatedMinutes?: number | null;
   status: string;
   priority: string;
   category: string;
@@ -55,10 +58,11 @@ export function useStaffTasks() {
     return res.ok;
   };
 
-  const updateStatus = async (taskId: string, status: string, notes?: string, minutesTaken?: number) => {
+  const updateStatus = async (taskId: string, status: string, notes?: string, minutesTaken?: number, completionNotes?: string) => {
     const body: Record<string, unknown> = { status };
     if (notes !== undefined) body.notes = notes;
     if (minutesTaken !== undefined) body.minutesTaken = minutesTaken;
+    if (completionNotes !== undefined) body.completionNotes = completionNotes;
     const res = await fetchWithAuth(`/api/staff-tasks/${taskId}/status`, {
       method: "PATCH",
       body: JSON.stringify(body),

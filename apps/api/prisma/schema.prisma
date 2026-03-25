@@ -1868,18 +1868,24 @@ enum StaffTaskType {
 }
 
 model TaskTemplate {
-  id              String         @id @default(uuid())
-  title           String
-  description     String?
-  recurrenceType  String         @default("DAILY")
-  category        String         @default("GENERAL")
-  priority        String         @default("MEDIUM")
-  assignedToRole  String?
-  assignedToId    String?
-  isActive        Boolean        @default(true)
-  createdById     String
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id               String         @id @default(uuid())
+  title            String
+  description      String?
+  recurrenceType   String         @default("DAILY")
+  recurrenceRule   Json?
+  category         String         @default("GENERAL")
+  priority         String         @default("MEDIUM")
+  assignedToRole   String?
+  assignedToId     String?
+  estimatedMinutes Int?
+  instructions     String?
+  startDate        DateTime?      @db.Date
+  nextDueDate      DateTime?      @db.Date
+  reminderBefore   Int?
+  isActive         Boolean        @default(true)
+  createdById      String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   tasks           StaffTask[]         @relation("TemplateTasks")
   items           TaskTemplateItem[]  @relation("TemplateItems")
@@ -1914,6 +1920,9 @@ model StaffTask {
   startedAt       DateTime?
   completedAt     DateTime?
   notes           String?
+  instructions    String?
+  completionNotes String?
+  estimatedMinutes Int?
   taskType             StaffTaskType  @default(STAFF)
   isRecurring          Boolean        @default(false)
   isRecurringInstance  Boolean        @default(false)

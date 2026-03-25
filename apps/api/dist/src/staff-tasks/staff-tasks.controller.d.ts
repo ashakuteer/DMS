@@ -38,6 +38,9 @@ export declare class StaffTasksController {
             assignedToId: string;
             linkedDonorId: string | null;
             startedAt: Date | null;
+            instructions: string | null;
+            completionNotes: string | null;
+            estimatedMinutes: number | null;
             taskType: import(".prisma/client").$Enums.StaffTaskType;
             isRecurring: boolean;
             isRecurringInstance: boolean;
@@ -124,6 +127,9 @@ export declare class StaffTasksController {
             assignedToId: string;
             linkedDonorId: string | null;
             startedAt: Date | null;
+            instructions: string | null;
+            completionNotes: string | null;
+            estimatedMinutes: number | null;
             taskType: import(".prisma/client").$Enums.StaffTaskType;
             isRecurring: boolean;
             isRecurringInstance: boolean;
@@ -170,6 +176,9 @@ export declare class StaffTasksController {
             assignedToId: string;
             linkedDonorId: string | null;
             startedAt: Date | null;
+            instructions: string | null;
+            completionNotes: string | null;
+            estimatedMinutes: number | null;
             taskType: import(".prisma/client").$Enums.StaffTaskType;
             isRecurring: boolean;
             isRecurringInstance: boolean;
@@ -216,6 +225,9 @@ export declare class StaffTasksController {
             assignedToId: string;
             linkedDonorId: string | null;
             startedAt: Date | null;
+            instructions: string | null;
+            completionNotes: string | null;
+            estimatedMinutes: number | null;
             taskType: import(".prisma/client").$Enums.StaffTaskType;
             isRecurring: boolean;
             isRecurringInstance: boolean;
@@ -262,6 +274,9 @@ export declare class StaffTasksController {
             assignedToId: string;
             linkedDonorId: string | null;
             startedAt: Date | null;
+            instructions: string | null;
+            completionNotes: string | null;
+            estimatedMinutes: number | null;
             taskType: import(".prisma/client").$Enums.StaffTaskType;
             isRecurring: boolean;
             isRecurringInstance: boolean;
@@ -309,6 +324,9 @@ export declare class StaffTasksController {
         assignedToId: string;
         linkedDonorId: string | null;
         startedAt: Date | null;
+        instructions: string | null;
+        completionNotes: string | null;
+        estimatedMinutes: number | null;
         taskType: import(".prisma/client").$Enums.StaffTaskType;
         isRecurring: boolean;
         isRecurringInstance: boolean;
@@ -355,6 +373,9 @@ export declare class StaffTasksController {
         assignedToId: string;
         linkedDonorId: string | null;
         startedAt: Date | null;
+        instructions: string | null;
+        completionNotes: string | null;
+        estimatedMinutes: number | null;
         taskType: import(".prisma/client").$Enums.StaffTaskType;
         isRecurring: boolean;
         isRecurringInstance: boolean;
@@ -401,6 +422,9 @@ export declare class StaffTasksController {
         assignedToId: string;
         linkedDonorId: string | null;
         startedAt: Date | null;
+        instructions: string | null;
+        completionNotes: string | null;
+        estimatedMinutes: number | null;
         taskType: import(".prisma/client").$Enums.StaffTaskType;
         isRecurring: boolean;
         isRecurringInstance: boolean;
@@ -447,6 +471,9 @@ export declare class StaffTasksController {
         assignedToId: string;
         linkedDonorId: string | null;
         startedAt: Date | null;
+        instructions: string | null;
+        completionNotes: string | null;
+        estimatedMinutes: number | null;
         taskType: import(".prisma/client").$Enums.StaffTaskType;
         isRecurring: boolean;
         isRecurringInstance: boolean;
@@ -477,6 +504,9 @@ export declare class StaffTasksController {
         assignedToId: string;
         linkedDonorId: string | null;
         startedAt: Date | null;
+        instructions: string | null;
+        completionNotes: string | null;
+        estimatedMinutes: number | null;
         taskType: import(".prisma/client").$Enums.StaffTaskType;
         isRecurring: boolean;
         isRecurringInstance: boolean;

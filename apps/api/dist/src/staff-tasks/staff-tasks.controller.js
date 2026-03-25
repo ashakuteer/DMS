@@ -95,6 +95,8 @@ let StaffTasksController = class StaffTasksController {
             linkedDonorId: body.linkedDonorId,
             dueDate: body.dueDate,
             notes: body.notes,
+            instructions: body.instructions,
+            estimatedMinutes: body.estimatedMinutes,
         }, req.user.id);
     }
     async update(id, body, req) {
@@ -118,6 +120,7 @@ let StaffTasksController = class StaffTasksController {
             startedAt: body.startedAt,
             completedAt: body.completedAt,
             notes: body.notes,
+            completionNotes: body.completionNotes,
         });
     }
     async remove(id) {

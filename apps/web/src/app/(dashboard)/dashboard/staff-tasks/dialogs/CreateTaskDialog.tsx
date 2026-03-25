@@ -36,6 +36,8 @@ const TASK_CATEGORIES = [
 const EMPTY = {
   title: "",
   description: "",
+  instructions: "",
+  estimatedMinutes: "",
   assignedToId: "",
   priority: "MEDIUM",
   category: "GENERAL",
@@ -88,6 +90,8 @@ export default function CreateTaskDialog({
       const payload: any = {
         title: form.title.trim(),
         description: form.description || undefined,
+        instructions: form.instructions || undefined,
+        estimatedMinutes: form.estimatedMinutes ? Number(form.estimatedMinutes) : undefined,
         category: form.category,
         priority: form.priority,
         dueDate: form.dueDate,
@@ -152,9 +156,21 @@ export default function CreateTaskDialog({
               id="ct-desc"
               value={form.description}
               onChange={(e) => set("description")(e.target.value)}
-              placeholder="Any instructions or context..."
+              placeholder="Brief overview of the task..."
               className="h-20 resize-none"
               data-testid="input-task-description"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="ct-instructions">Instructions <span className="text-muted-foreground font-normal">(optional)</span></Label>
+            <Textarea
+              id="ct-instructions"
+              value={form.instructions}
+              onChange={(e) => set("instructions")(e.target.value)}
+              placeholder="Step-by-step instructions for the assignee..."
+              className="h-20 resize-none"
+              data-testid="input-task-instructions"
             />
           </div>
 
@@ -213,6 +229,19 @@ export default function CreateTaskDialog({
                 data-testid="input-due-date"
               />
             </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="ct-est-time">Estimated Time <span className="text-muted-foreground font-normal">(minutes, optional)</span></Label>
+            <Input
+              id="ct-est-time"
+              type="number"
+              min="1"
+              placeholder="e.g. 30"
+              value={form.estimatedMinutes}
+              onChange={(e) => set("estimatedMinutes")(e.target.value)}
+              data-testid="input-estimated-minutes"
+            />
           </div>
 
         </div>

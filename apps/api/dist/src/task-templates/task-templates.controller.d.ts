@@ -19,12 +19,18 @@ export declare class TaskTemplatesController {
         isActive: boolean;
         updatedAt: Date;
         priority: string;
+        startDate: Date | null;
         description: string | null;
         createdById: string;
         title: string;
         category: string;
+        nextDueDate: Date | null;
         assignedToId: string | null;
+        instructions: string | null;
+        estimatedMinutes: number | null;
         recurrenceType: string;
+        reminderBefore: number | null;
+        recurrenceRule: import("@prisma/client/runtime/library").JsonValue | null;
         assignedToRole: string | null;
     })[]>;
     getPerformanceAll(days?: string, req?: any): Promise<{
@@ -77,12 +83,18 @@ export declare class TaskTemplatesController {
         isActive: boolean;
         updatedAt: Date;
         priority: string;
+        startDate: Date | null;
         description: string | null;
         createdById: string;
         title: string;
         category: string;
+        nextDueDate: Date | null;
         assignedToId: string | null;
+        instructions: string | null;
+        estimatedMinutes: number | null;
         recurrenceType: string;
+        reminderBefore: number | null;
+        recurrenceRule: import("@prisma/client/runtime/library").JsonValue | null;
         assignedToRole: string | null;
     }>;
     generateToday(req: any): Promise<{
@@ -96,12 +108,18 @@ export declare class TaskTemplatesController {
         isActive: boolean;
         updatedAt: Date;
         priority: string;
+        startDate: Date | null;
         description: string | null;
         createdById: string;
         title: string;
         category: string;
+        nextDueDate: Date | null;
         assignedToId: string | null;
+        instructions: string | null;
+        estimatedMinutes: number | null;
         recurrenceType: string;
+        reminderBefore: number | null;
+        recurrenceRule: import("@prisma/client/runtime/library").JsonValue | null;
         assignedToRole: string | null;
     }>;
     generateTasks(id: string, body: {
@@ -127,12 +145,18 @@ export declare class TaskTemplatesController {
         isActive: boolean;
         updatedAt: Date;
         priority: string;
+        startDate: Date | null;
         description: string | null;
         createdById: string;
         title: string;
         category: string;
+        nextDueDate: Date | null;
         assignedToId: string | null;
+        instructions: string | null;
+        estimatedMinutes: number | null;
         recurrenceType: string;
+        reminderBefore: number | null;
+        recurrenceRule: import("@prisma/client/runtime/library").JsonValue | null;
         assignedToRole: string | null;
     }>;
     delete(id: string): Promise<{
@@ -141,12 +165,18 @@ export declare class TaskTemplatesController {
         isActive: boolean;
         updatedAt: Date;
         priority: string;
+        startDate: Date | null;
         description: string | null;
         createdById: string;
         title: string;
         category: string;
+        nextDueDate: Date | null;
         assignedToId: string | null;
+        instructions: string | null;
+        estimatedMinutes: number | null;
         recurrenceType: string;
+        reminderBefore: number | null;
+        recurrenceRule: import("@prisma/client/runtime/library").JsonValue | null;
         assignedToRole: string | null;
     }>;
     addItem(id: string, body: {

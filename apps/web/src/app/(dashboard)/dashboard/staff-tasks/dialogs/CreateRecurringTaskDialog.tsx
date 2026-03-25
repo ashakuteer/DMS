@@ -11,6 +11,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { fetchWithAuth } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
 
@@ -51,6 +52,7 @@ export default function CreateRecurringTaskDialog({
   const [saving, setSaving] = useState(false);
 
   const [title, setTitle] = useState("");
+  const [instructions, setInstructions] = useState("");
   const [assignedToId, setAssignedToId] = useState("NONE");
   const [priority, setPriority] = useState("MEDIUM");
   const [estimatedTime, setEstimatedTime] = useState("");
@@ -62,6 +64,7 @@ export default function CreateRecurringTaskDialog({
   useEffect(() => {
     if (!open) {
       setTitle("");
+      setInstructions("");
       setAssignedToId("NONE");
       setPriority("MEDIUM");
       setEstimatedTime("");
@@ -90,22 +93,22 @@ export default function CreateRecurringTaskDialog({
 
     setSaving(true);
     try {
-      const recurrenceType =
-        frequency === "CUSTOM_INTERVAL" ? "DAILY" : frequency;
+      const recurrenceRule: Record<string, unknown> = {};
+      if (frequency === "WEEKLY") recurrenceRule.daysOfWeek = selectedDays;
+      if (frequency === "MONTHLY") recurrenceRule.dayOfMonth = Number(monthlyDate);
+      if (frequency === "CUSTOM_INTERVAL") recurrenceRule.intervalDays = Number(intervalDays);
 
       const body: Record<string, unknown> = {
         title: title.trim(),
+        instructions: instructions.trim() || undefined,
         assignedToId: (assignedToId && assignedToId !== "NONE") ? assignedToId : undefined,
         priority,
         estimatedMinutes: estimatedTime ? Number(estimatedTime) : undefined,
-        recurrenceType,
+        recurrenceType: frequency,
+        recurrenceRule: Object.keys(recurrenceRule).length > 0 ? recurrenceRule : undefined,
         category: "GENERAL",
         isActive: true,
       };
-
-      if (frequency === "WEEKLY") body.daysOfWeek = selectedDays;
-      if (frequency === "MONTHLY") body.dayOfMonth = Number(monthlyDate);
-      if (frequency === "CUSTOM_INTERVAL") body.intervalDays = Number(intervalDays);
 
       const res = await fetchWithAuth("/api/task-templates", {
         method: "POST",
@@ -143,6 +146,18 @@ export default function CreateRecurringTaskDialog({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               data-testid="input-recurring-title"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="rt-instructions">Instructions (optional)</Label>
+            <Textarea
+              id="rt-instructions"
+              placeholder="Step-by-step instructions for staff..."
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              rows={3}
+              data-testid="input-recurring-instructions"
             />
           </div>
 

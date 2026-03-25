@@ -100,6 +100,8 @@ export class StaffTasksService {
     linkedDonorId?: string;
     dueDate?: string;
     notes?: string;
+    instructions?: string;
+    estimatedMinutes?: number;
   }, userId: string) {
     const createData: any = {
       title: data.title,
@@ -112,6 +114,8 @@ export class StaffTasksService {
       createdById: userId,
       linkedDonorId: data.linkedDonorId || null,
       notes: data.notes ?? null,
+      instructions: data.instructions ?? null,
+      estimatedMinutes: data.estimatedMinutes ?? null,
     };
 
     if (data.dueDate) createData.dueDate = new Date(data.dueDate);
@@ -137,6 +141,9 @@ export class StaffTasksService {
     linkedDonorId?: string;
     dueDate?: string;
     notes?: string;
+    instructions?: string;
+    completionNotes?: string;
+    estimatedMinutes?: number | null;
   }, userId: string) {
     const existing = await this.findOne(id);
 
@@ -149,6 +156,9 @@ export class StaffTasksService {
     if (data.linkedDonorId !== undefined) updateData.linkedDonorId = data.linkedDonorId || null;
     if (data.dueDate !== undefined) updateData.dueDate = data.dueDate ? new Date(data.dueDate) : null;
     if (data.notes !== undefined) updateData.notes = data.notes;
+    if (data.instructions !== undefined) updateData.instructions = data.instructions ?? null;
+    if (data.completionNotes !== undefined) updateData.completionNotes = data.completionNotes ?? null;
+    if (data.estimatedMinutes !== undefined) updateData.estimatedMinutes = data.estimatedMinutes ?? null;
 
     if (data.status !== undefined && data.status !== existing.status) {
       updateData.status = data.status;
@@ -385,11 +395,12 @@ export class StaffTasksService {
     };
   }
 
-  async updateTaskStatus(id: string, newStatus: TaskStatus, userId: string, extra?: { minutesTaken?: number; startedAt?: string; completedAt?: string; notes?: string }) {
+  async updateTaskStatus(id: string, newStatus: TaskStatus, userId: string, extra?: { minutesTaken?: number; startedAt?: string; completedAt?: string; notes?: string; completionNotes?: string }) {
     const existing = await this.findOne(id);
 
     const updateData: any = { status: newStatus };
     if (extra?.notes !== undefined) updateData.notes = extra.notes;
+    if (extra?.completionNotes !== undefined) updateData.completionNotes = extra.completionNotes ?? null;
 
     if (newStatus === TaskStatus.IN_PROGRESS && !existing.startedAt) {
       updateData.startedAt = extra?.startedAt ? new Date(extra.startedAt) : new Date();

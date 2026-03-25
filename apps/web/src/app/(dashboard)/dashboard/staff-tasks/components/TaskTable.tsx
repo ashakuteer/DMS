@@ -67,7 +67,7 @@ function CompletionDialog({
   onCancel,
 }: {
   task: any;
-  onConfirm: (notes: string, minutesTaken?: number) => void;
+  onConfirm: (completionNotes: string, minutesTaken?: number) => void;
   onCancel: () => void;
 }) {
   const [notes, setNotes] = useState("");
@@ -165,7 +165,7 @@ export default function TaskTable({
   onView: (t: any) => void;
   canUpdate?: boolean;
   canDelete?: boolean;
-  updateStatus?: (id: string, status: string, notes?: string, minutesTaken?: number) => Promise<boolean>;
+  updateStatus?: (id: string, status: string, notes?: string, minutesTaken?: number, completionNotes?: string) => Promise<boolean>;
 }) {
   const user = authStorage.getUser();
   const isAdminOrManager = user?.role === "FOUNDER" || user?.role === "ADMIN";
@@ -188,12 +188,12 @@ export default function TaskTable({
     setUpdatingId(null);
   };
 
-  const confirmCompletion = async (notes: string, minutesTaken?: number) => {
+  const confirmCompletion = async (completionNotes: string, minutesTaken?: number) => {
     if (!pendingCompletion || !updateStatus) return;
     const { task } = pendingCompletion;
     setPendingCompletion(null);
     setUpdatingId(task.id);
-    await updateStatus(task.id, "COMPLETED", notes, minutesTaken);
+    await updateStatus(task.id, "COMPLETED", undefined, minutesTaken, completionNotes || undefined);
     setUpdatingId(null);
   };
 
@@ -327,16 +327,31 @@ export default function TaskTable({
                     </span>
                   </TableCell>
 
-                  {/* Time taken */}
+                  {/* Estimated / actual time */}
                   <TableCell>
-                    {task.status === "COMPLETED" && timeTaken ? (
-                      <span className="inline-flex items-center gap-1 text-xs text-green-700 dark:text-green-400" data-testid={`time-taken-${task.id}`}>
-                        <Timer className="h-3 w-3" />
-                        {timeTaken}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
+                    <div className="flex flex-col gap-0.5">
+                      {task.estimatedMinutes ? (
+                        <span className="text-xs text-muted-foreground" data-testid={`est-time-${task.id}`}>
+                          Est: {fmtTime(task.estimatedMinutes)}
+                        </span>
+                      ) : null}
+                      {timeTaken ? (
+                        <span
+                          className={`inline-flex items-center gap-1 text-xs font-medium ${
+                            task.estimatedMinutes && task.minutesTaken > task.estimatedMinutes
+                              ? "text-red-600 dark:text-red-400"
+                              : "text-green-700 dark:text-green-400"
+                          }`}
+                          data-testid={`time-taken-${task.id}`}
+                        >
+                          <Timer className="h-3 w-3" />
+                          {timeTaken}
+                        </span>
+                      ) : null}
+                      {!task.estimatedMinutes && !timeTaken && (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </div>
                   </TableCell>
 
                   {/* Actions */}
