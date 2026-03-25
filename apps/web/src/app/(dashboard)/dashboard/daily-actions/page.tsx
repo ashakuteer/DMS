@@ -569,7 +569,7 @@ export default function DailyActionsPage() {
               Generate
             </Button>
           )}
-          <Button variant="outline" size="sm" onClick={refresh} disabled={loading} data-testid="button-refresh-tasks">
+          <Button variant="outline" size="sm" onClick={() => refresh()} disabled={loading} data-testid="button-refresh-tasks">
             <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
