@@ -26,7 +26,7 @@ let StaffTasksController = class StaffTasksController {
     isAdminOrManager(role) {
         return role === client_1.Role.FOUNDER || role === client_1.Role.ADMIN;
     }
-    async findAll(status, priority, assignedToId, createdById, category, search, page, limit, isRecurring, req) {
+    async findAll(status, priority, assignedToId, createdById, category, search, page, limit, isRecurring, taskType, excludePersonal, req) {
         const filters = {
             status,
             priority,
@@ -40,6 +40,12 @@ let StaffTasksController = class StaffTasksController {
         }
         if (isRecurring !== undefined && isRecurring !== '') {
             filters.isRecurring = isRecurring === 'true';
+        }
+        if (taskType) {
+            filters.taskType = taskType;
+        }
+        if (excludePersonal !== undefined && excludePersonal !== '') {
+            filters.excludePersonal = excludePersonal === 'true';
         }
         if (this.isAdminOrManager(req.user.role)) {
             filters.assignedToId = assignedToId || undefined;
@@ -84,6 +90,7 @@ let StaffTasksController = class StaffTasksController {
             status: body.status,
             priority: body.priority,
             category: body.category,
+            taskType: body.taskType,
             assignedToId,
             linkedDonorId: body.linkedDonorId,
             dueDate: body.dueDate,
@@ -133,9 +140,11 @@ __decorate([
     __param(6, (0, common_1.Query)('page')),
     __param(7, (0, common_1.Query)('limit')),
     __param(8, (0, common_1.Query)('isRecurring')),
-    __param(9, (0, common_1.Req)()),
+    __param(9, (0, common_1.Query)('taskType')),
+    __param(10, (0, common_1.Query)('excludePersonal')),
+    __param(11, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String, Object]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String, String, String, Object]),
     __metadata("design:returntype", Promise)
 ], StaffTasksController.prototype, "findAll", null);
 __decorate([

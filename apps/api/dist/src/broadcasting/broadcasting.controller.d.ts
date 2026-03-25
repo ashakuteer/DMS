@@ -6,14 +6,10 @@ export declare class BroadcastingController {
         filters: BroadcastFilters;
         channel: 'WHATSAPP' | 'EMAIL';
     }): Promise<{
-        total: number;
+        total: any;
         reachable: number;
         unreachable: number;
-        sampleDonors: {
-            id: string;
-            name: string;
-            contact: string;
-        }[];
+        sampleDonors: any;
     }>;
     sendBroadcast(user: any, body: {
         channel: 'WHATSAPP' | 'EMAIL';
@@ -24,18 +20,7 @@ export declare class BroadcastingController {
         emailBody?: string;
     }): Promise<import("./broadcasting.service").BroadcastResult>;
     getWhatsAppTemplates(): Promise<Record<import("../communications/twilio-whatsapp.service").WhatsAppTemplateKey, boolean>>;
-    getEmailTemplates(): Promise<{
-        name: string;
-        id: string;
-        type: import(".prisma/client").$Enums.TemplateType;
-        description: string;
-        emailSubject: string;
-        emailBody: string;
-    }[]>;
-    getStaffList(): Promise<{
-        name: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-    }[]>;
+    getEmailTemplates(): Promise<any>;
+    getStaffList(): Promise<any>;
     getProfessionList(): Promise<string[]>;
 }

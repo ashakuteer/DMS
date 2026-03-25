@@ -10,22 +10,7 @@ export declare class DonorUpdatesController {
         relatedBeneficiaryIds?: string[];
         relatedHomeTypes?: HomeType[];
         isDraft?: boolean;
-    }, user: any): Promise<{
-        createdBy: {
-            name: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        content: string;
-        createdById: string;
-        title: string;
-        photos: string[];
-        relatedBeneficiaryIds: string[];
-        relatedHomeTypes: import(".prisma/client").$Enums.HomeType[];
-        isDraft: boolean;
-    }>;
+    }, user: any): Promise<any>;
     update(id: string, body: {
         title?: string;
         content?: string;
@@ -33,149 +18,25 @@ export declare class DonorUpdatesController {
         relatedBeneficiaryIds?: string[];
         relatedHomeTypes?: HomeType[];
         isDraft?: boolean;
-    }): Promise<{
-        createdBy: {
-            name: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        content: string;
-        createdById: string;
-        title: string;
-        photos: string[];
-        relatedBeneficiaryIds: string[];
-        relatedHomeTypes: import(".prisma/client").$Enums.HomeType[];
-        isDraft: boolean;
-    }>;
+    }): Promise<any>;
     findAll(page?: string, limit?: string, draftsOnly?: string): Promise<{
-        items: {
-            beneficiaries: any[];
-            dispatchCount: number;
-            _count: {
-                dispatches: number;
-            };
-            createdBy: {
-                name: string;
-            };
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            content: string;
-            createdById: string;
-            title: string;
-            photos: string[];
-            relatedBeneficiaryIds: string[];
-            relatedHomeTypes: import(".prisma/client").$Enums.HomeType[];
-            isDraft: boolean;
-        }[];
-        total: number;
+        items: any[];
+        total: any;
         page: number;
         totalPages: number;
     }>;
-    searchDonors(search: string, limit?: string): Promise<{
-        id: string;
-        donorCode: string;
-        firstName: string;
-        lastName: string;
-        primaryPhone: string;
-        whatsappPhone: string;
-        personalEmail: string;
-        officialEmail: string;
-    }[]>;
+    searchDonors(search: string, limit?: string): Promise<any>;
     getDonorsByHome(homeTypes: string): Promise<any[]>;
     getDonorsByBeneficiaries(ids: string): Promise<any[]>;
     getHistory(page?: string, limit?: string): Promise<{
-        items: {
-            id: string;
-            updateTitle: string;
-            updateId: string;
-            donorName: string;
-            donorCode: string;
-            donorId: string;
-            channel: import(".prisma/client").$Enums.SponsorDispatchChannel;
-            status: import(".prisma/client").$Enums.SponsorDispatchStatus;
-            sentAt: Date;
-            createdAt: Date;
-        }[];
-        total: number;
+        items: any;
+        total: any;
         page: number;
         totalPages: number;
     }>;
-    findOne(id: string): Promise<{
-        beneficiaries: any[];
-        createdBy: {
-            name: string;
-        };
-        dispatches: ({
-            donor: {
-                id: string;
-                donorCode: string;
-                firstName: string;
-                lastName: string;
-                whatsappPhone: string;
-                personalEmail: string;
-                officialEmail: string;
-            };
-        } & {
-            error: string | null;
-            id: string;
-            createdAt: Date;
-            channel: import(".prisma/client").$Enums.SponsorDispatchChannel;
-            status: import(".prisma/client").$Enums.SponsorDispatchStatus;
-            donorId: string;
-            sentAt: Date | null;
-            updateId: string;
-        })[];
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        content: string;
-        createdById: string;
-        title: string;
-        photos: string[];
-        relatedBeneficiaryIds: string[];
-        relatedHomeTypes: import(".prisma/client").$Enums.HomeType[];
-        isDraft: boolean;
-    }>;
+    findOne(id: string): Promise<any>;
     preview(id: string): Promise<{
-        update: {
-            beneficiaries: any[];
-            createdBy: {
-                name: string;
-            };
-            dispatches: ({
-                donor: {
-                    id: string;
-                    donorCode: string;
-                    firstName: string;
-                    lastName: string;
-                    whatsappPhone: string;
-                    personalEmail: string;
-                    officialEmail: string;
-                };
-            } & {
-                error: string | null;
-                id: string;
-                createdAt: Date;
-                channel: import(".prisma/client").$Enums.SponsorDispatchChannel;
-                status: import(".prisma/client").$Enums.SponsorDispatchStatus;
-                donorId: string;
-                sentAt: Date | null;
-                updateId: string;
-            })[];
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            content: string;
-            createdById: string;
-            title: string;
-            photos: string[];
-            relatedBeneficiaryIds: string[];
-            relatedHomeTypes: import(".prisma/client").$Enums.HomeType[];
-            isDraft: boolean;
-        };
+        update: any;
         emailHtml: string;
         whatsappText: string;
         emailSubject: string;

@@ -6,81 +6,28 @@ export declare class UsersService {
     private auditService;
     constructor(prisma: PrismaService, auditService: AuditService);
     findAll(page?: number, limit?: number): Promise<{
-        items: {
-            email: string;
-            name: string;
-            phone: string;
-            role: import(".prisma/client").$Enums.Role;
-            id: string;
-            createdAt: Date;
-            isActive: boolean;
-            updatedAt: Date;
-        }[];
-        total: number;
+        items: any;
+        total: any;
         page: number;
         limit: number;
         totalPages: number;
     }>;
-    findOne(id: string): Promise<{
-        email: string;
-        name: string;
-        phone: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-    }>;
-    updateRole(id: string, role: Role, currentUserId: string, ipAddress?: string, userAgent?: string): Promise<{
-        email: string;
-        name: string;
-        phone: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-        isActive: boolean;
-    }>;
+    findOne(id: string): Promise<any>;
+    updateRole(id: string, role: Role, currentUserId: string, ipAddress?: string, userAgent?: string): Promise<any>;
     updateUser(id: string, data: {
         name?: string;
         phone?: string;
         role?: Role;
-    }): Promise<{
-        email: string;
-        name: string;
-        phone: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-        isActive: boolean;
-        updatedAt: Date;
-    }>;
-    toggleActive(id: string): Promise<{
-        email: string;
-        name: string;
-        phone: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-        isActive: boolean;
-    }>;
-    listStaffForAssignment(): Promise<{
-        email: string;
-        name: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-    }[]>;
+    }): Promise<any>;
+    toggleActive(id: string): Promise<any>;
+    listStaffForAssignment(): Promise<any>;
     createStaff(data: {
         name: string;
         email: string;
         phone?: string;
         role: string;
         password: string;
-    }): Promise<{
-        email: string;
-        name: string;
-        phone: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-    }>;
+    }): Promise<any>;
     resetUserPassword(id: string, newPassword: string): Promise<{
         message: string;
     }>;
@@ -88,20 +35,6 @@ export declare class UsersService {
         success: boolean;
         message: string;
     }>;
-    listAllStaff(): Promise<{
-        email: string;
-        name: string;
-        phone: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-    }[]>;
-    deleteUser(id: string): Promise<{
-        email: string;
-        name: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-        isActive: boolean;
-    }>;
+    listAllStaff(): Promise<any>;
+    deleteUser(id: string): Promise<any>;
 }

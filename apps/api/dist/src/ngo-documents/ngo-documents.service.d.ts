@@ -11,168 +11,39 @@ export declare class NgoDocumentsService {
         page: number;
         limit: number;
     }): Promise<{
-        items: ({
-            _count: {
-                versions: number;
-            };
-            uploadedBy: {
-                name: string;
-                id: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            isActive: boolean;
-            updatedAt: Date;
-            description: string | null;
-            title: string;
-            category: import(".prisma/client").$Enums.NgoDocCategory;
-            mimeType: string;
-            sizeBytes: number;
-            fileName: string;
-            expiryDate: Date | null;
-            filePath: string;
-            currentVersion: number;
-            uploadedById: string;
-        })[];
-        total: number;
+        items: any;
+        total: any;
         page: number;
         totalPages: number;
         stats: {
-            totalDocs: number;
-            expiredCount: number;
-            expiringSoonCount: number;
+            totalDocs: any;
+            expiredCount: any;
+            expiringSoonCount: any;
             validCount: number;
-            categoryBreakdown: {
-                category: import(".prisma/client").$Enums.NgoDocCategory;
-                count: number;
-            }[];
+            categoryBreakdown: any;
         };
     }>;
     getStats(): Promise<{
-        totalDocs: number;
-        expiredCount: number;
-        expiringSoonCount: number;
+        totalDocs: any;
+        expiredCount: any;
+        expiringSoonCount: any;
         validCount: number;
-        categoryBreakdown: {
-            category: import(".prisma/client").$Enums.NgoDocCategory;
-            count: number;
-        }[];
+        categoryBreakdown: any;
     }>;
-    findOne(id: string, userId: string): Promise<{
-        _count: {
-            versions: number;
-        };
-        uploadedBy: {
-            name: string;
-            id: string;
-        };
-        versions: ({
-            uploadedBy: {
-                name: string;
-                id: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            documentId: string;
-            mimeType: string;
-            sizeBytes: number;
-            fileName: string;
-            filePath: string;
-            uploadedById: string;
-            versionNumber: number;
-            changeNote: string | null;
-        })[];
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        description: string | null;
-        title: string;
-        category: import(".prisma/client").$Enums.NgoDocCategory;
-        mimeType: string;
-        sizeBytes: number;
-        fileName: string;
-        expiryDate: Date | null;
-        filePath: string;
-        currentVersion: number;
-        uploadedById: string;
-    }>;
+    findOne(id: string, userId: string): Promise<any>;
     upload(file: Express.Multer.File, data: {
         title: string;
         description?: string;
         category: string;
         expiryDate?: string;
-    }, userId: string): Promise<{
-        uploadedBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        description: string | null;
-        title: string;
-        category: import(".prisma/client").$Enums.NgoDocCategory;
-        mimeType: string;
-        sizeBytes: number;
-        fileName: string;
-        expiryDate: Date | null;
-        filePath: string;
-        currentVersion: number;
-        uploadedById: string;
-    }>;
-    uploadNewVersion(id: string, file: Express.Multer.File, changeNote: string | undefined, userId: string): Promise<{
-        uploadedBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        description: string | null;
-        title: string;
-        category: import(".prisma/client").$Enums.NgoDocCategory;
-        mimeType: string;
-        sizeBytes: number;
-        fileName: string;
-        expiryDate: Date | null;
-        filePath: string;
-        currentVersion: number;
-        uploadedById: string;
-    }>;
+    }, userId: string): Promise<any>;
+    uploadNewVersion(id: string, file: Express.Multer.File, changeNote: string | undefined, userId: string): Promise<any>;
     update(id: string, data: {
         title?: string;
         description?: string;
         category?: string;
         expiryDate?: string | null;
-    }, userId: string): Promise<{
-        uploadedBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        description: string | null;
-        title: string;
-        category: import(".prisma/client").$Enums.NgoDocCategory;
-        mimeType: string;
-        sizeBytes: number;
-        fileName: string;
-        expiryDate: Date | null;
-        filePath: string;
-        currentVersion: number;
-        uploadedById: string;
-    }>;
+    }, userId: string): Promise<any>;
     remove(id: string, userId: string): Promise<{
         message: string;
     }>;
@@ -181,60 +52,7 @@ export declare class NgoDocumentsService {
         fileName: string;
         mimeType: string;
     }>;
-    getAccessLog(id: string): Promise<({
-        user: {
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        action: string;
-        userId: string;
-        documentId: string;
-        accessedAt: Date;
-    })[]>;
-    getExpiringDocuments(daysAhead?: number): Promise<({
-        uploadedBy: {
-            email: string;
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        description: string | null;
-        title: string;
-        category: import(".prisma/client").$Enums.NgoDocCategory;
-        mimeType: string;
-        sizeBytes: number;
-        fileName: string;
-        expiryDate: Date | null;
-        filePath: string;
-        currentVersion: number;
-        uploadedById: string;
-    })[]>;
-    getExpiredDocuments(): Promise<({
-        uploadedBy: {
-            email: string;
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        description: string | null;
-        title: string;
-        category: import(".prisma/client").$Enums.NgoDocCategory;
-        mimeType: string;
-        sizeBytes: number;
-        fileName: string;
-        expiryDate: Date | null;
-        filePath: string;
-        currentVersion: number;
-        uploadedById: string;
-    })[]>;
+    getAccessLog(id: string): Promise<any>;
+    getExpiringDocuments(daysAhead?: number): Promise<any>;
+    getExpiredDocuments(): Promise<any>;
 }

@@ -16,8 +16,8 @@ export declare class DashboardInsightsService {
         preferredDonationType: string;
         mostSponsoredHome: string;
         sponsoredBeneficiariesCount: number;
-        totalDonations: number;
-        donationCount: number;
+        totalDonations: any;
+        donationCount: any;
     }>;
     getAdminInsights(): Promise<any[]>;
     getInsightCards(): Promise<any[]>;

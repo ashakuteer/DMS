@@ -10,6 +10,7 @@ const nextConfig = {
   allowedDevOrigins: [
     "*.replit.dev",
     "*.spock.replit.dev",
+    "*.janeway.replit.dev",
     "*.repl.co",
     "*.replit.app",
     "*.kirk.replit.dev",

@@ -1,0 +1,81 @@
+PROJECT CONTINUATION – NGO DONOR + TASK MANAGEMENT SYSTEM
+
+Please continue from the current state without redoing old work.
+
+CURRENT STATUS:
+- Donors were restored and loading earlier.
+- Staff tasks, new tasks, and recurring tasks had started working earlier.
+- After the latest GitHub push and Railway deploy, task pages failed again.
+- Latest Railway deploy is active, but backend now has startup/runtime errors.
+
+LATEST CONFIRMED ISSUES FROM LOGS:
+
+1) ROLE ENUM ERROR DURING STARTUP
+Prisma rolePermission.createMany is failing because the database enum "Role" does not accept:
+"OFFICE_ASSISTANT"
+
+Error:
+invalid input value for enum "Role": "OFFICE_ASSISTANT"
+
+This means Prisma/backend code expects OFFICE_ASSISTANT in Role enum, but the PostgreSQL enum in production DB does not contain it.
+
+2) STAFF TASKS QUERY FAILING
+Backend error:
+The column `staff_tasks.taskType` does not exist in the current database.
+
+This means the latest task classification code now depends on `staff_tasks.taskType`, but production DB does not yet have this column.
+
+3) FRONTEND SYMPTOMS
+- Founder personal task creation failed
+- Staff tasks failed
+- Task pages showed CORS / 401 / 500 symptoms in browser
+- Some of those may be secondary because backend is failing during init / query execution
+
+GOAL FOR THIS SESSION:
+Stabilize backend again and finish task classification cleanly.
+
+DO THIS IN ORDER:
+
+STEP 1:
+Inspect current schema.prisma and backend code for:
+- enum Role
+- model StaffTask
+- any recent taskType / PERSONAL / STAFF / RECURRING_INSTANCE changes
+
+STEP 2:
+Fix production DB mismatch for Role enum.
+Check whether PostgreSQL enum Role needs OFFICE_ASSISTANT added, or whether seed/init code should stop inserting that value.
+Choose the safest fix based on current intended roles in schema.prisma.
+
+STEP 3:
+Fix production DB mismatch for staff_tasks.taskType.
+Add the missing column with the correct DB type that matches Prisma schema.
+Do not guess blindly — inspect schema.prisma first.
+
+STEP 4:
+Check whether any additional task-related columns introduced in latest task classification work are also missing in production DB.
+Prepare one consolidated SQL patch instead of fixing one column at a time.
+
+STEP 5:
+Verify backend startup succeeds cleanly on Railway with no Prisma enum/column crash.
+
+STEP 6:
+Then verify APIs:
+- Founder Tasks page
+- Staff & Tasks page
+- Recurring Task Templates section
+- POST /api/staff-tasks
+- GET /api/staff-tasks?excludePersonal=true
+- GET /api/task-templates?includeInactive=false
+
+STEP 7:
+If browser still shows CORS after backend DB issues are fixed, inspect NestJS main.ts CORS config and ensure production frontend origin is allowed:
+https://dms-sepia-gamma.vercel.app
+
+IMPORTANT RULES:
+- Do not redo Prisma setup
+- Do not touch donor functionality unless required
+- Focus on backend + production DB sync first
+- Inspect schema.prisma before writing SQL
+- Provide exact SQL needed for Supabase
+- Clearly state which issue is fixed by code and which by SQL

@@ -16,79 +16,13 @@ export declare class FollowUpsService {
         userId: string;
         userRole: string;
     }): Promise<{
-        items: ({
-            donor: {
-                id: string;
-                donorCode: string;
-                firstName: string;
-                lastName: string;
-                primaryPhone: string;
-                personalEmail: string;
-                officialEmail: string;
-            };
-            createdBy: {
-                name: string;
-                id: string;
-            };
-            assignedTo: {
-                email: string;
-                name: string;
-                id: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            priority: import(".prisma/client").$Enums.FollowUpPriority;
-            status: import(".prisma/client").$Enums.FollowUpStatus;
-            donorId: string;
-            createdById: string;
-            isDeleted: boolean;
-            dueDate: Date;
-            completedAt: Date | null;
-            note: string;
-            assignedToId: string;
-            completedNote: string | null;
-        })[];
-        total: number;
+        items: any;
+        total: any;
         page: number;
         limit: number;
         totalPages: number;
     }>;
-    findOne(id: string, userId?: string, userRole?: string): Promise<{
-        donor: {
-            id: string;
-            donorCode: string;
-            firstName: string;
-            lastName: string;
-            primaryPhone: string;
-            personalEmail: string;
-            officialEmail: string;
-        };
-        createdBy: {
-            name: string;
-            id: string;
-        };
-        assignedTo: {
-            email: string;
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
-        donorId: string;
-        createdById: string;
-        isDeleted: boolean;
-        dueDate: Date;
-        completedAt: Date | null;
-        note: string;
-        assignedToId: string;
-        completedNote: string | null;
-    }>;
+    findOne(id: string, userId?: string, userRole?: string): Promise<any>;
     create(data: {
         donorId: string;
         assignedToId: string;
@@ -96,168 +30,22 @@ export declare class FollowUpsService {
         dueDate: string;
         priority?: FollowUpPriority;
         createdById: string;
-    }): Promise<{
-        donor: {
-            id: string;
-            donorCode: string;
-            firstName: string;
-            lastName: string;
-            primaryPhone: string;
-            personalEmail: string;
-            officialEmail: string;
-        };
-        createdBy: {
-            name: string;
-            id: string;
-        };
-        assignedTo: {
-            email: string;
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
-        donorId: string;
-        createdById: string;
-        isDeleted: boolean;
-        dueDate: Date;
-        completedAt: Date | null;
-        note: string;
-        assignedToId: string;
-        completedNote: string | null;
-    }>;
+    }): Promise<any>;
     update(id: string, data: {
         note?: string;
         dueDate?: string;
         priority?: FollowUpPriority;
         assignedToId?: string;
-    }, userId: string, userRole: string): Promise<{
-        donor: {
-            id: string;
-            donorCode: string;
-            firstName: string;
-            lastName: string;
-            primaryPhone: string;
-            personalEmail: string;
-            officialEmail: string;
-        };
-        createdBy: {
-            name: string;
-            id: string;
-        };
-        assignedTo: {
-            email: string;
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
-        donorId: string;
-        createdById: string;
-        isDeleted: boolean;
-        dueDate: Date;
-        completedAt: Date | null;
-        note: string;
-        assignedToId: string;
-        completedNote: string | null;
-    }>;
-    markComplete(id: string, completedNote: string | null, userId: string, userRole: string): Promise<{
-        donor: {
-            id: string;
-            donorCode: string;
-            firstName: string;
-            lastName: string;
-            primaryPhone: string;
-            personalEmail: string;
-            officialEmail: string;
-        };
-        createdBy: {
-            name: string;
-            id: string;
-        };
-        assignedTo: {
-            email: string;
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
-        donorId: string;
-        createdById: string;
-        isDeleted: boolean;
-        dueDate: Date;
-        completedAt: Date | null;
-        note: string;
-        assignedToId: string;
-        completedNote: string | null;
-    }>;
-    reopen(id: string, userId: string, userRole: string): Promise<{
-        donor: {
-            id: string;
-            donorCode: string;
-            firstName: string;
-            lastName: string;
-            primaryPhone: string;
-            personalEmail: string;
-            officialEmail: string;
-        };
-        createdBy: {
-            name: string;
-            id: string;
-        };
-        assignedTo: {
-            email: string;
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
-        donorId: string;
-        createdById: string;
-        isDeleted: boolean;
-        dueDate: Date;
-        completedAt: Date | null;
-        note: string;
-        assignedToId: string;
-        completedNote: string | null;
-    }>;
-    remove(id: string, userId: string, userRole: string): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
-        donorId: string;
-        createdById: string;
-        isDeleted: boolean;
-        dueDate: Date;
-        completedAt: Date | null;
-        note: string;
-        assignedToId: string;
-        completedNote: string | null;
-    }>;
+    }, userId: string, userRole: string): Promise<any>;
+    markComplete(id: string, completedNote: string | null, userId: string, userRole: string): Promise<any>;
+    reopen(id: string, userId: string, userRole: string): Promise<any>;
+    remove(id: string, userId: string, userRole: string): Promise<any>;
     getDashboardStats(userId: string, userRole: string): Promise<{
-        total: number;
-        pending: number;
-        completed: number;
-        overdue: number;
-        dueToday: number;
-        dueThisWeek: number;
+        total: any;
+        pending: any;
+        completed: any;
+        overdue: any;
+        dueToday: any;
+        dueThisWeek: any;
     }>;
 }

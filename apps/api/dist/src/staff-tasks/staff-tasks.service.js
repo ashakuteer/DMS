@@ -47,6 +47,12 @@ let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
             where.category = category;
         if (query.isRecurring !== undefined)
             where.isRecurring = query.isRecurring;
+        if (query.taskType) {
+            where.taskType = query.taskType;
+        }
+        else if (query.excludePersonal) {
+            where.taskType = { not: client_1.StaffTaskType.PERSONAL };
+        }
         if (search) {
             where.OR = [
                 { title: { contains: search, mode: 'insensitive' } },
@@ -83,6 +89,7 @@ let StaffTasksService = StaffTasksService_1 = class StaffTasksService {
             status: data.status || client_1.TaskStatus.PENDING,
             priority: data.priority || client_1.TaskPriority.MEDIUM,
             category: data.category || client_1.TaskCategory.GENERAL,
+            taskType: data.taskType || client_1.StaffTaskType.STAFF,
             assignedToId: data.assignedToId,
             createdById: userId,
             linkedDonorId: data.linkedDonorId || null,

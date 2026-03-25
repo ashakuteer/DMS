@@ -23,126 +23,23 @@ export declare class EmailJobsService {
     constructor(prisma: PrismaService);
     create(dto: CreateEmailJobDto): Promise<any>;
     findAll(filters?: EmailJobFilters): Promise<{
-        jobs: ({
-            donor: {
-                id: string;
-                donorCode: string;
-                firstName: string;
-                lastName: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            subject: string;
-            body: string;
-            type: import(".prisma/client").$Enums.EmailJobType;
-            status: import(".prisma/client").$Enums.EmailJobStatus;
-            donorId: string | null;
-            toEmail: string;
-            sentAt: Date | null;
-            relatedId: string | null;
-            attempts: number;
-            lastError: string | null;
-            scheduledAt: Date;
-        })[];
-        total: number;
+        jobs: any;
+        total: any;
         page: number;
         limit: number;
         totalPages: number;
     }>;
-    findPendingJobs(limit?: number): Promise<({
-        donor: {
-            id: string;
-            firstName: string;
-            lastName: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        subject: string;
-        body: string;
-        type: import(".prisma/client").$Enums.EmailJobType;
-        status: import(".prisma/client").$Enums.EmailJobStatus;
-        donorId: string | null;
-        toEmail: string;
-        sentAt: Date | null;
-        relatedId: string | null;
-        attempts: number;
-        lastError: string | null;
-        scheduledAt: Date;
-    })[]>;
-    markSent(id: string, messageId?: string): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        subject: string;
-        body: string;
-        type: import(".prisma/client").$Enums.EmailJobType;
-        status: import(".prisma/client").$Enums.EmailJobStatus;
-        donorId: string | null;
-        toEmail: string;
-        sentAt: Date | null;
-        relatedId: string | null;
-        attempts: number;
-        lastError: string | null;
-        scheduledAt: Date;
-    }>;
-    markFailed(id: string, error: string): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        subject: string;
-        body: string;
-        type: import(".prisma/client").$Enums.EmailJobType;
-        status: import(".prisma/client").$Enums.EmailJobStatus;
-        donorId: string | null;
-        toEmail: string;
-        sentAt: Date | null;
-        relatedId: string | null;
-        attempts: number;
-        lastError: string | null;
-        scheduledAt: Date;
-    }>;
+    findPendingJobs(limit?: number): Promise<any>;
+    markSent(id: string, messageId?: string): Promise<any>;
+    markFailed(id: string, error: string): Promise<any>;
     getStats(): Promise<{
-        queued: number;
-        sent: number;
-        failed: number;
-        total: number;
+        queued: any;
+        sent: any;
+        failed: any;
+        total: any;
     }>;
-    findByRelatedId(relatedId: string): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        subject: string;
-        body: string;
-        type: import(".prisma/client").$Enums.EmailJobType;
-        status: import(".prisma/client").$Enums.EmailJobStatus;
-        donorId: string | null;
-        toEmail: string;
-        sentAt: Date | null;
-        relatedId: string | null;
-        attempts: number;
-        lastError: string | null;
-        scheduledAt: Date;
-    }>;
-    retryFailed(id: string): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        subject: string;
-        body: string;
-        type: import(".prisma/client").$Enums.EmailJobType;
-        status: import(".prisma/client").$Enums.EmailJobStatus;
-        donorId: string | null;
-        toEmail: string;
-        sentAt: Date | null;
-        relatedId: string | null;
-        attempts: number;
-        lastError: string | null;
-        scheduledAt: Date;
-    }>;
+    findByRelatedId(relatedId: string): Promise<any>;
+    retryFailed(id: string): Promise<any>;
     delete(id: string): Promise<{
         success: boolean;
     }>;

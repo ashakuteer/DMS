@@ -18,97 +18,10 @@ export declare class CommunicationLogService {
     private prisma;
     private readonly logger;
     constructor(prisma: PrismaService);
-    create(data: CreateCommunicationLogDto): Promise<{
-        id: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        createdAt: Date;
-        subject: string | null;
-        channel: import(".prisma/client").$Enums.CommunicationChannel;
-        type: import(".prisma/client").$Enums.CommunicationType;
-        status: import(".prisma/client").$Enums.CommunicationStatus;
-        recipient: string | null;
-        messagePreview: string | null;
-        errorMessage: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        sentById: string | null;
-    }>;
-    findByDonorId(donorId: string): Promise<({
-        donation: {
-            id: string;
-            receiptNumber: string;
-            donationAmount: import("@prisma/client/runtime/library").Decimal;
-        };
-        sentBy: {
-            name: string;
-            role: import(".prisma/client").$Enums.Role;
-            id: string;
-        };
-        template: {
-            name: string;
-            id: string;
-            type: import(".prisma/client").$Enums.TemplateType;
-        };
-    } & {
-        id: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        createdAt: Date;
-        subject: string | null;
-        channel: import(".prisma/client").$Enums.CommunicationChannel;
-        type: import(".prisma/client").$Enums.CommunicationType;
-        status: import(".prisma/client").$Enums.CommunicationStatus;
-        recipient: string | null;
-        messagePreview: string | null;
-        errorMessage: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        sentById: string | null;
-    })[]>;
-    findByDonationId(donationId: string): Promise<({
-        sentBy: {
-            name: string;
-            role: import(".prisma/client").$Enums.Role;
-            id: string;
-        };
-        template: {
-            name: string;
-            id: string;
-            type: import(".prisma/client").$Enums.TemplateType;
-        };
-    } & {
-        id: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        createdAt: Date;
-        subject: string | null;
-        channel: import(".prisma/client").$Enums.CommunicationChannel;
-        type: import(".prisma/client").$Enums.CommunicationType;
-        status: import(".prisma/client").$Enums.CommunicationStatus;
-        recipient: string | null;
-        messagePreview: string | null;
-        errorMessage: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        sentById: string | null;
-    })[]>;
-    delete(id: string): Promise<{
-        id: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        createdAt: Date;
-        subject: string | null;
-        channel: import(".prisma/client").$Enums.CommunicationChannel;
-        type: import(".prisma/client").$Enums.CommunicationType;
-        status: import(".prisma/client").$Enums.CommunicationStatus;
-        recipient: string | null;
-        messagePreview: string | null;
-        errorMessage: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        sentById: string | null;
-    }>;
+    create(data: CreateCommunicationLogDto): Promise<any>;
+    findByDonorId(donorId: string): Promise<any>;
+    findByDonationId(donationId: string): Promise<any>;
+    delete(id: string): Promise<any>;
     logEmail(params: {
         donorId: string;
         donationId?: string;
@@ -120,22 +33,7 @@ export declare class CommunicationLogService {
         errorMessage?: string;
         sentById?: string;
         type?: CommunicationType;
-    }): Promise<{
-        id: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        createdAt: Date;
-        subject: string | null;
-        channel: import(".prisma/client").$Enums.CommunicationChannel;
-        type: import(".prisma/client").$Enums.CommunicationType;
-        status: import(".prisma/client").$Enums.CommunicationStatus;
-        recipient: string | null;
-        messagePreview: string | null;
-        errorMessage: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        sentById: string | null;
-    }>;
+    }): Promise<any>;
     logWhatsApp(params: {
         donorId: string;
         donationId?: string;
@@ -144,43 +42,13 @@ export declare class CommunicationLogService {
         messagePreview?: string;
         sentById: string;
         type?: CommunicationType;
-    }): Promise<{
-        id: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        createdAt: Date;
-        subject: string | null;
-        channel: import(".prisma/client").$Enums.CommunicationChannel;
-        type: import(".prisma/client").$Enums.CommunicationType;
-        status: import(".prisma/client").$Enums.CommunicationStatus;
-        recipient: string | null;
-        messagePreview: string | null;
-        errorMessage: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        sentById: string | null;
-    }>;
+    }): Promise<any>;
     logPostDonationAction(params: {
         donorId: string;
         donationId?: string;
         action: 'send_email' | 'send_whatsapp' | 'remind_later' | 'skip';
         sentById: string;
         userRole: string;
-    }): Promise<{
-        id: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        createdAt: Date;
-        subject: string | null;
-        channel: import(".prisma/client").$Enums.CommunicationChannel;
-        type: import(".prisma/client").$Enums.CommunicationType;
-        status: import(".prisma/client").$Enums.CommunicationStatus;
-        recipient: string | null;
-        messagePreview: string | null;
-        errorMessage: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        sentById: string | null;
-    }>;
+    }): Promise<any>;
     private inferEmailType;
 }

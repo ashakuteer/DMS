@@ -55,45 +55,17 @@ export declare class BirthdayWishService {
         sent: number;
     }>;
     getSentLog(page?: number, limit?: number): Promise<{
-        logs: {
-            id: string;
-            type: import(".prisma/client").$Enums.OutboundMessageType;
-            channel: import(".prisma/client").$Enums.MessageChannel;
-            donorId: string;
-            donorName: string;
-            donorCode: string;
-            beneficiaryIds: string[];
-            status: import(".prisma/client").$Enums.OutboundMessageStatus;
-            createdAt: Date;
-            createdBy: string;
-        }[];
-        total: number;
+        logs: any;
+        total: any;
         page: number;
         totalPages: number;
     }>;
     private buildBirthdayIntro;
-    getTemplates(): Promise<{
-        variables: string[];
-        id: string;
-        updatedAt: Date;
-        subject: string | null;
-        body: string;
-        channel: import(".prisma/client").$Enums.MessageChannel;
-        updatedById: string | null;
-        key: string;
-    }[]>;
+    getTemplates(): Promise<any>;
     updateTemplate(id: string, data: {
         subject?: string;
         body: string;
-    }, userId: string): Promise<{
-        id: string;
-        updatedAt: Date;
-        subject: string | null;
-        body: string;
-        channel: import(".prisma/client").$Enums.MessageChannel;
-        updatedById: string | null;
-        key: string;
-    }>;
+    }, userId: string): Promise<any>;
     private calculateDaysUntil;
     private buildBeneficiaryLine;
     private formatHomeType;

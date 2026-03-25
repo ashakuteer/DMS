@@ -8,90 +8,17 @@ interface UserContext {
 export declare class ReminderTasksController {
     private reminderTasksService;
     constructor(reminderTasksService: ReminderTasksService);
-    getReminders(user: UserContext, filter?: 'today' | 'week' | 'month' | 'overdue'): Promise<({
-        donor: {
-            id: string;
-            donorCode: string;
-            firstName: string;
-            lastName: string;
-            primaryPhone: string;
-            primaryPhoneCode: string;
-            whatsappPhone: string;
-            whatsappPhoneCode: string;
-            personalEmail: string;
-            officialEmail: string;
-        };
-        sourceOccasion: {
-            relatedPersonName: string;
-        };
-        sourceFamilyMember: {
-            name: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        type: import(".prisma/client").$Enums.ReminderTaskType;
-        status: import(".prisma/client").$Enums.ReminderTaskStatus;
-        donorId: string;
-        title: string;
-        dueDate: Date;
-        completedAt: Date | null;
-        offsetDays: number;
-        createdByUserId: string | null;
-        snoozedUntil: Date | null;
-        sourceOccasionId: string | null;
-        sourceFamilyId: string | null;
-        sourcePledgeId: string | null;
-        autoEmailSent: boolean;
-        autoEmailSentAt: Date | null;
-    })[]>;
+    getReminders(user: UserContext, filter?: 'today' | 'week' | 'month' | 'overdue'): Promise<any>;
     getStats(): Promise<{
-        today: number;
-        week: number;
-        month: number;
-        overdue: number;
+        today: any;
+        week: any;
+        month: any;
+        overdue: any;
     }>;
-    markDone(user: UserContext, id: string): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        type: import(".prisma/client").$Enums.ReminderTaskType;
-        status: import(".prisma/client").$Enums.ReminderTaskStatus;
-        donorId: string;
-        title: string;
-        dueDate: Date;
-        completedAt: Date | null;
-        offsetDays: number;
-        createdByUserId: string | null;
-        snoozedUntil: Date | null;
-        sourceOccasionId: string | null;
-        sourceFamilyId: string | null;
-        sourcePledgeId: string | null;
-        autoEmailSent: boolean;
-        autoEmailSentAt: Date | null;
-    }>;
+    markDone(user: UserContext, id: string): Promise<any>;
     snooze(user: UserContext, id: string, body: {
         days: number;
-    }): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        type: import(".prisma/client").$Enums.ReminderTaskType;
-        status: import(".prisma/client").$Enums.ReminderTaskStatus;
-        donorId: string;
-        title: string;
-        dueDate: Date;
-        completedAt: Date | null;
-        offsetDays: number;
-        createdByUserId: string | null;
-        snoozedUntil: Date | null;
-        sourceOccasionId: string | null;
-        sourceFamilyId: string | null;
-        sourcePledgeId: string | null;
-        autoEmailSent: boolean;
-        autoEmailSentAt: Date | null;
-    }>;
+    }): Promise<any>;
     generateReminders(): Promise<{
         message: string;
         count: number;

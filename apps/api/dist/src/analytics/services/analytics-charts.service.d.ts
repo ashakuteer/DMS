@@ -4,10 +4,10 @@ export declare class AnalyticsChartsService {
     private readonly logger;
     constructor(prisma: PrismaService);
     getMonthlyDonationSeries(): Promise<{
-        monthlyDonations: any[];
-        donationsByType: any[];
-        donationsByHome: any[];
-        sponsorshipsDue: any[];
+        monthlyDonations: any;
+        donationsByType: any;
+        donationsByHome: any;
+        sponsorshipsDue: any;
     }>;
     private fetchMonthlyDonations;
     private fetchDonationsByType;

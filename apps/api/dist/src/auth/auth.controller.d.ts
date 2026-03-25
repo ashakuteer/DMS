@@ -6,14 +6,7 @@ export declare class AuthController {
     private otpService;
     constructor(authService: AuthService, otpService: OtpService);
     register(dto: RegisterDto): Promise<{
-        user: {
-            email: string;
-            name: string;
-            phone: string;
-            role: import(".prisma/client").$Enums.Role;
-            id: string;
-            isActive: boolean;
-        };
+        user: any;
         tokens: {
             accessToken: string;
             refreshToken: string;
@@ -21,11 +14,11 @@ export declare class AuthController {
     }>;
     login(dto: LoginDto): Promise<{
         user: {
-            id: string;
-            email: string;
-            name: string;
-            role: import(".prisma/client").$Enums.Role;
-            isActive: true;
+            id: any;
+            email: any;
+            name: any;
+            role: any;
+            isActive: any;
         };
         tokens: {
             accessToken: string;
@@ -37,26 +30,18 @@ export declare class AuthController {
     }>;
     refreshTokens(dto: RefreshTokenDto): Promise<{
         user: {
-            id: string;
-            email: string;
-            name: string;
-            role: import(".prisma/client").$Enums.Role;
-            isActive: true;
+            id: any;
+            email: any;
+            name: any;
+            role: any;
+            isActive: any;
         };
         tokens: {
             accessToken: string;
             refreshToken: string;
         };
     }>;
-    getProfile(user: any): Promise<{
-        email: string;
-        name: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-    }>;
+    getProfile(user: any): Promise<any>;
     forgotPassword(dto: ForgotPasswordDto): Promise<{
         message: string;
     }>;
