@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import { authStorage, fetchWithAuth } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 
@@ -31,6 +32,30 @@ import AddDonorSponsorshipDialog from "./dialogs/AddDonorSponsorshipDialog";
 import SponsorStatusDialog from "./dialogs/SponsorStatusDialog";
 import SponsorHistoryDialog from "./dialogs/SponsorHistoryDialog";
 
+function DonorProfileSkeleton() {
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center gap-4">
+        <Skeleton className="h-16 w-16 rounded-full" />
+        <div className="space-y-2 flex-1">
+          <Skeleton className="h-6 w-52" />
+          <Skeleton className="h-4 w-36" />
+        </div>
+        <Skeleton className="h-9 w-24 rounded-md" />
+      </div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-24 rounded-xl" />
+        ))}
+      </div>
+      <div className="space-y-3">
+        <Skeleton className="h-10 w-full rounded-md" />
+        <Skeleton className="h-64 rounded-xl" />
+      </div>
+    </div>
+  );
+}
+
 export default function DonorProfilePage() {
 
   const router = useRouter();
@@ -41,6 +66,12 @@ export default function DonorProfilePage() {
   const user = authStorage.getUser();
   const canEdit = hasPermission(user?.role, "donors", "edit");
   const [requestingAccess, setRequestingAccess] = useState(false);
+
+  // Track which tabs have been opened to enable lazy loading
+  const [hasOpenedTimeline, setHasOpenedTimeline] = useState(false);
+  const [hasOpenedCommLog, setHasOpenedCommLog] = useState(false);
+  const [hasOpenedFamily, setHasOpenedFamily] = useState(false);
+  const [hasOpenedSpecialDays, setHasOpenedSpecialDays] = useState(false);
 
   const handleRequestAccess = async () => {
     setRequestingAccess(true);
@@ -55,20 +86,27 @@ export default function DonorProfilePage() {
 
   const donorData = useDonorData(donorId);
   const donations = useDonorDonations(donorId, donorData.donor);
-  const family = useDonorFamily(donorId);
-  const specialDays = useDonorSpecialDays(donorId);
+  const family = useDonorFamily(donorId, hasOpenedFamily);
+  const specialDays = useDonorSpecialDays(donorId, hasOpenedSpecialDays);
   const pledges = useDonorPledges(donorId);
-  const communication = useDonorCommunication(donorId, donorData.donor, donations.donations);
-  const timeline = useDonorTimeline(donorId);
+  const communication = useDonorCommunication(donorId, donorData.donor, donations.donations, hasOpenedCommLog);
+  const timeline = useDonorTimeline(donorId, hasOpenedTimeline);
   const sponsorships = useDonorSponsorships(
     donorId,
     donorData.donor?.whatsappPhone || donorData.donor?.primaryPhone,
   );
 
-  if (donorData.loading) return <div>{t("common.loading")}</div>;
+  if (donorData.loading) return <DonorProfileSkeleton />;
   if (!donorData.donor) return <div>{t("donor_profile.not_found")}</div>;
 
   const donor = donorData.donor;
+
+  const handleTabChange = (value: string) => {
+    if (value === "timeline") setHasOpenedTimeline(true);
+    if (value === "comm-log") setHasOpenedCommLog(true);
+    if (value === "family") setHasOpenedFamily(true);
+    if (value === "special-days") setHasOpenedSpecialDays(true);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -103,11 +141,15 @@ export default function DonorProfilePage() {
         }
         pendingPledges={pledges.pendingCount}
         totalPledges={pledges.pledges.length}
-        specialOccasionsCount={specialDays.specialOccasions.length}
-        familyMembersCount={family.familyMembers.length}
+        specialOccasionsCount={
+          (donor.specialOccasions?.length ?? specialDays.specialOccasions.length)
+        }
+        familyMembersCount={
+          (donor.familyMembers?.length ?? family.familyMembers.length)
+        }
       />
 
-      <Tabs defaultValue="overview">
+      <Tabs defaultValue="overview" onValueChange={handleTabChange}>
 
         <TabsList className="flex-wrap h-auto gap-1">
           <TabsTrigger value="overview">{t("donor_profile.tab_overview")}</TabsTrigger>

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import type { Donation, Donor, Template } from "../types";
@@ -6,13 +6,15 @@ import type { Donation, Donor, Template } from "../types";
 export function useDonorCommunication(
   donorId: string,
   donor?: Donor | null,
-  externalDonations?: Donation[]
+  externalDonations?: Donation[],
+  logsEnabled: boolean = false,
 ) {
   const [communicationLogs, setCommunicationLogs] = useState<any[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const logsFetched = useRef(false);
 
   const user = authStorage.getUser();
   const canSendWhatsApp = hasPermission(user?.role, "communication", "whatsapp");
@@ -63,11 +65,19 @@ export function useDonorCommunication(
     }
   }, [donorId, externalDonations]);
 
+  // Always fetch templates on mount — used by DonorQuickActions on the main page
   useEffect(() => {
-    fetchCommunicationLogs();
     fetchTemplates();
     fetchDonations();
-  }, [fetchCommunicationLogs, fetchTemplates, fetchDonations]);
+  }, [fetchTemplates, fetchDonations]);
+
+  // Fetch communication logs only when the comm-log tab is first opened
+  useEffect(() => {
+    if (logsEnabled && !logsFetched.current) {
+      logsFetched.current = true;
+      fetchCommunicationLogs();
+    }
+  }, [logsEnabled, fetchCommunicationLogs]);
 
   const resolvePlaceholders = useCallback((template: string, donation?: Donation): string => {
     let result = template;

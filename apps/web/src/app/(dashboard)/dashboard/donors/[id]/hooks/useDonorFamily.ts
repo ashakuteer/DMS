@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { authStorage } from "@/lib/auth";
 import { apiClient } from "@/lib/api-client";
 import { hasPermission } from "@/lib/permissions";
@@ -15,7 +15,7 @@ const EMPTY_FAMILY_FORM: FamilyMemberFormData = {
   notes: "",
 };
 
-export function useDonorFamily(donorId: string) {
+export function useDonorFamily(donorId: string, enabled: boolean = false) {
   const { toast } = useToast();
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [familyMembersLoading, setFamilyMembersLoading] = useState(false);
@@ -26,6 +26,8 @@ export function useDonorFamily(donorId: string) {
   const [editingFamilyMemberId, setEditingFamilyMemberId] = useState<string | null>(null);
   const [familyMemberForm, setFamilyMemberForm] = useState<FamilyMemberFormData>(EMPTY_FAMILY_FORM);
   const [savingFamilyMember, setSavingFamilyMember] = useState(false);
+
+  const hasFetched = useRef(false);
 
   const user = authStorage.getUser();
   const canEditFamilyAndSpecialDays = hasPermission(user?.role, "donors", "edit");
@@ -46,8 +48,11 @@ export function useDonorFamily(donorId: string) {
   }, [donorId]);
 
   useEffect(() => {
-    fetchFamilyMembers();
-  }, [fetchFamilyMembers]);
+    if (enabled && !hasFetched.current) {
+      hasFetched.current = true;
+      fetchFamilyMembers();
+    }
+  }, [enabled, fetchFamilyMembers]);
 
   const onDelete = useCallback(async (memberId: string) => {
     if (!confirm("Are you sure you want to delete this family member? This cannot be undone.")) return;

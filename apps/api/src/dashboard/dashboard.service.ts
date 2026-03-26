@@ -17,9 +17,12 @@ async function safeRun<T>(fn: () => Promise<T>, label?: string): Promise<T | nul
   }
 }
 
+const SUMMARY_TTL_MS = 60_000;
+
 @Injectable()
 export class DashboardService {
   private readonly logger = new Logger(DashboardService.name);
+  private readonly summaryCache = new Map<string, { data: any; expires: number }>();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -36,6 +39,12 @@ export class DashboardService {
   async getSummary(user: { id: string; role: string }) {
     const t0 = Date.now();
     const role = user.role;
+
+    const cached = this.summaryCache.get(role);
+    if (cached && Date.now() < cached.expires) {
+      this.logger.log(`getSummary() cache HIT [role=${role}]`);
+      return cached.data;
+    }
 
     const canSeeCore = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
     const canSeeTarget = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
@@ -79,7 +88,7 @@ export class DashboardService {
 
     this.logger.log(`getSummary() [role=${role}] completed in ${Date.now() - t0}ms`);
 
-    return {
+    const result = {
       stats,
       monthlyTarget,
       trends,
@@ -94,6 +103,9 @@ export class DashboardService {
       adminInsights,
       reminders,
     };
+
+    this.summaryCache.set(role, { data: result, expires: Date.now() + SUMMARY_TTL_MS });
+    return result;
   }
 
   // ─── Inline reminders query (avoids cross-module import) ─────────────────────

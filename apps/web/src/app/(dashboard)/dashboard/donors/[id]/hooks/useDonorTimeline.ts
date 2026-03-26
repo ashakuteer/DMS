@@ -1,10 +1,10 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { fetchWithAuth } from "@/lib/auth";
 import type { TimelineItem } from "../types";
 
 const PAGE_SIZE = 20;
 
-export function useDonorTimeline(donorId: string) {
+export function useDonorTimeline(donorId: string, enabled: boolean = false) {
   const [allItems, setAllItems] = useState<TimelineItem[]>([]);
   const [timelineLoading, setTimelineLoading] = useState(false);
 
@@ -12,6 +12,8 @@ export function useDonorTimeline(donorId: string) {
   const [timelineEndDate, setTimelineEndDate] = useState("");
   const [timelineTypeFilter, setTimelineTypeFilter] = useState<string[]>([]);
   const [timelinePage, setTimelinePage] = useState(1);
+
+  const hasFetched = useRef(false);
 
   const filteredItems = useMemo(() => {
     let items = allItems;
@@ -63,8 +65,11 @@ export function useDonorTimeline(donorId: string) {
   }, [donorId]);
 
   useEffect(() => {
-    fetchTimeline();
-  }, [fetchTimeline]);
+    if (enabled && !hasFetched.current) {
+      hasFetched.current = true;
+      fetchTimeline();
+    }
+  }, [enabled, fetchTimeline]);
 
   return {
     timelineItems,

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { authStorage } from "@/lib/auth"
 import { apiClient } from "@/lib/api-client"
 import { hasPermission } from "@/lib/permissions"
@@ -19,7 +19,7 @@ const EMPTY_OCCASION_FORM: SpecialOccasionFormData = {
   notes: "",
 }
 
-export function useDonorSpecialDays(donorId: string) {
+export function useDonorSpecialDays(donorId: string, enabled: boolean = false) {
   const { toast } = useToast()
   const [specialOccasions, setSpecialOccasions] = useState<SpecialOccasion[]>([])
   const [specialOccasionsLoading, setSpecialOccasionsLoading] = useState(false)
@@ -30,6 +30,8 @@ export function useDonorSpecialDays(donorId: string) {
   const [editingSpecialOccasionId, setEditingSpecialOccasionId] = useState<string | null>(null)
   const [specialOccasionForm, setSpecialOccasionForm] = useState<SpecialOccasionFormData>(EMPTY_OCCASION_FORM)
   const [savingSpecialOccasion, setSavingSpecialOccasion] = useState(false)
+
+  const hasFetched = useRef(false)
 
   const user = authStorage.getUser()
   const canEditFamilyAndSpecialDays = hasPermission(user?.role, "donors", "edit")
@@ -63,8 +65,11 @@ export function useDonorSpecialDays(donorId: string) {
   }, [donorId])
 
   useEffect(() => {
-    fetchSpecialOccasions()
-  }, [fetchSpecialOccasions])
+    if (enabled && !hasFetched.current) {
+      hasFetched.current = true
+      fetchSpecialOccasions()
+    }
+  }, [enabled, fetchSpecialOccasions])
 
   const onDelete = useCallback(async (occasionId: string) => {
     if (!confirm("Are you sure you want to delete this special day? This cannot be undone.")) return

@@ -28,6 +28,7 @@ async function safeRun(fn, label) {
         return null;
     }
 }
+const SUMMARY_TTL_MS = 60_000;
 let DashboardService = DashboardService_1 = class DashboardService {
     constructor(prisma, statsService, trendsService, insightsService, actionsService, impactService, retentionService) {
         this.prisma = prisma;
@@ -38,10 +39,16 @@ let DashboardService = DashboardService_1 = class DashboardService {
         this.impactService = impactService;
         this.retentionService = retentionService;
         this.logger = new common_1.Logger(DashboardService_1.name);
+        this.summaryCache = new Map();
     }
     async getSummary(user) {
         const t0 = Date.now();
         const role = user.role;
+        const cached = this.summaryCache.get(role);
+        if (cached && Date.now() < cached.expires) {
+            this.logger.log(`getSummary() cache HIT [role=${role}]`);
+            return cached.data;
+        }
         const canSeeCore = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
         const canSeeTarget = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
         const canSeeInsights = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
@@ -67,7 +74,7 @@ let DashboardService = DashboardService_1 = class DashboardService {
             canSeeReminders ? safeRun(() => this.getDueReminders(), "getDueReminders") : null,
         ]);
         this.logger.log(`getSummary() [role=${role}] completed in ${Date.now() - t0}ms`);
-        return {
+        const result = {
             stats,
             monthlyTarget,
             trends,
@@ -82,6 +89,8 @@ let DashboardService = DashboardService_1 = class DashboardService {
             adminInsights,
             reminders,
         };
+        this.summaryCache.set(role, { data: result, expires: Date.now() + SUMMARY_TTL_MS });
+        return result;
     }
     async getDueReminders() {
         const today = new Date();
