@@ -16,7 +16,9 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -94,31 +96,53 @@ export default function FamilyMemberDialog({
                   <SelectValue placeholder={t("donor_profile.select_relation")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SPOUSE">Spouse</SelectItem>
-                  <SelectItem value="SON">Son</SelectItem>
-                  <SelectItem value="DAUGHTER">Daughter</SelectItem>
-                  <SelectItem value="CHILD">Child</SelectItem>
-                  <SelectItem value="FATHER">Father</SelectItem>
-                  <SelectItem value="MOTHER">Mother</SelectItem>
-                  <SelectItem value="BROTHER">Brother</SelectItem>
-                  <SelectItem value="SISTER">Sister</SelectItem>
-                  <SelectItem value="SIBLING">Sibling</SelectItem>
-                  <SelectItem value="FATHER_IN_LAW">Father-in-law</SelectItem>
-                  <SelectItem value="MOTHER_IN_LAW">Mother-in-law</SelectItem>
-                  <SelectItem value="IN_LAW">In-law</SelectItem>
-                  <SelectItem value="GRANDFATHER">Grandfather</SelectItem>
-                  <SelectItem value="GRANDMOTHER">Grandmother</SelectItem>
-                  <SelectItem value="GRANDPARENT">Grandparent</SelectItem>
-                  <SelectItem value="GRANDSON">Grandson</SelectItem>
-                  <SelectItem value="GRANDDAUGHTER">Granddaughter</SelectItem>
-                  <SelectItem value="GRANDCHILD">Grandchild</SelectItem>
-                  <SelectItem value="FIANCE">Fiancé</SelectItem>
-                  <SelectItem value="FIANCEE">Fiancée</SelectItem>
-                  <SelectItem value="FRIEND">Friend</SelectItem>
-                  <SelectItem value="COLLEAGUE">Colleague</SelectItem>
-                  <SelectItem value="BOSS">Boss</SelectItem>
-                  <SelectItem value="MENTOR">Mentor</SelectItem>
-                  <SelectItem value="OTHER">Other</SelectItem>
+                  <SelectGroup>
+                    <SelectLabel>Immediate Family</SelectLabel>
+                    <SelectItem value="SPOUSE">Spouse</SelectItem>
+                    <SelectItem value="SON">Son</SelectItem>
+                    <SelectItem value="DAUGHTER">Daughter</SelectItem>
+                    <SelectItem value="CHILD">Child</SelectItem>
+                    <SelectItem value="FATHER">Father</SelectItem>
+                    <SelectItem value="MOTHER">Mother</SelectItem>
+                    <SelectItem value="BROTHER">Brother</SelectItem>
+                    <SelectItem value="SISTER">Sister</SelectItem>
+                    <SelectItem value="SIBLING">Sibling</SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>In-Laws</SelectLabel>
+                    <SelectItem value="FATHER_IN_LAW">Father-in-law</SelectItem>
+                    <SelectItem value="MOTHER_IN_LAW">Mother-in-law</SelectItem>
+                    <SelectItem value="BROTHER_IN_LAW">Brother-in-law</SelectItem>
+                    <SelectItem value="SISTER_IN_LAW">Sister-in-law</SelectItem>
+                    <SelectItem value="SON_IN_LAW">Son-in-law</SelectItem>
+                    <SelectItem value="DAUGHTER_IN_LAW">Daughter-in-law</SelectItem>
+                    <SelectItem value="IN_LAW">In-law</SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Extended Family</SelectLabel>
+                    <SelectItem value="GRANDFATHER">Grandfather</SelectItem>
+                    <SelectItem value="GRANDMOTHER">Grandmother</SelectItem>
+                    <SelectItem value="GRANDPARENT">Grandparent</SelectItem>
+                    <SelectItem value="GRANDSON">Grandson</SelectItem>
+                    <SelectItem value="GRANDDAUGHTER">Granddaughter</SelectItem>
+                    <SelectItem value="GRANDCHILD">Grandchild</SelectItem>
+                    <SelectItem value="COUSIN">Cousin</SelectItem>
+                    <SelectItem value="UNCLE">Uncle</SelectItem>
+                    <SelectItem value="AUNT">Aunt</SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Partner</SelectLabel>
+                    <SelectItem value="FIANCE">Fiancé</SelectItem>
+                    <SelectItem value="FIANCEE">Fiancée</SelectItem>
+                  </SelectGroup>
+                  <SelectGroup>
+                    <SelectLabel>Other</SelectLabel>
+                    <SelectItem value="FRIEND">Friend</SelectItem>
+                    <SelectItem value="COLLEAGUE">Colleague</SelectItem>
+                    <SelectItem value="BOSS">Boss</SelectItem>
+                    <SelectItem value="MENTOR">Mentor</SelectItem>
+                    <SelectItem value="OTHER">Other</SelectItem>
+                  </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
