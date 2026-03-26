@@ -1,0 +1,71 @@
+We need one final cleanup for Donor Actions + Family Members + Special Days.
+
+Current problems:
+1. Donor Actions still sometimes shows 0 actions / not loading expected rows
+2. Family Members and Special Days both contain birthday / anniversary-style data, so source of truth is unclear
+3. We need one clean rule for where reminders should come from
+4. Do not do partial fixes anymore — close this properly
+
+Please inspect and fix in this order:
+
+A. DEFINE SINGLE SOURCE OF TRUTH
+1. Family Members tab should be the source of truth for person-level family birthdays:
+- spouse birthday
+- son / daughter / child birthday
+- other family member birthdays
+2. Special Days tab should be only for donor-level occasions:
+- donor self birthday
+- donor wedding anniversary
+- memorial / remembrance day
+- other donor-level reminder
+3. Do NOT require the same birthday to be entered in both places
+4. If family member birthday exists in Family Members, Donor Actions should use that directly
+5. Prevent duplicate donor-action generation when same kind of date exists in both places
+
+B. DONOR ACTION GENERATION
+1. Inspect actual generator logic and list all sources currently used:
+- donor self DOB
+- donor_special_occasions
+- donor_family_members / donor relations
+- pledges
+- sponsorships
+- donation pattern / smart reminders
+2. Fix generation so all expected action rows appear correctly in Donor Actions
+3. Make sure action type mapping is clean and not conflicting
+
+C. DUPLICATE PREVENTION RULES
+Implement these rules:
+1. Birthday (Self) comes from donor record OR donor-level special day only
+2. Wedding Anniversary comes from donor-level special day only
+3. Family birthdays come from Family Members only
+4. Memorial / remembrance comes from donor-level special day only
+5. No duplicate task should be created for the same donor + same occasion + same due date
+
+D. UI LABEL CLARITY
+1. In Family Members section, keep birthdays there
+2. In Special Days section, show a note that family birthdays are managed in Family Members
+3. In Donor Actions rows, label clearly what the source is if helpful:
+- Donor Birthday
+- Wedding Anniversary
+- Son Birthday
+- Spouse Birthday
+- Memorial Day
+- Pledge Follow-up
+- Smart Reminder
+
+E. FINAL DEBUG
+Before marking done, verify these real scenarios:
+1. donor self birthday appears in Donor Actions
+2. donor wedding anniversary appears
+3. spouse birthday from Family Members appears
+4. son/daughter birthday from Family Members appears
+5. memorial day appears
+6. pledge appears
+7. no duplicate birthday rows are created from both Family + Special Days
+
+F. REPORT BACK ONLY WITH:
+1. actual source rules implemented
+2. files changed
+3. whether any SQL patch is needed
+4. exactly why Donor Actions was still showing 0
+5. what is now fixed

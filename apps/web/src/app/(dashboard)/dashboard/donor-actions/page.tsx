@@ -21,7 +21,7 @@ import { authStorage } from "@/lib/auth"
 const TYPE_META: Record<string, { label: string; color: string; bg: string; icon: any }> = {
   BIRTHDAY:       { label: "Birthday",        color: "text-pink-700",   bg: "bg-pink-100",   icon: Gift },
   ANNIVERSARY:    { label: "Anniversary",     color: "text-rose-700",   bg: "bg-rose-100",   icon: Heart },
-  REMEMBRANCE:    { label: "Remembrance",     color: "text-slate-600",  bg: "bg-slate-200",  icon: Star },
+  REMEMBRANCE:    { label: "Memorial Day",    color: "text-slate-600",  bg: "bg-slate-200",  icon: Star },
   FOLLOW_UP:      { label: "Follow-up",       color: "text-blue-700",   bg: "bg-blue-100",   icon: PhoneCall },
   PLEDGE:         { label: "Pledge",          color: "text-purple-700", bg: "bg-purple-100", icon: HandHeart },
   SMART_REMINDER: { label: "Smart Reminder",  color: "text-amber-700",  bg: "bg-amber-100",  icon: TrendingUp },
@@ -62,7 +62,7 @@ const TYPE_FILTERS = [
   { value: "ALL",            label: "All" },
   { value: "BIRTHDAY",       label: "Birthdays" },
   { value: "ANNIVERSARY",    label: "Anniversaries" },
-  { value: "REMEMBRANCE",    label: "Remembrance" },
+  { value: "REMEMBRANCE",    label: "Memorial Days" },
   { value: "PLEDGE",         label: "Pledges" },
   { value: "SMART_REMINDER", label: "Smart Reminders" },
   { value: "SPONSOR_UPDATE", label: "Sponsor Updates" },

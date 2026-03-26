@@ -92,6 +92,22 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
         const daysUntil = Math.round((dueDate.getTime() - today.getTime()) / 86400000);
         return { dueDate, daysUntil };
     }
+    relationLabel(relationType) {
+        const map = {
+            SPOUSE: 'Spouse', SON: 'Son', DAUGHTER: 'Daughter', CHILD: 'Child',
+            FATHER: 'Father', MOTHER: 'Mother', BROTHER: 'Brother', SISTER: 'Sister',
+            SIBLING: 'Sibling', FATHER_IN_LAW: 'Father-in-law', MOTHER_IN_LAW: 'Mother-in-law',
+            BROTHER_IN_LAW: 'Brother-in-law', SISTER_IN_LAW: 'Sister-in-law',
+            SON_IN_LAW: 'Son-in-law', DAUGHTER_IN_LAW: 'Daughter-in-law', IN_LAW: 'In-law',
+            GRANDFATHER: 'Grandfather', GRANDMOTHER: 'Grandmother', GRANDPARENT: 'Grandparent',
+            GRANDSON: 'Grandson', GRANDDAUGHTER: 'Granddaughter', GRANDCHILD: 'Grandchild',
+            COUSIN: 'Cousin', UNCLE: 'Uncle', AUNT: 'Aunt',
+            FIANCE: 'Fiancé', FIANCEE: 'Fiancée',
+            FRIEND: 'Friend', COLLEAGUE: 'Colleague', BOSS: 'Boss', MENTOR: 'Mentor',
+            OTHER: 'Other',
+        };
+        return map[relationType] ?? relationType;
+    }
     async generateDonorDobBirthdayTasks() {
         const LOOK_AHEAD_DAYS = 30;
         const donors = await this.prisma.donor.findMany({
@@ -124,13 +140,14 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
                     type: client_1.TaskType.BIRTHDAY,
                     donorId: donor.id,
                     dueDate: { gte: dueDate, lt: nextDay },
+                    sourceFamilyMemberId: null,
                 },
             });
             if (!existing) {
                 const donorName = [donor.firstName, donor.lastName].filter(Boolean).join(' ');
                 await this.prisma.task.create({
                     data: {
-                        title: `Birthday: ${donorName}`,
+                        title: `Donor Birthday: ${donorName}`,
                         type: client_1.TaskType.BIRTHDAY,
                         priority: daysUntil <= 1 ? client_1.TaskPriority.HIGH : client_1.TaskPriority.MEDIUM,
                         status: client_1.TaskStatus.PENDING,
@@ -150,7 +167,7 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
         const LOOK_AHEAD_DAYS = 30;
         const birthdayOccasions = await this.prisma.donorSpecialOccasion.findMany({
             where: {
-                type: { in: [client_1.OccasionType.DOB_SELF, client_1.OccasionType.DOB_SPOUSE, client_1.OccasionType.DOB_CHILD] },
+                type: client_1.OccasionType.DOB_SELF,
                 donor: { isDeleted: false },
             },
             include: {
@@ -177,27 +194,15 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
                 where: {
                     type: client_1.TaskType.BIRTHDAY,
                     donorId: occ.donorId,
-                    sourceOccasionId: occ.id,
                     dueDate: { gte: dueDate, lt: nextDay },
+                    sourceFamilyMemberId: null,
                 },
             });
             if (!existing) {
                 const donorName = [occ.donor.firstName, occ.donor.lastName].filter(Boolean).join(' ');
-                let title;
-                if (occ.type === client_1.OccasionType.DOB_SELF) {
-                    title = `Birthday: ${donorName}`;
-                }
-                else if (occ.type === client_1.OccasionType.DOB_SPOUSE) {
-                    const spouseName = occ.relatedPersonName || 'Spouse';
-                    title = `Birthday: ${spouseName} (Spouse of ${donorName})`;
-                }
-                else {
-                    const childName = occ.relatedPersonName || 'Child';
-                    title = `Birthday: ${childName} (Child of ${donorName})`;
-                }
                 await this.prisma.task.create({
                     data: {
-                        title,
+                        title: `Donor Birthday: ${donorName}`,
                         type: client_1.TaskType.BIRTHDAY,
                         priority: daysUntil <= 1 ? client_1.TaskPriority.HIGH : client_1.TaskPriority.MEDIUM,
                         status: client_1.TaskStatus.PENDING,
@@ -251,7 +256,8 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
             });
             if (!existing) {
                 const donorName = [member.donor.firstName, member.donor.lastName].filter(Boolean).join(' ');
-                const title = `Birthday: ${member.name} (${member.relationType.replace(/_/g, ' ')} of ${donorName})`;
+                const rel = this.relationLabel(member.relationType);
+                const title = `${rel} Birthday: ${member.name} (for ${donorName})`;
                 await this.prisma.task.create({
                     data: {
                         title,
@@ -303,7 +309,7 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
                 const name = [occ.donor.firstName, occ.donor.lastName].filter(Boolean).join(' ');
                 await this.prisma.task.create({
                     data: {
-                        title: `Anniversary: ${name}${occ.relatedPersonName ? ` & ${occ.relatedPersonName}` : ''}`,
+                        title: `Wedding Anniversary: ${name}${occ.relatedPersonName ? ` & ${occ.relatedPersonName}` : ''}`,
                         type: client_1.TaskType.ANNIVERSARY,
                         priority: daysUntil <= 1 ? client_1.TaskPriority.HIGH : client_1.TaskPriority.MEDIUM,
                         status: client_1.TaskStatus.PENDING,
@@ -350,12 +356,9 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
             });
             if (!existing) {
                 const name = [occ.donor.firstName, occ.donor.lastName].filter(Boolean).join(' ');
-                const titleSuffix = daysUntil === 0
-                    ? ''
-                    : ` (in ${daysUntil} day${daysUntil === 1 ? '' : 's'})`;
                 await this.prisma.task.create({
                     data: {
-                        title: `Remembrance${titleSuffix}: ${occ.relatedPersonName || 'Loved One'} (${name})`,
+                        title: `Memorial Day: ${occ.relatedPersonName || 'Loved One'} (for ${name})`,
                         type: client_1.TaskType.REMEMBRANCE,
                         priority: daysUntil <= 3 ? client_1.TaskPriority.HIGH : client_1.TaskPriority.MEDIUM,
                         status: client_1.TaskStatus.PENDING,

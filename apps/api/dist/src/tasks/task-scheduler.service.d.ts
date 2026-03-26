@@ -10,6 +10,7 @@ export declare class TaskSchedulerService implements OnModuleInit {
     private autoWhatsApp;
     private futureDueDate;
     private nextAnnualDate;
+    private relationLabel;
     generateDonorDobBirthdayTasks(): Promise<number>;
     generateBirthdayTasks(): Promise<number>;
     generateFamilyMemberBirthdayTasks(): Promise<number>;
