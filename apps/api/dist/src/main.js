@@ -45,6 +45,10 @@ async function bootstrap() {
             'http://localhost:5000',
         ],
         credentials: true,
+        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+        preflightContinue: false,
+        optionsSuccessStatus: 204,
     });
     app.setGlobalPrefix("api");
     app.use("/uploads", express.static((0, path_1.join)(process.cwd(), "uploads")));

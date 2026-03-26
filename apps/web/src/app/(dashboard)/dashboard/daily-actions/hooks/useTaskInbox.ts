@@ -205,16 +205,14 @@ export function useTaskInbox() {
   }, [fetchTasks])
 
   const generateTasks = useCallback(async () => {
-    try {
-      await fetch(`${API_URL}/api/tasks/generate`, {
-        method: "POST",
-        headers: authHeaders(),
-      })
-      await fetchTasks()
-    } catch (err) {
-      console.error(err)
+    const res = await fetch(`${API_URL}/api/tasks/generate`, {
+      method: "POST",
+      headers: authHeaders(),
+    })
+    if (!res.ok) {
+      throw new Error(`Generate failed: ${res.status}`)
     }
-  }, [fetchTasks])
+  }, [])
 
   const logContact = useCallback(async (taskId: string, input: LogContactInput): Promise<boolean> => {
     try {

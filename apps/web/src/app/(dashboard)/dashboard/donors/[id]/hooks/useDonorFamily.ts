@@ -118,9 +118,10 @@ export function useDonorFamily(donorId: string) {
       setEditingFamilyMemberId(null);
       await fetchFamilyMembers();
       toast({ title: editingFamilyMemberId ? "Family Member Updated" : "Family Member Added", description: "The family member has been saved successfully." });
-    } catch {
-      console.error("Failed to save family member");
-      toast({ title: "Failed to Save Family Member", description: "Please check the details and try again.", variant: "destructive" });
+    } catch (err: any) {
+      const msg = err?.message || "Please check the details and try again.";
+      console.error("Failed to save family member:", msg, err);
+      toast({ title: "Failed to Save Family Member", description: msg, variant: "destructive" });
     } finally {
       setSavingFamilyMember(false);
     }

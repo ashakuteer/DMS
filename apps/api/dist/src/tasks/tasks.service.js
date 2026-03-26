@@ -176,27 +176,27 @@ let TasksService = class TasksService {
             switch (query.timeWindow) {
                 case 'today':
                     where.status = client_1.TaskStatus.PENDING;
-                    where.dueDate = { gte: today, lt: tomorrow };
+                    where.dueDate = { lt: tomorrow };
                     break;
                 case '7days': {
                     const end7 = new Date(today);
                     end7.setDate(end7.getDate() + 8);
                     where.status = client_1.TaskStatus.PENDING;
-                    where.dueDate = { gte: today, lt: end7 };
+                    where.dueDate = { lt: end7 };
                     break;
                 }
                 case '15days': {
                     const end15 = new Date(today);
                     end15.setDate(end15.getDate() + 16);
                     where.status = client_1.TaskStatus.PENDING;
-                    where.dueDate = { gte: today, lt: end15 };
+                    where.dueDate = { lt: end15 };
                     break;
                 }
                 case '30days': {
                     const end30 = new Date(today);
                     end30.setDate(end30.getDate() + 31);
                     where.status = client_1.TaskStatus.PENDING;
-                    where.dueDate = { gte: today, lt: end30 };
+                    where.dueDate = { lt: end30 };
                     break;
                 }
                 case 'overdue':

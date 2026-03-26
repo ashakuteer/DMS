@@ -1,0 +1,89 @@
+We need one final stabilization pass for donor actions and family member flow.
+
+Current problems still happening:
+1. Donor Actions page sometimes shows 0 actions unexpectedly
+2. Family member save/edit still fails
+3. We previously saw CORS issues on donor-relations endpoints
+4. We previously saw enum mismatch issues for FamilyRelationType
+5. This should now be fixed end-to-end, not partially
+
+Do this in order:
+
+A. FAMILY MEMBER SAVE / EDIT
+1. Inspect donor-relations backend endpoints actually used for:
+- create family member
+- update family member
+- fetch donor relations
+2. Confirm CORS is fully enabled for these routes from Vercel frontend
+3. Confirm OPTIONS preflight works
+4. Confirm FamilyRelationType enum in Prisma schema AND production DB both include:
+- SON
+- DAUGHTER
+- BROTHER
+- SISTER
+- FATHER_IN_LAW
+- MOTHER_IN_LAW
+- BROTHER_IN_LAW
+- SISTER_IN_LAW
+- SON_IN_LAW
+- DAUGHTER_IN_LAW
+- COUSIN
+- UNCLE
+- AUNT
+- GRANDFATHER
+- GRANDMOTHER
+- GRANDSON
+- GRANDDAUGHTER
+- FIANCE
+- FIANCEE
+- FRIEND
+- COLLEAGUE
+- BOSS
+- MENTOR
+5. If production DB enum is missing any value, generate one SQL patch and tell me clearly
+
+B. DONOR ACTIONS PAGE
+1. Inspect backend donor action generator and API response
+2. Confirm tasks are actually being generated for:
+- birthdays
+- anniversaries
+- remembrance
+- pledges
+- smart reminders
+- sponsor updates
+- follow-ups
+3. Confirm frontend filtering logic is correct for:
+- All
+- Birthdays
+- Anniversaries
+- Remembrance
+- Pledges
+- Smart Reminders
+- Sponsor Updates
+- Follow-ups
+4. Fix any API / frontend mismatch in task type names
+
+C. TELECALLER / OWNER
+1. Keep donor owner assignment working
+2. Show owner name in donor action rows where available
+3. If unassigned, show Unassigned
+
+D. FINAL VERIFICATION
+Before finishing, verify these exact scenarios:
+1. Add family member with relation SON and save successfully
+2. Edit that family member successfully
+3. Add donor anniversary / special day successfully
+4. Open Donor Actions and confirm at least expected tasks are visible
+5. Test one Pledge row
+6. Test one Anniversary row
+
+E. REPORT BACK ONLY WITH:
+1. files changed
+2. SQL patch if any
+3. exact root cause(s)
+4. what is now working
+5. what still needs manual DB action, if any
+
+Important:
+Do not give partial fixes.
+Do one complete stabilization pass and verify with real data before saying done.
