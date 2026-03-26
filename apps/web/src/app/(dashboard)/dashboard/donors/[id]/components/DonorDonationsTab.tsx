@@ -23,7 +23,7 @@ interface DonorDonationsTabProps {
   canSendEmail: boolean;
   hasWhatsAppNumber: boolean;
   hasEmail: boolean;
-  templates: Template[];
+  templates?: Template[];
   donorName: string;
   resendingReceiptId: string | null;
   deletingDonationId: string | null;
@@ -50,7 +50,7 @@ export default function DonorDonationsTab({
   canSendEmail,
   hasWhatsAppNumber,
   hasEmail,
-  templates,
+  templates = [],
   donorName,
   resendingReceiptId,
   deletingDonationId,
