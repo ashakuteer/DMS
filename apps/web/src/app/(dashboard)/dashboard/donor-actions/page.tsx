@@ -5,7 +5,7 @@ import {
   Loader2, Phone, MessageCircle, User, CheckCircle2, Circle,
   Calendar, AlertTriangle, Star, Gift, Heart, HandHeart,
   TrendingUp, Send, Clock, PhoneCall, X, CheckCheck,
-  ChevronRight,
+  ChevronRight, RefreshCw,
 } from "lucide-react"
 import {
   useTaskInbox,
@@ -14,6 +14,7 @@ import {
   type LogContactInput,
 } from "../daily-actions/hooks/useTaskInbox"
 import Link from "next/link"
+import { authStorage } from "@/lib/auth"
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -459,10 +460,30 @@ export default function DonorActionsPage() {
     tasks, loading, completing,
     timeWindow, typeFilter, showCompleted,
     setShowCompleted, changeTimeWindow, changeTypeFilter,
-    completeTask, reopenTask, logContact,
+    completeTask, reopenTask, logContact, generateTasks, refresh,
   } = useTaskInbox()
 
   const [logTarget, setLogTarget] = useState<TaskItem | null>(null)
+  const [regenerating, setRegenerating] = useState(false)
+  const [regenMsg, setRegenMsg] = useState<string | null>(null)
+
+  const currentUser = authStorage.getUser()
+  const canRegenerate = currentUser?.role === "ADMIN" || currentUser?.role === "FOUNDER"
+
+  const handleRegenerate = async () => {
+    setRegenerating(true)
+    setRegenMsg(null)
+    try {
+      await generateTasks()
+      await refresh()
+      setRegenMsg("Actions regenerated successfully")
+    } catch {
+      setRegenMsg("Regeneration failed — check your connection")
+    } finally {
+      setRegenerating(false)
+      setTimeout(() => setRegenMsg(null), 4000)
+    }
+  }
 
   const filtered = tasks.filter(t => showCompleted || t.status !== "COMPLETED")
   const sorted = sortActions(filtered)
@@ -489,15 +510,37 @@ export default function DonorActionsPage() {
 
       {/* ── Header ── */}
       <div className="mb-8">
-        <h1
-          className="text-4xl font-bold text-gray-900 tracking-tight"
-          data-testid="text-donor-actions-title"
-        >
-          Donor Actions
-        </h1>
-        <p className="text-base text-gray-500 mt-2">
-          Daily workboard — auto-generated from donor profiles, special occasions, pledges &amp; giving patterns
-        </p>
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <h1
+              className="text-4xl font-bold text-gray-900 tracking-tight"
+              data-testid="text-donor-actions-title"
+            >
+              Donor Actions
+            </h1>
+            <p className="text-base text-gray-500 mt-2">
+              Daily workboard — auto-generated from donor profiles, special occasions, pledges &amp; giving patterns
+            </p>
+          </div>
+          {canRegenerate && (
+            <button
+              onClick={handleRegenerate}
+              disabled={regenerating}
+              data-testid="button-regenerate-actions"
+              className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 bg-white border-2 border-gray-200 hover:border-gray-400 hover:text-gray-900 rounded-xl transition-all disabled:opacity-60"
+              title="Regenerate all donor actions now (runs the daily engine immediately)"
+            >
+              <RefreshCw className={`h-4 w-4 ${regenerating ? "animate-spin" : ""}`} />
+              {regenerating ? "Regenerating…" : "Regenerate Actions"}
+            </button>
+          )}
+        </div>
+
+        {regenMsg && (
+          <p className="text-sm text-teal-700 bg-teal-50 border border-teal-200 px-4 py-2 rounded-lg mt-3 inline-block">
+            {regenMsg}
+          </p>
+        )}
 
         {/* Summary pills */}
         <div className="flex items-center gap-3 mt-5 flex-wrap">
@@ -519,8 +562,10 @@ export default function DonorActionsPage() {
               {doneCount} completed
             </span>
           )}
-          {overdueCount === 0 && todayCount === 0 && doneCount === 0 && (
-            <span className="text-sm text-gray-400">No actions generated yet — actions appear here once the daily engine runs</span>
+          {!loading && overdueCount === 0 && todayCount === 0 && doneCount === 0 && (
+            <span className="text-sm text-gray-400">
+              No actions in this window — try switching to "30 Days" or click Regenerate Actions
+            </span>
           )}
         </div>
       </div>

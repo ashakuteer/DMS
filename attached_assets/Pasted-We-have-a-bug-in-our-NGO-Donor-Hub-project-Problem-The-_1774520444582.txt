@@ -1,0 +1,77 @@
+We have a bug in our NGO Donor Hub project.
+
+Problem:
+The “Donor Actions” page is showing:
+- “No actions generated yet — actions appear here once the daily engine runs”
+- 0 actions in all tabs/time windows
+
+This means the donor action generation engine is failing or not creating records.
+
+Please do a full root-cause analysis and fix it properly.
+
+What to check:
+1. Find the complete Donor Actions flow:
+   - frontend page that loads donor actions
+   - backend controller/API endpoint
+   - service that fetches actions
+   - scheduler/cron/daily engine that auto-generates actions
+   - database table(s) used to store donor actions
+
+2. Verify whether the issue is:
+   - scheduler not running
+   - generator method not being called
+   - API returning empty data
+   - filters for 30 days / today / overdue hiding valid records
+   - action types not being created
+   - database schema mismatch / missing table / missing columns
+   - wrong date logic / timezone logic
+   - donor data exists but generator skips all donors
+   - special days / pledges / reminders / sponsor updates logic broken
+
+3. Check logs and add temporary debug logs where needed:
+   - when scheduler starts
+   - when generator runs
+   - number of donors scanned
+   - number of birthdays/anniversaries/remembrance/pledges/smart reminders/sponsor updates found
+   - number of records inserted
+   - number of records returned by API
+
+4. Check whether donor action records are being saved in DB at all.
+   - If not, fix creation logic.
+   - If yes, but UI shows empty, fix query/filter logic.
+
+5. Verify the daily engine supports these categories:
+   - Birthdays
+   - Anniversaries
+   - Remembrance
+   - Pledges
+   - Smart Reminders
+   - Sponsor Updates
+   - Follow-ups
+
+6. Check for date range bug:
+   - 30 days
+   - 15 days
+   - next 7 days
+   - today
+   - overdue
+   Make sure records are not excluded incorrectly due to date comparison.
+
+7. Ensure seed/test fallback:
+   - If there are matching donor dates/pledges in DB, actions should generate.
+   - If needed, create a safe dev test function or manual trigger endpoint to regenerate donor actions immediately.
+
+Important:
+- Do not do a temporary UI-only fix.
+- Fix the actual backend generation + retrieval flow.
+- Keep existing design/UI intact.
+- Do not break staff tasks.
+- If DB migration is needed, create it properly.
+
+Please give me:
+A. root cause found
+B. files changed
+C. exact code changes
+D. whether migration is needed
+E. how to manually test from UI and API
+F. if useful, add a button or admin-only temporary endpoint to “Regenerate Donor Actions Now” for testing

@@ -111,7 +111,7 @@ export function useTaskInbox() {
   const [loading, setLoading] = useState(true)
   const [completing, setCompleting] = useState<Set<string>>(new Set())
   const [creating, setCreating] = useState(false)
-  const [timeWindow, setTimeWindow] = useState<TimeWindow>("today")
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>("30days")
   const [typeFilter, setTypeFilter] = useState("ALL")
   const [showCompleted, setShowCompleted] = useState(false)
 

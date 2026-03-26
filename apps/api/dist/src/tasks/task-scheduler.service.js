@@ -40,6 +40,7 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
     async runDailyTaskGeneration() {
         this.logger.log('Daily donor task generation started');
         const results = await Promise.allSettled([
+            this.generateDonorDobBirthdayTasks(),
             this.generateBirthdayTasks(),
             this.generateFamilyMemberBirthdayTasks(),
             this.generateAnniversaryTasks(),
@@ -49,8 +50,12 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
             this.generateSponsorUpdateTasks(),
             this.generateSmartDonationReminderTasks(),
         ]);
+        const names = [
+            'donor-dob-birthday', 'occasion-birthday', 'family-birthday',
+            'anniversary', 'remembrance', 'pledge', 'donation-followup',
+            'sponsor-update', 'smart-reminder',
+        ];
         results.forEach((r, i) => {
-            const names = ['birthday', 'family-birthday', 'anniversary', 'remembrance', 'pledge', 'donation-followup', 'sponsor-update', 'smart-reminder'];
             if (r.status === 'rejected') {
                 this.logger.error(`${names[i]} task generation failed: ${r.reason}`);
             }
@@ -86,6 +91,60 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
         }
         const daysUntil = Math.round((dueDate.getTime() - today.getTime()) / 86400000);
         return { dueDate, daysUntil };
+    }
+    async generateDonorDobBirthdayTasks() {
+        const LOOK_AHEAD_DAYS = 30;
+        const donors = await this.prisma.donor.findMany({
+            where: {
+                dobMonth: { not: null },
+                dobDay: { not: null },
+                isDeleted: false,
+            },
+            select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                dobMonth: true,
+                dobDay: true,
+                prefWhatsapp: true,
+                whatsappPhone: true,
+            },
+        });
+        this.logger.log(`generateDonorDobBirthdayTasks: scanning ${donors.length} donors with DOB data`);
+        let created = 0;
+        for (const donor of donors) {
+            if (!donor.dobMonth || !donor.dobDay)
+                continue;
+            const { dueDate, daysUntil } = this.nextAnnualDate(donor.dobMonth, donor.dobDay);
+            if (daysUntil > LOOK_AHEAD_DAYS)
+                continue;
+            const nextDay = new Date(dueDate.getTime() + 86400000);
+            const existing = await this.prisma.task.findFirst({
+                where: {
+                    type: client_1.TaskType.BIRTHDAY,
+                    donorId: donor.id,
+                    dueDate: { gte: dueDate, lt: nextDay },
+                },
+            });
+            if (!existing) {
+                const donorName = [donor.firstName, donor.lastName].filter(Boolean).join(' ');
+                await this.prisma.task.create({
+                    data: {
+                        title: `Birthday: ${donorName}`,
+                        type: client_1.TaskType.BIRTHDAY,
+                        priority: daysUntil <= 1 ? client_1.TaskPriority.HIGH : client_1.TaskPriority.MEDIUM,
+                        status: client_1.TaskStatus.PENDING,
+                        dueDate,
+                        donorId: donor.id,
+                        autoWhatsAppPossible: this.autoWhatsApp(donor),
+                        manualRequired: true,
+                    },
+                });
+                created++;
+            }
+        }
+        this.logger.log(`generateDonorDobBirthdayTasks: created ${created} new birthday tasks`);
+        return created;
     }
     async generateBirthdayTasks() {
         const LOOK_AHEAD_DAYS = 30;

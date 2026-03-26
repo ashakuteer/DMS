@@ -42,8 +42,9 @@ export class TaskSchedulerService implements OnModuleInit {
   async runDailyTaskGeneration() {
     this.logger.log('Daily donor task generation started');
     const results = await Promise.allSettled([
-      this.generateBirthdayTasks(),
-      this.generateFamilyMemberBirthdayTasks(),
+      this.generateDonorDobBirthdayTasks(),      // PRIMARY: reads donor.dobMonth / donor.dobDay
+      this.generateBirthdayTasks(),               // SECONDARY: reads donorSpecialOccasion (DOB_SELF/SPOUSE/CHILD)
+      this.generateFamilyMemberBirthdayTasks(),   // family members tab birthday data
       this.generateAnniversaryTasks(),
       this.generateRemembranceTasks(),
       this.generatePledgeFollowUpTasks(),
@@ -51,8 +52,12 @@ export class TaskSchedulerService implements OnModuleInit {
       this.generateSponsorUpdateTasks(),
       this.generateSmartDonationReminderTasks(),
     ]);
+    const names = [
+      'donor-dob-birthday', 'occasion-birthday', 'family-birthday',
+      'anniversary', 'remembrance', 'pledge', 'donation-followup',
+      'sponsor-update', 'smart-reminder',
+    ];
     results.forEach((r, i) => {
-      const names = ['birthday', 'family-birthday', 'anniversary', 'remembrance', 'pledge', 'donation-followup', 'sponsor-update', 'smart-reminder'];
       if (r.status === 'rejected') {
         this.logger.error(`${names[i]} task generation failed: ${r.reason}`);
       } else {
@@ -102,9 +107,79 @@ export class TaskSchedulerService implements OnModuleInit {
     return { dueDate, daysUntil };
   }
 
+  // ─── 0. Donor DOB birthday tasks — reads from donor.dobMonth / donor.dobDay ──
+  //        This is the PRIMARY source. Most donors have their birthday stored directly
+  //        on the donor record (populated via the donor edit form or bulk import).
+  //        Deduplication is on (donorId + BIRTHDAY type + dueDate) regardless of source,
+  //        so it safely co-exists with the special-occasions generator below.
+
+  async generateDonorDobBirthdayTasks(): Promise<number> {
+    const LOOK_AHEAD_DAYS = 30;
+
+    const donors = await this.prisma.donor.findMany({
+      where: {
+        dobMonth: { not: null },
+        dobDay: { not: null },
+        isDeleted: false,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        dobMonth: true,
+        dobDay: true,
+        prefWhatsapp: true,
+        whatsappPhone: true,
+      },
+    });
+
+    this.logger.log(`generateDonorDobBirthdayTasks: scanning ${donors.length} donors with DOB data`);
+
+    let created = 0;
+    for (const donor of donors) {
+      if (!donor.dobMonth || !donor.dobDay) continue;
+
+      const { dueDate, daysUntil } = this.nextAnnualDate(donor.dobMonth, donor.dobDay);
+      if (daysUntil > LOOK_AHEAD_DAYS) continue;
+
+      const nextDay = new Date(dueDate.getTime() + 86400000);
+
+      // Deduplicate: any existing BIRTHDAY task for this donor on this dueDate
+      // (regardless of sourceOccasionId — avoids double-task if special occasion also exists)
+      const existing = await this.prisma.task.findFirst({
+        where: {
+          type: TaskType.BIRTHDAY,
+          donorId: donor.id,
+          dueDate: { gte: dueDate, lt: nextDay },
+        },
+      });
+
+      if (!existing) {
+        const donorName = [donor.firstName, donor.lastName].filter(Boolean).join(' ');
+        await this.prisma.task.create({
+          data: {
+            title: `Birthday: ${donorName}`,
+            type: TaskType.BIRTHDAY,
+            priority: daysUntil <= 1 ? TaskPriority.HIGH : TaskPriority.MEDIUM,
+            status: TaskStatus.PENDING,
+            dueDate,
+            donorId: donor.id,
+            autoWhatsAppPossible: this.autoWhatsApp(donor),
+            manualRequired: true,
+          },
+        });
+        created++;
+      }
+    }
+
+    this.logger.log(`generateDonorDobBirthdayTasks: created ${created} new birthday tasks`);
+    return created;
+  }
+
   // ─── 1. Birthday tasks — reads from donor_special_occasions (DOB_SELF / DOB_SPOUSE / DOB_CHILD)
-  //        This matches how anniversary/remembrance tasks work — all birthday data is stored
-  //        in the special occasions table, NOT in donor.dobMonth / donor.dobDay.
+  //        Secondary source: Special Days dialog entries. The DOB generator above already
+  //        covers donor self-birthdays from donor.dobMonth/dobDay, so this handles
+  //        spouse/child occasions and any DOB_SELF occasions entered via the dialog.
 
   async generateBirthdayTasks(): Promise<number> {
     const LOOK_AHEAD_DAYS = 30;
