@@ -3,7 +3,7 @@ import { authStorage } from "@/lib/auth";
 import { apiClient } from "@/lib/api-client";
 import { hasPermission } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
-import type { Donation, Donor, DonationFormData, Template } from "../types";
+import type { Donation, Donor, DonationFormData } from "../types";
 
 const EMPTY_DONATION_FORM: DonationFormData = {
   donationAmount: "",
@@ -23,9 +23,9 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
   const [donationsLoading, setDonationsLoading] = useState(false);
   const [resendingReceiptId, setResendingReceiptId] = useState<string | null>(null);
   const [deletingDonationId, setDeletingDonationId] = useState<string | null>(null);
-  const [templates, setTemplates] = useState<Template[]>([]);
 
   const [showDonationDialog, setShowDonationDialog] = useState(false);
+
   const [editingDonation, setEditingDonation] = useState(false);
   const [editingDonationId, setEditingDonationId] = useState<string | null>(null);
   const [donationForm, setDonationForm] = useState<DonationFormData>(EMPTY_DONATION_FORM);
@@ -61,19 +61,9 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     }
   }, [donorId]);
 
-  const fetchTemplates = useCallback(async () => {
-    try {
-      const data = await apiClient<Template[]>("/api/templates");
-      setTemplates(Array.isArray(data) ? data : []);
-    } catch {
-      console.error("Failed to fetch templates");
-    }
-  }, []);
-
   useEffect(() => {
     fetchDonations();
-    fetchTemplates();
-  }, [fetchDonations, fetchTemplates]);
+  }, [fetchDonations]);
 
   const onResendReceipt = useCallback(async (donationId: string) => {
     setResendingReceiptId(donationId);
@@ -200,7 +190,6 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     canSendEmail,
     hasWhatsAppNumber,
     hasEmail,
-    templates,
     donorName,
     resendingReceiptId,
     deletingDonationId,

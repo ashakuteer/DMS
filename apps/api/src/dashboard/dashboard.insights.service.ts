@@ -406,6 +406,7 @@ export class DashboardInsightsService {
           },
           orderBy: { donationDate: "desc" },
           select: { donorId: true, donationDate: true },
+          take: Math.max(regularDonorIds.length * 3, 500),
         })
       : [];
 

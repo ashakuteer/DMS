@@ -33,7 +33,7 @@ const EMPTY_SPONSORSHIP_FORM = {
   notes: "",
 };
 
-export function useDonorSponsorships(donorId: string, donorPhone?: string | null) {
+export function useDonorSponsorships(donorId: string, donorPhone?: string | null, enabled = false) {
   const { toast } = useToast();
   const router = useRouter();
   const user = authStorage.getUser();
@@ -72,8 +72,9 @@ export function useDonorSponsorships(donorId: string, donorPhone?: string | null
   }, [donorId]);
 
   useEffect(() => {
+    if (!enabled) return;
     fetchSponsoredBeneficiaries();
-  }, [fetchSponsoredBeneficiaries]);
+  }, [enabled, fetchSponsoredBeneficiaries]);
 
   const onAddSponsorship = useCallback(() => {
     setSponsorshipForm(EMPTY_SPONSORSHIP_FORM);

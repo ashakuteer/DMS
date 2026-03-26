@@ -319,6 +319,7 @@ let DashboardInsightsService = DashboardInsightsService_1 = class DashboardInsig
                 },
                 orderBy: { donationDate: "desc" },
                 select: { donorId: true, donationDate: true },
+                take: Math.max(regularDonorIds.length * 3, 500),
             })
             : [];
         const latestDonationMap = new Map();

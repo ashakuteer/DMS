@@ -72,6 +72,7 @@ export default function DonorProfilePage() {
   const [hasOpenedCommLog, setHasOpenedCommLog] = useState(false);
   const [hasOpenedFamily, setHasOpenedFamily] = useState(false);
   const [hasOpenedSpecialDays, setHasOpenedSpecialDays] = useState(false);
+  const [hasOpenedSponsorships, setHasOpenedSponsorships] = useState(false);
 
   const handleRequestAccess = async () => {
     setRequestingAccess(true);
@@ -94,6 +95,7 @@ export default function DonorProfilePage() {
   const sponsorships = useDonorSponsorships(
     donorId,
     donorData.donor?.whatsappPhone || donorData.donor?.primaryPhone,
+    hasOpenedSponsorships,
   );
 
   if (donorData.loading) return <DonorProfileSkeleton />;
@@ -106,6 +108,7 @@ export default function DonorProfilePage() {
     if (value === "comm-log") setHasOpenedCommLog(true);
     if (value === "family") setHasOpenedFamily(true);
     if (value === "special-days") setHasOpenedSpecialDays(true);
+    if (value === "sponsorships") setHasOpenedSponsorships(true);
   };
 
   return (

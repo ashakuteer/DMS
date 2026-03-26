@@ -28,7 +28,7 @@ async function safeRun(fn, label) {
         return null;
     }
 }
-const SUMMARY_TTL_MS = 60_000;
+const SUMMARY_TTL_MS = 120_000;
 let DashboardService = DashboardService_1 = class DashboardService {
     constructor(prisma, statsService, trendsService, insightsService, actionsService, impactService, retentionService) {
         this.prisma = prisma;
@@ -55,21 +55,17 @@ let DashboardService = DashboardService_1 = class DashboardService {
         const canSeeCards = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
         const canSeeImpact = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
         const canSeeRetention = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
-        const canSeeActions = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
         const canSeeReminders = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
         const isAdmin = role === "ADMIN" || role === "FOUNDER";
-        const [stats, monthlyTarget, trends, modeSplit, topDonors, recentDonations, insights, insightCards, impact, retention, staffActions, adminInsights, reminders,] = await Promise.all([
+        const [stats, monthlyTarget, trends, modeSplit, insights, insightCards, impact, retention, adminInsights, reminders,] = await Promise.all([
             canSeeCore ? safeRun(() => this.statsService.getStats(), "getStats") : null,
             canSeeTarget ? safeRun(() => this.statsService.getMonthlyDonorTarget(), "getMonthlyDonorTarget") : null,
             canSeeCore ? safeRun(() => this.trendsService.getMonthlyTrends(), "getMonthlyTrends") : null,
             canSeeCore ? safeRun(() => this.statsService.getDonationModeSplit(), "getDonationModeSplit") : null,
-            canSeeCore ? safeRun(() => this.statsService.getTopDonors(5), "getTopDonors") : null,
-            canSeeCore ? safeRun(() => this.statsService.getRecentDonations(10), "getRecentDonations") : null,
             canSeeInsights ? safeRun(() => this.insightsService.getAIInsights(), "getAIInsights") : null,
             canSeeCards ? safeRun(() => this.insightsService.getInsightCards(), "getInsightCards") : null,
             canSeeImpact ? safeRun(() => this.impactService.getImpactDashboard(), "getImpactDashboard") : null,
             canSeeRetention ? safeRun(() => this.retentionService.getRetentionAnalytics(), "getRetentionAnalytics") : null,
-            canSeeActions ? safeRun(() => this.actionsService.getStaffActions(), "getStaffActions") : null,
             isAdmin ? safeRun(() => this.insightsService.getAdminInsights(), "getAdminInsights") : null,
             canSeeReminders ? safeRun(() => this.getDueReminders(), "getDueReminders") : null,
         ]);
@@ -79,13 +75,10 @@ let DashboardService = DashboardService_1 = class DashboardService {
             monthlyTarget,
             trends,
             modeSplit,
-            topDonors,
-            recentDonations,
             insights,
             insightCards,
             impact,
             retention,
-            staffActions,
             adminInsights,
             reminders,
         };
@@ -106,10 +99,6 @@ let DashboardService = DashboardService_1 = class DashboardService {
                 description: true,
                 dueDate: true,
                 status: true,
-                createdById: true,
-                completedAt: true,
-                createdAt: true,
-                updatedAt: true,
                 donor: {
                     select: {
                         id: true,
@@ -130,6 +119,7 @@ let DashboardService = DashboardService_1 = class DashboardService {
                 createdBy: { select: { id: true, name: true } },
             },
             orderBy: { dueDate: "asc" },
+            take: 50,
         });
     }
     getStats() { return this.statsService.getStats(); }
