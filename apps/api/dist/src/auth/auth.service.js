@@ -31,6 +31,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var AuthService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
@@ -42,13 +43,17 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const audit_service_1 = require("../audit/audit.service");
 const email_service_1 = require("../email/email.service");
-let AuthService = class AuthService {
+let AuthService = AuthService_1 = class AuthService {
     constructor(prisma, jwtService, configService, auditService, emailService) {
         this.prisma = prisma;
         this.jwtService = jwtService;
         this.configService = configService;
         this.auditService = auditService;
         this.emailService = emailService;
+        this.logger = new common_1.Logger(AuthService_1.name);
+    }
+    hashToken(token) {
+        return crypto.createHash('sha256').update(token).digest('hex');
     }
     async register(dto) {
         const existingByEmail = await this.prisma.user.findUnique({
@@ -97,7 +102,6 @@ let AuthService = class AuthService {
             if (!user.isActive) {
                 throw new common_1.ForbiddenException('Account is deactivated');
             }
-            console.log('User found:', user.email);
             const isPasswordValid = await bcrypt.compare(dto.password, user.password);
             if (!isPasswordValid) {
                 throw new common_1.UnauthorizedException('Invalid email or password');
@@ -109,7 +113,7 @@ let AuthService = class AuthService {
                 entityType: 'USER',
                 entityId: user.id,
             });
-            console.log('Login success for:', user.email);
+            this.logger.log(`Login successful for user id=${user.id}`);
             return {
                 user: {
                     id: user.id,
@@ -126,11 +130,15 @@ let AuthService = class AuthService {
                 error instanceof common_1.ForbiddenException) {
                 throw error;
             }
-            console.error('Auth error:', error);
+            this.logger.error('Auth error during login', error instanceof Error ? error.stack : String(error));
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
     }
     async logout(userId) {
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { refreshToken: null },
+        });
         await this.auditService.log({
             userId,
             action: client_1.AuditAction.LOGOUT,
@@ -150,6 +158,13 @@ let AuthService = class AuthService {
             if (!user || !user.isActive) {
                 throw new common_1.ForbiddenException('Access denied');
             }
+            if (!user.refreshToken) {
+                throw new common_1.ForbiddenException('Access denied');
+            }
+            const incomingHash = this.hashToken(dto.refreshToken);
+            if (incomingHash !== user.refreshToken) {
+                throw new common_1.ForbiddenException('Access denied');
+            }
             const tokens = await this.generateTokens(user.id, user.email, user.role);
             return {
                 user: {
@@ -163,6 +178,8 @@ let AuthService = class AuthService {
             };
         }
         catch (error) {
+            if (error instanceof common_1.ForbiddenException)
+                throw error;
             throw new common_1.ForbiddenException('Invalid refresh token');
         }
     }
@@ -193,7 +210,7 @@ let AuthService = class AuthService {
             };
             const raw = dto.identifier.trim();
             const resolved = ALIAS_MAP[raw.toLowerCase()] ?? raw;
-            console.log('Reset requested for identifier:', raw, '→ resolved:', resolved);
+            this.logger.log('Password reset requested');
             const user = await this.prisma.user.findFirst({
                 where: {
                     OR: [
@@ -206,11 +223,12 @@ let AuthService = class AuthService {
                 return { message: 'If that account exists, a reset link has been sent to the admin.' };
             }
             const rawToken = crypto.randomBytes(32).toString('hex');
+            const hashedToken = this.hashToken(rawToken);
             const expires = new Date(Date.now() + 60 * 60 * 1000);
             await this.prisma.user.update({
                 where: { id: user.id },
                 data: {
-                    resetPasswordToken: rawToken,
+                    resetPasswordToken: hashedToken,
                     resetPasswordExpires: expires,
                 },
             });
@@ -295,7 +313,7 @@ let AuthService = class AuthService {
         </div>
       `;
             const text = `Password Reset Request\n\nEmail: ${user.email}\nName: ${user.name}\nRole: ${user.role}\n\nReset link (expires in 1 hour):\n${resetLink}\n\n— Asha Kuteer Foundation DMS`;
-            console.log('Sending reset email to admin (user:', user.email, 'role:', user.role + ')');
+            this.logger.log(`Sending reset email to admin for user id=${user.id}`);
             const emailResult = await this.emailService.sendEmail({
                 to: adminEmail,
                 subject: `DMS Password Reset — ${displayId} (${user.role})`,
@@ -303,23 +321,21 @@ let AuthService = class AuthService {
                 text,
                 featureType: 'MANUAL',
             });
-            if (emailResult.success) {
-                return { message: 'If that account exists, a reset link has been sent to the admin.' };
+            if (!emailResult.success) {
+                this.logger.warn('Failed to send password reset email', emailResult.error);
             }
-            else {
-                console.error('Failed to send reset email:', emailResult.error);
-                return { message: 'If that account exists, a reset link has been sent to the admin.' };
-            }
+            return { message: 'If that account exists, a reset link has been sent to the admin.' };
         }
         catch (error) {
-            console.error('Auth error in forgotPassword:', error);
+            this.logger.error('Error in forgotPassword', error instanceof Error ? error.stack : String(error));
             return { message: 'If that account exists, a reset link has been sent to the admin.' };
         }
     }
     async resetPassword(dto) {
+        const hashedToken = this.hashToken(dto.token);
         const user = await this.prisma.user.findFirst({
             where: {
-                resetPasswordToken: dto.token,
+                resetPasswordToken: hashedToken,
                 resetPasswordExpires: { gt: new Date() },
             },
         });
@@ -361,6 +377,11 @@ let AuthService = class AuthService {
                 expiresIn: '7d',
             }),
         ]);
+        const hashedRefreshToken = this.hashToken(refreshToken);
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { refreshToken: hashedRefreshToken },
+        });
         return { accessToken, refreshToken };
     }
     getJwtSecret() {
@@ -379,7 +400,7 @@ let AuthService = class AuthService {
     }
 };
 exports.AuthService = AuthService;
-exports.AuthService = AuthService = __decorate([
+exports.AuthService = AuthService = AuthService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
         jwt_1.JwtService,

@@ -7,6 +7,8 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { WhatsappService } from '../whatsapp/whatsapp.service';
 
+const MAX_OTP_ATTEMPTS = 5;
+
 @Injectable()
 export class OtpService {
   private readonly logger = new Logger(OtpService.name);
@@ -54,13 +56,12 @@ export class OtpService {
     if (!sent) {
       // Fallback already logged inside sendOtpTemplate — still return success
       // so the user can retrieve the OTP from server logs during testing
-      this.logger.warn(`[OtpService] WhatsApp delivery failed. Check logs for OTP.`);
+      this.logger.warn('[OtpService] WhatsApp delivery failed. Check logs for OTP.');
     }
 
     return { message: 'OTP sent successfully' };
   }
 
-  // Verification logic — unchanged
   async verifyOtp(
     phone: string,
     code: string,
@@ -83,8 +84,36 @@ export class OtpService {
       throw new UnauthorizedException('OTP has expired. Please request a new one.');
     }
 
+    // Brute-force guard: if the OTP has already accumulated too many failed
+    // attempts it is considered burned — delete it and reject the request.
+    if (otp.failedAttempts >= MAX_OTP_ATTEMPTS) {
+      await this.prisma.otp.delete({ where: { id: otp.id } });
+      throw new UnauthorizedException(
+        'Too many incorrect attempts. Please request a new OTP.',
+      );
+    }
+
     if (otp.code !== code) {
-      throw new UnauthorizedException('Invalid OTP. Please check and try again.');
+      const newCount = otp.failedAttempts + 1;
+      const remaining = MAX_OTP_ATTEMPTS - newCount;
+
+      if (remaining <= 0) {
+        // Last allowed attempt just failed — invalidate immediately
+        await this.prisma.otp.delete({ where: { id: otp.id } });
+        throw new UnauthorizedException(
+          'Too many incorrect attempts. Please request a new OTP.',
+        );
+      }
+
+      // Record the failed attempt and tell the caller how many are left
+      await this.prisma.otp.update({
+        where: { id: otp.id },
+        data: { failedAttempts: newCount },
+      });
+
+      throw new UnauthorizedException(
+        `Invalid OTP. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`,
+      );
     }
 
     // OTP valid — delete immediately (one-time use)

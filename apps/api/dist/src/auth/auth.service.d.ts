@@ -11,7 +11,9 @@ export declare class AuthService {
     private configService;
     private auditService;
     private emailService;
+    private readonly logger;
     constructor(prisma: PrismaService, jwtService: JwtService, configService: ConfigService, auditService: AuditService, emailService: EmailService);
+    private hashToken;
     register(dto: RegisterDto): Promise<{
         user: {
             email: string;

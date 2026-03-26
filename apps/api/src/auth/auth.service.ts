@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, ForbiddenException, BadRequestException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
@@ -11,6 +11,8 @@ import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -18,6 +20,16 @@ export class AuthService {
     private auditService: AuditService,
     private emailService: EmailService,
   ) {}
+
+  /**
+   * SHA-256 hash of a high-entropy token for deterministic DB lookup.
+   * Used for refreshToken and resetPasswordToken — NOT for passwords
+   * (passwords use bcrypt). SHA-256 is appropriate here because the
+   * tokens are cryptographically random (256-bit entropy).
+   */
+  private hashToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex');
+  }
 
   async register(dto: RegisterDto) {
     const existingByEmail = await this.prisma.user.findUnique({
@@ -75,7 +87,6 @@ export class AuthService {
         throw new ForbiddenException('Account is deactivated');
       }
 
-      console.log('User found:', user.email);
       const isPasswordValid = await bcrypt.compare(dto.password, user.password);
       if (!isPasswordValid) {
         throw new UnauthorizedException('Invalid email or password');
@@ -90,7 +101,7 @@ export class AuthService {
         entityId: user.id,
       });
 
-      console.log('Login success for:', user.email);
+      this.logger.log(`Login successful for user id=${user.id}`);
       return {
         user: {
           id: user.id,
@@ -108,12 +119,18 @@ export class AuthService {
       ) {
         throw error;
       }
-      console.error('Auth error:', error);
+      this.logger.error('Auth error during login', error instanceof Error ? error.stack : String(error));
       throw new UnauthorizedException('Invalid credentials');
     }
   }
 
   async logout(userId: string) {
+    // Invalidate the stored refresh token hash so old tokens are rejected
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: null },
+    });
+
     await this.auditService.log({
       userId,
       action: AuditAction.LOGOUT,
@@ -138,6 +155,17 @@ export class AuthService {
         throw new ForbiddenException('Access denied');
       }
 
+      // Validate the incoming refresh token against the stored hash.
+      // If the user logged out or reset their password, refreshToken will be
+      // null and this check will correctly reject the old token.
+      if (!user.refreshToken) {
+        throw new ForbiddenException('Access denied');
+      }
+      const incomingHash = this.hashToken(dto.refreshToken);
+      if (incomingHash !== user.refreshToken) {
+        throw new ForbiddenException('Access denied');
+      }
+
       const tokens = await this.generateTokens(user.id, user.email, user.role);
 
       return {
@@ -151,6 +179,7 @@ export class AuthService {
         tokens,
       };
     } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
       throw new ForbiddenException('Invalid refresh token');
     }
   }
@@ -187,7 +216,7 @@ export class AuthService {
       const raw = dto.identifier.trim();
       const resolved = ALIAS_MAP[raw.toLowerCase()] ?? raw;
 
-      console.log('Reset requested for identifier:', raw, '→ resolved:', resolved);
+      this.logger.log('Password reset requested');
 
       const user = await this.prisma.user.findFirst({
         where: {
@@ -203,12 +232,13 @@ export class AuthService {
       }
 
       const rawToken = crypto.randomBytes(32).toString('hex');
+      const hashedToken = this.hashToken(rawToken);
       const expires = new Date(Date.now() + 60 * 60 * 1000);
 
       await this.prisma.user.update({
         where: { id: user.id },
         data: {
-          resetPasswordToken: rawToken,
+          resetPasswordToken: hashedToken,
           resetPasswordExpires: expires,
         },
       });
@@ -298,7 +328,7 @@ export class AuthService {
 
       const text = `Password Reset Request\n\nEmail: ${user.email}\nName: ${user.name}\nRole: ${user.role}\n\nReset link (expires in 1 hour):\n${resetLink}\n\n— Asha Kuteer Foundation DMS`;
 
-      console.log('Sending reset email to admin (user:', user.email, 'role:', user.role + ')');
+      this.logger.log(`Sending reset email to admin for user id=${user.id}`);
 
       const emailResult = await this.emailService.sendEmail({
         to: adminEmail,
@@ -308,22 +338,24 @@ export class AuthService {
         featureType: 'MANUAL',
       });
 
-      if (emailResult.success) {
-        return { message: 'If that account exists, a reset link has been sent to the admin.' };
-      } else {
-        console.error('Failed to send reset email:', emailResult.error);
-        return { message: 'If that account exists, a reset link has been sent to the admin.' };
+      if (!emailResult.success) {
+        this.logger.warn('Failed to send password reset email', emailResult.error);
       }
+
+      return { message: 'If that account exists, a reset link has been sent to the admin.' };
     } catch (error) {
-      console.error('Auth error in forgotPassword:', error);
+      this.logger.error('Error in forgotPassword', error instanceof Error ? error.stack : String(error));
       return { message: 'If that account exists, a reset link has been sent to the admin.' };
     }
   }
 
   async resetPassword(dto: ResetPasswordDto) {
+    // Hash the incoming token with SHA-256 to compare against the stored hash
+    const hashedToken = this.hashToken(dto.token);
+
     const user = await this.prisma.user.findFirst({
       where: {
-        resetPasswordToken: dto.token,
+        resetPasswordToken: hashedToken,
         resetPasswordExpires: { gt: new Date() },
       },
     });
@@ -374,6 +406,15 @@ export class AuthService {
         expiresIn: '7d',
       }),
     ]);
+
+    // Store the SHA-256 hash of the refresh token so it can be validated on
+    // refresh and invalidated on logout / password reset. The raw token is
+    // returned to the client; the hash never leaves the server.
+    const hashedRefreshToken = this.hashToken(refreshToken);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: hashedRefreshToken },
+    });
 
     return { accessToken, refreshToken };
   }

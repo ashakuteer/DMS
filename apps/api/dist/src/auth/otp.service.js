@@ -14,6 +14,7 @@ exports.OtpService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const whatsapp_service_1 = require("../whatsapp/whatsapp.service");
+const MAX_OTP_ATTEMPTS = 5;
 let OtpService = OtpService_1 = class OtpService {
     constructor(prisma, whatsappService) {
         this.prisma = prisma;
@@ -40,7 +41,7 @@ let OtpService = OtpService_1 = class OtpService {
         });
         const sent = await this.whatsappService.sendOtpTemplate(normalizedPhone, code);
         if (!sent) {
-            this.logger.warn(`[OtpService] WhatsApp delivery failed. Check logs for OTP.`);
+            this.logger.warn('[OtpService] WhatsApp delivery failed. Check logs for OTP.');
         }
         return { message: 'OTP sent successfully' };
     }
@@ -57,8 +58,22 @@ let OtpService = OtpService_1 = class OtpService {
             await this.prisma.otp.delete({ where: { id: otp.id } });
             throw new common_1.UnauthorizedException('OTP has expired. Please request a new one.');
         }
+        if (otp.failedAttempts >= MAX_OTP_ATTEMPTS) {
+            await this.prisma.otp.delete({ where: { id: otp.id } });
+            throw new common_1.UnauthorizedException('Too many incorrect attempts. Please request a new OTP.');
+        }
         if (otp.code !== code) {
-            throw new common_1.UnauthorizedException('Invalid OTP. Please check and try again.');
+            const newCount = otp.failedAttempts + 1;
+            const remaining = MAX_OTP_ATTEMPTS - newCount;
+            if (remaining <= 0) {
+                await this.prisma.otp.delete({ where: { id: otp.id } });
+                throw new common_1.UnauthorizedException('Too many incorrect attempts. Please request a new OTP.');
+            }
+            await this.prisma.otp.update({
+                where: { id: otp.id },
+                data: { failedAttempts: newCount },
+            });
+            throw new common_1.UnauthorizedException(`Invalid OTP. ${remaining} attempt${remaining === 1 ? '' : 's'} remaining.`);
         }
         await this.prisma.otp.delete({ where: { id: otp.id } });
         const user = await this.prisma.user.findUnique({

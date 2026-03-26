@@ -71,11 +71,12 @@ model User {
 }
 
 model Otp {
-  id        String   @id @default(uuid())
-  phone     String
-  code      String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  id              String   @id @default(uuid())
+  phone           String
+  code            String
+  expiresAt       DateTime
+  failedAttempts  Int      @default(0)
+  createdAt       DateTime @default(now())
 
   @@map("otps")
 }
