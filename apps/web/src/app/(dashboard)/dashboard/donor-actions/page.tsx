@@ -317,14 +317,23 @@ function ActionRow({
             >
               {donorName}
             </span>
-            {ownerName && (
+            {ownerName ? (
               <span
                 className="flex items-center gap-1 text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100"
-                title="Relationship owner / telecaller"
+                title="Telecaller / relationship owner"
                 data-testid={`action-owner-${task.id}`}
               >
                 <Star className="h-3 w-3" />
                 {ownerName}
+              </span>
+            ) : (
+              <span
+                className="flex items-center gap-1 text-xs font-medium text-gray-400 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-200"
+                title="No telecaller assigned"
+                data-testid={`action-owner-${task.id}`}
+              >
+                <Star className="h-3 w-3" />
+                Unassigned
               </span>
             )}
             {autoWA && !completed && (
