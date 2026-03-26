@@ -17,26 +17,56 @@ import * as express from "express";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Build the allowed-origins list from env + known patterns
+  const frontendUrl = process.env.FRONTEND_URL?.trim();
+
+  const allowedExact = new Set<string>([
+    // Hardcoded production Vercel URL (backward compat)
+    "https://dms-sepia-gamma.vercel.app",
+    // Dev origins
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://localhost:5000",
+  ]);
+
+  // Add FRONTEND_URL from Railway env if present (may be comma-separated list)
+  if (frontendUrl) {
+    frontendUrl.split(",").forEach((u) => {
+      const trimmed = u.trim();
+      if (trimmed) allowedExact.add(trimmed);
+    });
+  }
+
+  const allowedPatterns = [
+    /\.vercel\.app$/,       // all Vercel preview & production deployments
+    /\.replit\.dev$/,
+    /\.repl\.co$/,
+    /\.replit\.app$/,
+    /\.repl\.run$/,
+  ];
+
   app.enableCors({
     origin: (origin, callback) => {
-      const allowed = [
-        "https://dms-sepia-gamma.vercel.app",
-        /\.replit\.dev$/,
-        /\.repl\.co$/,
-        /\.replit\.app$/,
-        /\.repl\.run$/,
-      ];
+      // Allow server-to-server / curl (no Origin header)
       if (!origin) return callback(null, true);
-      const isAllowed = allowed.some((pattern) =>
-        typeof pattern === "string" ? pattern === origin : pattern.test(origin)
-      );
-      callback(null, isAllowed);
+
+      if (allowedExact.has(origin)) return callback(null, true);
+
+      const isAllowed = allowedPatterns.some((p) => p.test(origin));
+      if (isAllowed) return callback(null, true);
+
+      console.warn(`[CORS] Blocked origin: ${origin}`);
+      callback(new Error(`CORS: origin '${origin}' is not allowed`));
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
-  console.log("CORS ENABLED - allowing Vercel and Replit domains");
+
+  const allowedList = Array.from(allowedExact).join(", ");
+  console.log(`CORS enabled — exact: [${allowedList}] + *.vercel.app + *.replit.*`);
 
   app.setGlobalPrefix("api");
 
@@ -45,7 +75,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      forbidNonWhitelisted: true,
+      forbidNonWhitelisted: false,
       transform: true,
     }),
   );
@@ -54,9 +84,8 @@ async function bootstrap() {
     Number(process.env.API_PORT) ||
     Number(process.env.PORT) ||
     3001;
-console.log("🚀 VERSION 2 - CORS FINAL FIX");
-  await app.listen(port, "0.0.0.0");
 
+  await app.listen(port, "0.0.0.0");
   console.log(`API server running on http://0.0.0.0:${port}`);
 }
 
