@@ -33,14 +33,14 @@ const SIDEBAR_BG = "#F1F5F9";
 const TEXT_DEFAULT = "#475569";
 const TEXT_HOVER   = "#1E293B";
 const TEXT_LABEL   = "#64748B";
-const TEXT_ACTIVE  = "#065F46";
-const TEAL = "#059669";
+const TEXT_ACTIVE  = "#2C7A7A";
+const TEAL = "#5FA8A8";
 const ICON_COLOR   = "#94A3B8";
-const ICON_ACTIVE  = "#059669";
-const ACTIVE_BG = "#D1FAE5";
+const ICON_ACTIVE  = "#5FA8A8";
+const ACTIVE_BG = "#E6F4F4";
 const ACTIVE_BORDER = "none";
-const HOVER_BG = "#E2E8F0";
-const BORDER_COLOR = "rgba(0,0,0,0.06)";
+const HOVER_BG = "#E8EFF5";
+const BORDER_COLOR = "rgba(0,0,0,0.05)";
 const GROUP_LABEL_COLOR = "#94A3B8";
 
 interface NavItem {

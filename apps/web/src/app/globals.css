@@ -4,12 +4,13 @@
 
 /* ─── Brand Design Tokens ──────────────────────────────────────── */
 :root {
-  /* PRIMARY BRAND */
+  /* PRIMARY BRAND — teal */
   --primary-hex:   #5FA8A8;
+  --primary-dark:  #3D8A8A;
   --primary-light: #7FAFD4;
 
   /* BACKGROUNDS */
-  --bg-page:       #F5F7FA;
+  --bg-page:       #F4F7F9;
   --bg-card:       #FFFFFF;
   --bg-soft-teal:  #E6F4F4;
   --bg-soft-blue:  #EAF2FB;
@@ -34,7 +35,7 @@
 /* ─── Shadcn / Tailwind HSL Tokens ─────────────────────────────── */
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 210 20% 98%;
     --foreground: 222 47% 11%;
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
@@ -42,30 +43,30 @@
     --popover-foreground: 222 47% 11%;
     --primary: 180 28% 52%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 214 32% 91%;
+    --secondary: 210 25% 93%;
     --secondary-foreground: 215 28% 27%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 210 30% 95%;
+    --muted-foreground: 215 16% 50%;
     --accent: 180 28% 52%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
+    --border: 214 24% 90%;
+    --input: 214 24% 90%;
     --ring: 180 28% 52%;
-    --radius: 0.625rem;
+    --radius: 0.875rem;
     --chart-1: 180 28% 52%;
-    --chart-2: 207 47% 66%;
-    --chart-3: 263 70% 60%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 210 40% 98%;
+    --chart-2: 207 47% 60%;
+    --chart-3: 180 40% 38%;
+    --chart-4: 199 60% 55%;
+    --chart-5: 174 50% 45%;
+    --sidebar-background: 210 30% 97%;
     --sidebar-foreground: 222 47% 20%;
     --sidebar-primary: 180 28% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 180 28% 95%;
-    --sidebar-accent-foreground: 180 28% 30%;
-    --sidebar-border: 214 32% 91%;
+    --sidebar-accent: 180 28% 94%;
+    --sidebar-accent-foreground: 180 28% 25%;
+    --sidebar-border: 214 24% 90%;
     --sidebar-ring: 180 28% 52%;
   }
 
@@ -90,15 +91,15 @@
     --input: 217 33% 17%;
     --ring: 180 28% 52%;
     --chart-1: 180 28% 52%;
-    --chart-2: 207 47% 66%;
-    --chart-3: 263 70% 60%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 340 75% 55%;
+    --chart-2: 207 47% 60%;
+    --chart-3: 180 40% 55%;
+    --chart-4: 199 60% 55%;
+    --chart-5: 174 50% 45%;
     --sidebar-background: 222 47% 7%;
     --sidebar-foreground: 210 40% 80%;
     --sidebar-primary: 180 28% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 180 28% 20%;
+    --sidebar-accent: 180 28% 18%;
     --sidebar-accent-foreground: 180 28% 80%;
     --sidebar-border: 217 33% 15%;
     --sidebar-ring: 180 28% 52%;
@@ -116,29 +117,28 @@
 
 /* ─── Global Micro-Polish ────────────────────────────────────────── */
 
-/* Consistent body font size */
 body {
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Card base: 12px radius, smooth transition */
+/* Card base: consistent radius + smooth transition */
 [data-slot="card"] {
-  border-radius: 12px;
-  transition: all 0.2s ease;
+  border-radius: 16px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-/* Section header typography */
+/* Typography — clean hierarchy, no forced overrides */
 h1 {
-  font-size: 20px !important;
-  font-weight: 600 !important;
-  color: #0F172A !important;
-  line-height: 1.3;
+  font-size: clamp(20px, 2.2vw, 26px);
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.25;
 }
 
 h2 {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: #1E293B;
   line-height: 1.3;
@@ -218,10 +218,10 @@ tbody tr:hover td {
   left: -4px;
   top: 6px;
   bottom: 6px;
-  width: 4px;
+  width: 3px;
   border-radius: 4px;
   background: #5FA8A8;
-  box-shadow: 0 0 10px rgba(95, 168, 168, 0.65);
+  box-shadow: 0 0 8px rgba(95, 168, 168, 0.55);
 }
 
 /* Icon hover: slide right + teal tint */
@@ -258,37 +258,37 @@ tbody tr:hover td {
   .card-white {
     background: var(--bg-card);
     border: 1px solid var(--border-light);
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 16px;
   }
 
   .card-soft-teal {
     background: var(--bg-soft-teal);
     border: 1px solid #D1E3E3;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 16px;
   }
 
   .card-soft-blue {
     background: var(--bg-soft-blue);
     border: 1px solid #D6E4F5;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 16px;
   }
 
   .card-primary {
     background: linear-gradient(135deg, var(--primary-hex), var(--primary-light));
     color: white;
-    border-radius: 12px;
+    border-radius: 16px;
     padding: 16px;
   }
 
   /* Buttons */
   .btn-primary {
-    background: linear-gradient(135deg, var(--primary-hex), var(--primary-light));
+    background: linear-gradient(135deg, var(--primary-hex), var(--primary-dark));
     color: white;
     padding: 10px 16px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: none;
     cursor: pointer;
   }
@@ -297,7 +297,7 @@ tbody tr:hover td {
     background: #E2E8F0;
     color: #334155;
     padding: 10px 16px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: none;
     cursor: pointer;
   }
@@ -321,17 +321,17 @@ tbody tr:hover td {
 
   .sidebar-item {
     padding: 10px 14px;
-    border-radius: 8px;
+    border-radius: 10px;
     color: var(--sidebar-text);
     transition: background 150ms ease;
   }
 
   .sidebar-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(95, 168, 168, 0.08);
   }
 
   .sidebar-item.active {
-    background: var(--primary-hex);
-    color: white;
+    background: rgba(95, 168, 168, 0.12);
+    color: #3D8A8A;
   }
 }

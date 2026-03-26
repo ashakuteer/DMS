@@ -12,7 +12,7 @@ import {
   Users, IndianRupee, HandHeart, TrendingUp, AlertTriangle, Info,
   ArrowUpRight, Clock, Target, CalendarCheck, CheckCircle2, Bell,
   Mail, MessageCircle, Check, BarChart3, RefreshCcw, WifiOff,
-  UserPlus, PlusCircle, FileText, Heart, Lightbulb, ChevronRight,
+  PlusCircle, FileText, Heart, Lightbulb, ChevronRight,
   Activity, Phone, Building2, Repeat, Zap, Star, Sparkles,
 } from "lucide-react";
 import {
@@ -39,10 +39,19 @@ interface HomeMetric { homeType: string; homeLabel: string; beneficiaryCount: nu
 interface ImpactData { summary: { totalBeneficiaries: number; totalDonors: number; activeSponsors: number; activeSponsorships: number; totalDonationsFY: number; totalCampaigns: number; }; homeMetrics: HomeMetric[]; }
 interface RetentionData { summary: { totalDonors: number; repeatDonorCount: number; oneTimeDonorCount: number; lapsedDonorCount: number; overallRetentionPct: number; activeLast6Months: number }; }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-const CHART_COLORS = ["#5FA8A8", "#10b981", "#3b82f6", "#8b5cf6", "#ec4899", "#7FAFD4"];
-const HOME_COLORS: Record<string, string> = { ORPHAN_GIRLS: "#5FA8A8", BLIND_BOYS: "#3b82f6", OLD_AGE: "#10b981" };
+// ─── Constants ────────────────────────────────────────────────────────────────
+const TEAL = "#5FA8A8";
+const TEAL_DARK = "#3D8A8A";
+const TEAL_LIGHT = "#7FAFD4";
+const TEAL_BG = "rgba(95,168,168,0.10)";
+const CHART_COLORS = [TEAL, TEAL_LIGHT, "#4A9090", "#6BBEBE", "#3A7A7A", "#8EC8C8"];
+const HOME_COLORS: Record<string, string> = {
+  ORPHAN_GIRLS: TEAL,
+  BLIND_BOYS:   TEAL_LIGHT,
+  OLD_AGE:      "#4A9090",
+};
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 
@@ -63,49 +72,136 @@ async function safeFetch<T>(url: string): Promise<T | null> {
   } catch { return null; }
 }
 
-// ─── NGO Hero Illustration ────────────────────────────────────────────────────
-function HeroIllustration() {
-  return (
-    <div className="relative w-full h-full rounded-2xl overflow-hidden shadow-xl">
-      {/* Photo — natural colors, no overlays */}
-      <img
-        src="/brand/hands-together.jpg"
-        alt="Community hands joined together — unity and support"
-        className="w-full h-full object-cover object-center"
-      />
+// ─── Hero Banner ──────────────────────────────────────────────────────────────
+function HeroBanner({
+  userProfile,
+  monthlyTarget,
+  loading,
+}: {
+  userProfile: UserProfile | null;
+  monthlyTarget: MonthlyTarget | null;
+  loading: boolean;
+}) {
+  const now = new Date();
+  const h = now.getHours();
+  const greeting = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
+  const firstName = userProfile?.name?.split(" ")[0] ?? "Founder";
+  const dayStr = now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  const monthName = now.toLocaleString("en-IN", { month: "long" });
 
-      {/* Floating heart badge */}
-      <div
-        className="absolute top-3 right-3 flex items-center justify-center rounded-full shadow-lg z-10"
-        style={{ width: 44, height: 44, background: "linear-gradient(135deg, #5FA8A8, #7FAFD4)" }}
-      >
-        <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-white" aria-hidden="true">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-        </svg>
+  const progressPct = monthlyTarget?.progressPct ?? 0;
+  const achieved    = monthlyTarget?.achieved ?? false;
+
+  return (
+    <div
+      className="relative overflow-hidden rounded-2xl"
+      style={{
+        background: `linear-gradient(130deg, ${TEAL_DARK} 0%, ${TEAL} 45%, ${TEAL_LIGHT} 100%)`,
+        boxShadow: `0 8px 32px rgba(95,168,168,0.30)`,
+      }}
+      data-testid="hero-banner"
+    >
+      {/* Decorative circles */}
+      <div className="absolute -top-12 -right-12 h-48 w-48 rounded-full opacity-10" style={{ background: "#ffffff" }} />
+      <div className="absolute -bottom-8 -left-8 h-36 w-36 rounded-full opacity-10" style={{ background: "#ffffff" }} />
+
+      <div className="relative p-6 sm:p-8">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+
+          {/* Left — Greeting */}
+          <div className="flex-1 min-w-0">
+            <p className="text-white/70 text-sm font-medium mb-1">{dayStr}</p>
+            <h1 className="text-white text-2xl sm:text-3xl font-bold leading-tight mb-1">
+              {greeting}, {firstName} 👋
+            </h1>
+            <p className="text-white/80 text-sm">Asha Kuteer Foundation — NGO Dashboard</p>
+          </div>
+
+          {/* Right — Monthly Target mini card */}
+          <div
+            className="sm:w-80 rounded-xl p-5 flex-shrink-0"
+            style={{ background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.25)" }}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Target className="h-4 w-4 text-white/80" />
+                <span className="text-white/90 text-xs font-semibold uppercase tracking-wider">
+                  {monthName} Target
+                </span>
+              </div>
+              {loading ? (
+                <Skeleton className="h-5 w-16 rounded-full bg-white/20" />
+              ) : achieved ? (
+                <Badge className="bg-white/25 text-white border-0 text-xs gap-1">
+                  <CheckCircle2 className="h-3 w-3" /> Achieved
+                </Badge>
+              ) : (
+                <span className="text-white font-bold text-sm">{progressPct}%</span>
+              )}
+            </div>
+
+            {loading ? (
+              <div className="space-y-2">
+                <Skeleton className="h-6 w-32 bg-white/20 rounded" />
+                <Skeleton className="h-2 w-full bg-white/20 rounded-full" />
+                <Skeleton className="h-4 w-40 bg-white/20 rounded" />
+              </div>
+            ) : monthlyTarget ? (
+              <>
+                <div className="flex items-baseline gap-1.5 mb-2.5">
+                  <span className="text-white text-xl font-black">{fmt(monthlyTarget.raised)}</span>
+                  <span className="text-white/60 text-sm">/ {fmt(monthlyTarget.target)}</span>
+                </div>
+                <div className="h-2 rounded-full mb-2.5 overflow-hidden" style={{ background: "rgba(255,255,255,0.25)" }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${Math.min(progressPct, 100)}%`,
+                      background: achieved ? "#ffffff" : "rgba(255,255,255,0.85)",
+                    }}
+                  />
+                </div>
+                <p className="text-white/75 text-xs">
+                  <span className="text-white font-semibold">{monthlyTarget.count}</span> of{" "}
+                  <span className="text-white font-semibold">{monthlyTarget.totalMonthlyDonors}</span> monthly donors paid
+                  {!achieved && monthlyTarget.remaining > 0 && (
+                    <> · <span className="text-white font-semibold">{fmt(monthlyTarget.remaining)}</span> remaining</>
+                  )}
+                  {achieved && <span className="ml-1"><Sparkles className="inline h-3 w-3" /></span>}
+                </p>
+              </>
+            ) : (
+              <p className="text-white/60 text-xs">No monthly target data</p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
-function KpiCard({ title, value, icon: Icon, color, gradient }: {
-  title: string; value: string; icon: React.ElementType; color: string; gradient?: string;
+function KpiCard({ title, value, icon: Icon, highlight = false }: {
+  title: string; value: string; icon: React.ElementType; highlight?: boolean;
 }) {
-  const isHighlight = !!gradient;
   return (
     <Card
-      className={`transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_14px_rgba(0,0,0,0.06)] ${isHighlight ? "border-0" : ""}`}
-      style={isHighlight
-        ? { background: gradient, boxShadow: "0 6px 18px rgba(95,168,168,0.25)" }
-        : { background: "#FFFFFF", border: "1px solid #EEF2F7" }
+      className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+      style={
+        highlight
+          ? { background: `linear-gradient(135deg, ${TEAL_DARK}, ${TEAL})`, border: "none", boxShadow: `0 4px 16px rgba(95,168,168,0.28)` }
+          : { background: "#FFFFFF", border: "1px solid #EBF1F5", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }
       }
     >
       <CardContent className="p-5">
-        <div className={`inline-flex p-2 rounded-xl mb-3 ${isHighlight ? "bg-white/20" : "bg-[#F1F5F9]"}`}>
-          <Icon className={`h-4 w-4 ${isHighlight ? "text-white" : "text-[#5FA8A8]"}`} />
+        <div
+          className="inline-flex p-2 rounded-xl mb-3"
+          style={{ background: highlight ? "rgba(255,255,255,0.18)" : TEAL_BG }}
+        >
+          <Icon className="h-4 w-4" style={{ color: highlight ? "#ffffff" : TEAL }} />
         </div>
-        <p className={`text-2xl font-bold leading-tight ${isHighlight ? "text-white" : "text-[#1E293B]"}`}>{value}</p>
-        <p className={`text-xs mt-1 font-medium ${isHighlight ? "text-white/80" : "text-[#64748B]"}`}>{title}</p>
+        <p className={`text-2xl font-bold leading-tight ${highlight ? "text-white" : "text-[#1E293B]"}`}>{value}</p>
+        <p className={`text-xs mt-1 font-medium ${highlight ? "text-white/75" : "text-[#64748B]"}`}>{title}</p>
       </CardContent>
     </Card>
   );
@@ -114,9 +210,13 @@ function KpiCard({ title, value, icon: Icon, color, gradient }: {
 function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitle?: string; icon?: React.ElementType }) {
   return (
     <div className="flex items-start gap-3 mb-5">
-      {Icon && <div className="p-2 rounded-xl mt-0.5 flex-shrink-0" style={{ background: "rgba(95,168,168,0.12)" }}><Icon className="h-4 w-4" style={{ color: "#5FA8A8" }} /></div>}
+      {Icon && (
+        <div className="p-2 rounded-xl mt-0.5 flex-shrink-0" style={{ background: TEAL_BG }}>
+          <Icon className="h-4 w-4" style={{ color: TEAL }} />
+        </div>
+      )}
       <div>
-        <h2 className="text-lg font-bold text-foreground">{title}</h2>
+        <h2 className="text-xl font-bold text-foreground">{title}</h2>
         {subtitle && <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>}
       </div>
     </div>
@@ -125,7 +225,7 @@ function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitl
 
 function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <Card className="border-0 shadow-sm">
+    <Card style={{ border: "1px solid #EBF1F5", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
       <CardHeader className="pb-2 pt-5 px-5">
         <CardTitle className="text-base font-semibold">{title}</CardTitle>
         {subtitle && <CardDescription className="text-xs mt-0.5">{subtitle}</CardDescription>}
@@ -138,102 +238,14 @@ function ChartCard({ title, subtitle, children }: { title: string; subtitle?: st
 function insightStyle(type: string) {
   switch (type) {
     case "positive": return { border: "border-l-2 border-l-emerald-400", icon: <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" /> };
-    case "warning": return { border: "border-l-2 border-l-[#5FA8A8]", icon: <AlertTriangle className="h-4 w-4 text-[#5FA8A8] flex-shrink-0 mt-0.5" /> };
-    case "urgent": return { border: "border-l-2 border-l-red-400", icon: <Zap className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" /> };
-    default: return { border: "border-l-2 border-l-blue-400", icon: <Info className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" /> };
+    case "warning":  return { border: `border-l-2 border-l-[${TEAL}]`, icon: <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: TEAL }} /> };
+    case "urgent":   return { border: "border-l-2 border-l-red-400", icon: <Zap className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" /> };
+    default:         return { border: "border-l-2 border-l-blue-400", icon: <Info className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" /> };
   }
 }
 
-// ─── Monthly Target Card ──────────────────────────────────────────────────────
-function MonthlyTargetCard({ data, loading }: { data: MonthlyTarget | null; loading: boolean }) {
-  const { t } = useTranslation();
-  const now = new Date();
-  const monthName = now.toLocaleString("en-IN", { month: "long" });
-
-  if (loading) return <Skeleton className="h-44 rounded-2xl" />;
-  if (!data) return null;
-
-  const { raised, count, totalMonthlyDonors, target, remaining, progressPct, achieved } = data;
-  const pendingDonors = totalMonthlyDonors - count;
-
-  return (
-    <Card className="border-0 shadow-md overflow-hidden" style={{ background: "#ffffff" }} data-testid="monthly-target-card">
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between gap-4 mb-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="p-1.5 rounded-lg" style={{ background: "rgba(95,168,168,0.12)" }}>
-                <Target className="h-4 w-4" style={{ color: "#5FA8A8" }} />
-              </div>
-              <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t("home.monthly_target_label")}</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">{monthName} — From monthly recurring donors</p>
-          </div>
-          {achieved ? (
-            <Badge className="bg-emerald-500 text-white border-0 gap-1 flex-shrink-0">
-              <CheckCircle2 className="h-3 w-3" /> {t("home.target_achieved")}
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="flex-shrink-0" style={{ color: "#5FA8A8", borderColor: "#5FA8A8", background: "rgba(95,168,168,0.08)" }}>
-              {progressPct}% of goal
-            </Badge>
-          )}
-        </div>
-
-        {/* Big numbers row */}
-        <div className="grid grid-cols-3 gap-4 mb-5">
-          <div>
-            <p className="text-2xl font-black text-foreground">{fmt(raised)}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Raised this month</p>
-          </div>
-          <div>
-            <p className="text-2xl font-black text-foreground">{fmt(target)}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Monthly goal</p>
-          </div>
-          <div>
-            <p className={`text-2xl font-black ${achieved ? "text-emerald-600" : "text-rose-500"}`}>{achieved ? "✓ Done" : fmt(remaining)}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{achieved ? "Goal reached" : "Still needed"}</p>
-          </div>
-        </div>
-
-        {/* Progress bar */}
-        <div className="mb-4">
-          <div className="flex justify-between text-xs text-muted-foreground mb-1.5">
-            <span>{progressPct}% complete</span>
-            <span>{fmt(raised)} / {fmt(target)}</span>
-          </div>
-          <div className="h-3 rounded-full bg-muted overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-700 ${achieved ? "bg-emerald-500" : ""}`}
-              style={!achieved ? { width: `${progressPct}%`, background: "linear-gradient(to right, #5FA8A8, #7FAFD4)" } : { width: `${progressPct}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Donor stats row */}
-        <div className="flex items-center gap-4 pt-3 border-t border-border/60">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span className="text-xs text-muted-foreground"><strong className="text-foreground">{count}</strong> of <strong className="text-foreground">{totalMonthlyDonors}</strong> monthly donors paid</span>
-          </div>
-          {pendingDonors > 0 && (
-            <Link href="/dashboard/donors?frequency=MONTHLY" className="flex items-center gap-1 text-xs font-medium ml-auto" style={{ color: "#5FA8A8" }}>
-              {pendingDonors} still pending <ChevronRight className="h-3 w-3" />
-            </Link>
-          )}
-          {achieved && (
-            <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium ml-auto">
-              <Sparkles className="h-3 w-3" /> Congratulations!
-            </span>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-// ─── Donor Distribution Card ──────────────────────────────────────────────────
-interface LocationBucket { key: string; label: string; count: number; description: string; color: string; bg: string; }
+// ─── Donor Distribution ───────────────────────────────────────────────────────
+interface LocationBucket { key: string; label: string; count: number; description: string; }
 
 function DonorDistributionSection({ loading }: { loading: boolean }) {
   const [buckets, setBuckets] = useState<LocationBucket[]>([]);
@@ -241,10 +253,10 @@ function DonorDistributionSection({ loading }: { loading: boolean }) {
 
   useEffect(() => {
     const categories = [
-      { key: "HYDERABAD",      label: "Hyderabad",                description: "City donors",          color: "#5FA8A8", bg: "rgba(95,168,168,0.10)" },
-      { key: "TELANGANA_OTHER", label: "Telangana",               description: "Outside Hyderabad",    color: "#7FAFD4", bg: "rgba(127,175,212,0.10)" },
-      { key: "INDIA_OTHER",    label: "India (Other)",            description: "Outside Telangana",    color: "#10b981", bg: "rgba(16,185,129,0.10)"  },
-      { key: "INTERNATIONAL",  label: "International",            description: "Outside India",        color: "#8b5cf6", bg: "rgba(139,92,246,0.10)"  },
+      { key: "HYDERABAD",      label: "Hyderabad",       description: "City donors"         },
+      { key: "TELANGANA_OTHER", label: "Telangana",       description: "Outside Hyderabad"   },
+      { key: "INDIA_OTHER",    label: "India (Other)",   description: "Outside Telangana"   },
+      { key: "INTERNATIONAL",  label: "International",   description: "Outside India"        },
     ];
     Promise.all(
       categories.map((c) =>
@@ -253,33 +265,39 @@ function DonorDistributionSection({ loading }: { loading: boolean }) {
           .then((d) => ({ ...c, count: d.total ?? 0 }))
           .catch(() => ({ ...c, count: 0 }))
       )
-    ).then((results) => {
-      setBuckets(results);
-      setFetching(false);
-    });
+    ).then((results) => { setBuckets(results); setFetching(false); });
   }, []);
+
+  const geoColors = [TEAL, TEAL_LIGHT, "#4A9090", "#6BBEBE"];
 
   return (
     <section>
       <SectionHeader title="Donor Distribution" subtitle="Geographic breakdown of all donors" icon={Users} />
       {loading || fetching ? (
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
         </div>
       ) : (
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-          {buckets.map((b) => (
-            <Card key={b.key} className="border-0 shadow-sm hover:-translate-y-0.5 transition-all duration-200" style={{ background: b.bg, border: `1px solid ${b.color}22` }}>
-              <CardContent className="p-5">
-                <div className="inline-flex p-2 rounded-xl mb-3" style={{ background: `${b.color}22` }}>
-                  <Building2 className="h-4 w-4" style={{ color: b.color }} />
-                </div>
-                <p className="text-2xl font-bold leading-tight text-[#1E293B]" data-testid={`distribution-count-${b.key}`}>{b.count}</p>
-                <p className="text-sm font-medium text-[#1E293B] mt-0.5">{b.label}</p>
-                <p className="text-xs text-[#64748B] mt-0.5">{b.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+          {buckets.map((b, i) => {
+            const color = geoColors[i] ?? TEAL;
+            return (
+              <Card
+                key={b.key}
+                className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                style={{ border: `1px solid ${color}28`, background: `${color}0D`, boxShadow: "0 1px 6px rgba(0,0,0,0.04)" }}
+              >
+                <CardContent className="p-5">
+                  <div className="inline-flex p-2 rounded-xl mb-3" style={{ background: `${color}22` }}>
+                    <Building2 className="h-4 w-4" style={{ color }} />
+                  </div>
+                  <p className="text-2xl font-bold leading-tight text-[#1E293B]" data-testid={`distribution-count-${b.key}`}>{b.count}</p>
+                  <p className="text-sm font-semibold text-[#1E293B] mt-0.5">{b.label}</p>
+                  <p className="text-xs text-[#64748B] mt-0.5">{b.description}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
     </section>
@@ -349,7 +367,6 @@ export default function DashboardPage() {
       setSlowLoading(true);
       setLoadError(false);
       try {
-        // Single request — backend runs all sections in parallel
         const [profileData, summaryData] = await Promise.all([
           safeFetch<UserProfile>("/api/auth/profile"),
           safeFetch<{
@@ -372,19 +389,19 @@ export default function DashboardPage() {
         if (profileData) setUserProfile(profileData);
 
         if (summaryData) {
-          if (summaryData.stats) setStats(summaryData.stats);
-          if (summaryData.monthlyTarget) setMonthlyTarget(summaryData.monthlyTarget);
-          if (summaryData.trends) setTrends(summaryData.trends);
-          if (summaryData.modeSplit) setModeSplit(summaryData.modeSplit);
-          if (summaryData.topDonors) setTopDonors(summaryData.topDonors);
+          if (summaryData.stats)           setStats(summaryData.stats);
+          if (summaryData.monthlyTarget)   setMonthlyTarget(summaryData.monthlyTarget);
+          if (summaryData.trends)          setTrends(summaryData.trends);
+          if (summaryData.modeSplit)       setModeSplit(summaryData.modeSplit);
+          if (summaryData.topDonors)       setTopDonors(summaryData.topDonors);
           if (summaryData.recentDonations) setRecentDonations(summaryData.recentDonations);
-          if (summaryData.insights) setInsights(summaryData.insights);
-          if (summaryData.insightCards) setInsightCards(summaryData.insightCards);
-          if (summaryData.impact) setImpactData(summaryData.impact);
-          if (summaryData.retention) setRetentionData(summaryData.retention);
-          if (summaryData.staffActions) setStaffActions(summaryData.staffActions);
-          if (summaryData.adminInsights) setAdminInsights(summaryData.adminInsights);
-          if (summaryData.reminders) setDueReminders(summaryData.reminders);
+          if (summaryData.insights)        setInsights(summaryData.insights);
+          if (summaryData.insightCards)    setInsightCards(summaryData.insightCards);
+          if (summaryData.impact)          setImpactData(summaryData.impact);
+          if (summaryData.retention)       setRetentionData(summaryData.retention);
+          if (summaryData.staffActions)    setStaffActions(summaryData.staffActions);
+          if (summaryData.adminInsights)   setAdminInsights(summaryData.adminInsights);
+          if (summaryData.reminders)       setDueReminders(summaryData.reminders);
         }
       } catch {
         setLoadError(true);
@@ -400,77 +417,63 @@ export default function DashboardPage() {
   if (loadError) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Card className="border-0 shadow-sm max-w-sm w-full mx-4">
+        <Card className="max-w-sm w-full mx-4" style={{ border: "1px solid #EBF1F5", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <CardContent className="p-8 text-center space-y-4">
-            <div className="flex justify-center"><div className="p-4 rounded-full bg-red-50"><WifiOff className="h-8 w-8 text-red-400" /></div></div>
+            <div className="flex justify-center">
+              <div className="p-4 rounded-full bg-red-50"><WifiOff className="h-8 w-8 text-red-400" /></div>
+            </div>
             <div>
               <h3 className="text-base font-semibold">{t("home.connection_error")}</h3>
               <p className="text-sm text-muted-foreground mt-1">{t("home.connection_error_desc")}</p>
             </div>
-            <Button onClick={() => window.location.reload()} className="w-full"><RefreshCcw className="h-4 w-4 mr-2" />{t("home.retry")}</Button>
+            <Button onClick={() => window.location.reload()} className="w-full">
+              <RefreshCcw className="h-4 w-4 mr-2" />{t("home.retry")}
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  const retentionPct = retentionData?.summary.overallRetentionPct ?? 0;
+  const retentionPct  = retentionData?.summary.overallRetentionPct ?? 0;
   const sponsoredCount = impactData?.summary.activeSponsorships ?? 0;
   const followUpCount = insightCards.find(c => c.key === "follow_up_needed")?.count ?? staffActions?.summary.total ?? 0;
-  const totalDonors = impactData?.summary.totalDonors ?? stats?.activeDonors ?? 0;
+  const totalDonors   = impactData?.summary.totalDonors ?? stats?.activeDonors ?? 0;
 
   return (
-    <div className="min-h-screen bg-gray-50/60 dark:bg-background">
+    <div className="min-h-screen" style={{ background: "#F4F7F9" }}>
       <div className="max-w-7xl mx-auto p-6 space-y-8">
 
-        {/* ── PAGE HEADER ───────────────────────────────────────────────────── */}
-        <div className="pb-2">
-          <h1 className="text-2xl font-bold text-foreground">
-            {(() => {
-              const h = new Date().getHours();
-              const greeting = h < 12 ? "Good Morning" : h < 17 ? "Good Afternoon" : "Good Evening";
-              const name = userProfile?.name?.split(" ")[0] ?? "Founder";
-              return `${greeting}, ${name} 👋`;
-            })()}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">Here's your NGO overview today</p>
-        </div>
-
-        {/* ── MONTHLY DONOR TARGET ──────────────────────────────────────────── */}
-        <section>
-          <SectionHeader
-            title={t("home.monthly_target_label")}
-            subtitle={`₹3,00,000 / month from recurring monthly donors — ${new Date().toLocaleString("en-IN", { month: "long", year: "numeric" })}`}
-            icon={Target}
-          />
-          <MonthlyTargetCard data={monthlyTarget} loading={loading} />
-        </section>
+        {/* ── HERO BANNER ───────────────────────────────────────────────────── */}
+        <HeroBanner
+          userProfile={userProfile}
+          monthlyTarget={monthlyTarget}
+          loading={loading}
+        />
 
         {/* ── KPI CARDS ─────────────────────────────────────────────────────── */}
         <section>
           <SectionHeader title={t("home.key_metrics")} subtitle={t("home.key_metrics_subtitle")} icon={BarChart3} />
           {loading ? (
-            <div className="space-y-4">
-              <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">{Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}</div>
+            <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
+              {Array.from({ length: 7 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
             </div>
           ) : (
             <div className="space-y-4">
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-                <KpiCard title={t("home.total_fy_donations")} value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} color="text-teal-500" gradient="linear-gradient(135deg, #5FA8A8, #7FAFD4)" />
-                <KpiCard title={t("home.donations_this_month")} value={stats ? fmt(stats.donationsThisMonth) : "—"} icon={TrendingUp} color="text-blue-600" gradient="linear-gradient(135deg, #5FA8A8, #7FAFD4)" />
-                <KpiCard title={t("home.active_donors")} value={totalDonors > 0 ? totalDonors.toString() : (stats?.activeDonors?.toString() ?? "—")} icon={Users} color="text-violet-600" />
-                <KpiCard title={t("home.monthly_donors")} value={monthlyTarget ? monthlyTarget.totalMonthlyDonors.toString() : "—"} icon={Repeat} color="text-teal-600" />
+                <KpiCard title={t("home.total_fy_donations")} value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} highlight />
+                <KpiCard title={t("home.active_donors")} value={totalDonors > 0 ? totalDonors.toString() : (stats?.activeDonors?.toString() ?? "—")} icon={Users} />
+                <KpiCard title={t("home.monthly_donors")} value={monthlyTarget ? monthlyTarget.totalMonthlyDonors.toString() : "—"} icon={Repeat} />
+                <KpiCard title={t("home.total_beneficiaries")} value={stats?.totalBeneficiaries?.toString() ?? "—"} icon={HandHeart} />
               </div>
-              <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
-                <KpiCard title={t("home.total_beneficiaries")} value={stats?.totalBeneficiaries?.toString() ?? "—"} icon={HandHeart} color="text-rose-600" />
-                <KpiCard title={t("home.active_sponsors")} value={sponsoredCount > 0 ? sponsoredCount.toString() : "—"} icon={Heart} color="text-pink-600" />
-                <KpiCard title={t("home.retention_rate")} value={retentionPct > 0 ? `${retentionPct.toFixed(1)}%` : "—"} icon={Repeat} color="text-emerald-600" />
-                <KpiCard title={t("home.pending_followups")} value={followUpCount > 0 ? followUpCount.toString() : "—"} icon={Bell} color="text-[#5FA8A8]" />
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+                <KpiCard title={t("home.active_sponsors")} value={sponsoredCount > 0 ? sponsoredCount.toString() : "—"} icon={Heart} />
+                <KpiCard title={t("home.retention_rate")} value={retentionPct > 0 ? `${retentionPct.toFixed(1)}%` : "—"} icon={TrendingUp} />
+                <KpiCard title={t("home.pending_followups")} value={followUpCount > 0 ? followUpCount.toString() : "—"} icon={Bell} />
               </div>
             </div>
           )}
         </section>
-
 
         {/* ── DONOR DISTRIBUTION ────────────────────────────────────────────── */}
         <DonorDistributionSection loading={loading} />
@@ -481,8 +484,8 @@ export default function DashboardPage() {
             <SectionHeader title={t("home.donation_analytics")} subtitle={t("home.donation_analytics_subtitle")} icon={BarChart3} />
             {loading ? (
               <div className="grid gap-5 lg:grid-cols-3">
-                <div className="lg:col-span-2"><Skeleton className="h-72 rounded-xl" /></div>
-                <Skeleton className="h-72 rounded-xl" />
+                <div className="lg:col-span-2"><Skeleton className="h-72 rounded-2xl" /></div>
+                <Skeleton className="h-72 rounded-2xl" />
               </div>
             ) : (
               <div className="grid gap-5 lg:grid-cols-3">
@@ -495,14 +498,17 @@ export default function DashboardPage() {
                             <CartesianGrid strokeDasharray="3 3" className="stroke-muted opacity-50" />
                             <XAxis dataKey="month" tick={{ fontSize: 10 }} className="text-muted-foreground" />
                             <YAxis tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 10 }} width={45} />
-                            <Tooltip formatter={(v: number) => [fmt(v), "Amount"]} contentStyle={{ borderRadius: "10px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", fontSize: "12px" }} />
-                            <Line type="monotone" dataKey="amount" stroke="#5FA8A8" strokeWidth={2.5} dot={{ fill: "#5FA8A8", strokeWidth: 0, r: 3 }} activeDot={{ r: 5, fill: "#7FAFD4" }} />
+                            <Tooltip
+                              formatter={(v: number) => [fmt(v), "Amount"]}
+                              contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", fontSize: "12px" }}
+                            />
+                            <Line type="monotone" dataKey="amount" stroke={TEAL} strokeWidth={2.5} dot={{ fill: TEAL, strokeWidth: 0, r: 3 }} activeDot={{ r: 5, fill: TEAL_LIGHT }} />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
                     ) : (
                       <div className="h-64 flex flex-col items-center justify-center text-muted-foreground">
-                        <BarChart3 className="h-10 w-10 mb-3 opacity-25" />
+                        <BarChart3 className="h-10 w-10 mb-3 opacity-20" />
                         <p className="text-sm font-medium">No trend data yet</p>
                         <p className="text-xs mt-1 opacity-60">Appears once donations are recorded</p>
                       </div>
@@ -517,14 +523,14 @@ export default function DashboardPage() {
                           <Pie data={modeSplit} cx="50%" cy="45%" innerRadius={50} outerRadius={80} paddingAngle={3} dataKey="amount" nameKey="mode">
                             {modeSplit.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
                           </Pie>
-                          <Tooltip formatter={(v: number) => fmt(v)} contentStyle={{ borderRadius: "10px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", fontSize: "12px" }} />
+                          <Tooltip formatter={(v: number) => fmt(v)} contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", fontSize: "12px" }} />
                           <Legend formatter={(v) => fmtMode(v)} wrapperStyle={{ fontSize: "11px" }} />
                         </PieChart>
                       </ResponsiveContainer>
                     </div>
                   ) : (
                     <div className="h-64 flex flex-col items-center justify-center text-muted-foreground">
-                      <IndianRupee className="h-10 w-10 mb-3 opacity-25" />
+                      <IndianRupee className="h-10 w-10 mb-3 opacity-20" />
                       <p className="text-sm font-medium">No payment data yet</p>
                     </div>
                   )}
@@ -538,18 +544,23 @@ export default function DashboardPage() {
         {loading || slowLoading ? (
           <section>
             <SectionHeader title={t("home.home_performance")} subtitle={t("home.home_performance_subtitle")} icon={Building2} />
-            <div className="grid gap-4 md:grid-cols-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-44 rounded-xl" />)}</div>
+            <div className="grid gap-4 md:grid-cols-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-44 rounded-2xl" />)}</div>
           </section>
         ) : impactData && impactData.homeMetrics.length > 0 ? (
           <section data-testid="section-home-performance">
             <SectionHeader title={t("home.home_performance")} subtitle={t("home.home_performance_subtitle")} icon={Building2} />
             <div className="grid gap-4 md:grid-cols-3">
               {impactData.homeMetrics.map((home) => {
-                const color = HOME_COLORS[home.homeType] ?? "#6366f1";
+                const color = HOME_COLORS[home.homeType] ?? TEAL;
                 const pct = home.beneficiaryCount > 0 ? Math.round((home.activeSponsorships / home.beneficiaryCount) * 100) : 0;
                 const unsponsored = Math.max(0, home.beneficiaryCount - home.activeSponsorships);
                 return (
-                  <Card key={home.homeType} className="border-0 shadow-sm overflow-hidden" data-testid={`home-card-${home.homeType}`}>
+                  <Card
+                    key={home.homeType}
+                    className="overflow-hidden"
+                    style={{ border: "1px solid #EBF1F5", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}
+                    data-testid={`home-card-${home.homeType}`}
+                  >
                     <div className="h-1.5" style={{ backgroundColor: color }} />
                     <CardContent className="p-5">
                       <div className="flex items-start justify-between mb-4">
@@ -557,14 +568,14 @@ export default function DashboardPage() {
                           <h3 className="font-semibold text-sm text-foreground">{home.homeLabel}</h3>
                           <p className="text-xs text-muted-foreground mt-0.5">{home.beneficiaryCount} beneficiaries</p>
                         </div>
-                        <div className="p-2 rounded-xl" style={{ backgroundColor: color + "20" }}>
+                        <div className="p-2 rounded-xl" style={{ backgroundColor: color + "1A" }}>
                           <Building2 className="h-4 w-4" style={{ color }} />
                         </div>
                       </div>
                       <div className="space-y-3">
                         <div>
                           <div className="flex justify-between text-xs mb-1.5">
-                            <span className="text-muted-foreground">Sponsorship</span>
+                            <span className="text-muted-foreground">Sponsorship coverage</span>
                             <span className="font-semibold" style={{ color }}>{pct}%</span>
                           </div>
                           <div className="h-1.5 rounded-full bg-muted overflow-hidden">
@@ -572,16 +583,18 @@ export default function DashboardPage() {
                           </div>
                         </div>
                         <div className="grid grid-cols-3 gap-2">
-                          <div className="text-center p-2 rounded-lg bg-muted/50">
+                          <div className="text-center p-2 rounded-xl bg-muted/50">
                             <p className="text-base font-bold">{home.activeSponsorships}</p>
                             <p className="text-xs text-muted-foreground">Sponsored</p>
                           </div>
-                          <div className="text-center p-2 rounded-lg bg-muted/50">
+                          <div className="text-center p-2 rounded-xl bg-muted/50">
                             <p className="text-base font-bold">{unsponsored}</p>
                             <p className="text-xs text-muted-foreground">Unspon.</p>
                           </div>
-                          <div className="text-center p-2 rounded-lg bg-muted/50">
-                            <p className="text-base font-bold" style={{ color }}>{home.donationsReceived > 0 ? `₹${Math.round(home.donationsReceived / 1000)}k` : "—"}</p>
+                          <div className="text-center p-2 rounded-xl bg-muted/50">
+                            <p className="text-base font-bold" style={{ color }}>
+                              {home.donationsReceived > 0 ? `₹${Math.round(home.donationsReceived / 1000)}k` : "—"}
+                            </p>
                             <p className="text-xs text-muted-foreground">Donations</p>
                           </div>
                         </div>
@@ -601,19 +614,19 @@ export default function DashboardPage() {
               <div>
                 <SectionHeader title={t("home.donor_intelligence")} subtitle={t("home.donor_intelligence_subtitle")} icon={Repeat} />
                 {loading || slowLoading ? (
-                  <div className="space-y-3">{[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 rounded-xl" />)}</div>
+                  <div className="space-y-3">{[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-16 rounded-2xl" />)}</div>
                 ) : (
                   <div className="space-y-3">
                     {retentionData && (
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { labelKey: "home.repeat_donors_count", value: retentionData.summary.repeatDonorCount, color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/30" },
-                          { labelKey: "home.lapsed_donors_count", value: retentionData.summary.lapsedDonorCount, color: "text-red-500", bg: "bg-red-50 dark:bg-red-950/30" },
-                          { labelKey: "home.one_time_only", value: retentionData.summary.oneTimeDonorCount, color: "text-[#5FA8A8]", bg: "bg-[#E6F4F1] dark:bg-[#5FA8A8]/20" },
-                          { labelKey: "home.active_6mo", value: retentionData.summary.activeLast6Months, color: "text-blue-600", bg: "bg-blue-50 dark:bg-blue-950/30" },
+                          { labelKey: "home.repeat_donors_count", value: retentionData.summary.repeatDonorCount,    color: TEAL,      bg: TEAL_BG },
+                          { labelKey: "home.lapsed_donors_count", value: retentionData.summary.lapsedDonorCount,    color: "#DC2626", bg: "#FEF2F2" },
+                          { labelKey: "home.one_time_only",       value: retentionData.summary.oneTimeDonorCount,   color: TEAL_LIGHT, bg: "rgba(127,175,212,0.10)" },
+                          { labelKey: "home.active_6mo",         value: retentionData.summary.activeLast6Months,   color: TEAL_DARK,  bg: "rgba(61,138,138,0.10)" },
                         ].map(({ labelKey, value, color, bg }) => (
-                          <div key={labelKey} className={`rounded-xl p-3.5 ${bg}`}>
-                            <p className={`text-xl font-bold ${color}`}>{value}</p>
+                          <div key={labelKey} className="rounded-2xl p-3.5" style={{ background: bg }}>
+                            <p className="text-xl font-bold" style={{ color }}>{value}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">{t(labelKey)}</p>
                           </div>
                         ))}
@@ -624,8 +637,14 @@ export default function DashboardPage() {
                       const iconMap: Record<string, React.ElementType> = { follow_up_needed: Phone, high_value: Star, dormant: Clock, pledges_due: CalendarCheck };
                       const IconComp = iconMap[card.key] ?? Info;
                       return (
-                        <div key={card.key} className={`flex items-start gap-3 p-3.5 rounded-xl bg-card border border-border/60 ${s.border}`} data-testid={`insight-card-${card.key}`}>
-                          <div className="p-1.5 rounded-lg bg-muted/60 flex-shrink-0"><IconComp className="h-3.5 w-3.5 text-muted-foreground" /></div>
+                        <div
+                          key={card.key}
+                          className={`flex items-start gap-3 p-3.5 rounded-2xl bg-card border border-border/50 ${s.border}`}
+                          data-testid={`insight-card-${card.key}`}
+                        >
+                          <div className="p-1.5 rounded-lg bg-muted/60 flex-shrink-0">
+                            <IconComp className="h-3.5 w-3.5 text-muted-foreground" />
+                          </div>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-bold">{card.count}</span>
@@ -643,13 +662,13 @@ export default function DashboardPage() {
               <div>
                 <SectionHeader title={t("home.smart_insights")} subtitle={t("home.smart_insights_subtitle")} icon={Lightbulb} />
                 {loading ? (
-                  <div className="space-y-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-20 rounded-xl" />)}</div>
+                  <div className="space-y-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-20 rounded-2xl" />)}</div>
                 ) : (
                   <div className="space-y-2.5">
                     {[...insights.slice(0, 4), ...adminInsights.slice(0, 3)].map((insight, idx) => {
                       const s = insightStyle(insight.type);
                       return (
-                        <div key={idx} className={`flex items-start gap-3 p-4 rounded-xl bg-card border border-border/60 ${s.border}`}>
+                        <div key={idx} className={`flex items-start gap-3 p-4 rounded-2xl bg-card border border-border/50 ${s.border}`}>
                           {s.icon}
                           <div className="flex-1">
                             <p className="text-sm font-medium">{insight.title}</p>
@@ -660,7 +679,7 @@ export default function DashboardPage() {
                     })}
                     {insights.length === 0 && adminInsights.length === 0 && (
                       <div className="text-center py-10 text-muted-foreground">
-                        <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-25" />
+                        <Lightbulb className="h-8 w-8 mx-auto mb-2 opacity-20" />
                         <p className="text-sm">Insights appear as data grows</p>
                       </div>
                     )}
@@ -674,38 +693,60 @@ export default function DashboardPage() {
         {/* ── FOLLOW-UPS DUE ────────────────────────────────────────────────── */}
         {dueReminders.length > 0 && (
           <section data-testid="section-followups">
-            <SectionHeader title={t("home.followups_due")} subtitle={`${dueReminders.length} scheduled follow-ups need action`} icon={Bell} />
+            <SectionHeader
+              title={t("home.followups_due")}
+              subtitle={`${dueReminders.length} scheduled follow-up${dueReminders.length !== 1 ? "s" : ""} need action`}
+              icon={Bell}
+            />
             <div className="space-y-2.5">
               {dueReminders.slice(0, 6).map((r) => {
                 const overdue = daysOverdue(r.dueDate);
                 const name = [r.donor.firstName, r.donor.lastName].filter(Boolean).join(" ");
                 return (
-                  <Card key={r.id} className="border-0 shadow-sm" data-testid={`reminder-${r.id}`}>
+                  <Card
+                    key={r.id}
+                    style={{ border: "1px solid #EBF1F5", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
+                    data-testid={`reminder-${r.id}`}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-xl" style={{ background: "rgba(95,168,168,0.12)" }}><Bell className="h-4 w-4" style={{ color: "#5FA8A8" }} /></div>
+                          <div className="p-2 rounded-xl" style={{ background: TEAL_BG }}>
+                            <Bell className="h-4 w-4" style={{ color: TEAL }} />
+                          </div>
                           <div>
                             <p className="text-sm font-semibold">{name}</p>
                             <p className="text-xs text-muted-foreground">{r.donor.donorCode} · {r.title}</p>
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          {overdue > 0 && <Badge variant="outline" className="text-xs border-red-400 text-red-600 bg-red-50">{overdue}d overdue</Badge>}
+                          {overdue > 0 && (
+                            <Badge variant="outline" className="text-xs border-red-300 text-red-600 bg-red-50">{overdue}d overdue</Badge>
+                          )}
                           <Badge variant="secondary" className="text-xs">Due {fmtDate(r.dueDate)}</Badge>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 mt-3 ml-11 flex-wrap">
-                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => window.location.href = `/dashboard/donors/${r.donorId}?tab=communication`}><Mail className="h-3 w-3" />Email</Button>
-                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => handleWhatsApp(r)}><MessageCircle className="h-3 w-3" />WhatsApp</Button>
-                        <Button size="sm" className="h-7 text-xs gap-1" onClick={() => handleMarkDone(r)}><Check className="h-3 w-3" />Done</Button>
-                        <Button size="sm" variant="secondary" className="h-7 text-xs gap-1" onClick={() => handleSnooze(r)}><Clock className="h-3 w-3" />Snooze</Button>
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => window.location.href = `/dashboard/donors/${r.donorId}?tab=communication`}>
+                          <Mail className="h-3 w-3" />Email
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => handleWhatsApp(r)}>
+                          <MessageCircle className="h-3 w-3" />WhatsApp
+                        </Button>
+                        <Button size="sm" className="h-7 text-xs gap-1" onClick={() => handleMarkDone(r)}>
+                          <Check className="h-3 w-3" />Done
+                        </Button>
+                        <Button size="sm" variant="secondary" className="h-7 text-xs gap-1" onClick={() => handleSnooze(r)}>
+                          <Clock className="h-3 w-3" />Snooze
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
                 );
               })}
-              {dueReminders.length > 6 && <p className="text-xs text-muted-foreground text-center">+{dueReminders.length - 6} more follow-ups</p>}
+              {dueReminders.length > 6 && (
+                <p className="text-xs text-muted-foreground text-center">+{dueReminders.length - 6} more follow-ups</p>
+              )}
             </div>
           </section>
         )}
@@ -716,19 +757,37 @@ export default function DashboardPage() {
             <SectionHeader title="Next Best Actions" subtitle="Donors to follow up based on inactivity" icon={Target} />
             <div className="grid gap-3 md:grid-cols-2">
               {staffActions.followUpDonors.slice(0, 6).map((d) => (
-                <Card key={d.id} className="border-0 shadow-sm" data-testid={`followup-donor-${d.id}`}>
+                <Card
+                  key={d.id}
+                  style={{ border: "1px solid #EBF1F5", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
+                  data-testid={`followup-donor-${d.id}`}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-xl ${d.healthStatus === "DORMANT" ? "bg-red-50 dark:bg-red-950/30" : "bg-[#E6F4F1] dark:bg-[#5FA8A8]/20"}`}>
-                          <Phone className={`h-4 w-4 ${d.healthStatus === "DORMANT" ? "text-red-500" : "text-[#5FA8A8]"}`} />
+                        <div
+                          className="p-2 rounded-xl"
+                          style={{ background: d.healthStatus === "DORMANT" ? "#FEF2F2" : TEAL_BG }}
+                        >
+                          <Phone
+                            className="h-4 w-4"
+                            style={{ color: d.healthStatus === "DORMANT" ? "#DC2626" : TEAL }}
+                          />
                         </div>
                         <div>
                           <p className="text-sm font-semibold">{d.name}</p>
                           <p className="text-xs text-muted-foreground">{d.donorCode} · {d.phone}</p>
                         </div>
                       </div>
-                      <Badge variant="outline" className={`text-xs flex-shrink-0 ${d.healthStatus === "DORMANT" ? "border-red-400 text-red-600 bg-red-50" : "border-[#5FA8A8] text-[#5FA8A8] bg-[#E6F4F1]"}`}>
+                      <Badge
+                        variant="outline"
+                        className="text-xs flex-shrink-0"
+                        style={
+                          d.healthStatus === "DORMANT"
+                            ? { borderColor: "#FCA5A5", color: "#DC2626", background: "#FEF2F2" }
+                            : { borderColor: TEAL, color: TEAL, background: TEAL_BG }
+                        }
+                      >
                         {d.healthStatus === "DORMANT" ? "Dormant" : "At-Risk"} · {d.daysSinceLastDonation}d
                       </Badge>
                     </div>
@@ -748,8 +807,8 @@ export default function DashboardPage() {
             <SectionHeader title="Recent Activity" subtitle="Latest donations and top contributors" icon={Activity} />
             {loading ? (
               <div className="grid gap-5 lg:grid-cols-2">
-                <Skeleton className="h-72 rounded-xl" />
-                <Skeleton className="h-72 rounded-xl" />
+                <Skeleton className="h-72 rounded-2xl" />
+                <Skeleton className="h-72 rounded-2xl" />
               </div>
             ) : (
               <div className="grid gap-5 lg:grid-cols-2">
@@ -758,10 +817,13 @@ export default function DashboardPage() {
                     <div className="space-y-1" data-testid="recent-donations-list">
                       {recentDonations.slice(0, 7).map((d) => (
                         <Link key={d.id} href={`/dashboard/donors/${d.donorId}`}>
-                          <div className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer group" data-testid={`donation-row-${d.id}`}>
+                          <div
+                            className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer"
+                            data-testid={`donation-row-${d.id}`}
+                          >
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "rgba(95,168,168,0.12)" }}>
-                                <IndianRupee className="h-3.5 w-3.5" style={{ color: "#5FA8A8" }} />
+                              <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: TEAL_BG }}>
+                                <IndianRupee className="h-3.5 w-3.5" style={{ color: TEAL }} />
                               </div>
                               <div className="min-w-0">
                                 <p className="text-sm font-medium truncate">{d.donorName}</p>
@@ -769,21 +831,25 @@ export default function DashboardPage() {
                               </div>
                             </div>
                             <div className="text-right flex-shrink-0 ml-2">
-                              <p className="text-sm font-semibold text-emerald-600">{fmt(d.amount)}</p>
+                              <p className="text-sm font-semibold" style={{ color: TEAL_DARK }}>{fmt(d.amount)}</p>
                               <p className="text-xs text-muted-foreground">{fmtDate(d.date)}</p>
                             </div>
                           </div>
                         </Link>
                       ))}
                       <Link href="/dashboard/donations">
-                        <div className="flex items-center justify-center gap-1.5 py-2.5 text-xs cursor-pointer font-medium rounded-lg transition-colors hover:bg-muted/50" style={{ color: "#5FA8A8" }}>
+                        <div
+                          className="flex items-center justify-center gap-1.5 py-2.5 text-xs cursor-pointer font-medium rounded-lg transition-colors hover:bg-muted/50"
+                          style={{ color: TEAL }}
+                        >
                           View all donations <ChevronRight className="h-3.5 w-3.5" />
                         </div>
                       </Link>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                      <IndianRupee className="h-8 w-8 mb-2 opacity-25" /><p className="text-sm">No recent donations</p>
+                      <IndianRupee className="h-8 w-8 mb-2 opacity-20" />
+                      <p className="text-sm">No recent donations</p>
                     </div>
                   )}
                 </ChartCard>
@@ -793,25 +859,41 @@ export default function DashboardPage() {
                     <div className="space-y-1" data-testid="top-donors-list">
                       {topDonors.slice(0, 7).map((d, idx) => (
                         <Link key={d.donorId} href={`/dashboard/donors/${d.donorId}`}>
-                          <div className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer group" data-testid={`top-donor-${d.donorId}`}>
-                            <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${idx === 0 ? "bg-[#E6F4F1] text-[#5FA8A8]" : idx === 1 ? "bg-gray-100 text-gray-600" : idx === 2 ? "bg-muted text-muted-foreground" : "bg-muted text-muted-foreground"}`}>{idx + 1}</div>
+                          <div
+                            className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer"
+                            data-testid={`top-donor-${d.donorId}`}
+                          >
+                            <div
+                              className="h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                              style={
+                                idx === 0 ? { background: TEAL_BG, color: TEAL }
+                                : idx === 1 ? { background: "rgba(127,175,212,0.12)", color: TEAL_LIGHT }
+                                : { background: "#F1F5F9", color: "#64748B" }
+                              }
+                            >
+                              {idx + 1}
+                            </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">{d.name}</p>
                               <p className="text-xs text-muted-foreground">{d.donorCode} · {d.donationCount} donation{d.donationCount !== 1 ? "s" : ""}</p>
                             </div>
-                            <p className="text-sm font-semibold flex-shrink-0" style={{ color: "#5FA8A8" }}>{fmt(d.totalAmount)}</p>
+                            <p className="text-sm font-semibold flex-shrink-0" style={{ color: TEAL }}>{fmt(d.totalAmount)}</p>
                           </div>
                         </Link>
                       ))}
                       <Link href="/dashboard/donors">
-                        <div className="flex items-center justify-center gap-1.5 py-2.5 text-xs cursor-pointer font-medium rounded-lg transition-colors hover:bg-muted/50" style={{ color: "#5FA8A8" }}>
+                        <div
+                          className="flex items-center justify-center gap-1.5 py-2.5 text-xs cursor-pointer font-medium rounded-lg transition-colors hover:bg-muted/50"
+                          style={{ color: TEAL }}
+                        >
                           View all donors <ChevronRight className="h-3.5 w-3.5" />
                         </div>
                       </Link>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                      <Users className="h-8 w-8 mb-2 opacity-25" /><p className="text-sm">No donor data yet</p>
+                      <Users className="h-8 w-8 mb-2 opacity-20" />
+                      <p className="text-sm">No donor data yet</p>
                     </div>
                   )}
                 </ChartCard>
@@ -819,6 +901,34 @@ export default function DashboardPage() {
             )}
           </section>
         )}
+
+        {/* ── QUICK ACTIONS ─────────────────────────────────────────────────── */}
+        <section>
+          <SectionHeader title="Quick Actions" subtitle="Common tasks at a glance" icon={Zap} />
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
+            {[
+              { label: "Add Donor",     icon: PlusCircle, href: "/dashboard/donors/new" },
+              { label: "Record Donation", icon: IndianRupee, href: "/dashboard/donations/new" },
+              { label: "Send Message",  icon: MessageCircle, href: "/dashboard/send-message" },
+              { label: "View Reports",  icon: FileText, href: "/dashboard/reports" },
+            ].map(({ label, icon: Icon, href }) => (
+              <Link key={href} href={href}>
+                <Card
+                  className="cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+                  style={{ border: "1px solid #EBF1F5", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
+                >
+                  <CardContent className="p-4 flex items-center gap-3">
+                    <div className="p-2 rounded-xl flex-shrink-0" style={{ background: TEAL_BG }}>
+                      <Icon className="h-4 w-4" style={{ color: TEAL }} />
+                    </div>
+                    <span className="text-sm font-medium text-foreground">{label}</span>
+                    <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground ml-auto flex-shrink-0" />
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </section>
 
       </div>
     </div>
