@@ -66,7 +66,7 @@ let TasksService = class TasksService {
                 },
             },
             sourcePledge: {
-                select: { id: true, pledgeType: true, amount: true, expectedFulfillmentDate: true },
+                select: { id: true, pledgeType: true, amount: true, quantity: true, expectedFulfillmentDate: true },
             },
         };
     }
@@ -338,7 +338,7 @@ let TasksService = class TasksService {
         end7.setDate(end7.getDate() + 8);
         const end30 = new Date(today);
         end30.setDate(end30.getDate() + 31);
-        const [taskCountsByType, birthdayTaskSample, anniversaryTaskSample, donorsWithDob, donorsTotal, occasions,] = await Promise.all([
+        const [taskCountsByType, birthdayTaskSample, anniversaryTaskSample, pledgeTaskSample, donorsWithDob, donorsTotal, occasions, pendingPledgesTotal, pendingPledgesNext30,] = await Promise.all([
             this.prisma.task.groupBy({
                 by: ['type', 'status'],
                 _count: { id: true },
@@ -356,6 +356,12 @@ let TasksService = class TasksService {
                 orderBy: { dueDate: 'asc' },
                 take: 20,
             }),
+            this.prisma.task.findMany({
+                where: { type: client_1.TaskType.PLEDGE },
+                select: { id: true, title: true, dueDate: true, status: true, donorId: true, sourcePledgeId: true },
+                orderBy: { dueDate: 'asc' },
+                take: 30,
+            }),
             this.prisma.donor.count({
                 where: { dobMonth: { not: null }, dobDay: { not: null }, isDeleted: false },
             }),
@@ -364,6 +370,14 @@ let TasksService = class TasksService {
                 by: ['type'],
                 _count: { id: true },
                 orderBy: { type: 'asc' },
+            }),
+            this.prisma.pledge.count({ where: { status: 'PENDING', isDeleted: false } }),
+            this.prisma.pledge.count({
+                where: {
+                    status: 'PENDING',
+                    isDeleted: false,
+                    expectedFulfillmentDate: { lte: end30 },
+                },
             }),
         ]);
         const birthdayNext7 = birthdayTaskSample.filter(t => t.status === client_1.TaskStatus.PENDING && new Date(t.dueDate) >= today && new Date(t.dueDate) < end7);
@@ -408,6 +422,20 @@ let TasksService = class TasksService {
                     dueDate: t.dueDate,
                     dueDateISO: new Date(t.dueDate).toISOString(),
                     status: t.status,
+                    daysUntil: Math.round((new Date(t.dueDate).getTime() - today.getTime()) / 86400000),
+                })),
+            },
+            pledges: {
+                pendingTotal: pendingPledgesTotal,
+                pendingDueIn30DaysOrOverdue: pendingPledgesNext30,
+                tasksGeneratedInDB: pledgeTaskSample.length,
+                tasks: pledgeTaskSample.map(t => ({
+                    id: t.id,
+                    title: t.title,
+                    dueDate: t.dueDate,
+                    dueDateISO: new Date(t.dueDate).toISOString(),
+                    status: t.status,
+                    sourcePledgeId: t.sourcePledgeId,
                     daysUntil: Math.round((new Date(t.dueDate).getTime() - today.getTime()) / 86400000),
                 })),
             },

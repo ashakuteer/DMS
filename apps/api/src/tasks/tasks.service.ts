@@ -368,9 +368,12 @@ export class TasksService {
       taskCountsByType,
       birthdayTaskSample,
       anniversaryTaskSample,
+      pledgeTaskSample,
       donorsWithDob,
       donorsTotal,
       occasions,
+      pendingPledgesTotal,
+      pendingPledgesNext30,
     ] = await Promise.all([
       // Count tasks grouped by type and status
       this.prisma.task.groupBy({
@@ -392,6 +395,13 @@ export class TasksService {
         orderBy: { dueDate: 'asc' },
         take: 20,
       }),
+      // Sample of PLEDGE tasks
+      this.prisma.task.findMany({
+        where: { type: TaskType.PLEDGE },
+        select: { id: true, title: true, dueDate: true, status: true, donorId: true, sourcePledgeId: true },
+        orderBy: { dueDate: 'asc' },
+        take: 30,
+      }),
       // Donors with dob data
       this.prisma.donor.count({
         where: { dobMonth: { not: null }, dobDay: { not: null }, isDeleted: false },
@@ -403,6 +413,16 @@ export class TasksService {
         by: ['type'],
         _count: { id: true },
         orderBy: { type: 'asc' },
+      }),
+      // Total pending pledges (not deleted)
+      this.prisma.pledge.count({ where: { status: 'PENDING', isDeleted: false } }),
+      // Pending pledges due in next 30 days or overdue
+      this.prisma.pledge.count({
+        where: {
+          status: 'PENDING',
+          isDeleted: false,
+          expectedFulfillmentDate: { lte: end30 },
+        },
       }),
     ]);
 
@@ -455,6 +475,20 @@ export class TasksService {
           dueDate: t.dueDate,
           dueDateISO: new Date(t.dueDate).toISOString(),
           status: t.status,
+          daysUntil: Math.round((new Date(t.dueDate).getTime() - today.getTime()) / 86400000),
+        })),
+      },
+      pledges: {
+        pendingTotal: pendingPledgesTotal,
+        pendingDueIn30DaysOrOverdue: pendingPledgesNext30,
+        tasksGeneratedInDB: pledgeTaskSample.length,
+        tasks: pledgeTaskSample.map(t => ({
+          id: t.id,
+          title: t.title,
+          dueDate: t.dueDate,
+          dueDateISO: new Date(t.dueDate).toISOString(),
+          status: t.status,
+          sourcePledgeId: t.sourcePledgeId,
           daysUntil: Math.round((new Date(t.dueDate).getTime() - today.getTime()) / 86400000),
         })),
       },

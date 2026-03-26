@@ -256,19 +256,21 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
     }
     async generatePledgeFollowUpTasks() {
         const { todayStart } = this.todayBounds();
-        const sevenDaysAgo = new Date(todayStart);
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const thirtyDaysLater = new Date(todayStart);
+        thirtyDaysLater.setDate(thirtyDaysLater.getDate() + 30);
         const pendingPledges = await this.prisma.pledge.findMany({
             where: {
                 status: client_1.PledgeStatus.PENDING,
                 isDeleted: false,
-                expectedFulfillmentDate: { lte: todayStart },
+                expectedFulfillmentDate: { lte: thirtyDaysLater },
             },
             select: {
                 id: true,
                 donorId: true,
                 pledgeType: true,
                 amount: true,
+                quantity: true,
+                expectedFulfillmentDate: true,
                 donor: { select: { prefWhatsapp: true, whatsappPhone: true } },
             },
         });
@@ -278,17 +280,33 @@ let TaskSchedulerService = TaskSchedulerService_1 = class TaskSchedulerService {
                 where: {
                     type: client_1.TaskType.PLEDGE,
                     sourcePledgeId: pledge.id,
-                    createdAt: { gte: sevenDaysAgo },
+                    status: { notIn: [client_1.TaskStatus.COMPLETED, client_1.TaskStatus.MISSED] },
                 },
             });
             if (!existing) {
+                const dueDate = new Date(pledge.expectedFulfillmentDate);
+                dueDate.setHours(0, 0, 0, 0);
+                const daysUntil = Math.round((dueDate.getTime() - todayStart.getTime()) / 86400000);
+                const isOverdue = daysUntil < 0;
+                const amountStr = pledge.pledgeType === 'MONEY' && pledge.amount
+                    ? ` ₹${Number(pledge.amount)}`
+                    : pledge.quantity
+                        ? ` (${pledge.quantity})`
+                        : '';
+                const urgency = isOverdue
+                    ? ` — ${Math.abs(daysUntil)}d overdue`
+                    : daysUntil === 0
+                        ? ' — due today'
+                        : ` — due in ${daysUntil}d`;
                 await this.prisma.task.create({
                     data: {
-                        title: `Pledge follow-up — ${pledge.pledgeType}${pledge.amount ? ` ₹${pledge.amount}` : ''}`,
+                        title: `${pledge.pledgeType} pledge follow-up${amountStr}${urgency}`,
                         type: client_1.TaskType.PLEDGE,
-                        priority: client_1.TaskPriority.HIGH,
+                        priority: isOverdue || daysUntil <= 3
+                            ? client_1.TaskPriority.HIGH
+                            : client_1.TaskPriority.MEDIUM,
                         status: client_1.TaskStatus.PENDING,
-                        dueDate: todayStart,
+                        dueDate,
                         donorId: pledge.donorId,
                         sourcePledgeId: pledge.id,
                         autoWhatsAppPossible: this.autoWhatsApp(pledge.donor),

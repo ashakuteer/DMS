@@ -35,6 +35,7 @@ export declare class TasksService {
         };
         sourcePledge: {
             id: string;
+            quantity: string;
             amount: import("@prisma/client/runtime/library").Decimal;
             pledgeType: import(".prisma/client").$Enums.PledgeType;
             expectedFulfillmentDate: Date;
@@ -200,6 +201,20 @@ export declare class TasksService {
                 dueDate: Date;
                 dueDateISO: string;
                 status: import(".prisma/client").$Enums.TaskStatus;
+                daysUntil: number;
+            }[];
+        };
+        pledges: {
+            pendingTotal: number;
+            pendingDueIn30DaysOrOverdue: number;
+            tasksGeneratedInDB: number;
+            tasks: {
+                id: string;
+                title: string;
+                dueDate: Date;
+                dueDateISO: string;
+                status: import(".prisma/client").$Enums.TaskStatus;
+                sourcePledgeId: string;
                 daysUntil: number;
             }[];
         };
