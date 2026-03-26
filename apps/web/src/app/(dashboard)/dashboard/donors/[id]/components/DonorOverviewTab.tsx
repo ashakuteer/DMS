@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useTranslation } from "react-i18next";
-import AssignDonorOwner from "./AssignDonorOwner";
 import type { Donor } from "../types";
 import { formatDate, getDonorLoyaltyTier } from "../utils";
 import { useQuery } from "@tanstack/react-query";
@@ -319,14 +318,11 @@ export default function DonorOverviewTab({
             </div>
           )}
 
-          <div className="flex items-start justify-between gap-3">
-            <span className="text-muted-foreground pt-2">{t("donor_profile.assigned_to")}</span>
-            <div className="w-[320px] max-w-full">
-              <AssignDonorOwner
-                donorId={donor.id}
-                currentOwner={donor.assignedTo ?? null}
-              />
-            </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">{t("donor_profile.assigned_to")}</span>
+            <span data-testid="text-assigned-to">
+              {donor.assignedTo ? donor.assignedTo.name : t("donor_profile.unassigned")}
+            </span>
           </div>
 
           <div className="flex items-center justify-between">
