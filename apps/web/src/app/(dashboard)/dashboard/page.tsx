@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,8 +11,8 @@ import {
   Users, IndianRupee, HandHeart, TrendingUp, AlertTriangle, Info,
   Clock, Target, CalendarCheck, CheckCircle2, Bell,
   Mail, MessageCircle, Check, BarChart3, RefreshCcw, WifiOff,
-  Heart, Lightbulb, ChevronRight,
-  Activity, Phone, Building2, Repeat, Zap, Star, Sparkles,
+  Heart, Lightbulb,
+  Phone, Building2, Repeat, Zap, Star, Sparkles,
 } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -26,13 +25,9 @@ interface Stats { totalDonationsFY: number; donationsThisMonth: number; activeDo
 interface MonthlyTarget { raised: number; count: number; totalMonthlyDonors: number; target: number; remaining: number; progressPct: number; achieved: boolean; }
 interface MonthlyTrend { month: string; amount: number; count: number; }
 interface ModeSplit { mode: string; amount: number; count: number; }
-interface TopDonor { donorId: string; donorCode: string; name: string; category: string; totalAmount: number; donationCount: number; }
-interface RecentDonation { id: string; donorId: string; donorCode: string; donorName: string; amount: number; date: string; mode: string; type: string; receiptNumber: string; }
 interface Insight { type: "positive" | "warning" | "info"; title: string; description: string; }
 interface AdminInsight { type: string; title: string; description: string; }
 interface InsightCard { key: string; title: string; count: number; description: string; type: "warning" | "info" | "positive" | "urgent"; }
-interface FollowUpDonor { id: string; name: string; donorCode: string; phone: string; daysSinceLastDonation: number; healthStatus: "AT_RISK" | "DORMANT"; bestTimeToContact: string; followUpReason: string; }
-interface StaffActionsData { followUpDonors: FollowUpDonor[]; atRiskCount: number; dormantCount: number; bestCallTime: { day: string; slot: string }; summary: { total: number; atRisk: number; dormant: number }; }
 interface UserProfile { id: string; name: string; email: string; role: string; }
 interface DueReminder { id: string; donorId: string; donationId: string | null; type: string; title: string; description: string | null; dueDate: string; status: string; donor: { id: string; donorCode: string; firstName: string; lastName: string | null; primaryPhone: string | null; }; donation: { id: string; donationAmount: number; receiptNumber: string | null; donationDate: string; } | null; createdBy: { id: string; name: string; }; }
 interface HomeMetric { homeType: string; homeLabel: string; beneficiaryCount: number; activeSponsorships: number; donationsReceived: number; }
@@ -312,12 +307,9 @@ export default function DashboardPage() {
   const [monthlyTarget, setMonthlyTarget] = useState<MonthlyTarget | null>(null);
   const [trends, setTrends] = useState<MonthlyTrend[]>([]);
   const [modeSplit, setModeSplit] = useState<ModeSplit[]>([]);
-  const [topDonors, setTopDonors] = useState<TopDonor[]>([]);
-  const [recentDonations, setRecentDonations] = useState<RecentDonation[]>([]);
   const [insights, setInsights] = useState<Insight[]>([]);
   const [adminInsights, setAdminInsights] = useState<AdminInsight[]>([]);
   const [insightCards, setInsightCards] = useState<InsightCard[]>([]);
-  const [staffActions, setStaffActions] = useState<StaffActionsData | null>(null);
   const [dueReminders, setDueReminders] = useState<DueReminder[]>([]);
   const [impactData, setImpactData] = useState<ImpactData | null>(null);
   const [retentionData, setRetentionData] = useState<RetentionData | null>(null);
@@ -372,13 +364,10 @@ export default function DashboardPage() {
             monthlyTarget: MonthlyTarget | null;
             trends: MonthlyTrend[] | null;
             modeSplit: ModeSplit[] | null;
-            topDonors: TopDonor[] | null;
-            recentDonations: RecentDonation[] | null;
             insights: Insight[] | null;
             insightCards: InsightCard[] | null;
             impact: ImpactData | null;
             retention: RetentionData | null;
-            staffActions: StaffActionsData | null;
             adminInsights: AdminInsight[] | null;
             reminders: DueReminder[] | null;
           }>("/api/dashboard/summary"),
@@ -391,13 +380,10 @@ export default function DashboardPage() {
           if (summaryData.monthlyTarget)   setMonthlyTarget(summaryData.monthlyTarget);
           if (summaryData.trends)          setTrends(summaryData.trends);
           if (summaryData.modeSplit)       setModeSplit(summaryData.modeSplit);
-          if (summaryData.topDonors)       setTopDonors(summaryData.topDonors);
-          if (summaryData.recentDonations) setRecentDonations(summaryData.recentDonations);
           if (summaryData.insights)        setInsights(summaryData.insights);
           if (summaryData.insightCards)    setInsightCards(summaryData.insightCards);
           if (summaryData.impact)          setImpactData(summaryData.impact);
           if (summaryData.retention)       setRetentionData(summaryData.retention);
-          if (summaryData.staffActions)    setStaffActions(summaryData.staffActions);
           if (summaryData.adminInsights)   setAdminInsights(summaryData.adminInsights);
           if (summaryData.reminders)       setDueReminders(summaryData.reminders);
         }
@@ -435,7 +421,6 @@ export default function DashboardPage() {
 
   const retentionPct  = retentionData?.summary.overallRetentionPct ?? 0;
   const sponsoredCount = impactData?.summary.activeSponsorships ?? 0;
-  const followUpCount = insightCards.find(c => c.key === "follow_up_needed")?.count ?? staffActions?.summary.total ?? 0;
   const totalDonors   = impactData?.summary.totalDonors ?? stats?.activeDonors ?? 0;
 
   return (
@@ -464,10 +449,9 @@ export default function DashboardPage() {
                 <KpiCard title={t("home.monthly_donors")} value={monthlyTarget ? monthlyTarget.totalMonthlyDonors.toString() : "—"} icon={Repeat} />
                 <KpiCard title={t("home.total_beneficiaries")} value={stats?.totalBeneficiaries?.toString() ?? "—"} icon={HandHeart} />
               </div>
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                 <KpiCard title={t("home.active_sponsors")} value={sponsoredCount > 0 ? sponsoredCount.toString() : "—"} icon={Heart} />
                 <KpiCard title={t("home.retention_rate")} value={retentionPct > 0 ? `${retentionPct.toFixed(1)}%` : "—"} icon={TrendingUp} />
-                <KpiCard title={t("home.pending_followups")} value={followUpCount > 0 ? followUpCount.toString() : "—"} icon={Bell} />
               </div>
             </div>
           )}
@@ -746,107 +730,6 @@ export default function DashboardPage() {
                 <p className="text-xs text-muted-foreground text-center">+{dueReminders.length - 6} more follow-ups</p>
               )}
             </div>
-          </section>
-        )}
-
-        {/* ── RECENT ACTIVITY ───────────────────────────────────────────────── */}
-        {(loading || recentDonations.length > 0 || topDonors.length > 0) && (
-          <section>
-            <SectionHeader title="Recent Activity" subtitle="Latest donations and top contributors" icon={Activity} />
-            {loading ? (
-              <div className="grid gap-5 lg:grid-cols-2">
-                <Skeleton className="h-72 rounded-2xl" />
-                <Skeleton className="h-72 rounded-2xl" />
-              </div>
-            ) : (
-              <div className="grid gap-5 lg:grid-cols-2">
-                <ChartCard title="Recent Donations" subtitle="Latest transactions">
-                  {recentDonations.length > 0 ? (
-                    <div className="space-y-1" data-testid="recent-donations-list">
-                      {recentDonations.slice(0, 7).map((d) => (
-                        <Link key={d.id} href={`/dashboard/donors/${d.donorId}`}>
-                          <div
-                            className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer"
-                            data-testid={`donation-row-${d.id}`}
-                          >
-                            <div className="flex items-center gap-3 min-w-0">
-                              <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: ICON_BG }}>
-                                <IndianRupee className="h-3.5 w-3.5" style={{ color: PRIMARY_TEAL }} />
-                              </div>
-                              <div className="min-w-0">
-                                <p className="text-sm font-medium truncate">{d.donorName}</p>
-                                <p className="text-xs text-muted-foreground">{d.donorCode} · {fmtMode(d.mode)}</p>
-                              </div>
-                            </div>
-                            <div className="text-right flex-shrink-0 ml-2">
-                              <p className="text-sm font-semibold" style={{ color: DARK_TEAL }}>{fmt(d.amount)}</p>
-                              <p className="text-xs text-muted-foreground">{fmtDate(d.date)}</p>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                      <Link href="/dashboard/donations">
-                        <div
-                          className="flex items-center justify-center gap-1.5 py-2.5 text-xs cursor-pointer font-medium rounded-lg transition-colors hover:bg-muted/50"
-                          style={{ color: PRIMARY_TEAL }}
-                        >
-                          View all donations <ChevronRight className="h-3.5 w-3.5" />
-                        </div>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                      <IndianRupee className="h-8 w-8 mb-2 opacity-20" />
-                      <p className="text-sm">No recent donations</p>
-                    </div>
-                  )}
-                </ChartCard>
-
-                <ChartCard title="Top Donors This FY" subtitle="Highest contributors">
-                  {topDonors.length > 0 ? (
-                    <div className="space-y-1" data-testid="top-donors-list">
-                      {topDonors.slice(0, 7).map((d, idx) => (
-                        <Link key={d.donorId} href={`/dashboard/donors/${d.donorId}`}>
-                          <div
-                            className="flex items-center gap-3 py-2.5 px-3 rounded-xl hover:bg-muted/50 transition-colors cursor-pointer"
-                            data-testid={`top-donor-${d.donorId}`}
-                          >
-                            <div
-                              className="h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                              style={
-                                idx === 0 ? { background: ICON_BG, color: PRIMARY_TEAL }
-                                : idx === 1 ? { background: LIGHT_BORDER, color: DARK_TEAL }
-                                : { background: LIGHT_BORDER, color: "#64748B" }
-                              }
-                            >
-                              {idx + 1}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{d.name}</p>
-                              <p className="text-xs text-muted-foreground">{d.donorCode} · {d.donationCount} donation{d.donationCount !== 1 ? "s" : ""}</p>
-                            </div>
-                            <p className="text-sm font-semibold flex-shrink-0" style={{ color: PRIMARY_TEAL }}>{fmt(d.totalAmount)}</p>
-                          </div>
-                        </Link>
-                      ))}
-                      <Link href="/dashboard/donors">
-                        <div
-                          className="flex items-center justify-center gap-1.5 py-2.5 text-xs cursor-pointer font-medium rounded-lg transition-colors hover:bg-muted/50"
-                          style={{ color: PRIMARY_TEAL }}
-                        >
-                          View all donors <ChevronRight className="h-3.5 w-3.5" />
-                        </div>
-                      </Link>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                      <Users className="h-8 w-8 mb-2 opacity-20" />
-                      <p className="text-sm">No donor data yet</p>
-                    </div>
-                  )}
-                </ChartCard>
-              </div>
-            )}
           </section>
         )}
 

@@ -29,7 +29,8 @@ interface InsightCard { key: string; title: string; count: number; description: 
 interface StaffActionsData { followUpDonors: unknown[]; atRiskCount: number; dormantCount: number; bestCallTime: { day: string; slot: string }; summary: { total: number; atRisk: number; dormant: number }; }
 interface UserProfile { id: string; name: string; email: string; role: string; }
 interface DueReminder { id: string; donorId: string; donationId: string | null; type: string; title: string; description: string | null; dueDate: string; status: string; donor: { id: string; donorCode: string; firstName: string; lastName: string | null; primaryPhone: string | null; }; donation: { id: string; donationAmount: number; receiptNumber: string | null; donationDate: string; } | null; createdBy: { id: string; name: string; }; }
-interface ImpactData { summary: { totalBeneficiaries: number; totalDonors: number; activeSponsors: number; activeSponsorships: number; totalDonationsFY: number; totalCampaigns: number; }; homeMetrics: unknown[]; }
+interface HomeMetric { homeType: string; homeLabel: string; beneficiaryCount: number; activeSponsorships: number; donationsReceived: number; }
+interface ImpactData { summary: { totalBeneficiaries: number; totalDonors: number; activeSponsors: number; activeSponsorships: number; totalDonationsFY: number; totalCampaigns: number; }; homeMetrics: HomeMetric[]; }
 interface RetentionData { summary: { totalDonors: number; repeatDonorCount: number; oneTimeDonorCount: number; lapsedDonorCount: number; overallRetentionPct: number; activeLast6Months: number }; }
 interface Insight { type: "positive" | "warning" | "info"; title: string; description: string; }
 interface AdminInsight { type: string; title: string; description: string; }
@@ -43,6 +44,12 @@ const LIGHT_BORDER = "#E6F4F4";
 const ICON_BG      = "rgba(95,168,168,0.10)";
 const CHART_COLORS = [PRIMARY_TEAL, "#4A9090", "#6BBEBE", DARK_TEAL, "#3A7A7A", "#7BBABA"];
 const GEO_COLORS   = [PRIMARY_TEAL, DARK_TEAL, "#4A9090", "#6BBEBE"];
+const HOME_COLORS: Record<string, string> = {
+  ORPHAN_HOME:    PRIMARY_TEAL,
+  OLD_AGE_HOME:   DARK_TEAL,
+  WOMENS_SHELTER: "#4A9090",
+  TRIBAL_SCHOOL:  "#6BBEBE",
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmt = (n: number) =>
@@ -488,7 +495,74 @@ export default function DashboardNewPage() {
           </section>
         )}
 
-        {/* ── 4. RETENTION + DONOR DISTRIBUTION ────────────────────────────── */}
+        {/* ── 4. HOME-WISE PERFORMANCE ──────────────────────────────────────── */}
+        {loading || slowLoading ? (
+          <section>
+            <SectionHeader title="Home-wise Performance" subtitle="Beneficiary and sponsorship breakdown by home" icon={Building2} />
+            <div className="grid gap-4 md:grid-cols-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-44 rounded-2xl" />)}</div>
+          </section>
+        ) : impactData && impactData.homeMetrics.length > 0 ? (
+          <section data-testid="section-home-performance-new">
+            <SectionHeader title="Home-wise Performance" subtitle="Beneficiary and sponsorship breakdown by home" icon={Building2} />
+            <div className="grid gap-4 md:grid-cols-3">
+              {impactData.homeMetrics.map((home) => {
+                const color = HOME_COLORS[home.homeType] ?? PRIMARY_TEAL;
+                const pct = home.beneficiaryCount > 0 ? Math.round((home.activeSponsorships / home.beneficiaryCount) * 100) : 0;
+                const unsponsored = Math.max(0, home.beneficiaryCount - home.activeSponsorships);
+                return (
+                  <Card
+                    key={home.homeType}
+                    className="overflow-hidden"
+                    style={{ border: `1px solid ${LIGHT_BORDER}`, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}
+                    data-testid={`home-card-new-${home.homeType}`}
+                  >
+                    <div className="h-1.5" style={{ backgroundColor: color }} />
+                    <CardContent className="p-5">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="font-semibold text-sm text-foreground">{home.homeLabel}</h3>
+                          <p className="text-xs text-muted-foreground mt-0.5">{home.beneficiaryCount} beneficiaries</p>
+                        </div>
+                        <div className="p-2 rounded-xl" style={{ backgroundColor: color + "1A" }}>
+                          <Building2 className="h-4 w-4" style={{ color }} />
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div>
+                          <div className="flex justify-between text-xs mb-1.5">
+                            <span className="text-muted-foreground">Sponsorship coverage</span>
+                            <span className="font-semibold" style={{ color }}>{pct}%</span>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: color }} />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div className="text-center p-2 rounded-xl bg-muted/50">
+                            <p className="text-base font-bold">{home.activeSponsorships}</p>
+                            <p className="text-xs text-muted-foreground">Sponsored</p>
+                          </div>
+                          <div className="text-center p-2 rounded-xl bg-muted/50">
+                            <p className="text-base font-bold">{unsponsored}</p>
+                            <p className="text-xs text-muted-foreground">Unspon.</p>
+                          </div>
+                          <div className="text-center p-2 rounded-xl bg-muted/50">
+                            <p className="text-base font-bold" style={{ color }}>
+                              {home.donationsReceived > 0 ? `₹${Math.round(home.donationsReceived / 1000)}k` : "—"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">Donations</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
+        {/* ── 5. RETENTION + DONOR DISTRIBUTION ────────────────────────────── */}
         <section data-testid="section-retention-geo-new">
           <div className="grid gap-6 lg:grid-cols-2">
 
