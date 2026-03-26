@@ -10,9 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth } from "@/lib/auth";
 import {
   Users, IndianRupee, HandHeart, TrendingUp, AlertTriangle, Info,
-  ArrowUpRight, Clock, Target, CalendarCheck, CheckCircle2, Bell,
+  Clock, Target, CalendarCheck, CheckCircle2, Bell,
   Mail, MessageCircle, Check, BarChart3, RefreshCcw, WifiOff,
-  PlusCircle, FileText, Heart, Lightbulb, ChevronRight,
+  Heart, Lightbulb, ChevronRight,
   Activity, Phone, Building2, Repeat, Zap, Star, Sparkles,
 } from "lucide-react";
 import {
@@ -325,9 +325,6 @@ export default function DashboardPage() {
   const [slowLoading, setSlowLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const { toast } = useToast();
-
-  const role = userProfile?.role ?? "";
-  const isActionRole = ["FOUNDER", "ADMIN", "STAFF"].includes(role);
 
   const handleMarkDone = async (r: DueReminder) => {
     try {
@@ -751,56 +748,6 @@ export default function DashboardPage() {
           </section>
         )}
 
-        {/* ── NEXT BEST ACTIONS ─────────────────────────────────────────────── */}
-        {isActionRole && staffActions && staffActions.followUpDonors.length > 0 && (
-          <section data-testid="section-staff-actions">
-            <SectionHeader title="Next Best Actions" subtitle="Donors to follow up based on inactivity" icon={Target} />
-            <div className="grid gap-3 md:grid-cols-2">
-              {staffActions.followUpDonors.slice(0, 6).map((d) => (
-                <Card
-                  key={d.id}
-                  style={{ border: "1px solid #EBF1F5", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
-                  data-testid={`followup-donor-${d.id}`}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="p-2 rounded-xl"
-                          style={{ background: d.healthStatus === "DORMANT" ? "#FEF2F2" : TEAL_BG }}
-                        >
-                          <Phone
-                            className="h-4 w-4"
-                            style={{ color: d.healthStatus === "DORMANT" ? "#DC2626" : TEAL }}
-                          />
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold">{d.name}</p>
-                          <p className="text-xs text-muted-foreground">{d.donorCode} · {d.phone}</p>
-                        </div>
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="text-xs flex-shrink-0"
-                        style={
-                          d.healthStatus === "DORMANT"
-                            ? { borderColor: "#FCA5A5", color: "#DC2626", background: "#FEF2F2" }
-                            : { borderColor: TEAL, color: TEAL, background: TEAL_BG }
-                        }
-                      >
-                        {d.healthStatus === "DORMANT" ? "Dormant" : "At-Risk"} · {d.daysSinceLastDonation}d
-                      </Badge>
-                    </div>
-                    <div className="mt-2.5 ml-11 text-xs text-muted-foreground">
-                      Best time: <span className="font-medium text-foreground">{d.bestTimeToContact}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-        )}
-
         {/* ── RECENT ACTIVITY ───────────────────────────────────────────────── */}
         {(loading || recentDonations.length > 0 || topDonors.length > 0) && (
           <section>
@@ -901,34 +848,6 @@ export default function DashboardPage() {
             )}
           </section>
         )}
-
-        {/* ── QUICK ACTIONS ─────────────────────────────────────────────────── */}
-        <section>
-          <SectionHeader title="Quick Actions" subtitle="Common tasks at a glance" icon={Zap} />
-          <div className="grid gap-3 grid-cols-2 sm:grid-cols-4">
-            {[
-              { label: "Add Donor",     icon: PlusCircle, href: "/dashboard/donors/new" },
-              { label: "Record Donation", icon: IndianRupee, href: "/dashboard/donations/new" },
-              { label: "Send Message",  icon: MessageCircle, href: "/dashboard/send-message" },
-              { label: "View Reports",  icon: FileText, href: "/dashboard/reports" },
-            ].map(({ label, icon: Icon, href }) => (
-              <Link key={href} href={href}>
-                <Card
-                  className="cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
-                  style={{ border: "1px solid #EBF1F5", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
-                >
-                  <CardContent className="p-4 flex items-center gap-3">
-                    <div className="p-2 rounded-xl flex-shrink-0" style={{ background: TEAL_BG }}>
-                      <Icon className="h-4 w-4" style={{ color: TEAL }} />
-                    </div>
-                    <span className="text-sm font-medium text-foreground">{label}</span>
-                    <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground ml-auto flex-shrink-0" />
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </section>
 
       </div>
     </div>
