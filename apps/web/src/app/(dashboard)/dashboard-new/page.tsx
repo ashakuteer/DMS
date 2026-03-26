@@ -496,7 +496,7 @@ export default function DashboardNewPage() {
         )}
 
         {/* ── 4. HOME-WISE PERFORMANCE ──────────────────────────────────────── */}
-        {loading || slowLoading ? (
+        {loading ? (
           <section>
             <SectionHeader title="Home-wise Performance" subtitle="Beneficiary and sponsorship breakdown by home" icon={Building2} />
             <div className="grid gap-4 md:grid-cols-3">{[1, 2, 3].map(i => <Skeleton key={i} className="h-44 rounded-2xl" />)}</div>
