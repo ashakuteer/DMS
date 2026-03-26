@@ -70,6 +70,7 @@ export interface TaskItem {
     id: string
     pledgeType: string
     amount: string | null
+    quantity: string | null
     expectedFulfillmentDate: string | null
   } | null
 }

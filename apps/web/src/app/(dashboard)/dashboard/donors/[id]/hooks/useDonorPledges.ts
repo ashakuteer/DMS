@@ -50,10 +50,13 @@ export function useDonorPledges(donorId: string) {
     fetchPledges();
   }, [fetchPledges]);
 
-  const runPledgeAction = useCallback(async (pledgeId: string, action: string) => {
+  const runPledgeAction = useCallback(async (pledgeId: string, action: string, body?: Record<string, unknown>) => {
     setPledgeActionLoading(pledgeId);
     try {
-      await apiClient(`/api/pledges/${pledgeId}/${action}`, { method: "POST" });
+      await apiClient(`/api/pledges/${pledgeId}/${action}`, {
+        method: "POST",
+        body: body ? JSON.stringify(body) : undefined,
+      });
       await fetchPledges();
     } catch {
       console.error(`Failed to ${action} pledge`);
@@ -113,8 +116,10 @@ export function useDonorPledges(donorId: string) {
   }, [donorId, pledgeForm, editingPledgeId, fetchPledges]);
 
   const onFulfill = useCallback((pledgeId: string) => runPledgeAction(pledgeId, "mark-fulfilled"), [runPledgeAction]);
-  const onPostpone = useCallback((pledgeId: string) => runPledgeAction(pledgeId, "postpone"), [runPledgeAction]);
-  const onCancel = useCallback((pledgeId: string) => runPledgeAction(pledgeId, "cancel"), [runPledgeAction]);
+  const onPostpone = useCallback((pledgeId: string, newDate: string, notes?: string) =>
+    runPledgeAction(pledgeId, "postpone", { newDate, notes }), [runPledgeAction]);
+  const onCancel = useCallback((pledgeId: string, reason: string) =>
+    runPledgeAction(pledgeId, "cancel", { reason }), [runPledgeAction]);
   const onWhatsApp = useCallback((_pledgeId: string) => {}, []);
   const onEmail = useCallback((_pledgeId: string) => {}, []);
 

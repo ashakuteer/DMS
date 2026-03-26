@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
+import { useState } from "react";
 import {
   CalendarClock,
   Check,
@@ -15,6 +16,7 @@ import {
   Receipt,
   Copy,
   Trash2,
+  X,
 } from "lucide-react";
 import type { Pledge, PledgeFormData } from "../types";
 import { formatCurrency, formatDate, getPledgeStatusColor, getPledgeTypeLabel } from "../utils";
@@ -28,8 +30,8 @@ interface DonorPledgesTabProps {
   onAdd: () => void;
   onEdit: (pledge: Pledge) => void;
   onFulfill: (pledgeId: string) => void;
-  onPostpone: (pledgeId: string) => void;
-  onCancel: (pledgeId: string) => void;
+  onPostpone: (pledgeId: string, newDate: string, notes?: string) => void;
+  onCancel: (pledgeId: string, reason: string) => void;
   onWhatsApp: (pledgeId: string) => void;
   onEmail: (pledgeId: string) => void;
   onDeletePledge: (pledgeId: string) => void;
@@ -66,6 +68,23 @@ export default function DonorPledgesTab({
   handlePledgeSubmit,
 }: DonorPledgesTabProps) {
   const { t } = useTranslation();
+
+  // Postpone dialog state
+  const [postponeDialog, setPostponeDialog] = useState<{ pledgeId: string; newDate: string; notes: string } | null>(null);
+  // Cancel dialog state
+  const [cancelDialog, setCancelDialog] = useState<{ pledgeId: string; reason: string } | null>(null);
+
+  const handlePostponeConfirm = () => {
+    if (!postponeDialog || !postponeDialog.newDate) return;
+    onPostpone(postponeDialog.pledgeId, postponeDialog.newDate, postponeDialog.notes || undefined);
+    setPostponeDialog(null);
+  };
+
+  const handleCancelConfirm = () => {
+    if (!cancelDialog || !cancelDialog.reason.trim()) return;
+    onCancel(cancelDialog.pledgeId, cancelDialog.reason.trim());
+    setCancelDialog(null);
+  };
 
   return (
     <>
@@ -153,7 +172,7 @@ export default function DonorPledgesTab({
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => onPostpone(pledge.id)}
+                            onClick={() => setPostponeDialog({ pledgeId: pledge.id, newDate: "", notes: "" })}
                             disabled={!!pledgeActionLoading}
                             data-testid={`button-postpone-pledge-${pledge.id}`}
                           >
@@ -164,7 +183,7 @@ export default function DonorPledgesTab({
                           <Button
                             variant="destructive"
                             size="sm"
-                            onClick={() => onCancel(pledge.id)}
+                            onClick={() => setCancelDialog({ pledgeId: pledge.id, reason: "" })}
                             disabled={!!pledgeActionLoading}
                             data-testid={`button-cancel-pledge-${pledge.id}`}
                           >
@@ -259,6 +278,105 @@ export default function DonorPledgesTab({
         savingPledge={savingPledge}
         onSubmit={handlePledgeSubmit}
       />
+
+      {/* Postpone Dialog */}
+      {postponeDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-background rounded-lg shadow-lg p-6 w-full max-w-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold">Postpone Pledge</h3>
+              <button onClick={() => setPostponeDialog(null)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium mb-1 block">New Expected Date <span className="text-destructive">*</span></label>
+                <input
+                  type="date"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  value={postponeDialog.newDate}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setPostponeDialog({ ...postponeDialog, newDate: e.target.value })}
+                  data-testid="input-postpone-date"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Notes (optional)</label>
+                <textarea
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                  rows={2}
+                  value={postponeDialog.notes}
+                  onChange={(e) => setPostponeDialog({ ...postponeDialog, notes: e.target.value })}
+                  placeholder="Reason for postponing..."
+                  data-testid="input-postpone-notes"
+                />
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={() => setPostponeDialog(null)}>
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handlePostponeConfirm}
+                disabled={!postponeDialog.newDate || !!pledgeActionLoading}
+                data-testid="button-postpone-confirm"
+              >
+                {pledgeActionLoading === postponeDialog.pledgeId ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : (
+                  <CalendarClock className="h-4 w-4 mr-1" />
+                )}
+                Postpone
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Dialog */}
+      {cancelDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-background rounded-lg shadow-lg p-6 w-full max-w-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold">Cancel Pledge</h3>
+              <button onClick={() => setCancelDialog(null)} className="text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Reason for cancellation <span className="text-destructive">*</span></label>
+              <textarea
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                rows={3}
+                value={cancelDialog.reason}
+                onChange={(e) => setCancelDialog({ ...cancelDialog, reason: e.target.value })}
+                placeholder="Please provide a reason..."
+                data-testid="input-cancel-reason"
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" size="sm" onClick={() => setCancelDialog(null)}>
+                Go Back
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleCancelConfirm}
+                disabled={!cancelDialog.reason.trim() || !!pledgeActionLoading}
+                data-testid="button-cancel-confirm"
+              >
+                {pledgeActionLoading === cancelDialog.pledgeId ? (
+                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                ) : null}
+                Confirm Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

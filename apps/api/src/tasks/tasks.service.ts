@@ -59,7 +59,7 @@ export class TasksService {
       },
     },
     sourcePledge: {
-      select: { id: true, pledgeType: true, amount: true, expectedFulfillmentDate: true },
+      select: { id: true, pledgeType: true, amount: true, quantity: true, expectedFulfillmentDate: true },
     },
   };
 
