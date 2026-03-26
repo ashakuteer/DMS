@@ -29,7 +29,7 @@ import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 
-const SIDEBAR_BG = "#F1F5F9";
+const SIDEBAR_BG = "#F4FAFA";
 const TEXT_DEFAULT = "#475569";
 const TEXT_HOVER   = "#1E293B";
 const TEXT_LABEL   = "#64748B";
@@ -39,7 +39,7 @@ const ICON_COLOR   = "#94A3B8";
 const ICON_ACTIVE  = "#5FA8A8";
 const ACTIVE_BG = "#E6F4F4";
 const ACTIVE_BORDER = "none";
-const HOVER_BG = "#E8EFF5";
+const HOVER_BG = "#EEF8F8";
 const BORDER_COLOR = "rgba(0,0,0,0.05)";
 const GROUP_LABEL_COLOR = "#94A3B8";
 

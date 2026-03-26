@@ -40,14 +40,15 @@ interface ImpactData { summary: { totalBeneficiaries: number; totalDonors: numbe
 interface RetentionData { summary: { totalDonors: number; repeatDonorCount: number; oneTimeDonorCount: number; lapsedDonorCount: number; overallRetentionPct: number; activeLast6Months: number }; }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const TEAL = "#5FA8A8";
-const TEAL_DARK = "#3D8A8A";
-const TEAL_LIGHT = "#7FAFD4";
-const TEAL_BG = "rgba(95,168,168,0.10)";
-const CHART_COLORS = [TEAL, TEAL_LIGHT, "#4A9090", "#6BBEBE", "#3A7A7A", "#8EC8C8"];
+const PRIMARY_TEAL  = "#5FA8A8";
+const DARK_TEAL     = "#2C7A7A";
+const LIGHT_BG      = "#F4FAFA";
+const LIGHT_BORDER  = "#E6F4F4";
+const ICON_BG       = "rgba(95,168,168,0.10)";
+const CHART_COLORS  = [PRIMARY_TEAL, "#4A9090", "#6BBEBE", DARK_TEAL, "#3A7A7A", "#7BBABA"];
 const HOME_COLORS: Record<string, string> = {
-  ORPHAN_GIRLS: TEAL,
-  BLIND_BOYS:   TEAL_LIGHT,
+  ORPHAN_GIRLS: PRIMARY_TEAL,
+  BLIND_BOYS:   DARK_TEAL,
   OLD_AGE:      "#4A9090",
 };
 
@@ -96,8 +97,8 @@ function HeroBanner({
     <div
       className="relative overflow-hidden rounded-2xl"
       style={{
-        background: `linear-gradient(130deg, ${TEAL_DARK} 0%, ${TEAL} 45%, ${TEAL_LIGHT} 100%)`,
-        boxShadow: `0 8px 32px rgba(95,168,168,0.30)`,
+        background: `linear-gradient(130deg, ${DARK_TEAL} 0%, ${PRIMARY_TEAL} 100%)`,
+        boxShadow: `0 8px 32px rgba(44,122,122,0.28)`,
       }}
       data-testid="hero-banner"
     >
@@ -189,16 +190,16 @@ function KpiCard({ title, value, icon: Icon, highlight = false }: {
       className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
       style={
         highlight
-          ? { background: `linear-gradient(135deg, ${TEAL_DARK}, ${TEAL})`, border: "none", boxShadow: `0 4px 16px rgba(95,168,168,0.28)` }
-          : { background: "#FFFFFF", border: "1px solid #EBF1F5", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }
+          ? { background: `linear-gradient(135deg, ${DARK_TEAL}, ${PRIMARY_TEAL})`, border: "none", boxShadow: `0 4px 16px rgba(44,122,122,0.28)` }
+          : { background: "#FFFFFF", border: `1px solid ${LIGHT_BORDER}`, boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }
       }
     >
       <CardContent className="p-5">
         <div
           className="inline-flex p-2 rounded-xl mb-3"
-          style={{ background: highlight ? "rgba(255,255,255,0.18)" : TEAL_BG }}
+          style={{ background: highlight ? "rgba(255,255,255,0.18)" : ICON_BG }}
         >
-          <Icon className="h-4 w-4" style={{ color: highlight ? "#ffffff" : TEAL }} />
+          <Icon className="h-4 w-4" style={{ color: highlight ? "#ffffff" : PRIMARY_TEAL }} />
         </div>
         <p className={`text-2xl font-bold leading-tight ${highlight ? "text-white" : "text-[#1E293B]"}`}>{value}</p>
         <p className={`text-xs mt-1 font-medium ${highlight ? "text-white/75" : "text-[#64748B]"}`}>{title}</p>
@@ -211,12 +212,12 @@ function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitl
   return (
     <div className="flex items-start gap-3 mb-5">
       {Icon && (
-        <div className="p-2 rounded-xl mt-0.5 flex-shrink-0" style={{ background: TEAL_BG }}>
-          <Icon className="h-4 w-4" style={{ color: TEAL }} />
+        <div className="p-2 rounded-xl mt-0.5 flex-shrink-0" style={{ background: ICON_BG }}>
+          <Icon className="h-4 w-4" style={{ color: PRIMARY_TEAL }} />
         </div>
       )}
       <div>
-        <h2 className="text-xl font-bold text-foreground">{title}</h2>
+        <h2 className="text-xl font-bold" style={{ color: DARK_TEAL }}>{title}</h2>
         {subtitle && <p className="text-sm text-muted-foreground mt-0.5">{subtitle}</p>}
       </div>
     </div>
@@ -225,7 +226,7 @@ function SectionHeader({ title, subtitle, icon: Icon }: { title: string; subtitl
 
 function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <Card style={{ border: "1px solid #EBF1F5", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
+    <Card style={{ border: `1px solid ${LIGHT_BORDER}`, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}>
       <CardHeader className="pb-2 pt-5 px-5">
         <CardTitle className="text-base font-semibold">{title}</CardTitle>
         {subtitle && <CardDescription className="text-xs mt-0.5">{subtitle}</CardDescription>}
@@ -237,10 +238,10 @@ function ChartCard({ title, subtitle, children }: { title: string; subtitle?: st
 
 function insightStyle(type: string) {
   switch (type) {
-    case "positive": return { border: "border-l-2 border-l-emerald-400", icon: <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" /> };
-    case "warning":  return { border: `border-l-2 border-l-[${TEAL}]`, icon: <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: TEAL }} /> };
-    case "urgent":   return { border: "border-l-2 border-l-red-400", icon: <Zap className="h-4 w-4 text-red-500 flex-shrink-0 mt-0.5" /> };
-    default:         return { border: "border-l-2 border-l-blue-400", icon: <Info className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" /> };
+    case "positive": return { border: `border-l-2 border-l-[${PRIMARY_TEAL}]`, icon: <CheckCircle2 className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: PRIMARY_TEAL }} /> };
+    case "warning":  return { border: `border-l-2 border-l-[${PRIMARY_TEAL}]`, icon: <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: PRIMARY_TEAL }} /> };
+    case "urgent":   return { border: `border-l-2 border-l-[${DARK_TEAL}]`,    icon: <Zap className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: DARK_TEAL }} /> };
+    default:         return { border: `border-l-2 border-l-[${PRIMARY_TEAL}]`, icon: <Info className="h-4 w-4 flex-shrink-0 mt-0.5" style={{ color: PRIMARY_TEAL }} /> };
   }
 }
 
@@ -268,7 +269,7 @@ function DonorDistributionSection({ loading }: { loading: boolean }) {
     ).then((results) => { setBuckets(results); setFetching(false); });
   }, []);
 
-  const geoColors = [TEAL, TEAL_LIGHT, "#4A9090", "#6BBEBE"];
+  const geoColors = [PRIMARY_TEAL, DARK_TEAL, "#4A9090", "#6BBEBE"];
 
   return (
     <section>
@@ -280,7 +281,7 @@ function DonorDistributionSection({ loading }: { loading: boolean }) {
       ) : (
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
           {buckets.map((b, i) => {
-            const color = geoColors[i] ?? TEAL;
+            const color = geoColors[i] ?? PRIMARY_TEAL;
             return (
               <Card
                 key={b.key}
@@ -414,7 +415,7 @@ export default function DashboardPage() {
   if (loadError) {
     return (
       <div className="flex items-center justify-center h-96">
-        <Card className="max-w-sm w-full mx-4" style={{ border: "1px solid #EBF1F5", boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
+        <Card className="max-w-sm w-full mx-4" style={{ border: `1px solid ${LIGHT_BORDER}`, boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}>
           <CardContent className="p-8 text-center space-y-4">
             <div className="flex justify-center">
               <div className="p-4 rounded-full bg-red-50"><WifiOff className="h-8 w-8 text-red-400" /></div>
@@ -438,7 +439,7 @@ export default function DashboardPage() {
   const totalDonors   = impactData?.summary.totalDonors ?? stats?.activeDonors ?? 0;
 
   return (
-    <div className="min-h-screen" style={{ background: "#F4F7F9" }}>
+    <div className="min-h-screen" style={{ background: LIGHT_BG }}>
       <div className="max-w-7xl mx-auto p-6 space-y-8">
 
         {/* ── HERO BANNER ───────────────────────────────────────────────────── */}
@@ -499,7 +500,7 @@ export default function DashboardPage() {
                               formatter={(v: number) => [fmt(v), "Amount"]}
                               contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.1)", fontSize: "12px" }}
                             />
-                            <Line type="monotone" dataKey="amount" stroke={TEAL} strokeWidth={2.5} dot={{ fill: TEAL, strokeWidth: 0, r: 3 }} activeDot={{ r: 5, fill: TEAL_LIGHT }} />
+                            <Line type="monotone" dataKey="amount" stroke={PRIMARY_TEAL} strokeWidth={2.5} dot={{ fill: PRIMARY_TEAL, strokeWidth: 0, r: 3 }} activeDot={{ r: 5, fill: DARK_TEAL }} />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
@@ -548,14 +549,14 @@ export default function DashboardPage() {
             <SectionHeader title={t("home.home_performance")} subtitle={t("home.home_performance_subtitle")} icon={Building2} />
             <div className="grid gap-4 md:grid-cols-3">
               {impactData.homeMetrics.map((home) => {
-                const color = HOME_COLORS[home.homeType] ?? TEAL;
+                const color = HOME_COLORS[home.homeType] ?? PRIMARY_TEAL;
                 const pct = home.beneficiaryCount > 0 ? Math.round((home.activeSponsorships / home.beneficiaryCount) * 100) : 0;
                 const unsponsored = Math.max(0, home.beneficiaryCount - home.activeSponsorships);
                 return (
                   <Card
                     key={home.homeType}
                     className="overflow-hidden"
-                    style={{ border: "1px solid #EBF1F5", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}
+                    style={{ border: `1px solid ${LIGHT_BORDER}`, boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}
                     data-testid={`home-card-${home.homeType}`}
                   >
                     <div className="h-1.5" style={{ backgroundColor: color }} />
@@ -617,10 +618,10 @@ export default function DashboardPage() {
                     {retentionData && (
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { labelKey: "home.repeat_donors_count", value: retentionData.summary.repeatDonorCount,    color: TEAL,      bg: TEAL_BG },
-                          { labelKey: "home.lapsed_donors_count", value: retentionData.summary.lapsedDonorCount,    color: "#DC2626", bg: "#FEF2F2" },
-                          { labelKey: "home.one_time_only",       value: retentionData.summary.oneTimeDonorCount,   color: TEAL_LIGHT, bg: "rgba(127,175,212,0.10)" },
-                          { labelKey: "home.active_6mo",         value: retentionData.summary.activeLast6Months,   color: TEAL_DARK,  bg: "rgba(61,138,138,0.10)" },
+                          { labelKey: "home.repeat_donors_count", value: retentionData.summary.repeatDonorCount,  color: PRIMARY_TEAL, bg: ICON_BG },
+                          { labelKey: "home.lapsed_donors_count", value: retentionData.summary.lapsedDonorCount,  color: DARK_TEAL,    bg: LIGHT_BORDER },
+                          { labelKey: "home.one_time_only",       value: retentionData.summary.oneTimeDonorCount, color: PRIMARY_TEAL, bg: ICON_BG },
+                          { labelKey: "home.active_6mo",         value: retentionData.summary.activeLast6Months,  color: DARK_TEAL,    bg: LIGHT_BORDER },
                         ].map(({ labelKey, value, color, bg }) => (
                           <div key={labelKey} className="rounded-2xl p-3.5" style={{ background: bg }}>
                             <p className="text-xl font-bold" style={{ color }}>{value}</p>
@@ -702,14 +703,14 @@ export default function DashboardPage() {
                 return (
                   <Card
                     key={r.id}
-                    style={{ border: "1px solid #EBF1F5", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
+                    style={{ border: `1px solid ${LIGHT_BORDER}`, boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
                     data-testid={`reminder-${r.id}`}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-3 flex-wrap">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-xl" style={{ background: TEAL_BG }}>
-                            <Bell className="h-4 w-4" style={{ color: TEAL }} />
+                          <div className="p-2 rounded-xl" style={{ background: ICON_BG }}>
+                            <Bell className="h-4 w-4" style={{ color: PRIMARY_TEAL }} />
                           </div>
                           <div>
                             <p className="text-sm font-semibold">{name}</p>
@@ -769,8 +770,8 @@ export default function DashboardPage() {
                             data-testid={`donation-row-${d.id}`}
                           >
                             <div className="flex items-center gap-3 min-w-0">
-                              <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: TEAL_BG }}>
-                                <IndianRupee className="h-3.5 w-3.5" style={{ color: TEAL }} />
+                              <div className="h-8 w-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: ICON_BG }}>
+                                <IndianRupee className="h-3.5 w-3.5" style={{ color: PRIMARY_TEAL }} />
                               </div>
                               <div className="min-w-0">
                                 <p className="text-sm font-medium truncate">{d.donorName}</p>
@@ -778,7 +779,7 @@ export default function DashboardPage() {
                               </div>
                             </div>
                             <div className="text-right flex-shrink-0 ml-2">
-                              <p className="text-sm font-semibold" style={{ color: TEAL_DARK }}>{fmt(d.amount)}</p>
+                              <p className="text-sm font-semibold" style={{ color: DARK_TEAL }}>{fmt(d.amount)}</p>
                               <p className="text-xs text-muted-foreground">{fmtDate(d.date)}</p>
                             </div>
                           </div>
@@ -787,7 +788,7 @@ export default function DashboardPage() {
                       <Link href="/dashboard/donations">
                         <div
                           className="flex items-center justify-center gap-1.5 py-2.5 text-xs cursor-pointer font-medium rounded-lg transition-colors hover:bg-muted/50"
-                          style={{ color: TEAL }}
+                          style={{ color: PRIMARY_TEAL }}
                         >
                           View all donations <ChevronRight className="h-3.5 w-3.5" />
                         </div>
@@ -813,9 +814,9 @@ export default function DashboardPage() {
                             <div
                               className="h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                               style={
-                                idx === 0 ? { background: TEAL_BG, color: TEAL }
-                                : idx === 1 ? { background: "rgba(127,175,212,0.12)", color: TEAL_LIGHT }
-                                : { background: "#F1F5F9", color: "#64748B" }
+                                idx === 0 ? { background: ICON_BG, color: PRIMARY_TEAL }
+                                : idx === 1 ? { background: LIGHT_BORDER, color: DARK_TEAL }
+                                : { background: LIGHT_BORDER, color: "#64748B" }
                               }
                             >
                               {idx + 1}
@@ -824,14 +825,14 @@ export default function DashboardPage() {
                               <p className="text-sm font-medium truncate">{d.name}</p>
                               <p className="text-xs text-muted-foreground">{d.donorCode} · {d.donationCount} donation{d.donationCount !== 1 ? "s" : ""}</p>
                             </div>
-                            <p className="text-sm font-semibold flex-shrink-0" style={{ color: TEAL }}>{fmt(d.totalAmount)}</p>
+                            <p className="text-sm font-semibold flex-shrink-0" style={{ color: PRIMARY_TEAL }}>{fmt(d.totalAmount)}</p>
                           </div>
                         </Link>
                       ))}
                       <Link href="/dashboard/donors">
                         <div
                           className="flex items-center justify-center gap-1.5 py-2.5 text-xs cursor-pointer font-medium rounded-lg transition-colors hover:bg-muted/50"
-                          style={{ color: TEAL }}
+                          style={{ color: PRIMARY_TEAL }}
                         >
                           View all donors <ChevronRight className="h-3.5 w-3.5" />
                         </div>
