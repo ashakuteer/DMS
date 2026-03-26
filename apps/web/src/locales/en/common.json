@@ -1,6 +1,7 @@
 {
   "nav": {
     "dashboard": "Dashboard",
+    "dashboard_new": "New Dashboard (Test)",
     "daily_actions": "Daily Actions",
     "donors": "Donors",
     "donations": "Donations",

@@ -23,7 +23,7 @@ import {
   Cake, Send, FileBarChart, ClipboardList, Building2, ArrowUpRight,
   FolderLock, Lock, Repeat, ListChecks, Phone, Clock, ChevronDown,
   ChevronRight, MessageSquarePlus, Banknote, CalendarOff, ClipboardCheck,
-  AlertTriangle, Trophy, Zap,
+  AlertTriangle, Trophy, Zap, TestTube2,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
@@ -64,6 +64,7 @@ const navGroups: NavGroup[] = [
     pinned: true,
     items: [
       { title: "Dashboard", tKey: "nav.dashboard", href: "/dashboard", icon: LayoutDashboard, permissionModule: "dashboard" },
+      { title: "New Dashboard (Test)", tKey: "nav.dashboard_new", href: "/dashboard-new", icon: TestTube2, permissionModule: "dashboard" },
     ],
   },
   {
