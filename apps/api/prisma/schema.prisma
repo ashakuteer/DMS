@@ -241,6 +241,7 @@ model DonorFamilyMember {
   birthDay      Int?
   donor         Donor              @relation(fields: [donorId], references: [id], onDelete: Cascade)
   reminderTasks ReminderTask[]     @relation("ReminderTaskSourceFamily")
+  tasks         Task[]             @relation("TaskSourceFamilyMember")
 
   @@index([donorId])
   @@map("donor_family_members")
@@ -1159,13 +1160,30 @@ enum OccasionType {
 
 enum FamilyRelationType {
   SPOUSE
+  SON
+  DAUGHTER
   CHILD
   FATHER
   MOTHER
+  BROTHER
+  SISTER
   SIBLING
-  GRANDPARENT
-  OTHER
+  FATHER_IN_LAW
+  MOTHER_IN_LAW
   IN_LAW
+  GRANDFATHER
+  GRANDMOTHER
+  GRANDPARENT
+  GRANDSON
+  GRANDDAUGHTER
+  GRANDCHILD
+  FIANCE
+  FIANCEE
+  FRIEND
+  COLLEAGUE
+  BOSS
+  MENTOR
+  OTHER
 }
 
 enum PledgeType {
@@ -2331,6 +2349,7 @@ model Task {
   sourceOccasionId      String?
   sourceSponsorshipId   String?
   sourcePledgeId        String?
+  sourceFamilyMemberId  String?
   contactCount          Int          @default(0)
   lastContactedAt       DateTime?
   createdAt             DateTime     @default(now())
@@ -2342,6 +2361,7 @@ model Task {
   sourceOccasion  DonorSpecialOccasion? @relation("TaskSourceOccasion", fields: [sourceOccasionId], references: [id], onDelete: SetNull)
   sourceSponsorship Sponsorship?       @relation("TaskSourceSponsorship", fields: [sourceSponsorshipId], references: [id], onDelete: SetNull)
   sourcePledge    Pledge?              @relation("TaskSourcePledge", fields: [sourcePledgeId], references: [id], onDelete: SetNull)
+  sourceFamilyMember DonorFamilyMember? @relation("TaskSourceFamilyMember", fields: [sourceFamilyMemberId], references: [id], onDelete: SetNull)
   contactLogs     CommunicationLog[]   @relation("CommunicationLogTask")
 
   @@index([status])
@@ -2355,6 +2375,7 @@ model Task {
   @@index([sourceOccasionId])
   @@index([sourceSponsorshipId])
   @@index([sourcePledgeId])
+  @@index([sourceFamilyMemberId])
   @@map("tasks")
 }
 

@@ -43,6 +43,7 @@ export class TaskSchedulerService implements OnModuleInit {
     this.logger.log('Daily donor task generation started');
     const results = await Promise.allSettled([
       this.generateBirthdayTasks(),
+      this.generateFamilyMemberBirthdayTasks(),
       this.generateAnniversaryTasks(),
       this.generateRemembranceTasks(),
       this.generatePledgeFollowUpTasks(),
@@ -51,7 +52,7 @@ export class TaskSchedulerService implements OnModuleInit {
       this.generateSmartDonationReminderTasks(),
     ]);
     results.forEach((r, i) => {
-      const names = ['birthday', 'anniversary', 'remembrance', 'pledge', 'donation-followup', 'sponsor-update', 'smart-reminder'];
+      const names = ['birthday', 'family-birthday', 'anniversary', 'remembrance', 'pledge', 'donation-followup', 'sponsor-update', 'smart-reminder'];
       if (r.status === 'rejected') {
         this.logger.error(`${names[i]} task generation failed: ${r.reason}`);
       } else {
@@ -167,6 +168,72 @@ export class TaskSchedulerService implements OnModuleInit {
             donorId: occ.donorId,
             sourceOccasionId: occ.id,
             autoWhatsAppPossible: this.autoWhatsApp(occ.donor),
+            manualRequired: true,
+          },
+        });
+        created++;
+      }
+    }
+    return created;
+  }
+
+  // ─── 1b. Family member birthday tasks — reads from donor_family_members (birthMonth/birthDay)
+  //         Family Members is now the source of truth for person-level birthday data.
+  //         These complement the DOB_SELF/DOB_SPOUSE/DOB_CHILD occasion records for backward compat.
+
+  async generateFamilyMemberBirthdayTasks(): Promise<number> {
+    const LOOK_AHEAD_DAYS = 30;
+
+    const members = await this.prisma.donorFamilyMember.findMany({
+      where: {
+        birthMonth: { not: null },
+        birthDay: { not: null },
+        donor: { isDeleted: false },
+      },
+      include: {
+        donor: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            prefWhatsapp: true,
+            whatsappPhone: true,
+          },
+        },
+      },
+    });
+
+    let created = 0;
+    for (const member of members) {
+      if (!member.birthMonth || !member.birthDay) continue;
+
+      const { dueDate, daysUntil } = this.nextAnnualDate(member.birthMonth, member.birthDay);
+      if (daysUntil > LOOK_AHEAD_DAYS) continue;
+
+      const nextDay = new Date(dueDate.getTime() + 86400000);
+      const existing = await this.prisma.task.findFirst({
+        where: {
+          type: TaskType.BIRTHDAY,
+          donorId: member.donorId,
+          sourceFamilyMemberId: member.id,
+          dueDate: { gte: dueDate, lt: nextDay },
+        },
+      });
+
+      if (!existing) {
+        const donorName = [member.donor.firstName, member.donor.lastName].filter(Boolean).join(' ');
+        const title = `Birthday: ${member.name} (${member.relationType.replace(/_/g, ' ')} of ${donorName})`;
+
+        await this.prisma.task.create({
+          data: {
+            title,
+            type: TaskType.BIRTHDAY,
+            priority: daysUntil <= 1 ? TaskPriority.HIGH : TaskPriority.MEDIUM,
+            status: TaskStatus.PENDING,
+            dueDate,
+            donorId: member.donorId,
+            sourceFamilyMemberId: member.id,
+            autoWhatsAppPossible: this.autoWhatsApp(member.donor),
             manualRequired: true,
           },
         });

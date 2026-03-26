@@ -79,8 +79,6 @@ export default function SpecialOccasionDialog({
 
                 <SelectContent>
                   <SelectItem value="DOB_SELF">{t("donor_profile.occasion_dob_self")}</SelectItem>
-                  <SelectItem value="DOB_SPOUSE">{t("donor_profile.occasion_dob_spouse")}</SelectItem>
-                  <SelectItem value="DOB_CHILD">{t("donor_profile.occasion_dob_child")}</SelectItem>
                   <SelectItem value="ANNIVERSARY">{t("donor_profile.occasion_anniversary")}</SelectItem>
                   <SelectItem value="DEATH_ANNIVERSARY">
                     {t("donor_profile.occasion_death_anniversary")}

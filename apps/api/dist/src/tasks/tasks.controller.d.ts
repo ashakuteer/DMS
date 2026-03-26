@@ -73,6 +73,7 @@ export declare class TasksController {
         autoWhatsAppPossible: boolean;
         manualRequired: boolean;
         sourceSponsorshipId: string | null;
+        sourceFamilyMemberId: string | null;
         contactCount: number;
         lastContactedAt: Date | null;
     }>;
@@ -219,6 +220,7 @@ export declare class TasksController {
         autoWhatsAppPossible: boolean;
         manualRequired: boolean;
         sourceSponsorshipId: string | null;
+        sourceFamilyMemberId: string | null;
         contactCount: number;
         lastContactedAt: Date | null;
     }>;

@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, Heart, Loader2, Plus, Trash2, Edit } from "lucide-react";
+import { Calendar, Heart, Info, Loader2, Plus, Trash2, Edit, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -52,6 +52,20 @@ export default function DonorSpecialDaysTab({
 
   return (
     <div className="space-y-4">
+      {/* Guidance banner: family birthdays belong in Family Members tab */}
+      <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/30 px-4 py-3 text-sm text-blue-800 dark:text-blue-300">
+        <Info className="h-4 w-4 mt-0.5 shrink-0" />
+        <span>
+          <strong>Tip:</strong> Family member birthdays (spouse, children, etc.) are tracked in the{" "}
+          <span className="inline-flex items-center gap-1 font-medium">
+            <Users className="h-3.5 w-3.5" />
+            Family Members
+          </span>{" "}
+          tab — no need to add them here again. Use Special Days for the donor&apos;s own birthday,
+          wedding anniversary, memorial days, or other personal reminders.
+        </span>
+      </div>
+
       {upcomingOccasions.length > 0 && (
         <Card className="border-[#5FA8A8] bg-[#E6F4F1]/50 dark:bg-[#5FA8A8]/20 dark:border-[#5FA8A8]">
           <CardHeader className="pb-2">

@@ -94,14 +94,31 @@ export default function FamilyMemberDialog({
                   <SelectValue placeholder={t("donor_profile.select_relation")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="SPOUSE">{t("donor_profile.relation_spouse")}</SelectItem>
-                  <SelectItem value="CHILD">{t("donor_profile.relation_child")}</SelectItem>
-                  <SelectItem value="FATHER">{t("donor_profile.relation_father")}</SelectItem>
-                  <SelectItem value="MOTHER">{t("donor_profile.relation_mother")}</SelectItem>
-                  <SelectItem value="SIBLING">{t("donor_profile.relation_sibling")}</SelectItem>
-                  <SelectItem value="IN_LAW">{t("donor_profile.relation_in_law")}</SelectItem>
-                  <SelectItem value="GRANDPARENT">{t("donor_profile.relation_grandparent")}</SelectItem>
-                  <SelectItem value="OTHER">{t("common.other")}</SelectItem>
+                  <SelectItem value="SPOUSE">Spouse</SelectItem>
+                  <SelectItem value="SON">Son</SelectItem>
+                  <SelectItem value="DAUGHTER">Daughter</SelectItem>
+                  <SelectItem value="CHILD">Child</SelectItem>
+                  <SelectItem value="FATHER">Father</SelectItem>
+                  <SelectItem value="MOTHER">Mother</SelectItem>
+                  <SelectItem value="BROTHER">Brother</SelectItem>
+                  <SelectItem value="SISTER">Sister</SelectItem>
+                  <SelectItem value="SIBLING">Sibling</SelectItem>
+                  <SelectItem value="FATHER_IN_LAW">Father-in-law</SelectItem>
+                  <SelectItem value="MOTHER_IN_LAW">Mother-in-law</SelectItem>
+                  <SelectItem value="IN_LAW">In-law</SelectItem>
+                  <SelectItem value="GRANDFATHER">Grandfather</SelectItem>
+                  <SelectItem value="GRANDMOTHER">Grandmother</SelectItem>
+                  <SelectItem value="GRANDPARENT">Grandparent</SelectItem>
+                  <SelectItem value="GRANDSON">Grandson</SelectItem>
+                  <SelectItem value="GRANDDAUGHTER">Granddaughter</SelectItem>
+                  <SelectItem value="GRANDCHILD">Grandchild</SelectItem>
+                  <SelectItem value="FIANCE">Fiancé</SelectItem>
+                  <SelectItem value="FIANCEE">Fiancée</SelectItem>
+                  <SelectItem value="FRIEND">Friend</SelectItem>
+                  <SelectItem value="COLLEAGUE">Colleague</SelectItem>
+                  <SelectItem value="BOSS">Boss</SelectItem>
+                  <SelectItem value="MENTOR">Mentor</SelectItem>
+                  <SelectItem value="OTHER">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>

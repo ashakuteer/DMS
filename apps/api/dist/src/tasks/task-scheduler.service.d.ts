@@ -11,6 +11,7 @@ export declare class TaskSchedulerService implements OnModuleInit {
     private futureDueDate;
     private nextAnnualDate;
     generateBirthdayTasks(): Promise<number>;
+    generateFamilyMemberBirthdayTasks(): Promise<number>;
     generateAnniversaryTasks(): Promise<number>;
     generateRemembranceTasks(): Promise<number>;
     generatePledgeFollowUpTasks(): Promise<number>;
