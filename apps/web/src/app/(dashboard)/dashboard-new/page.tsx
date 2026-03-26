@@ -570,17 +570,16 @@ export default function DashboardNewPage() {
             <div>
               <SectionHeader title="Donor Retention" subtitle="Health of your donor base" icon={Repeat} />
               {loading ? (
-                <div className="grid grid-cols-2 gap-3">
-                  {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}
+                <div className="grid grid-cols-3 gap-3">
+                  {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}
                 </div>
               ) : retentionData ? (
                 <div className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     {[
-                      { label: "Repeat Donors",    value: retentionData.summary.repeatDonorCount,  color: PRIMARY_TEAL, bg: ICON_BG },
-                      { label: "Lapsed Donors",    value: retentionData.summary.lapsedDonorCount,  color: DARK_TEAL,    bg: LIGHT_BORDER },
-                      { label: "One-time Only",    value: retentionData.summary.oneTimeDonorCount, color: PRIMARY_TEAL, bg: ICON_BG },
-                      { label: "Active (6 months)", value: retentionData.summary.activeLast6Months, color: DARK_TEAL,   bg: LIGHT_BORDER },
+                      { label: "Repeat Donors",     value: retentionData.summary.repeatDonorCount,  color: PRIMARY_TEAL, bg: ICON_BG },
+                      { label: "Lapsed Donors",     value: retentionData.summary.lapsedDonorCount,  color: DARK_TEAL,    bg: LIGHT_BORDER },
+                      { label: "Active (6 mo)",     value: retentionData.summary.activeLast6Months, color: DARK_TEAL,    bg: LIGHT_BORDER },
                     ].map(({ label, value, color, bg }) => (
                       <div key={label} className="rounded-2xl p-4" style={{ background: bg }}>
                         <p className="text-2xl font-bold" style={{ color }}>{value}</p>
@@ -641,9 +640,9 @@ export default function DashboardNewPage() {
                     return (
                       <div key={idx} className={`flex items-start gap-3 p-3.5 rounded-2xl bg-card border border-border/50 ${s.border}`}>
                         {s.icon}
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium">{insight.title}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{insight.description}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{insight.description}</p>
                         </div>
                       </div>
                     );
@@ -688,21 +687,21 @@ export default function DashboardNewPage() {
               {/* Follow-up count callout */}
               {!loading && followUpCount > 0 && (
                 <div
-                  className="mt-4 rounded-2xl p-4 flex items-center justify-between"
-                  style={{ background: ICON_BG, border: `1px solid ${LIGHT_BORDER}` }}
+                  className="mt-4 rounded-2xl p-5 flex items-center justify-between"
+                  style={{ background: `rgba(44,122,122,0.13)`, border: `1.5px solid ${PRIMARY_TEAL}`, boxShadow: `0 2px 10px rgba(44,122,122,0.14)` }}
                 >
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl" style={{ background: LIGHT_BORDER }}>
-                      <Bell className="h-4 w-4" style={{ color: DARK_TEAL }} />
+                    <div className="p-2.5 rounded-xl" style={{ background: `rgba(44,122,122,0.16)` }}>
+                      <Bell className="h-5 w-5" style={{ color: DARK_TEAL }} />
                     </div>
                     <div>
-                      <p className="text-sm font-semibold" style={{ color: DARK_TEAL }}>{followUpCount} Pending Follow-ups</p>
-                      <p className="text-xs text-muted-foreground">Donors needing attention</p>
+                      <p className="text-base font-bold" style={{ color: DARK_TEAL }}>{followUpCount} Pending Follow-ups</p>
+                      <p className="text-xs font-medium" style={{ color: PRIMARY_TEAL }}>Donors needing attention</p>
                     </div>
                   </div>
                   <Link href="/dashboard/reminders">
-                    <Button size="sm" variant="outline" className="text-xs h-8" style={{ borderColor: LIGHT_BORDER, color: DARK_TEAL }}>
-                      View <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                    <Button size="sm" className="text-xs h-8 font-semibold gap-1" style={{ background: DARK_TEAL, color: "#fff", border: "none" }}>
+                      View <ChevronRight className="h-3.5 w-3.5" />
                     </Button>
                   </Link>
                 </div>

@@ -177,8 +177,8 @@ function HeroBanner({
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
-function KpiCard({ title, value, icon: Icon, highlight = false }: {
-  title: string; value: string; icon: React.ElementType; highlight?: boolean;
+function KpiCard({ title, value, icon: Icon, highlight = false, soft = false }: {
+  title: string; value: string; icon: React.ElementType; highlight?: boolean; soft?: boolean;
 }) {
   return (
     <Card
@@ -186,18 +186,20 @@ function KpiCard({ title, value, icon: Icon, highlight = false }: {
       style={
         highlight
           ? { background: `linear-gradient(135deg, ${DARK_TEAL}, ${PRIMARY_TEAL})`, border: "none", boxShadow: `0 4px 16px rgba(44,122,122,0.28)` }
+          : soft
+          ? { background: "rgba(95,168,168,0.10)", border: `1.5px solid ${PRIMARY_TEAL}`, boxShadow: `0 2px 12px rgba(95,168,168,0.20)` }
           : { background: "#FFFFFF", border: `1px solid ${LIGHT_BORDER}`, boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }
       }
     >
       <CardContent className="p-5">
         <div
           className="inline-flex p-2 rounded-xl mb-3"
-          style={{ background: highlight ? "rgba(255,255,255,0.18)" : ICON_BG }}
+          style={{ background: highlight ? "rgba(255,255,255,0.18)" : soft ? `rgba(44,122,122,0.14)` : ICON_BG }}
         >
-          <Icon className="h-4 w-4" style={{ color: highlight ? "#ffffff" : PRIMARY_TEAL }} />
+          <Icon className="h-4 w-4" style={{ color: highlight ? "#ffffff" : DARK_TEAL }} />
         </div>
-        <p className={`text-2xl font-bold leading-tight ${highlight ? "text-white" : "text-[#1E293B]"}`}>{value}</p>
-        <p className={`text-xs mt-1 font-medium ${highlight ? "text-white/75" : "text-[#64748B]"}`}>{title}</p>
+        <p className={`leading-tight ${highlight ? "text-white text-2xl font-bold" : soft ? "text-[#1E293B] text-3xl font-extrabold" : "text-[#1E293B] text-2xl font-bold"}`}>{value}</p>
+        <p className={`text-xs mt-1 font-medium ${highlight ? "text-white/75" : soft ? `font-semibold` : "text-[#64748B]"}`} style={soft ? { color: DARK_TEAL } : undefined}>{title}</p>
       </CardContent>
     </Card>
   );
@@ -425,7 +427,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen" style={{ background: LIGHT_BG }}>
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
+      <div className="max-w-7xl mx-auto p-6 space-y-10">
 
         {/* ── HERO BANNER ───────────────────────────────────────────────────── */}
         <HeroBanner
@@ -446,7 +448,7 @@ export default function DashboardPage() {
               <div className="grid gap-4 grid-cols-2 sm:grid-cols-4">
                 <KpiCard title={t("home.total_fy_donations")} value={stats ? fmt(stats.totalDonationsFY) : "—"} icon={IndianRupee} highlight />
                 <KpiCard title={t("home.active_donors")} value={totalDonors > 0 ? totalDonors.toString() : (stats?.activeDonors?.toString() ?? "—")} icon={Users} />
-                <KpiCard title={t("home.monthly_donors")} value={monthlyTarget ? monthlyTarget.totalMonthlyDonors.toString() : "—"} icon={Repeat} />
+                <KpiCard title={t("home.monthly_donors")} value={monthlyTarget ? monthlyTarget.totalMonthlyDonors.toString() : "—"} icon={Repeat} soft />
                 <KpiCard title={t("home.total_beneficiaries")} value={stats?.totalBeneficiaries?.toString() ?? "—"} icon={HandHeart} />
               </div>
               <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
@@ -591,7 +593,7 @@ export default function DashboardPage() {
 
         {/* ── DONOR INTELLIGENCE + SMART INSIGHTS ──────────────────────────── */}
         {(loading || slowLoading || insights.length > 0 || insightCards.length > 0 || retentionData !== null || adminInsights.length > 0) && (
-          <section>
+          <section className="mt-4">
             <div className="grid gap-5 lg:grid-cols-2">
               <div>
                 <SectionHeader title={t("home.donor_intelligence")} subtitle={t("home.donor_intelligence_subtitle")} icon={Repeat} />
@@ -652,9 +654,9 @@ export default function DashboardPage() {
                       return (
                         <div key={idx} className={`flex items-start gap-3 p-4 rounded-2xl bg-card border border-border/50 ${s.border}`}>
                           {s.icon}
-                          <div className="flex-1">
+                          <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium">{insight.title}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{insight.description}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{insight.description}</p>
                           </div>
                         </div>
                       );
