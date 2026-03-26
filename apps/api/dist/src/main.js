@@ -38,47 +38,14 @@ BigInt.prototype.toJSON = function () {
 };
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    const frontendUrl = process.env.FRONTEND_URL?.trim();
-    const allowedExact = new Set([
-        "https://dms-sepia-gamma.vercel.app",
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://localhost:5000",
-    ]);
-    if (frontendUrl) {
-        frontendUrl.split(",").forEach((u) => {
-            const trimmed = u.trim();
-            if (trimmed)
-                allowedExact.add(trimmed);
-        });
-    }
-    const allowedPatterns = [
-        /\.vercel\.app$/,
-        /\.replit\.dev$/,
-        /\.repl\.co$/,
-        /\.replit\.app$/,
-        /\.repl\.run$/,
-    ];
     app.enableCors({
-        origin: (origin, callback) => {
-            if (!origin)
-                return callback(null, true);
-            if (allowedExact.has(origin))
-                return callback(null, true);
-            const isAllowed = allowedPatterns.some((p) => p.test(origin));
-            if (isAllowed)
-                return callback(null, true);
-            console.warn(`[CORS] Blocked origin: ${origin}`);
-            callback(new Error(`CORS: origin '${origin}' is not allowed`));
-        },
+        origin: [
+            'https://dms-sepia-gamma.vercel.app',
+            'http://localhost:3000',
+            'http://localhost:5000',
+        ],
         credentials: true,
-        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
-        preflightContinue: false,
-        optionsSuccessStatus: 204,
     });
-    const allowedList = Array.from(allowedExact).join(", ");
-    console.log(`CORS enabled — exact: [${allowedList}] + *.vercel.app + *.replit.*`);
     app.setGlobalPrefix("api");
     app.use("/uploads", express.static((0, path_1.join)(process.cwd(), "uploads")));
     app.useGlobalPipes(new common_1.ValidationPipe({

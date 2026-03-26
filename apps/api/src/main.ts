@@ -17,56 +17,14 @@ import * as express from "express";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Build the allowed-origins list from env + known patterns
-  const frontendUrl = process.env.FRONTEND_URL?.trim();
-
-  const allowedExact = new Set<string>([
-    // Hardcoded production Vercel URL (backward compat)
-    "https://dms-sepia-gamma.vercel.app",
-    // Dev origins
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:5000",
-  ]);
-
-  // Add FRONTEND_URL from Railway env if present (may be comma-separated list)
-  if (frontendUrl) {
-    frontendUrl.split(",").forEach((u) => {
-      const trimmed = u.trim();
-      if (trimmed) allowedExact.add(trimmed);
-    });
-  }
-
-  const allowedPatterns = [
-    /\.vercel\.app$/,       // all Vercel preview & production deployments
-    /\.replit\.dev$/,
-    /\.repl\.co$/,
-    /\.replit\.app$/,
-    /\.repl\.run$/,
-  ];
-
   app.enableCors({
-    origin: (origin, callback) => {
-      // Allow server-to-server / curl (no Origin header)
-      if (!origin) return callback(null, true);
-
-      if (allowedExact.has(origin)) return callback(null, true);
-
-      const isAllowed = allowedPatterns.some((p) => p.test(origin));
-      if (isAllowed) return callback(null, true);
-
-      console.warn(`[CORS] Blocked origin: ${origin}`);
-      callback(new Error(`CORS: origin '${origin}' is not allowed`));
-    },
+    origin: [
+      'https://dms-sepia-gamma.vercel.app',
+      'http://localhost:3000',
+      'http://localhost:5000',
+    ],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
   });
-
-  const allowedList = Array.from(allowedExact).join(", ");
-  console.log(`CORS enabled — exact: [${allowedList}] + *.vercel.app + *.replit.*`);
 
   app.setGlobalPrefix("api");
 
