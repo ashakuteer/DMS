@@ -577,7 +577,7 @@ export default function EditDonorPage() {
       payload.sourceOfDonor = formData.sourceOfDonor || undefined;
       payload.sourceDetails = formData.sourceDetails || undefined;
       payload.pan = formData.pan || undefined;
-      payload.assignedToUserId = formData.assignedToUserId || undefined;
+      payload.assignedToUserId = formData.assignedToUserId || null;
 
       payload.primaryRole = formData.primaryRole;
       payload.additionalRoles = formData.additionalRoles;
@@ -1479,14 +1479,21 @@ export default function EditDonorPage() {
               <Label htmlFor="sourceDetails">Source Details</Label>
               <Input id="sourceDetails" value={formData.sourceDetails} onChange={(e) => handleChange("sourceDetails", e.target.value)} placeholder="Additional details about source" />
             </div>
-            {userRole === "ADMIN" && staffMembers.length > 0 && (
+            {(userRole === "ADMIN" || userRole === "FOUNDER") && (
               <div>
-                <Label>Assign To</Label>
-                <Select value={formData.assignedToUserId || "unassigned"} onValueChange={(v) => handleChange("assignedToUserId", v === "unassigned" ? "" : v)}>
-                  <SelectTrigger data-testid="select-assigned"><SelectValue placeholder="Select staff member" /></SelectTrigger>
+                <Label>Assigned Telecaller</Label>
+                <Select
+                  value={formData.assignedToUserId || "unassigned"}
+                  onValueChange={(v) => handleChange("assignedToUserId", v === "unassigned" ? "" : v)}
+                >
+                  <SelectTrigger data-testid="select-assigned-telecaller">
+                    <SelectValue placeholder="Select telecaller / owner" />
+                  </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="unassigned">Unassigned</SelectItem>
-                    {staffMembers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                    <SelectItem value="unassigned">— Unassigned —</SelectItem>
+                    {staffMembers.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
