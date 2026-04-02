@@ -156,6 +156,32 @@ export interface SpecialOccasionFormData {
   notes?: string;
 }
 
+export type PeopleOccasionSource = "FAMILY" | "SPECIAL";
+
+export interface PeopleAndOccasionEntry {
+  id: string;
+  source: PeopleOccasionSource;
+  name: string;
+  relationType: string;
+  occasionLabel: string;
+  month?: number;
+  day?: number;
+  phone?: string;
+  email?: string;
+  notes?: string;
+}
+
+export interface PeopleAndOccasionsFormData {
+  name: string;
+  relationType: string;
+  occasionType: string;
+  month: string;
+  day: string;
+  phone: string;
+  email: string;
+  notes: string;
+}
+
 export interface UserProfile {
   id: string;
   email: string;

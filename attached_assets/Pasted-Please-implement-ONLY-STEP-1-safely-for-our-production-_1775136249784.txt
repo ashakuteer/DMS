@@ -1,0 +1,88 @@
+Please implement ONLY STEP 1 safely for our production NGO Donor Hub donor profile. Do not do extra refactors. Do not remove old tables or old data. First inspect the current donor family members + special days code, API, Prisma schema, DTOs, and donor profile UI, then make the smallest safe change.
+
+GOAL
+Merge the UI concept into one section called “People & Occasions” using a SINGLE FORM, but keep existing data safe. Frontend display should be people first, not occasion first.
+
+REQUIREMENTS
+
+1) UI / SECTION
+- Replace the current separate “Family” and “Special Days” presentation on donor profile with a new merged section title:
+  People & Occasions
+- In the merged list, show each entry in this order:
+  Name — Relation — Occasion — Date
+- Keep edit and delete actions working.
+- Do NOT delete old functionality unless fully replaced safely.
+- If needed, keep old backend structures temporarily and adapt the UI first.
+
+2) SINGLE FORM
+Create one combined add/edit form with these fields:
+- Name *
+- Relation *
+- Occasion Type *
+- Day & Month *
+- Phone (optional)
+- Email (optional)
+- Notes (optional)
+
+3) RELATION DROPDOWN
+Keep all existing detailed relations already present.
+Add a NEW top section called “Groups” with these options:
+- Self
+- Self & Spouse
+- Parents
+- In-Laws
+- Grandparents
+- Grandchildren
+- Family
+
+Keep the rest of the existing grouped relations below that.
+
+4) OCCASION TYPES
+Add/support these types:
+- Birthday (Self)
+- Birthday
+- Wedding Anniversary (Self)
+- Wedding Anniversary
+- Memorial Day
+- Other
+
+5) FORM BEHAVIOR
+- If relation = Self, auto-fill Name with donor name if possible, but still allow editing if needed.
+- If relation = Self & Spouse, auto-fill a sensible default like “Donor & Spouse” if possible, but still allow editing.
+- Day & Month should work for all occasion types, including Other.
+- Keep validation simple and safe.
+
+6) OLD DATA SAFETY
+CRITICAL:
+- Do NOT lose any existing Family Members data.
+- Do NOT lose any existing Special Days data.
+- Do NOT drop old columns/tables.
+- Do NOT write destructive migrations.
+- If a new unified structure is required, create it safely and preserve backward compatibility.
+- If easier for Step 1, build a merged UI mapper that reads from existing family member records + existing special day records and shows them together in one People & Occasions list.
+
+7) BACKEND / API
+- Inspect current donor profile endpoints for family members and special days.
+- Make the smallest safe API changes needed to support the merged single form and merged list.
+- If you create a new endpoint/service method for People & Occasions, keep old endpoints intact for now.
+- Keep production stability as highest priority.
+
+8) DAILY ACTIONS
+For THIS STEP, do NOT deeply refactor Daily Actions yet.
+But while implementing, identify why Special Days are not reflecting in Daily Actions and leave a short code comment / TODO note or brief summary in your final response.
+Do not try to solve the full Daily Actions problem in this same step unless it is a tiny safe fix.
+
+9) OUTPUT FORMAT I WANT FROM YOU
+After coding, give me:
+A. What files you changed
+B. What exact behavior changed
+C. Whether any schema migration is needed
+D. Whether old data remains safe
+E. Any TODO for next step, especially Daily Actions
+
+IMPORTANT
+- Smallest safe change only
+- No unnecessary redesign
+- No destructive migration
+- No breaking existing donor save/edit/delete
+- Think production-first

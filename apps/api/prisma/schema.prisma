@@ -1160,6 +1160,12 @@ enum OccasionType {
 }
 
 enum FamilyRelationType {
+  SELF
+  SELF_AND_SPOUSE
+  PARENTS
+  GRANDPARENTS
+  GRANDCHILDREN
+  FAMILY
   SPOUSE
   SON
   DAUGHTER

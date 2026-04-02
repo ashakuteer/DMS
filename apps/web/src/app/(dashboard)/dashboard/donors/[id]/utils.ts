@@ -47,6 +47,12 @@ export function formatMonthDay(month?: number, day?: number) {
 
 export function getRelationTypeLabel(type?: string) {
   const map: Record<string, string> = {
+    SELF: "Self",
+    SELF_AND_SPOUSE: "Self & Spouse",
+    PARENTS: "Parents",
+    GRANDPARENTS: "Grandparents",
+    GRANDCHILDREN: "Grandchildren",
+    FAMILY: "Family",
     SPOUSE: "Spouse",
     SON: "Son",
     DAUGHTER: "Daughter",
@@ -82,6 +88,18 @@ export function getRelationTypeLabel(type?: string) {
   };
 
   return map[type || ""] || type || "-";
+}
+
+export function getUnifiedOccasionTypeLabel(occasionType?: string) {
+  const map: Record<string, string> = {
+    BIRTHDAY_SELF: "Birthday (Self)",
+    BIRTHDAY: "Birthday",
+    ANNIVERSARY_SELF: "Wedding Anniversary (Self)",
+    ANNIVERSARY: "Wedding Anniversary",
+    MEMORIAL_DAY: "Memorial Day",
+    OTHER: "Other",
+  };
+  return map[occasionType || ""] || occasionType || "-";
 }
 
 export function getOccasionTypeLabel(type?: string) {

@@ -10,20 +10,18 @@ import { hasPermission } from "@/lib/permissions";
 
 import { useDonorData } from "./hooks/useDonorData";
 import { useDonorDonations } from "./hooks/useDonorDonations";
-import { useDonorFamily } from "./hooks/useDonorFamily";
-import { useDonorSpecialDays } from "./hooks/useDonorSpecialDays";
 import { useDonorPledges } from "./hooks/useDonorPledges";
 import { useDonorCommunication } from "./hooks/useDonorCommunication";
 import { useDonorTimeline } from "./hooks/useDonorTimeline";
 import { useDonorSponsorships } from "./hooks/useDonorSponsorships";
+import { usePeopleAndOccasions } from "./hooks/usePeopleAndOccasions";
 
 import DonorHeader from "./components/DonorHeader";
 import DonorStatsCards from "./components/DonorStatsCards";
 import DonorOverviewTab from "./components/DonorOverviewTab";
 import DonorDonationsTab from "./components/DonorDonationsTab";
 import DonorPledgesTab from "./components/DonorPledgesTab";
-import DonorFamilyTab from "./components/DonorFamilyTab";
-import DonorSpecialDaysTab from "./components/DonorSpecialDaysTab";
+import DonorPeopleAndOccasionsTab from "./components/DonorPeopleAndOccasionsTab";
 import DonorTimelineTab from "./components/DonorTimelineTab";
 import DonorCommunicationLogTab from "./components/DonorCommunicationLogTab";
 import DonorSponsorshipsTab from "./components/DonorSponsorshipsTab";
@@ -70,8 +68,7 @@ export default function DonorProfilePage() {
   // Track which tabs have been opened to enable lazy loading
   const [hasOpenedTimeline, setHasOpenedTimeline] = useState(false);
   const [hasOpenedCommLog, setHasOpenedCommLog] = useState(false);
-  const [hasOpenedFamily, setHasOpenedFamily] = useState(false);
-  const [hasOpenedSpecialDays, setHasOpenedSpecialDays] = useState(false);
+  const [hasOpenedPeopleOccasions, setHasOpenedPeopleOccasions] = useState(false);
   const [hasOpenedSponsorships, setHasOpenedSponsorships] = useState(false);
 
   const handleRequestAccess = async () => {
@@ -87,8 +84,6 @@ export default function DonorProfilePage() {
 
   const donorData = useDonorData(donorId);
   const donations = useDonorDonations(donorId, donorData.donor);
-  const family = useDonorFamily(donorId, hasOpenedFamily);
-  const specialDays = useDonorSpecialDays(donorId, hasOpenedSpecialDays);
   const pledges = useDonorPledges(donorId);
   const communication = useDonorCommunication(donorId, donorData.donor, donations.donations, hasOpenedCommLog);
   const timeline = useDonorTimeline(donorId, hasOpenedTimeline);
@@ -98,6 +93,12 @@ export default function DonorProfilePage() {
     hasOpenedSponsorships,
   );
 
+  const donorName = donorData.donor
+    ? [donorData.donor.firstName, donorData.donor.lastName].filter(Boolean).join(" ")
+    : "";
+
+  const peopleAndOccasions = usePeopleAndOccasions(donorId, donorName, hasOpenedPeopleOccasions);
+
   if (donorData.loading) return <DonorProfileSkeleton />;
   if (!donorData.donor) return <div>{t("donor_profile.not_found")}</div>;
 
@@ -106,8 +107,7 @@ export default function DonorProfilePage() {
   const handleTabChange = (value: string) => {
     if (value === "timeline") setHasOpenedTimeline(true);
     if (value === "comm-log") setHasOpenedCommLog(true);
-    if (value === "family") setHasOpenedFamily(true);
-    if (value === "special-days") setHasOpenedSpecialDays(true);
+    if (value === "people-occasions") setHasOpenedPeopleOccasions(true);
     if (value === "sponsorships") setHasOpenedSponsorships(true);
   };
 
@@ -145,10 +145,10 @@ export default function DonorProfilePage() {
         pendingPledges={pledges.pendingCount}
         totalPledges={pledges.pledges.length}
         specialOccasionsCount={
-          (donor.specialOccasions?.length ?? specialDays.specialOccasions.length)
+          donor.specialOccasions?.length ?? peopleAndOccasions.specialOccasionsCount
         }
         familyMembersCount={
-          (donor.familyMembers?.length ?? family.familyMembers.length)
+          donor.familyMembers?.length ?? peopleAndOccasions.familyMembersCount
         }
       />
 
@@ -159,8 +159,7 @@ export default function DonorProfilePage() {
           <TabsTrigger value="timeline">{t("donor_profile.tab_timeline")}</TabsTrigger>
           <TabsTrigger value="donations">{t("donor_profile.tab_donations")}</TabsTrigger>
           <TabsTrigger value="pledges">{t("donor_profile.tab_pledges")}</TabsTrigger>
-          <TabsTrigger value="family">{t("donor_profile.tab_family")}</TabsTrigger>
-          <TabsTrigger value="special-days">{t("donor_profile.tab_special_days")}</TabsTrigger>
+          <TabsTrigger value="people-occasions">People &amp; Occasions</TabsTrigger>
           <TabsTrigger value="sponsorships">{t("donor_profile.tab_sponsorships")}</TabsTrigger>
           <TabsTrigger value="comm-log">{t("donor_profile.tab_comm_log")}</TabsTrigger>
         </TabsList>
@@ -181,12 +180,8 @@ export default function DonorProfilePage() {
           <DonorPledgesTab {...pledges} />
         </TabsContent>
 
-        <TabsContent value="family">
-          <DonorFamilyTab {...family} />
-        </TabsContent>
-
-        <TabsContent value="special-days">
-          <DonorSpecialDaysTab {...specialDays} />
+        <TabsContent value="people-occasions">
+          <DonorPeopleAndOccasionsTab {...peopleAndOccasions} />
         </TabsContent>
 
         <TabsContent value="sponsorships">
