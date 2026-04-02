@@ -17,12 +17,32 @@ import * as express from "express";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const allowedOrigins = [
+    'https://dms-sepia-gamma.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5000',
+  ];
+
+  if (process.env.REPLIT_DEV_DOMAIN) {
+    allowedOrigins.push(`https://${process.env.REPLIT_DEV_DOMAIN}`);
+  }
+  if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
+    allowedOrigins.push(`https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
+  }
+
   app.enableCors({
-    origin: [
-      'https://dms-sepia-gamma.vercel.app',
-      'http://localhost:3000',
-      'http://localhost:5000',
-    ],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        allowedOrigins.includes(origin) ||
+        /\.replit\.dev$/.test(origin) ||
+        /\.repl\.co$/.test(origin) ||
+        /\.replit\.app$/.test(origin)
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],

@@ -25,12 +25,12 @@ export declare class StaffLeavesService {
         createdAt: Date;
         reason: string | null;
         updatedAt: Date;
-        days: number;
         startDate: Date;
         endDate: Date;
         type: string;
         status: string;
         notes: string | null;
+        days: number;
         staffId: string;
     })[]>;
     findByStaff(staffId: string, year?: number): Promise<{
@@ -38,12 +38,12 @@ export declare class StaffLeavesService {
         createdAt: Date;
         reason: string | null;
         updatedAt: Date;
-        days: number;
         startDate: Date;
         endDate: Date;
         type: string;
         status: string;
         notes: string | null;
+        days: number;
         staffId: string;
     }[]>;
     create(data: {
@@ -64,12 +64,12 @@ export declare class StaffLeavesService {
         createdAt: Date;
         reason: string | null;
         updatedAt: Date;
-        days: number;
         startDate: Date;
         endDate: Date;
         type: string;
         status: string;
         notes: string | null;
+        days: number;
         staffId: string;
     }>;
     updateStatus(id: string, status: LeaveStatus, notes?: string): Promise<{
@@ -82,12 +82,12 @@ export declare class StaffLeavesService {
         createdAt: Date;
         reason: string | null;
         updatedAt: Date;
-        days: number;
         startDate: Date;
         endDate: Date;
         type: string;
         status: string;
         notes: string | null;
+        days: number;
         staffId: string;
     }>;
     delete(id: string): Promise<{
@@ -95,12 +95,12 @@ export declare class StaffLeavesService {
         createdAt: Date;
         reason: string | null;
         updatedAt: Date;
-        days: number;
         startDate: Date;
         endDate: Date;
         type: string;
         status: string;
         notes: string | null;
+        days: number;
         staffId: string;
     }>;
     getSummary(staffId: string, year: number): Promise<{

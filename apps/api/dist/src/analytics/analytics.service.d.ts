@@ -37,12 +37,12 @@ export declare class AnalyticsService {
         hasEmail: boolean;
         hasPhone: boolean;
     }[]>;
-    exportSummaryPdf(data: any): Promise<Buffer>;
-    exportDonationsDetailXlsx(filters: any): Promise<Buffer>;
-    exportDonationsXlsx(): Promise<Buffer>;
-    exportRiskXlsx(): Promise<Buffer>;
-    exportBoardSummaryPdf(): Promise<Buffer>;
-    exportHomeTotalsXlsx(): Promise<Buffer>;
+    exportSummaryPdf(data: any): Promise<Buffer<ArrayBufferLike>>;
+    exportDonationsDetailXlsx(filters: any): Promise<Buffer<ArrayBufferLike>>;
+    exportDonationsXlsx(): Promise<Buffer<ArrayBufferLike>>;
+    exportRiskXlsx(): Promise<Buffer<ArrayBufferLike>>;
+    exportBoardSummaryPdf(): Promise<Buffer<ArrayBufferLike>>;
+    exportHomeTotalsXlsx(): Promise<Buffer<ArrayBufferLike>>;
     getDonorSegmentation(): Promise<import("./services/donor-segmentation.service").DonorSegmentationResult>;
     getManagementDashboard(): Promise<{
         summary: any;

@@ -144,20 +144,20 @@ export declare class DonorsService {
             createdAt: Date;
             updatedAt: Date;
             currency: string;
-            donorId: string;
             status: import(".prisma/client").$Enums.PledgeStatus;
+            donorId: string;
             createdById: string;
             quantity: string | null;
             isDeleted: boolean;
             deletedAt: Date | null;
             notes: string | null;
             amount: import("@prisma/client/runtime/library").Decimal | null;
+            fulfilledDonationId: string | null;
             pledgeType: import(".prisma/client").$Enums.PledgeType;
             promisedDate: Date | null;
             promisedMonth: number | null;
             promisedDay: number | null;
             expectedFulfillmentDate: Date;
-            fulfilledDonationId: string | null;
         }[];
         pan: string;
         createdById: string;
@@ -245,12 +245,12 @@ export declare class DonorsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            day: number;
-            donorId: string;
             type: import(".prisma/client").$Enums.OccasionType;
+            donorId: string;
             notes: string | null;
             relatedPersonName: string | null;
             month: number;
+            day: number;
         }[];
         sponsorships: {
             id: string;
@@ -260,8 +260,8 @@ export declare class DonorsService {
             currency: string;
             startDate: Date | null;
             endDate: Date | null;
-            donorId: string;
             status: import(".prisma/client").$Enums.SponsorshipStatus;
+            donorId: string;
             notes: string | null;
             beneficiaryId: string;
             sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;

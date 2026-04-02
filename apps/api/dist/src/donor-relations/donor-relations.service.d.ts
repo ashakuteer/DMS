@@ -92,34 +92,34 @@ export declare class DonorRelationsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        day: number;
-        donorId: string;
         type: import(".prisma/client").$Enums.OccasionType;
+        donorId: string;
         notes: string | null;
         relatedPersonName: string | null;
         month: number;
+        day: number;
     }[]>;
     createSpecialOccasion(user: UserContext, donorId: string, data: CreateSpecialOccasionDto, ipAddress?: string, userAgent?: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        day: number;
-        donorId: string;
         type: import(".prisma/client").$Enums.OccasionType;
+        donorId: string;
         notes: string | null;
         relatedPersonName: string | null;
         month: number;
+        day: number;
     }>;
     updateSpecialOccasion(user: UserContext, occasionId: string, data: UpdateSpecialOccasionDto, ipAddress?: string, userAgent?: string): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        day: number;
-        donorId: string;
         type: import(".prisma/client").$Enums.OccasionType;
+        donorId: string;
         notes: string | null;
         relatedPersonName: string | null;
         month: number;
+        day: number;
     }>;
     deleteSpecialOccasion(user: UserContext, occasionId: string, ipAddress?: string, userAgent?: string): Promise<{
         success: boolean;
@@ -130,12 +130,12 @@ export declare class DonorRelationsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        day: number;
-        donorId: string;
         type: import(".prisma/client").$Enums.OccasionType;
+        donorId: string;
         notes: string | null;
         relatedPersonName: string | null;
         month: number;
+        day: number;
     }[]>;
 }
 export {};

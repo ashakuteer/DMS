@@ -123,8 +123,8 @@ export declare class NgoDocumentsController {
         };
     } & {
         id: string;
-        userId: string;
         action: string;
+        userId: string;
         documentId: string;
         accessedAt: Date;
     })[]>;

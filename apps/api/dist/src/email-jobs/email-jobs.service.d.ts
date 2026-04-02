@@ -36,9 +36,9 @@ export declare class EmailJobsService {
             updatedAt: Date;
             subject: string;
             body: string;
-            donorId: string | null;
             type: import(".prisma/client").$Enums.EmailJobType;
             status: import(".prisma/client").$Enums.EmailJobStatus;
+            donorId: string | null;
             toEmail: string;
             sentAt: Date | null;
             relatedId: string | null;
@@ -63,9 +63,9 @@ export declare class EmailJobsService {
         updatedAt: Date;
         subject: string;
         body: string;
-        donorId: string | null;
         type: import(".prisma/client").$Enums.EmailJobType;
         status: import(".prisma/client").$Enums.EmailJobStatus;
+        donorId: string | null;
         toEmail: string;
         sentAt: Date | null;
         relatedId: string | null;
@@ -79,9 +79,9 @@ export declare class EmailJobsService {
         updatedAt: Date;
         subject: string;
         body: string;
-        donorId: string | null;
         type: import(".prisma/client").$Enums.EmailJobType;
         status: import(".prisma/client").$Enums.EmailJobStatus;
+        donorId: string | null;
         toEmail: string;
         sentAt: Date | null;
         relatedId: string | null;
@@ -95,9 +95,9 @@ export declare class EmailJobsService {
         updatedAt: Date;
         subject: string;
         body: string;
-        donorId: string | null;
         type: import(".prisma/client").$Enums.EmailJobType;
         status: import(".prisma/client").$Enums.EmailJobStatus;
+        donorId: string | null;
         toEmail: string;
         sentAt: Date | null;
         relatedId: string | null;
@@ -117,9 +117,9 @@ export declare class EmailJobsService {
         updatedAt: Date;
         subject: string;
         body: string;
-        donorId: string | null;
         type: import(".prisma/client").$Enums.EmailJobType;
         status: import(".prisma/client").$Enums.EmailJobStatus;
+        donorId: string | null;
         toEmail: string;
         sentAt: Date | null;
         relatedId: string | null;
@@ -133,9 +133,9 @@ export declare class EmailJobsService {
         updatedAt: Date;
         subject: string;
         body: string;
-        donorId: string | null;
         type: import(".prisma/client").$Enums.EmailJobType;
         status: import(".prisma/client").$Enums.EmailJobStatus;
+        donorId: string | null;
         toEmail: string;
         sentAt: Date | null;
         relatedId: string | null;

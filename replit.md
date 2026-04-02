@@ -277,3 +277,11 @@ This project was migrated to Replit from a pnpm monorepo setup. Key changes made
 - **Database:** PostgreSQL Replit database, schema synced via `prisma db push` in startup script.
 - **Supabase Storage:** Optional; file uploads will be unavailable unless `SUPABASE_URL` and `SUPABASE_KEY` are set as environment variables. `StorageService` gracefully handles missing credentials.
 - **Beneficiary Detail Page Fix:** `apps/web/src/app/(dashboard)/dashboard/beneficiaries/[id]/hooks/useBeneficiary.ts` was created (the file previously existed as 1 byte / empty, and `page.tsx` imported from a non-existent path). The hook now extracts all state and handlers from `pageback.tsx` (the reference implementation). `page.tsx` was also corrected to pass individual props to `BeneficiaryHeader` (previously passed an `actions` object) and to pass all required props to each tab component and dialog component.
+
+## Replit Environment Setup (Apr 2026)
+
+- **Sub-app Dependencies:** Both `apps/api` and `apps/web` require their own `node_modules`. Run `npm install --legacy-peer-deps` inside each sub-app after any fresh clone.
+- **Next.js Version Alignment:** `apps/web` must use Next.js 16.x (matching root `node_modules`) to avoid Turbopack errors about missing `default-transpiled-packages.json`. Upgraded from v14 to v16.
+- **Database Schema Sync:** Run `cd apps/api && npx prisma db push --schema=prisma/schema.prisma --accept-data-loss` to sync the Prisma schema against the Replit PostgreSQL database.
+- **CORS Update:** `apps/api/src/main.ts` now accepts all `*.replit.dev`, `*.repl.co`, and `*.replit.app` origins dynamically via regex, so Replit preview domains are automatically allowed.
+- **Startup Flow:** `server/index.ts` spawns Next.js on port 5000 and NestJS on port 3001 using binaries from the root `node_modules/.bin/`. The `.replit` workflow runs via `node node_modules/tsx/dist/cli.mjs server/index.ts`.

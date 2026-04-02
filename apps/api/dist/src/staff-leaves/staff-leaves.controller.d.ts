@@ -17,12 +17,12 @@ export declare class StaffLeavesController {
         createdAt: Date;
         reason: string | null;
         updatedAt: Date;
-        days: number;
         startDate: Date;
         endDate: Date;
         type: string;
         status: string;
         notes: string | null;
+        days: number;
         staffId: string;
     })[]>;
     findByStaff(staffId: string, year?: string): Promise<{
@@ -30,12 +30,12 @@ export declare class StaffLeavesController {
         createdAt: Date;
         reason: string | null;
         updatedAt: Date;
-        days: number;
         startDate: Date;
         endDate: Date;
         type: string;
         status: string;
         notes: string | null;
+        days: number;
         staffId: string;
     }[]>;
     getSummary(staffId: string, year?: string): Promise<{
@@ -63,12 +63,12 @@ export declare class StaffLeavesController {
         createdAt: Date;
         reason: string | null;
         updatedAt: Date;
-        days: number;
         startDate: Date;
         endDate: Date;
         type: string;
         status: string;
         notes: string | null;
+        days: number;
         staffId: string;
     }>;
     updateStatus(id: string, body: {
@@ -84,12 +84,12 @@ export declare class StaffLeavesController {
         createdAt: Date;
         reason: string | null;
         updatedAt: Date;
-        days: number;
         startDate: Date;
         endDate: Date;
         type: string;
         status: string;
         notes: string | null;
+        days: number;
         staffId: string;
     }>;
     delete(id: string): Promise<{
@@ -97,12 +97,12 @@ export declare class StaffLeavesController {
         createdAt: Date;
         reason: string | null;
         updatedAt: Date;
-        days: number;
         startDate: Date;
         endDate: Date;
         type: string;
         status: string;
         notes: string | null;
+        days: number;
         staffId: string;
     }>;
 }

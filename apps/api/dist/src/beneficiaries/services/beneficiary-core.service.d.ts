@@ -57,8 +57,8 @@ export declare class BeneficiaryCoreService {
             currency: string;
             startDate: Date;
             endDate: Date;
-            donorId: string;
             status: import(".prisma/client").$Enums.SponsorshipStatus;
+            donorId: string;
             notes: string;
             beneficiaryId: string;
             sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
