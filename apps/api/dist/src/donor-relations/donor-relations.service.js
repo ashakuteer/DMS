@@ -22,6 +22,9 @@ let DonorRelationsService = class DonorRelationsService {
     canEdit(user) {
         return user.role === client_1.Role.FOUNDER || user.role === client_1.Role.ADMIN || user.role === client_1.Role.STAFF;
     }
+    normalizeName(name) {
+        return name.trim().toLowerCase().replace(/\s+/g, ' ');
+    }
     validateMonthDay(month, day, required = false) {
         if (required) {
             if (month === undefined || month === null) {
@@ -67,6 +70,18 @@ let DonorRelationsService = class DonorRelationsService {
         }
         this.validateMonthDay(data.birthMonth, data.birthDay, false);
         await this.verifyDonorAccess(user, donorId);
+        const existingMembers = await this.prisma.donorFamilyMember.findMany({
+            where: { donorId },
+            select: { id: true, name: true, relationType: true, birthMonth: true, birthDay: true },
+        });
+        const normalizedIncoming = this.normalizeName(data.name);
+        const isDuplicate = existingMembers.some((m) => this.normalizeName(m.name) === normalizedIncoming &&
+            m.relationType === data.relationType &&
+            m.birthMonth === (data.birthMonth ?? null) &&
+            m.birthDay === (data.birthDay ?? null));
+        if (isDuplicate) {
+            throw new common_1.BadRequestException('Duplicate entry not allowed. This person already has the same occasion on the same date.');
+        }
         const member = await this.prisma.donorFamilyMember.create({
             data: {
                 donorId,
@@ -103,6 +118,22 @@ let DonorRelationsService = class DonorRelationsService {
             throw new common_1.NotFoundException('Family member not found');
         }
         await this.verifyDonorAccess(user, existing.donorId);
+        const finalName = data.name !== undefined ? data.name : existing.name;
+        const finalRelationType = data.relationType !== undefined ? data.relationType : existing.relationType;
+        const finalBirthMonth = data.birthMonth !== undefined ? data.birthMonth : existing.birthMonth;
+        const finalBirthDay = data.birthDay !== undefined ? data.birthDay : existing.birthDay;
+        const siblings = await this.prisma.donorFamilyMember.findMany({
+            where: { donorId: existing.donorId, id: { not: memberId } },
+            select: { id: true, name: true, relationType: true, birthMonth: true, birthDay: true },
+        });
+        const normalizedFinal = this.normalizeName(finalName);
+        const isDuplicateUpdate = siblings.some((m) => this.normalizeName(m.name) === normalizedFinal &&
+            m.relationType === finalRelationType &&
+            m.birthMonth === (finalBirthMonth ?? null) &&
+            m.birthDay === (finalBirthDay ?? null));
+        if (isDuplicateUpdate) {
+            throw new common_1.BadRequestException('Duplicate entry not allowed. This person already has the same occasion on the same date.');
+        }
         const updateData = {};
         if (data.name !== undefined)
             updateData.name = data.name;
@@ -174,6 +205,18 @@ let DonorRelationsService = class DonorRelationsService {
         }
         this.validateMonthDay(data.month, data.day, true);
         await this.verifyDonorAccess(user, donorId);
+        const existingOccasions = await this.prisma.donorSpecialOccasion.findMany({
+            where: { donorId },
+            select: { id: true, type: true, month: true, day: true, relatedPersonName: true },
+        });
+        const normalizedIncomingName = this.normalizeName(data.relatedPersonName || '');
+        const isDuplicateOccasion = existingOccasions.some((o) => this.normalizeName(o.relatedPersonName || '') === normalizedIncomingName &&
+            o.type === data.type &&
+            o.month === data.month &&
+            o.day === data.day);
+        if (isDuplicateOccasion) {
+            throw new common_1.BadRequestException('Duplicate entry not allowed. This person already has the same occasion on the same date.');
+        }
         const occasion = await this.prisma.donorSpecialOccasion.create({
             data: {
                 donorId,
@@ -208,6 +251,24 @@ let DonorRelationsService = class DonorRelationsService {
             throw new common_1.NotFoundException('Special occasion not found');
         }
         await this.verifyDonorAccess(user, existing.donorId);
+        const finalType = data.type !== undefined ? data.type : existing.type;
+        const finalMonth = data.month !== undefined ? data.month : existing.month;
+        const finalDay = data.day !== undefined ? data.day : existing.day;
+        const finalPersonName = data.relatedPersonName !== undefined
+            ? (data.relatedPersonName || '')
+            : (existing.relatedPersonName || '');
+        const occasionSiblings = await this.prisma.donorSpecialOccasion.findMany({
+            where: { donorId: existing.donorId, id: { not: occasionId } },
+            select: { id: true, type: true, month: true, day: true, relatedPersonName: true },
+        });
+        const normalizedFinalName = this.normalizeName(finalPersonName);
+        const isDuplicateOccasionUpdate = occasionSiblings.some((o) => this.normalizeName(o.relatedPersonName || '') === normalizedFinalName &&
+            o.type === finalType &&
+            o.month === finalMonth &&
+            o.day === finalDay);
+        if (isDuplicateOccasionUpdate) {
+            throw new common_1.BadRequestException('Duplicate entry not allowed. This person already has the same occasion on the same date.');
+        }
         const updateData = {};
         if (data.type !== undefined)
             updateData.type = data.type;

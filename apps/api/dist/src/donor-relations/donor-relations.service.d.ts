@@ -44,6 +44,7 @@ export declare class DonorRelationsService {
     private auditService;
     constructor(prisma: PrismaService, auditService: AuditService);
     private canEdit;
+    private normalizeName;
     private validateMonthDay;
     private verifyDonorAccess;
     getFamilyMembers(user: UserContext, donorId: string): Promise<{

@@ -13,6 +13,10 @@ import type {
 } from "../types";
 import { getOccasionTypeLabel, getRelationTypeLabel } from "../utils";
 
+function normalizeName(name: string): string {
+  return name.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
 const EMPTY_FORM: PeopleAndOccasionsFormData = {
   name: "",
   relationType: "SELF",
@@ -268,6 +272,56 @@ export function usePeopleAndOccasions(
     e.preventDefault();
     setSaving(true);
     try {
+      // ── Frontend duplicate guard ────────────────────────────────────────────
+      const incomingMonth = form.month ? parseInt(form.month) : undefined;
+      const incomingDay   = form.day   ? parseInt(form.day)   : undefined;
+
+      if (isSpecialOccasionRoute(form.occasionType)) {
+        // Comparing against special occasions list, excluding self when editing
+        const dbType = mapFormTypeToDbOccasionType(form.occasionType);
+        const normIncoming = normalizeName(form.name);
+        const dupOccasion = specialOccasions.some((o) => {
+          if (isEditing && editingEntry?.source === "SPECIAL" && o.id === editingEntry.id) return false;
+          return (
+            normalizeName(o.relatedPersonName || "") === normIncoming &&
+            o.type === dbType &&
+            o.month === incomingMonth &&
+            o.day === incomingDay
+          );
+        });
+        if (dupOccasion) {
+          toast({
+            title: "Duplicate entry not allowed",
+            description: "This person already has the same occasion on the same date.",
+            variant: "destructive",
+          });
+          setSaving(false);
+          return;
+        }
+      } else {
+        // Comparing against family members list, excluding self when editing
+        const normIncoming = normalizeName(form.name);
+        const dupMember = familyMembers.some((m) => {
+          if (isEditing && editingEntry?.source === "FAMILY" && m.id === editingEntry.id) return false;
+          return (
+            normalizeName(m.name) === normIncoming &&
+            m.relationType === form.relationType &&
+            (m.birthMonth ?? undefined) === incomingMonth &&
+            (m.birthDay  ?? undefined) === incomingDay
+          );
+        });
+        if (dupMember) {
+          toast({
+            title: "Duplicate entry not allowed",
+            description: "This person already has the same occasion on the same date.",
+            variant: "destructive",
+          });
+          setSaving(false);
+          return;
+        }
+      }
+      // ── End duplicate guard ─────────────────────────────────────────────────
+
       if (isEditing && editingEntry) {
         if (editingEntry.source === "FAMILY") {
           await apiClient(`/api/donor-relations/family-members/${editingEntry.id}`, {
@@ -332,7 +386,7 @@ export function usePeopleAndOccasions(
     } finally {
       setSaving(false);
     }
-  }, [donorId, form, isEditing, editingEntry, fetchAll, toast]);
+  }, [donorId, form, isEditing, editingEntry, fetchAll, toast, familyMembers, specialOccasions]);
 
   // Unique people/groups: deduplicate by normalized name + relationType
   const uniquePeopleCount = new Set(
