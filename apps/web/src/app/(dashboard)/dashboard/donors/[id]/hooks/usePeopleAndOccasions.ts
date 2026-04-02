@@ -50,9 +50,63 @@ function isSpecialOccasionRoute(occasionType: string): boolean {
   return ["ANNIVERSARY_SELF", "ANNIVERSARY", "MEMORIAL_DAY", "OTHER"].includes(occasionType);
 }
 
+interface SpecialOccasionDefaults {
+  name: string;
+  relationType: string;
+  occasionLabel: string;
+}
+
+function resolveSpecialOccasionDefaults(
+  type: string,
+  relatedPersonName: string | undefined,
+  donorName: string
+): SpecialOccasionDefaults {
+  const personName = relatedPersonName?.trim() || "";
+
+  switch (type) {
+    case "DOB_SELF":
+      return {
+        name: personName || donorName || "Donor",
+        relationType: "SELF",
+        occasionLabel: "Birthday (Self)",
+      };
+    case "DOB_SPOUSE":
+      return {
+        name: personName || "Spouse",
+        relationType: "SPOUSE",
+        occasionLabel: "Spouse Birthday",
+      };
+    case "DOB_CHILD":
+      return {
+        name: personName || "Child",
+        relationType: "CHILD",
+        occasionLabel: "Child Birthday",
+      };
+    case "ANNIVERSARY":
+      return {
+        name: personName || `${donorName || "Donor"} & Spouse`,
+        relationType: "SELF_AND_SPOUSE",
+        occasionLabel: "Wedding Anniversary (Self)",
+      };
+    case "DEATH_ANNIVERSARY":
+      return {
+        name: personName || "Loved One",
+        relationType: "OTHER",
+        occasionLabel: "Memorial Day",
+      };
+    default:
+      return {
+        name: personName || "Other",
+        relationType: "OTHER",
+        occasionLabel: "Other",
+      };
+  }
+}
+
 function buildMergedList(
   familyMembers: FamilyMember[],
-  specialOccasions: SpecialOccasion[]
+  specialOccasions: SpecialOccasion[],
+  donorName: string
 ): PeopleAndOccasionEntry[] {
   const fromFamily: PeopleAndOccasionEntry[] = familyMembers.map((m) => ({
     id: m.id,
@@ -67,16 +121,19 @@ function buildMergedList(
     notes: m.notes,
   }));
 
-  const fromSpecial: PeopleAndOccasionEntry[] = specialOccasions.map((o) => ({
-    id: o.id,
-    source: "SPECIAL",
-    name: o.relatedPersonName || "—",
-    relationType: "—",
-    occasionLabel: getOccasionTypeLabel(o.type),
-    month: o.month,
-    day: o.day,
-    notes: o.notes,
-  }));
+  const fromSpecial: PeopleAndOccasionEntry[] = specialOccasions.map((o) => {
+    const defaults = resolveSpecialOccasionDefaults(o.type, o.relatedPersonName, donorName);
+    return {
+      id: o.id,
+      source: "SPECIAL",
+      name: defaults.name,
+      relationType: defaults.relationType,
+      occasionLabel: defaults.occasionLabel,
+      month: o.month,
+      day: o.day,
+      notes: o.notes,
+    };
+  });
 
   return [...fromFamily, ...fromSpecial];
 }
@@ -103,7 +160,7 @@ export function usePeopleAndOccasions(
   const user = authStorage.getUser();
   const canEdit = hasPermission(user?.role, "donors", "edit");
 
-  const mergedList = buildMergedList(familyMembers, specialOccasions);
+  const mergedList = buildMergedList(familyMembers, specialOccasions, donorName);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
