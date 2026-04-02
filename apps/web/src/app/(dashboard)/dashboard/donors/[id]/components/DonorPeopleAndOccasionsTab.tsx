@@ -33,8 +33,8 @@ interface DonorPeopleAndOccasionsTabProps {
   handleRelationChange: (relation: string) => void;
   handleSubmit: (e: React.FormEvent) => void;
   handleCancel: () => void;
-  familyMembersCount: number;
-  specialOccasionsCount: number;
+  uniquePeopleCount: number;
+  totalOccasionsCount: number;
 }
 
 export default function DonorPeopleAndOccasionsTab({
@@ -54,8 +54,8 @@ export default function DonorPeopleAndOccasionsTab({
   handleRelationChange,
   handleSubmit,
   handleCancel,
-  familyMembersCount,
-  specialOccasionsCount,
+  uniquePeopleCount,
+  totalOccasionsCount,
 }: DonorPeopleAndOccasionsTabProps) {
   return (
     <div className="space-y-4 mt-4">
@@ -67,11 +67,11 @@ export default function DonorPeopleAndOccasionsTab({
               <div className="flex gap-2">
                 <Badge variant="secondary" className="flex items-center gap-1 text-xs">
                   <Users className="h-3 w-3" />
-                  {familyMembersCount} {familyMembersCount === 1 ? "person" : "people"}
+                  {uniquePeopleCount} {uniquePeopleCount === 1 ? "person" : "people"}
                 </Badge>
                 <Badge variant="secondary" className="flex items-center gap-1 text-xs">
                   <CalendarHeart className="h-3 w-3" />
-                  {specialOccasionsCount} {specialOccasionsCount === 1 ? "occasion" : "occasions"}
+                  {totalOccasionsCount} {totalOccasionsCount === 1 ? "occasion" : "occasions"}
                 </Badge>
               </div>
             </div>

@@ -277,6 +277,17 @@ export function usePeopleAndOccasions(
     }
   }, [donorId, form, isEditing, editingEntry, fetchAll, toast]);
 
+  // Unique people/groups: deduplicate by normalized name + relationType
+  const uniquePeopleCount = new Set(
+    mergedList.map(
+      (entry) =>
+        entry.name.toLowerCase().trim() + "|" + entry.relationType
+    )
+  ).size;
+
+  // Total occasions = every row in the merged table
+  const totalOccasionsCount = mergedList.length;
+
   return {
     mergedList,
     loading,
@@ -294,6 +305,9 @@ export function usePeopleAndOccasions(
     handleRelationChange,
     handleSubmit,
     handleCancel,
+    uniquePeopleCount,
+    totalOccasionsCount,
+    // kept for DonorStatsCards at the top of the page
     familyMembersCount: familyMembers.length,
     specialOccasionsCount: specialOccasions.length,
   };
