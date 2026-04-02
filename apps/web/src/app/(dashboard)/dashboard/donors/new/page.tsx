@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft, Save, AlertTriangle, User, Phone, Mail, MapPin,
   Settings, Users, Camera, X, Tag, MessageCircle, BarChart2,
-  Briefcase, Heart, Share2,
+  Briefcase, Heart, Share2, Building2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
@@ -43,6 +43,7 @@ const PRIMARY_ROLES = [
   { value: "CSR", label: "CSR", icon: Briefcase },
   { value: "VOLUNTEER", label: "Volunteer", icon: Heart },
   { value: "INFLUENCER", label: "Influencer", icon: Share2 },
+  { value: "NGO", label: "NGO", icon: Building2 },
 ];
 
 const GENDERS = [
@@ -96,6 +97,7 @@ const SUPPORT_TYPES = [
   { value: "SNACKS_SWEETS", label: "Snacks / Sweets" },
   { value: "IN_KIND", label: "In-Kind" },
   { value: "CASH", label: "Cash" },
+  { value: "MEALS", label: "Meals" },
 ];
 
 const DONOR_TAGS = [
@@ -124,6 +126,7 @@ const COMM_CHANNELS = [
   { value: "sms", label: "SMS" },
   { value: "phone", label: "Phone Call" },
   { value: "in_person", label: "In Person" },
+  { value: "only_whatsapp_call_message", label: "Only WhatsApp (Call & Message)" },
 ];
 
 const COMM_METHODS = [
@@ -301,6 +304,20 @@ export default function NewDonorPage() {
     proposalShared: false,
   });
 
+  const [ngoProfile, setNgoProfile] = useState({
+    ngoName: "",
+    website: "",
+    officialEmail: "",
+    phone: "",
+    address: "",
+    contactPersonName: "",
+    contactPersonPhone: "",
+    contactPersonEmail: "",
+    areasOfInterest: [] as string[],
+    otherAreaOfInterest: "",
+    notes: "",
+  });
+
   useEffect(() => {
     const fetchStaff = async () => {
       try {
@@ -377,6 +394,7 @@ export default function NewDonorPage() {
     if (allRoles.includes("CSR")) tabs.push("csr");
     if (allRoles.includes("VOLUNTEER")) tabs.push("volunteer");
     if (allRoles.includes("INFLUENCER")) tabs.push("influencer");
+    if (allRoles.includes("NGO")) tabs.push("ngo");
     return tabs;
   };
 
@@ -471,6 +489,21 @@ export default function NewDonorPage() {
           contributionTypes: influencerProfile.contributionTypes,
           ...(influencerProfile.contributionPattern ? { contributionPattern: influencerProfile.contributionPattern } : {}),
           ...(influencerProfile.relationshipStrength ? { relationshipStrength: influencerProfile.relationshipStrength } : {}),
+        };
+      }
+      if (allRoles.includes("NGO")) {
+        payload.ngoProfile = {
+          ...(ngoProfile.ngoName ? { ngoName: ngoProfile.ngoName } : {}),
+          ...(ngoProfile.website ? { website: ngoProfile.website } : {}),
+          ...(ngoProfile.officialEmail ? { officialEmail: ngoProfile.officialEmail } : {}),
+          ...(ngoProfile.phone ? { phone: ngoProfile.phone } : {}),
+          ...(ngoProfile.address ? { address: ngoProfile.address } : {}),
+          ...(ngoProfile.contactPersonName ? { contactPersonName: ngoProfile.contactPersonName } : {}),
+          ...(ngoProfile.contactPersonPhone ? { contactPersonPhone: ngoProfile.contactPersonPhone } : {}),
+          ...(ngoProfile.contactPersonEmail ? { contactPersonEmail: ngoProfile.contactPersonEmail } : {}),
+          areasOfInterest: ngoProfile.areasOfInterest,
+          ...(ngoProfile.otherAreaOfInterest ? { otherAreaOfInterest: ngoProfile.otherAreaOfInterest } : {}),
+          ...(ngoProfile.notes ? { notes: ngoProfile.notes } : {}),
         };
       }
       if (allRoles.includes("CSR")) {
@@ -788,6 +821,7 @@ export default function NewDonorPage() {
                 {tabs.includes("csr") && <TabsTrigger value="csr" data-testid="tab-csr">CSR</TabsTrigger>}
                 {tabs.includes("volunteer") && <TabsTrigger value="volunteer" data-testid="tab-volunteer">Volunteer</TabsTrigger>}
                 {tabs.includes("influencer") && <TabsTrigger value="influencer" data-testid="tab-influencer">Influencer</TabsTrigger>}
+                {tabs.includes("ngo") && <TabsTrigger value="ngo" data-testid="tab-ngo">NGO</TabsTrigger>}
               </TabsList>
 
               {/* Individual Tab */}
@@ -993,6 +1027,93 @@ export default function NewDonorPage() {
                     <div className="flex items-center gap-2 mt-6">
                       <Checkbox id="proposalShared" checked={csrProfile.proposalShared} onCheckedChange={(c) => setCsrProfile((p) => ({ ...p, proposalShared: !!c }))} />
                       <Label htmlFor="proposalShared" className="font-normal">Proposal Shared</Label>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* NGO Tab */}
+              <TabsContent value="ngo" className="space-y-6">
+                {/* NGO Details */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">NGO Details</p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label>NGO Name <span className="text-destructive">*</span></Label>
+                      <Input value={ngoProfile.ngoName} onChange={(e) => setNgoProfile((p) => ({ ...p, ngoName: e.target.value }))} placeholder="Name of the NGO" data-testid="input-ngo-name" />
+                    </div>
+                    <div>
+                      <Label>Website</Label>
+                      <Input value={ngoProfile.website} onChange={(e) => setNgoProfile((p) => ({ ...p, website: e.target.value }))} placeholder="https://example.org" data-testid="input-ngo-website" />
+                    </div>
+                    <div>
+                      <Label>Official Email</Label>
+                      <Input type="email" value={ngoProfile.officialEmail} onChange={(e) => setNgoProfile((p) => ({ ...p, officialEmail: e.target.value }))} placeholder="info@ngo.org" data-testid="input-ngo-official-email" />
+                    </div>
+                    <div>
+                      <Label>Phone</Label>
+                      <Input value={ngoProfile.phone} onChange={(e) => setNgoProfile((p) => ({ ...p, phone: e.target.value }))} placeholder="+91 98765 43210" data-testid="input-ngo-phone" />
+                    </div>
+                    <div className="md:col-span-2">
+                      <Label>Address</Label>
+                      <Textarea value={ngoProfile.address} onChange={(e) => setNgoProfile((p) => ({ ...p, address: e.target.value }))} placeholder="Registered / office address" rows={2} data-testid="input-ngo-address" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Person */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">Contact Person</p>
+                  <div className="grid gap-4 md:grid-cols-3">
+                    <div>
+                      <Label>Contact Person Name</Label>
+                      <Input value={ngoProfile.contactPersonName} onChange={(e) => setNgoProfile((p) => ({ ...p, contactPersonName: e.target.value }))} placeholder="Name" data-testid="input-ngo-contact-name" />
+                    </div>
+                    <div>
+                      <Label>Contact Person Phone</Label>
+                      <Input value={ngoProfile.contactPersonPhone} onChange={(e) => setNgoProfile((p) => ({ ...p, contactPersonPhone: e.target.value }))} placeholder="+91 98765 43210" data-testid="input-ngo-contact-phone" />
+                    </div>
+                    <div>
+                      <Label>Contact Person Email</Label>
+                      <Input type="email" value={ngoProfile.contactPersonEmail} onChange={(e) => setNgoProfile((p) => ({ ...p, contactPersonEmail: e.target.value }))} placeholder="contact@ngo.org" data-testid="input-ngo-contact-email" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* NGO Profile */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-3">NGO Profile</p>
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="mb-2 block">Area of Interest</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {["Education", "Healthcare", "Child Welfare", "Elderly Care", "Women Empowerment", "Livelihood", "Disability Support", "Food / Meals", "Emergency Support", "General", "Other"].map((area) => (
+                          <Badge
+                            key={area}
+                            variant={ngoProfile.areasOfInterest.includes(area) ? "default" : "outline"}
+                            className="cursor-pointer px-3 py-1.5"
+                            onClick={() => setNgoProfile((p) => ({ ...p, areasOfInterest: toggleArrayItem(p.areasOfInterest, area) }))}
+                            data-testid={`ngo-area-${area.toLowerCase().replace(/[\s/]+/g, "-")}`}
+                          >
+                            {area}
+                          </Badge>
+                        ))}
+                      </div>
+                      {ngoProfile.areasOfInterest.includes("Other") && (
+                        <div className="mt-3">
+                          <Label>Specify Other Area of Interest</Label>
+                          <Input
+                            value={ngoProfile.otherAreaOfInterest}
+                            onChange={(e) => setNgoProfile((p) => ({ ...p, otherAreaOfInterest: e.target.value }))}
+                            placeholder="Describe the area of interest"
+                            data-testid="input-ngo-other-area"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <Label>Notes</Label>
+                      <Textarea value={ngoProfile.notes} onChange={(e) => setNgoProfile((p) => ({ ...p, notes: e.target.value }))} placeholder="Additional notes about the NGO..." rows={3} data-testid="input-ngo-notes" />
                     </div>
                   </div>
                 </div>

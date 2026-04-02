@@ -186,6 +186,7 @@ model Donor {
   volunteerProfile       VolunteerProfile?
   influencerProfile      InfluencerProfile?
   csrProfile             CSRProfile?
+  ngoProfile             NgoProfile?
 
   @@index([primaryRole])
   @@index([primaryPhone])
@@ -1094,6 +1095,7 @@ enum PersonRole {
   CSR
   VOLUNTEER
   INFLUENCER
+  NGO
 }
 
 enum DonationType {
@@ -1868,6 +1870,7 @@ enum SupportPreference {
   SNACKS_SWEETS
   IN_KIND
   CASH
+  MEALS
 }
 
 enum KindCategory {
@@ -2445,4 +2448,26 @@ model ReportHistory {
   createdAt DateTime @default(now())
 
   @@map("report_history")
+}
+
+model NgoProfile {
+  id                   String    @id @default(uuid())
+  donorId              String    @unique
+  ngoName              String?
+  website              String?
+  officialEmail        String?
+  phone                String?
+  address              String?
+  contactPersonName    String?
+  contactPersonPhone   String?
+  contactPersonEmail   String?
+  areasOfInterest      String[]
+  otherAreaOfInterest  String?
+  notes                String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  donor                Donor     @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@map("ngo_profiles")
 }

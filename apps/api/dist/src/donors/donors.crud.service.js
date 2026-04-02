@@ -330,6 +330,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
                     volunteerProfile: true,
                     influencerProfile: true,
                     csrProfile: true,
+                    ngoProfile: true,
                 },
             });
             if (!donor) {
@@ -354,7 +355,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
     }
     async create(user, data, ipAddress, userAgent) {
         const donorCode = `AKF-DNR-${Date.now()}`;
-        const { individualProfile, volunteerProfile, influencerProfile, csrProfile, ...donorData } = data;
+        const { individualProfile, volunteerProfile, influencerProfile, csrProfile, ngoProfile, ...donorData } = data;
         try {
             const donor = await this.prisma.donor.create({
                 data: {
@@ -384,6 +385,11 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
                     data: { donorId: donor.id, ...csrProfile },
                 });
             }
+            if (ngoProfile) {
+                await this.prisma.ngoProfile.create({
+                    data: { donorId: donor.id, ...ngoProfile },
+                });
+            }
             return donor;
         }
         catch (err) {
@@ -393,7 +399,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
     }
     async update(user, id, data, ipAddress, userAgent) {
         await this.getActiveDonorOrThrow(id);
-        const { individualProfile, volunteerProfile, influencerProfile, csrProfile, visited, visitedHome, professionType, ...rest } = data;
+        const { individualProfile, volunteerProfile, influencerProfile, csrProfile, ngoProfile, visited, visitedHome, professionType, ...rest } = data;
         const donorData = {
             ...rest,
             profession: rest.profession || professionType || null,
@@ -402,6 +408,13 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
             where: { id },
             data: donorData,
         });
+        if (ngoProfile) {
+            await this.prisma.ngoProfile.upsert({
+                where: { donorId: id },
+                create: { donorId: id, ...ngoProfile },
+                update: { ...ngoProfile },
+            });
+        }
         return donor;
     }
     async softDelete(user, id, deleteReason, ipAddress, userAgent) {

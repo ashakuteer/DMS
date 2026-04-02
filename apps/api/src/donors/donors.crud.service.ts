@@ -381,6 +381,7 @@ if (assignedToUserId) {
         volunteerProfile: true,
         influencerProfile: true,
         csrProfile: true,
+        ngoProfile: true,
       },
     });
 
@@ -420,6 +421,7 @@ if (assignedToUserId) {
     volunteerProfile,
     influencerProfile,
     csrProfile,
+    ngoProfile,
     ...donorData
   } = data;
 
@@ -453,6 +455,11 @@ if (assignedToUserId) {
         data: { donorId: donor.id, ...csrProfile },
       });
     }
+    if (ngoProfile) {
+      await this.prisma.ngoProfile.create({
+        data: { donorId: donor.id, ...ngoProfile },
+      });
+    }
 
     return donor;
   } catch (err) {
@@ -477,6 +484,7 @@ async update(
     volunteerProfile,
     influencerProfile,
     csrProfile,
+    ngoProfile,
 
     // ❌ REMOVE THESE FROM REST
     visited,
@@ -495,6 +503,14 @@ async update(
     where: { id },
     data: donorData,
   });
+
+  if (ngoProfile) {
+    await this.prisma.ngoProfile.upsert({
+      where: { donorId: id },
+      create: { donorId: id, ...ngoProfile },
+      update: { ...ngoProfile },
+    });
+  }
 
   return donor;
 }

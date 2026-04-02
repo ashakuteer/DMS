@@ -1,0 +1,104 @@
+Please implement ONLY the following updates in the donor form. Do not do unrelated refactors.
+
+GOAL
+Add a new communication preference option, add Meals support type, add NGO role, and show NGO-specific fields when NGO is selected.
+
+1) COMMUNICATION PREFERENCES
+
+In Communication Channels, add ONE new selectable option with this exact label:
+- Only WhatsApp (Call & Message)
+
+IMPORTANT:
+- This should be one single option
+- Use the exact text: Only WhatsApp (Call & Message)
+- Do NOT remove existing options unless required separately later
+- Ensure this new option is saved and loaded correctly like other communication channels
+
+2) SUPPORT TYPE
+
+In Donation Profile → Support Type, add:
+- Meals
+
+IMPORTANT:
+- It should appear like the existing support type chips/buttons
+- Ensure it saves and loads correctly
+
+3) ROLE SELECTION
+
+Add new role:
+- NGO
+
+IMPORTANT:
+- It should behave like existing roles such as Individual, CSR, Volunteer, Influencer
+- It should be available for Primary Role and Additional Roles
+- Do not break existing role logic
+
+4) NGO PROFILE SECTION
+
+When:
+- Primary Role = NGO
+OR
+- Additional Roles include NGO
+
+Then show a new section similar to CSR, titled:
+- NGO Profile
+
+Fields to include:
+
+NGO Details
+- NGO Name (required when NGO is selected)
+- Website
+- Official Email
+- Phone
+- Address
+
+Contact Person
+- Contact Person Name
+- Contact Person Phone
+- Contact Person Email
+
+NGO Profile
+- Area of Interest (multi-select chips)
+- Notes
+
+5) AREA OF INTEREST OPTIONS
+
+Add these fixed chips:
+- Education
+- Healthcare
+- Child Welfare
+- Elderly Care
+- Women Empowerment
+- Livelihood
+- Disability Support
+- Food / Meals
+- Emergency Support
+- General
+- Other
+
+When “Other” is selected:
+- show an input field for custom area of interest
+
+6) BEHAVIOR
+
+- NGO section should appear only when NGO role is selected
+- Keep UI/UX pattern similar to CSR section
+- Save and load NGO data correctly
+- NGO fields should not affect non-NGO donors
+
+7) SAFETY
+
+- Do NOT remove existing data
+- Do NOT break form submission
+- Do NOT make destructive DB changes
+- Keep backward compatibility
+- Do NOT break CSR logic
+
+8) AFTER IMPLEMENTATION
+
+Tell me:
+A. What files changed
+B. Whether DB schema or enums were updated
+C. Whether existing donors are unaffected
+D. Where the new communication option is handled
+E. How NGO data is stored and rendered
