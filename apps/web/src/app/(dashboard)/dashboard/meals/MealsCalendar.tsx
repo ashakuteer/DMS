@@ -84,24 +84,34 @@ function isoDate(year: number, month0: number, day: number) {
   return format(new Date(year, month0, day), "yyyy-MM-dd");
 }
 
-/** Returns records that cover a given (day, slotKey, homeValue) cell */
+/** Returns records that cover a given (year, month0, day, slotKey, homeValue) cell.
+ *  Date comparison uses the ISO string prefix ("yyyy-MM-dd") to avoid any
+ *  browser timezone distortion that Date.getDate() would introduce.
+ */
 function getMatchingRecords(
   records: CalendarMealRecord[],
+  year: number,
+  month0: number,
   day: number,
   slotKey: SlotKey,
   homeValue: string,
 ): CalendarMealRecord[] {
+  // Build expected date string once — e.g. "2026-04-04"
+  const expectedDate =
+    `${year}-${String(month0 + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
   return records.filter((r) => {
-    if (new Date(r.mealServiceDate).getDate() !== day) return false;
+    // Timezone-safe: compare only the date portion of the ISO string
+    if (!r.mealServiceDate || r.mealServiceDate.slice(0, 10) !== expectedDate) return false;
+    // Check slot is active on this record
     if (!r[slotKey]) return false;
     const sh = r.slotHomes as Record<string, string[]> | null | undefined;
-    if (sh != null) {
-      // New record with slotHomes: use strictly — no fallback to homes[]
-      // If this slot isn't in slotHomes, it's not assigned to any home for this cell
+    if (sh && typeof sh === "object" && Object.keys(sh).length > 0) {
+      // New record with slotHomes: check this home is assigned for this slot
       return Array.isArray(sh[slotKey]) && sh[slotKey].includes(homeValue);
     }
-    // Legacy record (no slotHomes): fall back to the flat homes[] array
-    return r.homes.includes(homeValue);
+    // Legacy record (no slotHomes or empty object): fall back to flat homes[]
+    return Array.isArray(r.homes) && r.homes.includes(homeValue);
   });
 }
 
@@ -153,18 +163,22 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
 
   // ── Build matrix: matrixData[homeValue][slotKey][day] ───────────────────────
   const matrixData = useMemo(() => {
+    const year = month.getFullYear();
+    const month0 = month.getMonth();
     const m: Record<string, Record<string, Record<number, CalendarMealRecord[]>>> = {};
     for (const home of HOME_OPTIONS) {
       m[home.value] = {};
       for (const slot of SLOTS) {
         m[home.value][slot.key] = {};
         for (const d of days) {
-          m[home.value][slot.key][d] = getMatchingRecords(records, d, slot.key, home.value);
+          m[home.value][slot.key][d] = getMatchingRecords(
+            records, year, month0, d, slot.key, home.value,
+          );
         }
       }
     }
     return m;
-  }, [records, days]);
+  }, [records, days, month]);
 
   // ── Modal records ────────────────────────────────────────────────────────────
   const cellRecordsForModal = useMemo(() => {
