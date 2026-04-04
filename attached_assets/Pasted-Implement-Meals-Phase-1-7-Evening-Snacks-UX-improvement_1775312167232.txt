@@ -1,0 +1,127 @@
+Implement Meals Phase 1.7 — Evening Snacks UX improvement.
+
+IMPORTANT:
+Do NOT change existing working logic.
+Do NOT auto-select anything.
+Only improve user control and visibility.
+
+GOAL
+1. Evening Snacks should be available clearly along with Breakfast, Lunch, Dinner
+2. No slot should be auto-selected (including Entire Day)
+3. User must manually choose everything
+4. UI should be simple and mistake-proof
+
+--------------------------------
+CHANGE 1 — REMOVE AUTO SELECTION
+--------------------------------
+
+Currently:
+- Entire Day auto-selects Breakfast + Lunch + Dinner
+
+Change this:
+
+- Entire Day should NOT auto-select any slots
+- Slots must always be manually selected by user
+
+So:
+- Sponsorship Type = just a label (no hidden logic)
+- Slots = always controlled by user
+
+--------------------------------
+CHANGE 2 — SHOW ALL SLOTS ALWAYS
+--------------------------------
+
+In the form, always show:
+
+[ ] Breakfast  
+[ ] Lunch  
+[ ] Evening Snacks  
+[ ] Dinner  
+
+No dependency on Sponsorship Type.
+
+--------------------------------
+CHANGE 3 — MENU DISPLAY RULES
+--------------------------------
+
+Menu sections should appear based on selection:
+
+IF Breakfast selected:
+→ show Breakfast Menu
+
+IF Lunch OR Dinner selected:
+→ show Veg / Non-Veg Meal Menu
+
+IF Evening Snacks selected:
+→ show Snacks Menu
+
+If multiple slots selected:
+→ show combined sections (no hiding)
+
+--------------------------------
+CHANGE 4 — VALIDATION
+--------------------------------
+
+Before save:
+
+- At least ONE slot must be selected
+- If none selected → show error:
+  "Please select at least one meal slot"
+
+--------------------------------
+CHANGE 5 — DATA HANDLING
+--------------------------------
+
+Backend should:
+
+- Accept all 4 booleans:
+  breakfast
+  lunch
+  eveningSnacks
+  dinner
+
+- No automatic forcing of slots
+
+--------------------------------
+CHANGE 6 — DO NOT BREAK
+--------------------------------
+
+Do NOT change:
+
+- Existing saved records
+- Payment logic
+- Donation linking
+- Filters
+- Table display
+
+--------------------------------
+CHANGE 7 — OPTIONAL CLEANUP
+--------------------------------
+
+If needed:
+- Rename "Sponsorship Type" to:
+  "Selection Type" or keep same (no logic dependency)
+
+--------------------------------
+AFTER IMPLEMENTATION
+--------------------------------
+
+Tell me:
+
+1. What was removed (auto-selection logic)
+2. How slots now behave
+3. Whether backend logic changed
+4. Any DB changes (should be NONE)
+5. Confirm:
+   - No auto selection
+   - All 4 slots visible
+   - Snacks works independently
+
+--------------------------------
+REMEMBER
+--------------------------------
+
+User should be in FULL CONTROL.
+System should not assume anything.
+
+Keep it simple, stable, production-safe.

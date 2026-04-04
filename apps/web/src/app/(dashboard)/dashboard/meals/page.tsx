@@ -210,10 +210,10 @@ const defaultForm = (): FormState => ({
   allHomes: false,
   homes: [],
   sponsorshipType: "ENTIRE_DAY",
-  breakfast: true,
-  lunch: true,
+  breakfast: false,
+  lunch: false,
   eveningSnacks: false,
-  dinner: true,
+  dinner: false,
   foodType: "VEG",
   mealNotes: "",
   donationReceivedDate: format(new Date(), "yyyy-MM-dd"),
@@ -293,30 +293,22 @@ export default function MealsPage() {
   // ─── Dynamic Menu Options ───────────────────────────────────────────────────
 
   const applicableMenuSections = useMemo(() => {
-    const entireDay = form.sponsorshipType === "ENTIRE_DAY";
-    const activeSlots = {
-      breakfast: entireDay ? true : form.breakfast,
-      lunch: entireDay ? true : form.lunch,
-      eveningSnacks: form.eveningSnacks,
-      dinner: entireDay ? true : form.dinner,
-    };
     const sections: { label: string; items: string[] }[] = [];
-
-    if (activeSlots.breakfast) {
+    if (form.breakfast) {
       sections.push({ label: "Breakfast Items", items: BREAKFAST_ITEMS });
     }
-    if (activeSlots.lunch || activeSlots.dinner) {
+    if (form.lunch || form.dinner) {
       if (form.foodType === "VEG") {
         sections.push({ label: "Veg Lunch / Dinner Items", items: VEG_LUNCH_DINNER_ITEMS });
       } else {
         sections.push({ label: "Non-Veg Lunch / Dinner Items", items: NON_VEG_LUNCH_DINNER_ITEMS });
       }
     }
-    if (activeSlots.eveningSnacks) {
+    if (form.eveningSnacks) {
       sections.push({ label: "Evening Snacks Items", items: EVENING_SNACKS_ITEMS });
     }
     return sections;
-  }, [form.sponsorshipType, form.breakfast, form.lunch, form.eveningSnacks, form.dinner, form.foodType]);
+  }, [form.breakfast, form.lunch, form.eveningSnacks, form.dinner, form.foodType]);
 
   // ─── Computed Values ────────────────────────────────────────────────────────
 
@@ -389,10 +381,7 @@ export default function MealsPage() {
 
   function handleSponsorshipTypeChange(val: "ENTIRE_DAY" | "SELECTED_MEALS") {
     setField("sponsorshipType", val);
-    if (val === "ENTIRE_DAY") {
-      // Entire Day = Breakfast + Lunch + Dinner. Evening Snacks is NOT auto-selected.
-      setForm((prev) => ({ ...prev, sponsorshipType: val, breakfast: true, lunch: true, dinner: true }));
-    }
+    // No auto-selection — user always controls which slots are active
   }
 
   function handleAllHomesChange(checked: boolean) {
@@ -456,10 +445,10 @@ export default function MealsPage() {
       donorId: form.selectedDonor.id,
       homes: form.homes,
       sponsorshipType: form.sponsorshipType,
-      breakfast: form.sponsorshipType === "ENTIRE_DAY" ? true : form.breakfast,
-      lunch: form.sponsorshipType === "ENTIRE_DAY" ? true : form.lunch,
+      breakfast: form.breakfast,
+      lunch: form.lunch,
       eveningSnacks: form.eveningSnacks,
-      dinner: form.sponsorshipType === "ENTIRE_DAY" ? true : form.dinner,
+      dinner: form.dinner,
       foodType: form.foodType,
       mealNotes: form.mealNotes || undefined,
       donationReceivedDate: form.donationReceivedDate,
@@ -804,32 +793,23 @@ export default function MealsPage() {
               </div>
             </div>
 
-            {/* Meal Slots (Selected Meals only) */}
-            {form.sponsorshipType === "SELECTED_MEALS" && (
-              <div className="space-y-2">
-                <Label>Meal Slots <span className="text-destructive">*</span></Label>
-                <div className="flex gap-6 p-3 border rounded-lg">
-                  {SLOT_OPTIONS.map((s) => (
-                    <div key={s.key} className="flex items-center gap-2">
-                      <Checkbox data-testid={`checkbox-slot-${s.key}`} id={s.key}
-                        checked={(form as any)[s.key]}
-                        onCheckedChange={(c) => {
-                          setField(s.key as any, !!c);
-                          setField("selectedMenuItems", [] as any);
-                        }} />
-                      <Label htmlFor={s.key} className="cursor-pointer">{s.label}</Label>
-                    </div>
-                  ))}
-                </div>
+            {/* Meal Slots — always visible, user controls selection */}
+            <div className="space-y-2">
+              <Label>Meal Slots <span className="text-destructive">*</span></Label>
+              <div className="flex flex-wrap gap-6 p-3 border rounded-lg">
+                {SLOT_OPTIONS.map((s) => (
+                  <div key={s.key} className="flex items-center gap-2">
+                    <Checkbox data-testid={`checkbox-slot-${s.key}`} id={`slot-${s.key}`}
+                      checked={(form as any)[s.key]}
+                      onCheckedChange={(c) => {
+                        setField(s.key as any, !!c);
+                        setField("selectedMenuItems", [] as any);
+                      }} />
+                    <Label htmlFor={`slot-${s.key}`} className="cursor-pointer">{s.label}</Label>
+                  </div>
+                ))}
               </div>
-            )}
-            {form.sponsorshipType === "ENTIRE_DAY" && (
-              <div className="flex gap-2">
-                <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100 border-0">Breakfast</Badge>
-                <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100 border-0">Lunch</Badge>
-                <Badge className="bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100 border-0">Dinner</Badge>
-              </div>
-            )}
+            </div>
 
             {/* Menu Items */}
             {applicableMenuSections.length > 0 && (
