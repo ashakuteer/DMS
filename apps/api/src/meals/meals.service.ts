@@ -129,7 +129,88 @@ export class MealsService {
       return meal;
     });
 
+    // Non-blocking occasion sync — must NOT break meal save if it fails
+    if (dto.occasionType && dto.occasionType !== MealOccasionType.NONE) {
+      this.syncOccasionToProfile(dto, mealServiceDate, result.donorId).catch((err) => {
+        this.logger.warn(`Occasion sync to People & Occasions failed (non-blocking): ${err?.message ?? err}`);
+      });
+    }
+
     return result;
+  }
+
+  // ─── Occasion sync helpers ────────────────────────────────────────────────
+
+  private async syncOccasionToProfile(
+    dto: CreateMealSponsorshipDto,
+    mealServiceDate: Date,
+    donorId: string,
+  ): Promise<void> {
+    const mappedType = this.mapMealOccasionToProfileType(
+      dto.occasionType as string,
+      dto.occasionFor,
+      dto.occasionRelationship,
+    );
+    if (!mappedType) return;
+
+    const month = mealServiceDate.getMonth() + 1;
+    const day = mealServiceDate.getDate();
+    const relatedPersonName = dto.occasionFor === "OTHER" ? (dto.occasionPersonName ?? null) : null;
+    const normalizedName = (relatedPersonName ?? "").toLowerCase().trim();
+
+    // Duplicate guard: same donor + type + month + day + person name
+    const existing = await this.prisma.donorSpecialOccasion.findFirst({
+      where: { donorId, type: mappedType as any, month, day },
+      select: { id: true, relatedPersonName: true },
+    });
+
+    if (existing) {
+      const existingNorm = (existing.relatedPersonName ?? "").toLowerCase().trim();
+      if (existingNorm === normalizedName) {
+        this.logger.log(`Occasion sync skipped — duplicate already exists (id=${existing.id})`);
+        return;
+      }
+    }
+
+    await this.prisma.donorSpecialOccasion.create({
+      data: {
+        donorId,
+        type: mappedType as any,
+        month,
+        day,
+        relatedPersonName: relatedPersonName ?? null,
+        notes: `Auto-synced from Meal Sponsorship (${dto.occasionType})`,
+      },
+    });
+
+    this.logger.log(
+      `Occasion synced → donor=${donorId} type=${mappedType} date=${day}/${month} person=${relatedPersonName ?? "self"}`,
+    );
+  }
+
+  private mapMealOccasionToProfileType(
+    mealOccasion: string,
+    occasionFor?: string,
+    relation?: string,
+  ): string | null {
+    switch (mealOccasion) {
+      case "BIRTHDAY":
+        if (occasionFor === "SELF") return "DOB_SELF";
+        if (occasionFor === "OTHER") {
+          if (relation === "SPOUSE") return "DOB_SPOUSE";
+          if (relation === "SON" || relation === "DAUGHTER" || relation === "CHILD") return "DOB_CHILD";
+          return "OTHER";
+        }
+        return "DOB_SELF";
+      case "WEDDING_ANNIVERSARY":
+        return "ANNIVERSARY";
+      case "MEMORIAL":
+        return "DEATH_ANNIVERSARY";
+      case "OTHER":
+        return "OTHER";
+      default:
+        return null;
+    }
   }
 
   async findAll(query: MealSponsorshipQueryDto) {

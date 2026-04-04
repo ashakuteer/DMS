@@ -1,0 +1,243 @@
+Please implement Meals Phase 2 — Calendar View + Occasion Sync + Sidebar label fix.
+
+IMPORTANT:
+This must be a safe production-grade enhancement on top of the existing working Meals module.
+Do not break current meal save flow, donation linkage, or filters.
+Do not do unrelated refactors.
+
+CURRENT STATUS
+Meals module already works with:
+- meal sponsorship save
+- linked donation record
+- breakfast / lunch / evening snacks / dinner
+- payment fields
+- menu fields
+- telecaller
+- occasion fields including relationship for Other Person
+
+GOALS FOR PHASE 2
+1. Add a proper Meals Calendar View
+2. Rename sidebar item from "nav.meals" to "Meals Sponsorship"
+3. When a meal sponsorship is saved with an occasion, also reflect it in donor People & Occasions
+4. Keep current table/list view too (do not remove it)
+
+==================================================
+PART 1 — SIDEBAR LABEL FIX
+==================================================
+
+Change the sidebar label:
+- from: nav.meals
+- to: Meals Sponsorship
+
+IMPORTANT:
+- Fix the visible label only
+- Keep the route the same unless absolutely necessary
+- Do not break navigation
+
+==================================================
+PART 2 — MEALS CALENDAR VIEW
+==================================================
+
+Add a calendar-style view for Meals Sponsorship inside the Meals module.
+
+REQUIREMENTS
+- Keep the existing list/table view
+- Add a toggle or tabs:
+  - Calendar View
+  - List View
+- Default can be Calendar View if stable, otherwise keep List default and add Calendar as second tab
+
+CALENDAR STRUCTURE
+Build a practical NGO-friendly monthly calendar / scheduler, not a fancy food-ordering clone.
+
+Recommended structure:
+- Dates across columns
+- Meal slots across rows:
+  - Breakfast
+  - Lunch
+  - Evening Snacks
+  - Dinner
+
+Also support filtering by Home:
+- All Homes
+- Girls Home
+- Blind Boys Home
+- Old Age Home
+
+HOME HANDLING
+Use one of these safe approaches:
+A. one calendar filtered by selected home
+OR
+B. calendar grouped by home sections
+
+Preferred for Phase 2:
+- a Home filter dropdown above calendar
+- calendar updates based on selected home
+
+CELL BEHAVIOR
+Each calendar cell should clearly show one of:
+- Available
+- Partially booked / already sponsored
+- Fully booked / sponsored
+
+If multiple sponsorships exist for same date+slot+home, show a compact summary.
+
+Each cell should support:
+- click cell → open a compact detail popover/modal
+- show:
+  - donor name
+  - food type
+  - total amount
+  - occasion if any
+  - menu summary if available
+  - telecaller if available
+
+If cell is empty, clicking may allow quick add for that date+slot+home (optional if easy)
+If not easy, at minimum prefill date/slot/home when opening Add Meal Sponsorship from calendar
+
+COLOR / STATUS
+Keep it simple and operational:
+- light green = sponsored/booked
+- light yellow = partial / mixed / balance pending if useful
+- light gray or plain = empty
+Do not over-design
+
+NAVIGATION
+Add:
+- previous month
+- next month
+- current month label
+- maybe “Today” shortcut if easy
+
+IMPORTANT
+This calendar is for internal admin/staff use, not public donor booking yet.
+
+==================================================
+PART 3 — PEOPLE & OCCASIONS SYNC FROM MEALS
+==================================================
+
+When saving a Meals Sponsorship that has an occasion, also reflect it in donor People & Occasions.
+
+ONLY do this when:
+- occasionType != NONE
+
+DATA TO SYNC
+Use these fields from Meals:
+- donorId
+- occasionType
+- occasionFor
+- occasionPersonName
+- occasionRelationship
+- mealServiceDate
+
+TARGET
+Create or update an entry in donor People & Occasions / special occasions area so it becomes visible there too.
+
+SYNC RULES
+A. If Occasion For = Self
+Create/update a People & Occasions entry representing:
+- relation = Self
+- occasion = mapped from meal occasion
+- date = mealServiceDate day/month
+
+B. If Occasion For = Other Person
+Create/update using:
+- person name = occasionPersonName
+- relation = occasionRelationship
+- occasion = mapped from meal occasion
+- date = mealServiceDate day/month
+
+OCCASION MAPPING
+Map meal occasion values safely to People & Occasions equivalents:
+- BIRTHDAY → Birthday
+- WEDDING_ANNIVERSARY → Wedding Anniversary
+- MEMORIAL → Memorial Day / Memorial depending on existing naming
+- OTHER → Other
+
+DATE HANDLING
+People & Occasions should store the relevant occasion date/month based on mealServiceDate.
+If the existing module stores only day/month, convert accordingly.
+If it stores a full date, use mealServiceDate.
+
+DUPLICATE PREVENTION (VERY IMPORTANT)
+Do NOT create duplicate People & Occasions entries every time a similar meals donation is added.
+
+Use safe matching / upsert logic:
+- same donor
+- same person name (or self)
+- same relation
+- same occasion type
+- same day/month or same occasion date
+
+If matching record already exists:
+- do not duplicate
+- either keep existing or update it safely if needed
+
+IMPORTANT
+Do NOT overwrite unrelated manually-entered People & Occasions records incorrectly.
+Prefer:
+- create if not exists
+- otherwise leave existing as-is unless minor safe update is needed
+
+==================================================
+PART 4 — UI CONFIRMATION / TRACEABILITY
+==================================================
+
+Make it possible to know that an occasion synced from meals was reflected.
+
+At minimum:
+- after successful meal save, keep silent success if sync succeeded
+- if sync fails but meal save succeeds, do not break meal save; log safely
+- optionally add a subtle note in backend logs
+
+Do NOT make People & Occasions sync failure block the meal save.
+
+==================================================
+PART 5 — KEEP EXISTING DONATION LINKAGE
+==================================================
+
+Meal sponsorship should continue to:
+- create/link donation record
+- appear in donor donations
+- appear in donor timeline
+
+Now additionally:
+- reflect in People & Occasions if occasion exists
+
+==================================================
+PART 6 — PRODUCTION SAFETY
+==================================================
+
+- Additive changes only
+- No destructive schema changes
+- Do not break existing Meals records
+- Do not break donor profile
+- Do not break People & Occasions module
+- Do not break current list/table Meals page
+- Keep backward compatibility
+
+==================================================
+PART 7 — AFTER IMPLEMENTATION
+==================================================
+
+Tell me clearly:
+
+A. What files changed
+B. Whether any schema/model changes were added
+C. How Calendar View works
+D. How Home filter works in calendar
+E. How occasion sync to People & Occasions works
+F. What duplicate-prevention rule is used
+G. Confirm sidebar label changed to "Meals Sponsorship"
+H. Confirm meal save still creates linked donation as before
+I. Confirm People & Occasions sync does not break meal save if it fails
+
+IMPORTANT FINAL REMINDER
+Implement ONLY:
+- sidebar label fix
+- meals calendar view
+- sync meals occasion into People & Occasions
+Do not build public booking.
+Do not build home incharge portal yet.
+Do not refactor unrelated modules.
+Keep it practical, stable, and internal-use focused.

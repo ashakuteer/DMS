@@ -41,7 +41,10 @@ import {
   ChevronRight,
   Loader2,
   Trash2,
+  Calendar,
+  List,
 } from "lucide-react";
+import { MealsCalendar } from "./MealsCalendar";
 
 // ─── Menu Options ────────────────────────────────────────────────────────────
 
@@ -284,6 +287,7 @@ export default function MealsPage() {
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
+  const [view, setView] = useState<"list" | "calendar">("list");
   const [form, setForm] = useState<FormState>(defaultForm());
   const [donorResults, setDonorResults] = useState<any[]>([]);
   const [donorLoading, setDonorLoading] = useState(false);
@@ -462,6 +466,26 @@ export default function MealsPage() {
     else setField("paymentStatus", "PARTIAL" as any);
   }
 
+  function handleAddWithPrefill(
+    date: string,
+    slots: Partial<Record<"breakfast" | "lunch" | "eveningSnacks" | "dinner", boolean>>,
+    home: string,
+  ) {
+    const prefilled = defaultForm();
+    prefilled.mealServiceDate = date;
+    prefilled.donationReceivedDate = date;
+    if (slots.breakfast) prefilled.breakfast = true as any;
+    if (slots.lunch) prefilled.lunch = true as any;
+    if (slots.eveningSnacks) prefilled.eveningSnacks = true as any;
+    if (slots.dinner) prefilled.dinner = true as any;
+    if (home) {
+      prefilled.homes = [home] as any;
+      prefilled.allHomes = false as any;
+    }
+    setForm(prefilled);
+    setOpen(true);
+  }
+
   function handleSubmit() {
     if (!form.selectedDonor) {
       toast({ title: "Validation", description: "Please select a donor.", variant: "destructive" });
@@ -522,19 +546,53 @@ export default function MealsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <UtensilsCrossed className="h-7 w-7 text-primary" />
           <div>
-            <h1 className="text-2xl font-bold">Meals</h1>
+            <h1 className="text-2xl font-bold">Meals Sponsorship</h1>
             <p className="text-sm text-muted-foreground">Meal sponsorship records for all homes</p>
           </div>
         </div>
-        <Button data-testid="button-add-meal" onClick={() => { setOpen(true); setForm(defaultForm()); }}>
-          <Plus className="h-4 w-4 mr-2" /> Add Meal Sponsorship
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* View toggle */}
+          <div className="flex items-center border rounded-lg overflow-hidden">
+            <button
+              data-testid="view-toggle-list"
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${
+                view === "list"
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted text-muted-foreground"
+              }`}
+              onClick={() => setView("list")}
+            >
+              <List className="h-4 w-4" /> List
+            </button>
+            <button
+              data-testid="view-toggle-calendar"
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${
+                view === "calendar"
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted text-muted-foreground"
+              }`}
+              onClick={() => setView("calendar")}
+            >
+              <Calendar className="h-4 w-4" /> Calendar
+            </button>
+          </div>
+          <Button data-testid="button-add-meal" onClick={() => { setOpen(true); setForm(defaultForm()); }}>
+            <Plus className="h-4 w-4 mr-2" /> Add Meal Sponsorship
+          </Button>
+        </div>
       </div>
 
+      {/* Calendar view */}
+      {view === "calendar" && (
+        <MealsCalendar onAddWithPrefill={handleAddWithPrefill} />
+      )}
+
+      {/* Filters — only in list view */}
+      {view === "list" && (<>
       {/* Filters */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 p-4 border rounded-lg bg-muted/30">
         <div className="space-y-1">
@@ -725,6 +783,7 @@ export default function MealsPage() {
           </div>
         </div>
       )}
+      </>)}
 
       {/* ─── Add Dialog ─────────────────────────────────────────────────────────── */}
       <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setForm(defaultForm()); setDonorResults([]); } }}>

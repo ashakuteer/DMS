@@ -73,7 +73,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Donors", tKey: "nav.donors", href: "/dashboard/donors", icon: Users, permissionModule: "donors" },
       { title: "Donations", tKey: "nav.donations", href: "/dashboard/donations", icon: IndianRupee, permissionModule: "donations" },
-      { title: "Meals", tKey: "nav.meals", href: "/dashboard/meals", icon: UtensilsCrossed, permissionModule: "donations" },
+      { title: "Meals Sponsorship", tKey: "nav.meals", href: "/dashboard/meals", icon: UtensilsCrossed, permissionModule: "donations" },
       { title: "Donor Actions", tKey: "nav.donor_actions", href: "/dashboard/donor-actions", icon: Zap, permissionModule: "donors" },
       { title: "Beneficiaries", tKey: "nav.beneficiaries", href: "/dashboard/beneficiaries", icon: HandHeart, permissionModule: "beneficiaries" },
       { title: "Campaigns", tKey: "nav.campaigns", href: "/dashboard/campaigns", icon: Target, permissionModule: "campaigns" },
