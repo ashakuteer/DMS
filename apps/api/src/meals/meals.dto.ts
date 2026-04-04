@@ -30,6 +30,9 @@ export class CreateMealSponsorshipDto {
   @IsEnum(DonationHomeType, { each: true })
   homes: DonationHomeType[];
 
+  @IsOptional()
+  slotHomes?: Record<string, string[]>;
+
   @IsEnum(MealSponsorshipType)
   sponsorshipType: MealSponsorshipType;
 
@@ -128,6 +131,9 @@ export class UpdateMealSponsorshipDto {
   @ArrayMinSize(1)
   @IsEnum(DonationHomeType, { each: true })
   homes?: DonationHomeType[];
+
+  @IsOptional()
+  slotHomes?: Record<string, string[]>;
 
   @IsOptional()
   @IsEnum(MealSponsorshipType)

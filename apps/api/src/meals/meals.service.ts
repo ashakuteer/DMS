@@ -49,9 +49,36 @@ export class MealsService {
     if (!dto.breakfast && !dto.lunch && !eveningSnacks && !dto.dinner) {
       throw new BadRequestException("At least one meal slot must be selected");
     }
-    if (!dto.homes || dto.homes.length === 0) {
-      throw new BadRequestException("At least one home must be selected");
+
+    // ── slotHomes path vs legacy homes path ──────────────────────────────────
+    const slotHomes = dto.slotHomes as Record<string, string[]> | undefined | null;
+
+    const activeSlotKeys: string[] = [
+      ...(dto.breakfast ? ["breakfast"] : []),
+      ...(dto.lunch ? ["lunch"] : []),
+      ...(eveningSnacks ? ["eveningSnacks"] : []),
+      ...(dto.dinner ? ["dinner"] : []),
+    ];
+
+    if (slotHomes) {
+      // New path: validate each active slot has at least one home
+      for (const slot of activeSlotKeys) {
+        const slotLabel = { breakfast: "Breakfast", lunch: "Lunch", eveningSnacks: "Evening Snacks", dinner: "Dinner" }[slot] ?? slot;
+        if (!slotHomes[slot] || slotHomes[slot].length === 0) {
+          throw new BadRequestException(`Please select at least one home for ${slotLabel}`);
+        }
+      }
+    } else {
+      // Legacy path
+      if (!dto.homes || dto.homes.length === 0) {
+        throw new BadRequestException("At least one home must be selected");
+      }
     }
+
+    // Derive effective homes (unique union across all slots, used for legacy field + donation home)
+    const effectiveHomes: DonationHomeType[] = slotHomes
+      ? ([...new Set(activeSlotKeys.flatMap((s) => slotHomes[s] ?? []))] as DonationHomeType[])
+      : dto.homes;
 
     const totalAmount = dto.totalAmount ?? dto.amount;
     const amountReceived = dto.amountReceived ?? 0;
@@ -63,11 +90,30 @@ export class MealsService {
     const mealServiceDate = new Date(dto.mealServiceDate);
     const donationReceivedDate = new Date(dto.donationReceivedDate);
 
-    const slotsDesc = this.buildMealSlotDescription(dto.breakfast, dto.lunch, eveningSnacks, dto.dinner);
-    const homesDesc = this.buildHomesDescription(dto.homes);
-    const remarks = `Meal Sponsorship — ${slotsDesc} | Homes: ${homesDesc} | Meal Date: ${mealServiceDate.toLocaleDateString("en-IN")}${dto.occasionType && dto.occasionType !== MealOccasionType.NONE ? ` | Occasion: ${dto.occasionType}` : ""}`;
+    const occasionSuffix = dto.occasionType && dto.occasionType !== MealOccasionType.NONE
+      ? ` | Occasion: ${dto.occasionType}` : "";
 
-    const primaryHome = dto.homes[0];
+    let remarks: string;
+    if (slotHomes) {
+      const slotHomeLabels: Record<string, string> = {
+        breakfast: "Breakfast", lunch: "Lunch", eveningSnacks: "Evening Snacks", dinner: "Dinner",
+      };
+      const homeNames: Record<DonationHomeType, string> = {
+        GIRLS_HOME: "Girls Home", BLIND_BOYS_HOME: "Blind Boys Home",
+        OLD_AGE_HOME: "Old Age Home", GENERAL: "General",
+      };
+      const parts = activeSlotKeys.map((s) => {
+        const homes = (slotHomes[s] ?? []).map((h) => homeNames[h as DonationHomeType] ?? h).join(" & ");
+        return `${slotHomeLabels[s]} (${homes})`;
+      });
+      remarks = `Meal Sponsorship — ${parts.join(", ")} | Meal Date: ${mealServiceDate.toLocaleDateString("en-IN")}${occasionSuffix}`;
+    } else {
+      const slotsDesc = this.buildMealSlotDescription(dto.breakfast, dto.lunch, eveningSnacks, dto.dinner);
+      const homesDesc = this.buildHomesDescription(effectiveHomes);
+      remarks = `Meal Sponsorship — ${slotsDesc} | Homes: ${homesDesc} | Meal Date: ${mealServiceDate.toLocaleDateString("en-IN")}${occasionSuffix}`;
+    }
+
+    const primaryHome = effectiveHomes[0];
 
     const result = await this.prisma.$transaction(async (tx) => {
       const donation = await tx.donation.create({
@@ -87,7 +133,8 @@ export class MealsService {
       const meal = await tx.mealSponsorship.create({
         data: {
           donorId: dto.donorId,
-          homes: dto.homes,
+          homes: effectiveHomes,
+          slotHomes: slotHomes ?? undefined,
           sponsorshipType: dto.sponsorshipType,
           breakfast: dto.breakfast,
           lunch: dto.lunch,

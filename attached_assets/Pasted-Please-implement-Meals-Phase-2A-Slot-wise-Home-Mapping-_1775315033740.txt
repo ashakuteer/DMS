@@ -1,0 +1,217 @@
+Please implement Meals Phase 2A — Slot-wise Home Mapping.
+
+IMPORTANT
+This is a structural improvement. Implement carefully without breaking:
+- existing meal records
+- donation linkage
+- calendar view
+- reports
+
+This must be backward compatible.
+
+==================================================
+PROBLEM
+==================================================
+
+Currently:
+- Homes are selected once (common for all slots)
+- Slots are selected separately (breakfast/lunch/snacks/dinner)
+
+This does NOT support real-world use case:
+
+Example:
+- Breakfast → Girls Home
+- Lunch → Blind Boys Home
+- Dinner → Old Age Home
+
+We need to support:
+➡️ Different homes for different meal slots
+
+==================================================
+GOAL
+==================================================
+
+Allow selecting homes PER SLOT instead of one common selection.
+
+==================================================
+PART 1 — DATA MODEL (BACKEND)
+==================================================
+
+Do NOT delete existing "homes" field (keep for backward compatibility).
+
+Add new JSON field in MealSponsorship:
+
+slotHomes JSONB (nullable)
+
+Structure:
+
+{
+  breakfast: ["GIRLS_HOME"],
+  lunch: ["BLIND_BOYS_HOME"],
+  eveningSnacks: ["OLD_AGE_HOME"],
+  dinner: ["GIRLS_HOME", "OLD_AGE_HOME"]
+}
+
+Rules:
+- keys = slots (breakfast, lunch, eveningSnacks, dinner)
+- values = array of DonationHomeType
+- only store slots that are selected
+- if slot not selected → do not include or empty array
+
+==================================================
+PART 2 — SAVE LOGIC (SERVICE)
+==================================================
+
+When creating a meal:
+
+IF slotHomes is provided:
+- ignore old "homes" field for logic
+- use slotHomes
+
+ELSE (old records / fallback):
+- use existing homes field
+
+Also:
+
+1. Generate remarks using slot-wise homes:
+
+Example:
+"Meal Sponsorship — Breakfast (Girls Home), Lunch (Blind Boys Home), Dinner (Old Age Home)"
+
+2. Donation amount remains SAME (do NOT split donation)
+
+3. Validation:
+- at least one slot must be selected
+- each selected slot must have at least one home
+
+==================================================
+PART 3 — FRONTEND FORM CHANGE
+==================================================
+
+REMOVE this old section:
+- "Homes Covered"
+
+REPLACE WITH:
+
+For each selected slot, show homes selection:
+
+Example:
+
+Meal Slots:
+☑ Breakfast
+☑ Lunch
+☐ Evening Snacks
+☑ Dinner
+
+Then dynamically show:
+
+Breakfast Homes:
+[ ] Girls Home
+[ ] Blind Boys Home
+[ ] Old Age Home
+
+Lunch Homes:
+[ ] Girls Home
+[ ] Blind Boys Home
+[ ] Old Age Home
+
+Dinner Homes:
+[ ] Girls Home
+[ ] Blind Boys Home
+[ ] Old Age Home
+
+Rules:
+- Only show homes selector for selected slots
+- Each slot must have at least one home selected
+- Keep UI simple (checkbox group)
+
+==================================================
+PART 4 — EDIT / DISPLAY LOGIC
+==================================================
+
+When loading a record:
+
+IF slotHomes exists:
+- use it
+
+ELSE:
+- fallback:
+  apply old "homes" to all selected slots
+
+==================================================
+PART 5 — TABLE DISPLAY UPDATE
+==================================================
+
+Update Meals table:
+
+Instead of:
+Homes: Old Age Home
+Slots: Breakfast, Lunch
+
+Show:
+
+Slots & Homes:
+Breakfast → Girls Home  
+Lunch → Blind Boys Home  
+Dinner → Old Age Home  
+
+Keep it compact but readable.
+
+==================================================
+PART 6 — CALENDAR UPDATE
+==================================================
+
+Calendar must now respect slotHomes:
+
+For each cell:
+(date + slot + home)
+
+Show booking ONLY if:
+- slot is selected
+- AND that home is included in that slotHomes
+
+IMPORTANT:
+Calendar filtering by home must still work correctly.
+
+==================================================
+PART 7 — BACKWARD COMPATIBILITY
+==================================================
+
+Existing records:
+- do NOT modify
+- do NOT migrate immediately
+
+Fallback logic ensures:
+- old records still display correctly
+- they behave as "same homes for all slots"
+
+==================================================
+PART 8 — DO NOT CHANGE
+==================================================
+
+Do NOT change:
+- donation creation logic
+- payment logic
+- telecaller logic
+- occasion logic
+- people & occasions sync
+- transaction ID logic
+
+==================================================
+PART 9 — AFTER IMPLEMENTATION
+==================================================
+
+Tell me clearly:
+
+A. What schema changes were added
+B. Whether old data still works without migration
+C. How slotHomes is stored
+D. How fallback logic works
+E. How calendar uses slotHomes
+F. How table display was updated
+G. Confirm donation logic unchanged
+
+IMPORTANT FINAL NOTE
+This is a foundational change — implement carefully.
+Do NOT rush.
+Do NOT break production.

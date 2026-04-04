@@ -135,6 +135,11 @@ WHERE
 ALTER TABLE "meal_sponsorships"
   ADD COLUMN IF NOT EXISTS "occasionRelationship" TEXT;
 
+-- Phase 2A — Per-slot homes (slotHomes JSON) ─────────────────────────
+
+ALTER TABLE "meal_sponsorships"
+  ADD COLUMN IF NOT EXISTS "slotHomes" JSONB;
+
 -- ═══════════════════════════════════════════════════════════════════════
 -- VERIFICATION (uncomment and run to confirm)
 -- ═══════════════════════════════════════════════════════════════════════

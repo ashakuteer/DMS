@@ -2517,6 +2517,7 @@ model MealSponsorship {
   id                   String              @id @default(uuid())
   donorId              String
   homes                DonationHomeType[]
+  slotHomes            Json?
   sponsorshipType      MealSponsorshipType
   breakfast            Boolean             @default(false)
   lunch                Boolean             @default(false)

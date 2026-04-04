@@ -191,6 +191,7 @@ function paymentStatusLabel(status?: string, legacyType?: string) {
 interface MealSponsorship {
   id: string;
   homes: string[];
+  slotHomes?: Record<string, string[]> | null;
   sponsorshipType: string;
   breakfast: boolean;
   lunch: boolean;
@@ -224,8 +225,7 @@ interface FormState {
   donorId: string;
   donorSearch: string;
   selectedDonor: { id: string; firstName: string; lastName: string; donorCode: string } | null;
-  allHomes: boolean;
-  homes: string[];
+  slotHomes: Record<string, string[]>;
   sponsorshipType: "ENTIRE_DAY" | "SELECTED_MEALS";
   breakfast: boolean;
   lunch: boolean;
@@ -254,8 +254,7 @@ const defaultForm = (): FormState => ({
   donorId: "",
   donorSearch: "",
   selectedDonor: null,
-  allHomes: false,
-  homes: [],
+  slotHomes: { breakfast: [], lunch: [], eveningSnacks: [], dinner: [] },
   sponsorshipType: "ENTIRE_DAY",
   breakfast: false,
   lunch: false,
@@ -433,18 +432,20 @@ export default function MealsPage() {
     // No auto-selection — user always controls which slots are active
   }
 
-  function handleAllHomesChange(checked: boolean) {
-    setField("allHomes", checked as any);
-    if (checked) setField("homes", [...ALL_HOMES] as any);
-    else setField("homes", [] as any);
+  function toggleSlotHome(slot: string, home: string) {
+    setForm((prev) => {
+      const current = prev.slotHomes[slot] ?? [];
+      const has = current.includes(home);
+      const next = has ? current.filter((h) => h !== home) : [...current, home];
+      return { ...prev, slotHomes: { ...prev.slotHomes, [slot]: next } };
+    });
   }
 
-  function toggleHome(val: string) {
-    setForm((prev) => {
-      const exists = prev.homes.includes(val);
-      const next = exists ? prev.homes.filter((h) => h !== val) : [...prev.homes, val];
-      return { ...prev, homes: next as any, allHomes: next.length === ALL_HOMES.length };
-    });
+  function setAllHomesForSlot(slot: string, checked: boolean) {
+    setForm((prev) => ({
+      ...prev,
+      slotHomes: { ...prev.slotHomes, [slot]: checked ? [...ALL_HOMES] : [] },
+    }));
   }
 
   function toggleMenuItem(item: string) {
@@ -479,8 +480,12 @@ export default function MealsPage() {
     if (slots.eveningSnacks) prefilled.eveningSnacks = true as any;
     if (slots.dinner) prefilled.dinner = true as any;
     if (home) {
-      prefilled.homes = [home] as any;
-      prefilled.allHomes = false as any;
+      // Pre-fill the home for each prefilled slot
+      const sh: Record<string, string[]> = { breakfast: [], lunch: [], eveningSnacks: [], dinner: [] };
+      (["breakfast", "lunch", "eveningSnacks", "dinner"] as const).forEach((s) => {
+        if (slots[s]) sh[s] = [home];
+      });
+      prefilled.slotHomes = sh;
     }
     setForm(prefilled);
     setOpen(true);
@@ -491,14 +496,25 @@ export default function MealsPage() {
       toast({ title: "Validation", description: "Please select a donor.", variant: "destructive" });
       return;
     }
-    if (form.homes.length === 0) {
-      toast({ title: "Validation", description: "Select at least one home.", variant: "destructive" });
-      return;
-    }
-    if (form.sponsorshipType === "SELECTED_MEALS" && !form.breakfast && !form.lunch && !form.eveningSnacks && !form.dinner) {
+
+    const activeSlots = (["breakfast", "lunch", "eveningSnacks", "dinner"] as const).filter(
+      (s) => (form as any)[s],
+    );
+
+    if (activeSlots.length === 0) {
       toast({ title: "Validation", description: "Select at least one meal slot.", variant: "destructive" });
       return;
     }
+
+    // Validate each active slot has at least one home
+    for (const slot of activeSlots) {
+      const slotLabel = { breakfast: "Breakfast", lunch: "Lunch", eveningSnacks: "Evening Snacks", dinner: "Dinner" }[slot];
+      if ((form.slotHomes[slot] ?? []).length === 0) {
+        toast({ title: "Validation", description: `Select at least one home for ${slotLabel}.`, variant: "destructive" });
+        return;
+      }
+    }
+
     if (!form.totalAmount || isNaN(Number(form.totalAmount)) || Number(form.totalAmount) <= 0) {
       toast({ title: "Validation", description: "Enter a valid total amount.", variant: "destructive" });
       return;
@@ -510,9 +526,19 @@ export default function MealsPage() {
       return;
     }
 
+    // Build legacy homes field from slotHomes (union of all slot homes)
+    const derivedHomes = [...new Set(activeSlots.flatMap((s) => form.slotHomes[s] ?? []))];
+
+    // Build slotHomes payload — only include active slots
+    const slotHomesPayload: Record<string, string[]> = {};
+    for (const s of activeSlots) {
+      slotHomesPayload[s] = form.slotHomes[s] ?? [];
+    }
+
     createMutation.mutate({
       donorId: form.selectedDonor.id,
-      homes: form.homes,
+      homes: derivedHomes,
+      slotHomes: slotHomesPayload,
       sponsorshipType: form.sponsorshipType,
       breakfast: form.breakfast,
       lunch: form.lunch,
@@ -712,11 +738,30 @@ export default function MealsPage() {
                       <div className="text-xs text-muted-foreground">Rcvd: {format(new Date(item.donationReceivedDate), "dd MMM yyyy")}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
-                        {item.homes.map((h) => (
-                          <Badge key={h} variant="outline" className="text-xs">{homeLabel(h)}</Badge>
-                        ))}
-                      </div>
+                      {item.slotHomes ? (
+                        <div className="space-y-1">
+                          {(["breakfast", "lunch", "eveningSnacks", "dinner"] as const)
+                            .filter((s) => item[s])
+                            .map((s) => {
+                              const slotLabel = { breakfast: "BF", lunch: "Lunch", eveningSnacks: "Eve", dinner: "Dinner" }[s];
+                              const hs = (item.slotHomes as Record<string, string[]>)[s] ?? [];
+                              return (
+                                <div key={s} className="flex items-center gap-1 flex-wrap">
+                                  <span className="text-xs font-medium text-muted-foreground w-10 shrink-0">{slotLabel}:</span>
+                                  {hs.map((h) => (
+                                    <Badge key={h} variant="outline" className="text-xs px-1 py-0">{homeLabel(h)}</Badge>
+                                  ))}
+                                </div>
+                              );
+                            })}
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-1">
+                          {item.homes.map((h) => (
+                            <Badge key={h} variant="outline" className="text-xs">{homeLabel(h)}</Badge>
+                          ))}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
@@ -852,25 +897,6 @@ export default function MealsPage() {
               )}
             </div>
 
-            {/* Homes */}
-            <div className="space-y-2">
-              <Label>Homes Covered <span className="text-destructive">*</span></Label>
-              <div className="flex flex-wrap gap-4 p-3 border rounded-lg">
-                <div className="flex items-center gap-2">
-                  <Checkbox data-testid="checkbox-all-homes" id="all-homes" checked={form.allHomes}
-                    onCheckedChange={(c) => handleAllHomesChange(!!c)} />
-                  <Label htmlFor="all-homes" className="cursor-pointer font-medium">All Homes</Label>
-                </div>
-                {HOME_OPTIONS.map((h) => (
-                  <div key={h.value} className="flex items-center gap-2">
-                    <Checkbox data-testid={`checkbox-home-${h.value}`} id={h.value}
-                      checked={form.homes.includes(h.value)} onCheckedChange={() => toggleHome(h.value)} />
-                    <Label htmlFor={h.value} className="cursor-pointer">{h.label}</Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Sponsorship Type + Food Type */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -914,6 +940,56 @@ export default function MealsPage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Homes per Slot */}
+            <div className="space-y-3">
+              <Label>Homes per Slot <span className="text-destructive">*</span></Label>
+              {SLOT_OPTIONS.every((s) => !(form as any)[s.key]) ? (
+                <p className="text-sm text-muted-foreground border rounded-lg p-3">
+                  Select at least one meal slot above to assign homes.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {SLOT_OPTIONS.filter((s) => (form as any)[s.key]).map((s) => {
+                    const slotKey = s.key;
+                    const slotHomes = form.slotHomes[slotKey] ?? [];
+                    const allChecked = slotHomes.length === HOME_OPTIONS.length;
+                    return (
+                      <div key={slotKey} className="border rounded-lg p-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-semibold">{s.label}</p>
+                          <div className="flex items-center gap-2">
+                            <Checkbox
+                              data-testid={`checkbox-all-homes-${slotKey}`}
+                              id={`all-homes-${slotKey}`}
+                              checked={allChecked}
+                              onCheckedChange={(c) => setAllHomesForSlot(slotKey, !!c)}
+                            />
+                            <Label htmlFor={`all-homes-${slotKey}`} className="cursor-pointer text-sm font-medium">All Homes</Label>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-4">
+                          {HOME_OPTIONS.map((h) => (
+                            <div key={h.value} className="flex items-center gap-2">
+                              <Checkbox
+                                data-testid={`checkbox-home-${slotKey}-${h.value}`}
+                                id={`home-${slotKey}-${h.value}`}
+                                checked={slotHomes.includes(h.value)}
+                                onCheckedChange={() => toggleSlotHome(slotKey, h.value)}
+                              />
+                              <Label htmlFor={`home-${slotKey}-${h.value}`} className="cursor-pointer text-sm">{h.label}</Label>
+                            </div>
+                          ))}
+                        </div>
+                        {slotHomes.length === 0 && (
+                          <p className="text-xs text-destructive">Select at least one home for this slot.</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Menu Items */}

@@ -31,6 +31,7 @@ interface CalendarMealRecord {
   eveningSnacks: boolean;
   dinner: boolean;
   homes: string[];
+  slotHomes?: Record<string, string[]> | null;
   foodType: string;
   sponsorshipType: string;
   donor: { firstName: string; lastName: string; donorCode: string };
@@ -124,7 +125,16 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
   }, [records]);
 
   function getCellRecords(day: number, slotKey: SlotKey): CalendarMealRecord[] {
-    return (byDay[day] ?? []).filter((r) => r[slotKey] === true);
+    return (byDay[day] ?? []).filter((r) => {
+      if (!r[slotKey]) return false;
+      if (homeFilter === "all") return true;
+      // If record has slotHomes, check slot-specific homes
+      if (r.slotHomes && (r.slotHomes as Record<string, string[]>)[slotKey]) {
+        return ((r.slotHomes as Record<string, string[]>)[slotKey]).includes(homeFilter);
+      }
+      // Fall back to legacy homes array
+      return r.homes.includes(homeFilter);
+    });
   }
 
   const todayStr = format(new Date(), "yyyy-MM-dd");
