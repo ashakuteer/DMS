@@ -283,10 +283,10 @@ if (assignedToUserId) {
   }
 
   async findOne(user: UserContext, id: string) {
-    this.logger.log(`API received ID: ${id}`);
+    this.logger.log(`API received ID: "${id}"`);
 
-    if (!this.isValidUUID(id)) {
-      this.logger.warn(`Invalid donor ID format: "${id}" — returning 404`);
+    if (!id || !id.trim()) {
+      this.logger.warn(`Empty donor ID received`);
       throw new NotFoundException("Donor not found");
     }
 

@@ -234,9 +234,9 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         };
     }
     async findOne(user, id) {
-        this.logger.log(`API received ID: ${id}`);
-        if (!this.isValidUUID(id)) {
-            this.logger.warn(`Invalid donor ID format: "${id}" — returning 404`);
+        this.logger.log(`API received ID: "${id}"`);
+        if (!id || !id.trim()) {
+            this.logger.warn(`Empty donor ID received`);
             throw new common_1.NotFoundException("Donor not found");
         }
         try {

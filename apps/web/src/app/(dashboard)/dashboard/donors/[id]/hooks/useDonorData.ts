@@ -6,14 +6,26 @@ export function useDonorData(donorId: string) {
   const [loading, setLoading] = useState(true);
 
   const fetchDonor = useCallback(async () => {
+    if (!donorId) {
+      console.error("useDonorData: donorId is empty or undefined");
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
+      console.log("Fetching donor with ID:", donorId);
 
       const res = await fetchWithAuth(`/api/donors/${donorId}`);
 
       if (res.ok) {
         const data = await res.json();
         setDonor(data);
+      } else {
+        console.error(`Failed to fetch donor ${donorId}: HTTP ${res.status}`);
+        try {
+          const errData = await res.json();
+          console.error("Error response:", errData);
+        } catch {}
       }
     } catch (error) {
       console.error("Error fetching donor:", error);
