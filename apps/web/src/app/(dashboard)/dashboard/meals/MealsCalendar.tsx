@@ -88,9 +88,12 @@ function getMatchingRecords(
     if (new Date(r.mealServiceDate).getDate() !== day) return false;
     if (!r[slotKey]) return false;
     const sh = r.slotHomes as Record<string, string[]> | null | undefined;
-    if (sh && Array.isArray(sh[slotKey])) {
-      return sh[slotKey].includes(homeValue);
+    if (sh != null) {
+      // New record with slotHomes: use strictly — no fallback to homes[]
+      // If this slot isn't in slotHomes, it's not assigned to any home for this cell
+      return Array.isArray(sh[slotKey]) && sh[slotKey].includes(homeValue);
     }
+    // Legacy record (no slotHomes): fall back to the flat homes[] array
     return r.homes.includes(homeValue);
   });
 }
