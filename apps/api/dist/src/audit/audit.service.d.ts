@@ -54,6 +54,7 @@ export declare class AuditService {
             };
         } & {
             id: string;
+            userId: string;
             action: import(".prisma/client").$Enums.AuditAction;
             entityType: string | null;
             entityId: string | null;
@@ -63,7 +64,6 @@ export declare class AuditService {
             userAgent: string | null;
             metadata: import("@prisma/client/runtime/library").JsonValue | null;
             createdAt: Date;
-            userId: string;
         })[];
         total: number;
         page: number;

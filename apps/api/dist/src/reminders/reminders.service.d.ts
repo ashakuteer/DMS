@@ -28,10 +28,10 @@ export declare class RemindersService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        type: string;
-        status: import(".prisma/client").$Enums.ReminderStatus;
         donorId: string;
         donationId: string | null;
+        type: string;
+        status: import(".prisma/client").$Enums.ReminderStatus;
         description: string | null;
         createdById: string;
         title: string;
@@ -42,10 +42,10 @@ export declare class RemindersService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        type: string;
-        status: import(".prisma/client").$Enums.ReminderStatus;
         donorId: string;
         donationId: string | null;
+        type: string;
+        status: import(".prisma/client").$Enums.ReminderStatus;
         description: string | null;
         createdById: string;
         title: string;
@@ -56,10 +56,10 @@ export declare class RemindersService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        type: string;
-        status: import(".prisma/client").$Enums.ReminderStatus;
         donorId: string;
         donationId: string | null;
+        type: string;
+        status: import(".prisma/client").$Enums.ReminderStatus;
         description: string | null;
         createdById: string;
         title: string;
@@ -78,6 +78,10 @@ export declare class RemindersService {
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         createdAt: Date;
         subject: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
@@ -86,10 +90,6 @@ export declare class RemindersService {
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        taskId: string | null;
         sentById: string | null;
     }>;
 }

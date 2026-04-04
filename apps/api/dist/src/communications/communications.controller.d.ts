@@ -12,11 +12,11 @@ export declare class CommunicationsController {
         id: string;
         createdAt: Date;
         to: string;
+        donorId: string | null;
+        donationId: string | null;
         channel: import(".prisma/client").$Enums.CommChannel;
         status: import(".prisma/client").$Enums.CommStatus;
         errorMessage: string | null;
-        donorId: string | null;
-        donationId: string | null;
         sentAt: Date | null;
         errorCode: string | null;
         provider: import(".prisma/client").$Enums.CommProvider;
@@ -24,9 +24,9 @@ export declare class CommunicationsController {
         templateName: string | null;
         templateKey: string | null;
         templateVariables: import("@prisma/client/runtime/library").JsonValue | null;
+        createdByUserId: string | null;
         deliveredAt: Date | null;
         readAt: Date | null;
-        createdByUserId: string | null;
     }>;
     sendByTemplateKey(body: {
         donorId: string;

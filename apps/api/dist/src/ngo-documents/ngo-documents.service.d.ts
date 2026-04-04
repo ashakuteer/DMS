@@ -188,8 +188,8 @@ export declare class NgoDocumentsService {
         };
     } & {
         id: string;
-        action: string;
         userId: string;
+        action: string;
         documentId: string;
         accessedAt: Date;
     })[]>;

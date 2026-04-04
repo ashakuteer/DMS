@@ -23,11 +23,11 @@ export declare class CommunicationsService {
         id: string;
         createdAt: Date;
         to: string;
+        donorId: string | null;
+        donationId: string | null;
         channel: import(".prisma/client").$Enums.CommChannel;
         status: import(".prisma/client").$Enums.CommStatus;
         errorMessage: string | null;
-        donorId: string | null;
-        donationId: string | null;
         sentAt: Date | null;
         errorCode: string | null;
         provider: import(".prisma/client").$Enums.CommProvider;
@@ -35,9 +35,9 @@ export declare class CommunicationsService {
         templateName: string | null;
         templateKey: string | null;
         templateVariables: import("@prisma/client/runtime/library").JsonValue | null;
+        createdByUserId: string | null;
         deliveredAt: Date | null;
         readAt: Date | null;
-        createdByUserId: string | null;
     }>;
     sendByTemplateKey(templateKey: WhatsAppTemplateKey, donorId: string, toE164: string, variables?: Record<string, string>, userId?: string, donationId?: string): Promise<{
         success: boolean;
@@ -77,11 +77,11 @@ export declare class CommunicationsService {
         id: string;
         createdAt: Date;
         to: string;
+        donorId: string | null;
+        donationId: string | null;
         channel: import(".prisma/client").$Enums.CommChannel;
         status: import(".prisma/client").$Enums.CommStatus;
         errorMessage: string | null;
-        donorId: string | null;
-        donationId: string | null;
         sentAt: Date | null;
         errorCode: string | null;
         provider: import(".prisma/client").$Enums.CommProvider;
@@ -89,8 +89,8 @@ export declare class CommunicationsService {
         templateName: string | null;
         templateKey: string | null;
         templateVariables: import("@prisma/client/runtime/library").JsonValue | null;
+        createdByUserId: string | null;
         deliveredAt: Date | null;
         readAt: Date | null;
-        createdByUserId: string | null;
     }>;
 }

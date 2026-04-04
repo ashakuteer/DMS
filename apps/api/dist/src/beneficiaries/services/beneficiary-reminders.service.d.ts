@@ -120,8 +120,8 @@ export declare class BeneficiaryRemindersService {
         currency: string;
         startDate: Date | null;
         endDate: Date | null;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
         donorId: string;
+        status: import(".prisma/client").$Enums.SponsorshipStatus;
         notes: string | null;
         beneficiaryId: string;
         sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;

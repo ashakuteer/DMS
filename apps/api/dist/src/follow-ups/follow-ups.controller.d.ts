@@ -27,8 +27,8 @@ export declare class FollowUpsController {
             createdAt: Date;
             updatedAt: Date;
             priority: import(".prisma/client").$Enums.FollowUpPriority;
-            status: import(".prisma/client").$Enums.FollowUpStatus;
             donorId: string;
+            status: import(".prisma/client").$Enums.FollowUpStatus;
             createdById: string;
             isDeleted: boolean;
             dueDate: Date;
@@ -74,8 +74,8 @@ export declare class FollowUpsController {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
         donorId: string;
+        status: import(".prisma/client").$Enums.FollowUpStatus;
         createdById: string;
         isDeleted: boolean;
         dueDate: Date;
@@ -108,8 +108,8 @@ export declare class FollowUpsController {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
         donorId: string;
+        status: import(".prisma/client").$Enums.FollowUpStatus;
         createdById: string;
         isDeleted: boolean;
         dueDate: Date;
@@ -142,8 +142,8 @@ export declare class FollowUpsController {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
         donorId: string;
+        status: import(".prisma/client").$Enums.FollowUpStatus;
         createdById: string;
         isDeleted: boolean;
         dueDate: Date;
@@ -176,8 +176,8 @@ export declare class FollowUpsController {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
         donorId: string;
+        status: import(".prisma/client").$Enums.FollowUpStatus;
         createdById: string;
         isDeleted: boolean;
         dueDate: Date;
@@ -210,8 +210,8 @@ export declare class FollowUpsController {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
         donorId: string;
+        status: import(".prisma/client").$Enums.FollowUpStatus;
         createdById: string;
         isDeleted: boolean;
         dueDate: Date;
@@ -225,8 +225,8 @@ export declare class FollowUpsController {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.FollowUpPriority;
-        status: import(".prisma/client").$Enums.FollowUpStatus;
         donorId: string;
+        status: import(".prisma/client").$Enums.FollowUpStatus;
         createdById: string;
         isDeleted: boolean;
         dueDate: Date;

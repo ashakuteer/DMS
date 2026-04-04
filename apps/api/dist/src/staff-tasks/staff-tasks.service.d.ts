@@ -39,8 +39,8 @@ export declare class StaffTasksService {
             createdAt: Date;
             updatedAt: Date;
             priority: import(".prisma/client").$Enums.TaskPriority;
-            status: import(".prisma/client").$Enums.TaskStatus;
             templateId: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
             description: string | null;
             createdById: string;
             deletedAt: Date | null;
@@ -93,8 +93,8 @@ export declare class StaffTasksService {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        status: import(".prisma/client").$Enums.TaskStatus;
         templateId: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
         description: string | null;
         createdById: string;
         deletedAt: Date | null;
@@ -155,8 +155,8 @@ export declare class StaffTasksService {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        status: import(".prisma/client").$Enums.TaskStatus;
         templateId: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
         description: string | null;
         createdById: string;
         deletedAt: Date | null;
@@ -217,8 +217,8 @@ export declare class StaffTasksService {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        status: import(".prisma/client").$Enums.TaskStatus;
         templateId: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
         description: string | null;
         createdById: string;
         deletedAt: Date | null;
@@ -250,8 +250,8 @@ export declare class StaffTasksService {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        status: import(".prisma/client").$Enums.TaskStatus;
         templateId: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
         description: string | null;
         createdById: string;
         deletedAt: Date | null;
@@ -299,12 +299,12 @@ export declare class StaffTasksService {
     }[]>;
     getStaffPerformance(userId: string, year?: number): Promise<{
         id: string;
-        createdAt: Date;
         userId: string;
+        createdAt: Date;
         updatedAt: Date;
+        year: number;
         month: number;
         score: number;
-        year: number;
         tasksAssigned: number;
         tasksCompleted: number;
         tasksOnTime: number;
@@ -314,12 +314,12 @@ export declare class StaffTasksService {
     }[]>;
     calculatePerformance(userId: string, month: number, year: number): Promise<{
         id: string;
-        createdAt: Date;
         userId: string;
+        createdAt: Date;
         updatedAt: Date;
+        year: number;
         month: number;
         score: number;
-        year: number;
         tasksAssigned: number;
         tasksCompleted: number;
         tasksOnTime: number;
@@ -349,8 +349,8 @@ export declare class StaffTasksService {
             createdAt: Date;
             updatedAt: Date;
             priority: import(".prisma/client").$Enums.TaskPriority;
-            status: import(".prisma/client").$Enums.TaskStatus;
             templateId: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
             description: string | null;
             createdById: string;
             deletedAt: Date | null;
@@ -398,8 +398,8 @@ export declare class StaffTasksService {
             createdAt: Date;
             updatedAt: Date;
             priority: import(".prisma/client").$Enums.TaskPriority;
-            status: import(".prisma/client").$Enums.TaskStatus;
             templateId: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
             description: string | null;
             createdById: string;
             deletedAt: Date | null;
@@ -447,8 +447,8 @@ export declare class StaffTasksService {
             createdAt: Date;
             updatedAt: Date;
             priority: import(".prisma/client").$Enums.TaskPriority;
-            status: import(".prisma/client").$Enums.TaskStatus;
             templateId: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
             description: string | null;
             createdById: string;
             deletedAt: Date | null;
@@ -496,8 +496,8 @@ export declare class StaffTasksService {
             createdAt: Date;
             updatedAt: Date;
             priority: import(".prisma/client").$Enums.TaskPriority;
-            status: import(".prisma/client").$Enums.TaskStatus;
             templateId: string | null;
+            status: import(".prisma/client").$Enums.TaskStatus;
             description: string | null;
             createdById: string;
             deletedAt: Date | null;
@@ -552,8 +552,8 @@ export declare class StaffTasksService {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.TaskPriority;
-        status: import(".prisma/client").$Enums.TaskStatus;
         templateId: string | null;
+        status: import(".prisma/client").$Enums.TaskStatus;
         description: string | null;
         createdById: string;
         deletedAt: Date | null;

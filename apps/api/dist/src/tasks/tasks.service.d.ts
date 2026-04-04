@@ -28,10 +28,10 @@ export declare class TasksService {
         };
         sourceOccasion: {
             id: string;
+            day: number;
             type: import(".prisma/client").$Enums.OccasionType;
             relatedPersonName: string;
             month: number;
-            day: number;
         };
         sourcePledge: {
             id: string;
@@ -58,9 +58,9 @@ export declare class TasksService {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.TaskPriority;
+        donorId: string | null;
         type: import(".prisma/client").$Enums.TaskType;
         status: import(".prisma/client").$Enums.TaskStatus;
-        donorId: string | null;
         description: string | null;
         title: string;
         dueDate: Date;
@@ -94,9 +94,9 @@ export declare class TasksService {
         createdAt: Date;
         updatedAt: Date;
         priority: import(".prisma/client").$Enums.TaskPriority;
+        donorId: string | null;
         type: import(".prisma/client").$Enums.TaskType;
         status: import(".prisma/client").$Enums.TaskStatus;
-        donorId: string | null;
         description: string | null;
         title: string;
         dueDate: Date;
@@ -117,6 +117,10 @@ export declare class TasksService {
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         createdAt: Date;
         subject: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
@@ -125,10 +129,6 @@ export declare class TasksService {
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        taskId: string | null;
         sentById: string | null;
     }>;
     getContactLogs(taskId: string): Promise<({
@@ -141,6 +141,10 @@ export declare class TasksService {
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         createdAt: Date;
         subject: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
@@ -149,10 +153,6 @@ export declare class TasksService {
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        taskId: string | null;
         sentById: string | null;
     })[]>;
     getStaffList(): Promise<{

@@ -266,20 +266,20 @@ export declare class DonorsController {
             createdAt: Date;
             updatedAt: Date;
             currency: string;
-            status: import(".prisma/client").$Enums.PledgeStatus;
             donorId: string;
+            status: import(".prisma/client").$Enums.PledgeStatus;
             createdById: string;
             quantity: string | null;
             isDeleted: boolean;
             deletedAt: Date | null;
             notes: string | null;
             amount: import("@prisma/client/runtime/library").Decimal | null;
-            fulfilledDonationId: string | null;
             pledgeType: import(".prisma/client").$Enums.PledgeType;
             promisedDate: Date | null;
             promisedMonth: number | null;
             promisedDay: number | null;
             expectedFulfillmentDate: Date;
+            fulfilledDonationId: string | null;
         }[];
         pan: string;
         createdById: string;
@@ -367,12 +367,12 @@ export declare class DonorsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            type: import(".prisma/client").$Enums.OccasionType;
+            day: number;
             donorId: string;
+            type: import(".prisma/client").$Enums.OccasionType;
             notes: string | null;
             relatedPersonName: string | null;
             month: number;
-            day: number;
         }[];
         sponsorships: {
             id: string;
@@ -382,8 +382,8 @@ export declare class DonorsController {
             currency: string;
             startDate: Date | null;
             endDate: Date | null;
-            status: import(".prisma/client").$Enums.SponsorshipStatus;
             donorId: string;
+            status: import(".prisma/client").$Enums.SponsorshipStatus;
             notes: string | null;
             beneficiaryId: string;
             sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
@@ -757,8 +757,8 @@ export declare class DonorsController {
         currency: string;
         startDate: Date | null;
         endDate: Date | null;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
         donorId: string;
+        status: import(".prisma/client").$Enums.SponsorshipStatus;
         notes: string | null;
         beneficiaryId: string;
         sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
