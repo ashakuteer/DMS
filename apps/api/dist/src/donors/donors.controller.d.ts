@@ -223,23 +223,6 @@ export declare class DonorsController {
             lastCampaignDate: Date | null;
             relationshipStrength: string | null;
         };
-        ngoProfile: {
-            phone: string | null;
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            website: string | null;
-            donorId: string;
-            officialEmail: string | null;
-            address: string | null;
-            notes: string | null;
-            areasOfInterest: string[];
-            ngoName: string | null;
-            contactPersonName: string | null;
-            contactPersonPhone: string | null;
-            contactPersonEmail: string | null;
-            otherAreaOfInterest: string | null;
-        };
         id: string;
         createdAt: Date;
         assignedToUserId: string;

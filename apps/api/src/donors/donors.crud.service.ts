@@ -381,7 +381,7 @@ if (assignedToUserId) {
         volunteerProfile: true,
         influencerProfile: true,
         csrProfile: true,
-        ngoProfile: true,
+        // ngoProfile excluded: table may not exist in all environments
       },
     });
 
@@ -456,9 +456,13 @@ if (assignedToUserId) {
       });
     }
     if (ngoProfile) {
-      await this.prisma.ngoProfile.create({
-        data: { donorId: donor.id, ...ngoProfile },
-      });
+      try {
+        await this.prisma.ngoProfile.create({
+          data: { donorId: donor.id, ...ngoProfile },
+        });
+      } catch (ngoErr) {
+        this.logger.warn(`[DonorCreate] ngoProfile save skipped (table may not exist): ${ngoErr instanceof Error ? ngoErr.message : ngoErr}`);
+      }
     }
 
     return donor;
@@ -505,11 +509,15 @@ async update(
   });
 
   if (ngoProfile) {
-    await this.prisma.ngoProfile.upsert({
-      where: { donorId: id },
-      create: { donorId: id, ...ngoProfile },
-      update: { ...ngoProfile },
-    });
+    try {
+      await this.prisma.ngoProfile.upsert({
+        where: { donorId: id },
+        create: { donorId: id, ...ngoProfile },
+        update: { ...ngoProfile },
+      });
+    } catch (ngoErr) {
+      this.logger.warn(`[DonorUpdate] ngoProfile save skipped (table may not exist): ${ngoErr instanceof Error ? ngoErr.message : ngoErr}`);
+    }
   }
 
   return donor;

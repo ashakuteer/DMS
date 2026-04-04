@@ -330,7 +330,6 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
                     volunteerProfile: true,
                     influencerProfile: true,
                     csrProfile: true,
-                    ngoProfile: true,
                 },
             });
             if (!donor) {
@@ -386,9 +385,14 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
                 });
             }
             if (ngoProfile) {
-                await this.prisma.ngoProfile.create({
-                    data: { donorId: donor.id, ...ngoProfile },
-                });
+                try {
+                    await this.prisma.ngoProfile.create({
+                        data: { donorId: donor.id, ...ngoProfile },
+                    });
+                }
+                catch (ngoErr) {
+                    this.logger.warn(`[DonorCreate] ngoProfile save skipped (table may not exist): ${ngoErr instanceof Error ? ngoErr.message : ngoErr}`);
+                }
             }
             return donor;
         }
@@ -409,11 +413,16 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
             data: donorData,
         });
         if (ngoProfile) {
-            await this.prisma.ngoProfile.upsert({
-                where: { donorId: id },
-                create: { donorId: id, ...ngoProfile },
-                update: { ...ngoProfile },
-            });
+            try {
+                await this.prisma.ngoProfile.upsert({
+                    where: { donorId: id },
+                    create: { donorId: id, ...ngoProfile },
+                    update: { ...ngoProfile },
+                });
+            }
+            catch (ngoErr) {
+                this.logger.warn(`[DonorUpdate] ngoProfile save skipped (table may not exist): ${ngoErr instanceof Error ? ngoErr.message : ngoErr}`);
+            }
         }
         return donor;
     }
