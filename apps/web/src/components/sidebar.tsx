@@ -23,7 +23,7 @@ import {
   Cake, Send, FileBarChart, ClipboardList, Building2, ArrowUpRight,
   FolderLock, Lock, Repeat, ListChecks, Phone, Clock, ChevronDown,
   ChevronRight, MessageSquarePlus, Banknote, CalendarOff, ClipboardCheck,
-  AlertTriangle, Trophy, Zap, TestTube2,
+  AlertTriangle, Trophy, Zap, TestTube2, UtensilsCrossed,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useState, useEffect } from "react";
@@ -73,6 +73,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Donors", tKey: "nav.donors", href: "/dashboard/donors", icon: Users, permissionModule: "donors" },
       { title: "Donations", tKey: "nav.donations", href: "/dashboard/donations", icon: IndianRupee, permissionModule: "donations" },
+      { title: "Meals", tKey: "nav.meals", href: "/dashboard/meals", icon: UtensilsCrossed, permissionModule: "donations" },
       { title: "Donor Actions", tKey: "nav.donor_actions", href: "/dashboard/donor-actions", icon: Zap, permissionModule: "donors" },
       { title: "Beneficiaries", tKey: "nav.beneficiaries", href: "/dashboard/beneficiaries", icon: HandHeart, permissionModule: "beneficiaries" },
       { title: "Campaigns", tKey: "nav.campaigns", href: "/dashboard/campaigns", icon: Target, permissionModule: "campaigns" },

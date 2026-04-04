@@ -1,0 +1,184 @@
+import {
+  IsString,
+  IsEnum,
+  IsBoolean,
+  IsOptional,
+  IsDateString,
+  IsArray,
+  IsNumber,
+  Min,
+  ArrayMinSize,
+} from "class-validator";
+import {
+  DonationHomeType,
+  MealSponsorshipType,
+  MealFoodType,
+  MealPaymentType,
+  MealOccasionType,
+  MealOccasionFor,
+} from "@prisma/client";
+
+export class CreateMealSponsorshipDto {
+  @IsString()
+  donorId: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsEnum(DonationHomeType, { each: true })
+  homes: DonationHomeType[];
+
+  @IsEnum(MealSponsorshipType)
+  sponsorshipType: MealSponsorshipType;
+
+  @IsBoolean()
+  breakfast: boolean;
+
+  @IsBoolean()
+  lunch: boolean;
+
+  @IsBoolean()
+  dinner: boolean;
+
+  @IsEnum(MealFoodType)
+  foodType: MealFoodType;
+
+  @IsOptional()
+  @IsString()
+  mealNotes?: string;
+
+  @IsDateString()
+  donationReceivedDate: string;
+
+  @IsDateString()
+  mealServiceDate: string;
+
+  @IsEnum(MealPaymentType)
+  paymentType: MealPaymentType;
+
+  @IsNumber()
+  @Min(0)
+  amount: number;
+
+  @IsOptional()
+  @IsEnum(MealOccasionType)
+  occasionType?: MealOccasionType;
+
+  @IsOptional()
+  @IsEnum(MealOccasionFor)
+  occasionFor?: MealOccasionFor;
+
+  @IsOptional()
+  @IsString()
+  occasionPersonName?: string;
+
+  @IsOptional()
+  @IsString()
+  occasionNotes?: string;
+
+  @IsOptional()
+  @IsString()
+  internalNotes?: string;
+}
+
+export class UpdateMealSponsorshipDto {
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsEnum(DonationHomeType, { each: true })
+  homes?: DonationHomeType[];
+
+  @IsOptional()
+  @IsEnum(MealSponsorshipType)
+  sponsorshipType?: MealSponsorshipType;
+
+  @IsOptional()
+  @IsBoolean()
+  breakfast?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  lunch?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  dinner?: boolean;
+
+  @IsOptional()
+  @IsEnum(MealFoodType)
+  foodType?: MealFoodType;
+
+  @IsOptional()
+  @IsString()
+  mealNotes?: string;
+
+  @IsOptional()
+  @IsDateString()
+  donationReceivedDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  mealServiceDate?: string;
+
+  @IsOptional()
+  @IsEnum(MealPaymentType)
+  paymentType?: MealPaymentType;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  amount?: number;
+
+  @IsOptional()
+  @IsEnum(MealOccasionType)
+  occasionType?: MealOccasionType;
+
+  @IsOptional()
+  @IsEnum(MealOccasionFor)
+  occasionFor?: MealOccasionFor;
+
+  @IsOptional()
+  @IsString()
+  occasionPersonName?: string;
+
+  @IsOptional()
+  @IsString()
+  occasionNotes?: string;
+
+  @IsOptional()
+  @IsString()
+  internalNotes?: string;
+}
+
+export class MealSponsorshipQueryDto {
+  @IsOptional()
+  @IsString()
+  mealServiceDate?: string;
+
+  @IsOptional()
+  @IsString()
+  mealServiceDateTo?: string;
+
+  @IsOptional()
+  @IsEnum(DonationHomeType)
+  home?: DonationHomeType;
+
+  @IsOptional()
+  @IsString()
+  donorId?: string;
+
+  @IsOptional()
+  @IsEnum(MealSponsorshipType)
+  sponsorshipType?: MealSponsorshipType;
+
+  @IsOptional()
+  @IsString()
+  slot?: "breakfast" | "lunch" | "dinner";
+
+  @IsOptional()
+  @IsString()
+  page?: string;
+
+  @IsOptional()
+  @IsString()
+  limit?: string;
+}

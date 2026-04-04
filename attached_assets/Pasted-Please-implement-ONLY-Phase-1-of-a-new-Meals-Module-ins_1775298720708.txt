@@ -1,0 +1,215 @@
+Please implement ONLY Phase 1 of a new Meals Module inside our existing NGO Donor Hub DMS. Do not do unrelated refactors. Do not build the restricted home portal yet. Production safety is the highest priority.
+
+CONTEXT
+We are an NGO with three homes:
+- GIRLS_HOME
+- BLIND_BOYS_HOME
+- OLD_AGE_HOME
+
+Many donors sponsor meals. Right now we manually call home incharges/cooks every day to inform them. We need an internal Meals module for Admin/Staff that records meal sponsorships properly and also reflects them in Donations and donor history.
+
+IMPORTANT PHASE 1 SCOPE
+Build only the internal Admin/Staff Meals module and link it safely to existing donor + donation flows.
+Do NOT build a public booking page.
+Do NOT build the read-only home incharge portal yet.
+Do NOT remove or break existing donation creation.
+
+GOAL
+Create a Meals module that supports:
+- one home / multiple homes / all homes
+- breakfast / lunch / dinner / entire day
+- veg / non-veg
+- donation date vs actual meal date
+- occasion tracking
+- advance vs full amount
+- linkage to donor
+- linkage to donation record
+- linkage to donor timeline/history
+
+1) NEW MODULE / MENU
+Add a new left sidebar item under CORE:
+- Meals
+
+Create a new Meals page for Admin/Staff only.
+
+2) MEALS DATA MODEL
+Design a safe schema/model for meal sponsorships. Additive changes only. No destructive migrations.
+
+Each meal sponsorship/booking must capture:
+
+A. Donor link
+- donorId (required)
+
+B. Homes covered
+Support either:
+- one home
+- multiple selected homes
+- all homes
+
+Use structured storage, not plain text if possible.
+
+Homes:
+- GIRLS_HOME
+- BLIND_BOYS_HOME
+- OLD_AGE_HOME
+
+C. Sponsorship scope
+- sponsorshipType:
+  - ENTIRE_DAY
+  - SELECTED_MEALS
+
+D. Meal slots
+If ENTIRE_DAY:
+- breakfast = true
+- lunch = true
+- dinner = true automatically
+
+If SELECTED_MEALS:
+allow choosing one or more of:
+- breakfast
+- lunch
+- dinner
+
+E. Food details
+- foodType:
+  - VEG
+  - NON_VEG
+- menu / mealNotes (optional text)
+
+F. Dates
+- donationReceivedDate (required)
+- mealServiceDate (required)
+
+These are different fields and must both be stored.
+
+G. Payment status
+- paymentType:
+  - ADVANCE
+  - FULL
+
+H. Amount
+- amount (required)
+
+I. Occasion details
+- occasionType:
+  - NONE
+  - BIRTHDAY
+  - WEDDING_ANNIVERSARY
+  - MEMORIAL
+  - OTHER
+- occasionFor:
+  - SELF
+  - OTHER
+- occasionPersonName (optional)
+- occasionNotes (optional)
+
+J. General notes
+- internalNotes (optional)
+
+K. Audit / status
+- createdBy
+- createdAt
+- updatedAt
+
+3) ADMIN / STAFF UI
+Create a Meals module page with:
+- a list/calendar-friendly structure for internal use
+- simple filters at minimum:
+  - mealServiceDate
+  - home
+  - meal slot
+  - booked by donor
+  - sponsorship type
+- a button:
+  - Add Meal Sponsorship
+
+The Add Meal Sponsorship form should include:
+- donor select
+- homes covered (multi-select + All Homes option)
+- sponsorship type (Entire Day / Selected Meals)
+- if Selected Meals, show Breakfast / Lunch / Dinner checkboxes
+- food type (Veg / Non-Veg)
+- menu / notes
+- donation received date
+- meal service date
+- payment type (Advance / Full)
+- amount
+- occasion type
+- occasion for (Self / Other)
+- occasion person name if Other
+- internal notes
+
+4) ALL HOMES / ENTIRE DAY UX
+Implement these UX behaviors:
+- If All Homes selected, auto-cover all 3 homes
+- If Entire Day selected, auto-select breakfast + lunch + dinner
+- If Selected Meals selected, show checkboxes for breakfast/lunch/dinner
+- Validate that at least one home is selected
+- Validate that at least one meal slot is selected
+
+5) DONATION LINKAGE (VERY IMPORTANT)
+Meals module must reflect in Donations.
+
+When a Meals Sponsorship is saved, do ONE of these in the safest way based on current codebase:
+- either automatically create a linked Donation record
+- or extend existing donation creation flow to create both records together
+
+Preferred approach:
+Automatically create a linked Donation record.
+
+The donation record should reflect:
+- donor
+- amount
+- donationReceivedDate
+- support/purpose = Meals
+- linked home(s)
+- notes referencing mealServiceDate and meal slots
+
+IMPORTANT:
+- Do NOT break existing donation logic
+- Do NOT duplicate the same financial record multiple times
+- One meals sponsorship should map to one donation record unless there is an existing stronger pattern in the system
+
+6) DONOR PROFILE / TIMELINE LINKAGE
+Meals sponsorship must also reflect in donor-related history.
+
+At minimum:
+- show it in donor timeline/history as a meal sponsorship event
+- include meal date, home(s), meal slots, and amount
+- if your system has a donor donations tab, ensure the linked donation appears there naturally
+
+7) NO HOME PORTAL YET
+Do NOT build the read-only home-incharge portal in this step.
+But keep future extensibility in mind, because later we will create a restricted role that can only see their own home meals.
+
+8) SECURITY / ACCESS
+For this phase:
+- only Admin/Staff should access Meals module
+- do not expose it publicly
+- do not expose donor financial details outside existing authorized users
+
+9) PRODUCTION SAFETY
+- No destructive schema changes
+- No removal of existing donation fields/pages
+- No breaking donor profile
+- No breaking existing reports
+- Use additive Prisma/schema updates only
+- If migration needed, do it safely and explain it clearly
+- Keep backward compatibility
+
+10) OUTPUT I WANT AFTER IMPLEMENTATION
+After coding, tell me clearly:
+
+A. What files changed
+B. What schema/model/table(s) were added or changed
+C. Whether migration/db push is required
+D. How meals sponsorship links to donation record
+E. How it reflects in donor timeline/history
+F. What is included now in Phase 1
+G. What is intentionally postponed to Phase 2 (restricted home portal)
+
+IMPORTANT FINAL REMINDER
+Implement ONLY Phase 1.
+Do not start the home-incharge portal.
+Do not add extra unrelated features.
+Make the smallest safe production-grade implementation.

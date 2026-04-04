@@ -45,6 +45,7 @@ let DonorsTimelineService = class DonorsTimelineService {
             "PLEDGE",
             "FOLLOW_UP",
             "SPONSORSHIP",
+            "MEAL_SPONSORSHIP",
         ];
         const activeTypes = types && types.length > 0 ? types : allTypes;
         const items = [];
@@ -244,6 +245,59 @@ let DonorsTimelineService = class DonorsTimelineService {
                         frequency: s.frequency,
                         beneficiaryName: s.beneficiary?.fullName,
                         isActive: s.isActive,
+                    },
+                });
+            }
+        }
+        if (activeTypes.includes("MEAL_SPONSORSHIP")) {
+            const meals = await this.prisma.mealSponsorship.findMany({
+                where: {
+                    donorId,
+                    ...(hasDateFilter ? { mealServiceDate: dateFilter } : {}),
+                },
+                orderBy: { mealServiceDate: "desc" },
+                include: {
+                    createdBy: { select: { name: true } },
+                },
+            });
+            const homeLabels = {
+                GIRLS_HOME: "Girls Home",
+                BLIND_BOYS_HOME: "Blind Boys Home",
+                OLD_AGE_HOME: "Old Age Home",
+                GENERAL: "General",
+            };
+            for (const m of meals) {
+                const slots = [];
+                if (m.breakfast)
+                    slots.push("Breakfast");
+                if (m.lunch)
+                    slots.push("Lunch");
+                if (m.dinner)
+                    slots.push("Dinner");
+                const slotsDesc = slots.join(" + ") || "N/A";
+                const homesDesc = m.homes.map((h) => homeLabels[h] ?? h).join(", ");
+                items.push({
+                    id: `meal-${m.id}`,
+                    type: "MEAL_SPONSORSHIP",
+                    date: m.mealServiceDate.toISOString(),
+                    title: `Meal Sponsorship — ${slotsDesc}`,
+                    description: `INR ${Number(m.amount).toLocaleString()} | Homes: ${homesDesc} | ${m.foodType} | Received: ${m.donationReceivedDate.toLocaleDateString("en-IN")}`,
+                    amount: Number(m.amount),
+                    currency: "INR",
+                    status: m.paymentType,
+                    metadata: {
+                        homes: m.homes,
+                        sponsorshipType: m.sponsorshipType,
+                        breakfast: m.breakfast,
+                        lunch: m.lunch,
+                        dinner: m.dinner,
+                        foodType: m.foodType,
+                        mealServiceDate: m.mealServiceDate.toISOString(),
+                        donationReceivedDate: m.donationReceivedDate.toISOString(),
+                        paymentType: m.paymentType,
+                        occasionType: m.occasionType,
+                        createdBy: m.createdBy?.name,
+                        donationId: m.donationId,
                     },
                 });
             }

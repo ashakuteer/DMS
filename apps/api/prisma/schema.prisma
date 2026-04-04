@@ -66,6 +66,7 @@ model User {
   centralTasks               Task[]                   @relation("TaskAssignedUser")
   performanceSnapshots       StaffPerformance[]       @relation("StaffPerformanceUser")
   communicationMessages      CommunicationMessage[]   @relation("CommunicationMessageCreatedBy")
+  createdMealSponsorships    MealSponsorship[]        @relation("MealCreatedBy")
 
   @@map("users")
 }
@@ -181,6 +182,7 @@ model Donor {
   linkedTasks            StaffTask[]           @relation("TaskLinkedDonor")
   communicationMessages  CommunicationMessage[] @relation("CommunicationMessageDonor")
   tasks                  Task[]                @relation("TaskDonor")
+  mealSponsorships       MealSponsorship[]
 
   individualProfile      IndividualDonorProfile?
   volunteerProfile       VolunteerProfile?
@@ -291,6 +293,7 @@ scheduleType      String?
   reminders             Reminder[]
   fulfilledPledge       Pledge?            @relation("PledgeFulfilledByDonation")
   sponsorshipPayments   SponsorshipPayment[]
+  mealSponsorship       MealSponsorship?
 
   @@index([donorId])
   @@index([donationDate])
@@ -1138,6 +1141,7 @@ enum DonationPurpose {
   EMERGENCY
   MEMORIAL
   CELEBRATION
+  MEAL_DONATION
 }
 
 enum SourceOfDonor {
@@ -2470,4 +2474,68 @@ model NgoProfile {
   donor                Donor     @relation(fields: [donorId], references: [id], onDelete: Cascade)
 
   @@map("ngo_profiles")
+}
+
+// ─── Meals Module ─────────────────────────────────────────────────────────────
+
+enum MealSponsorshipType {
+  ENTIRE_DAY
+  SELECTED_MEALS
+}
+
+enum MealFoodType {
+  VEG
+  NON_VEG
+}
+
+enum MealPaymentType {
+  ADVANCE
+  FULL
+}
+
+enum MealOccasionType {
+  NONE
+  BIRTHDAY
+  WEDDING_ANNIVERSARY
+  MEMORIAL
+  OTHER
+}
+
+enum MealOccasionFor {
+  SELF
+  OTHER
+}
+
+model MealSponsorship {
+  id                   String              @id @default(uuid())
+  donorId              String
+  homes                DonationHomeType[]
+  sponsorshipType      MealSponsorshipType
+  breakfast            Boolean             @default(false)
+  lunch                Boolean             @default(false)
+  dinner               Boolean             @default(false)
+  foodType             MealFoodType
+  mealNotes            String?
+  donationReceivedDate DateTime
+  mealServiceDate      DateTime
+  paymentType          MealPaymentType
+  amount               Decimal             @db.Decimal(15, 2)
+  occasionType         MealOccasionType    @default(NONE)
+  occasionFor          MealOccasionFor?
+  occasionPersonName   String?
+  occasionNotes        String?
+  internalNotes        String?
+  donationId           String?             @unique
+  createdById          String
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  donor     Donor     @relation(fields: [donorId], references: [id])
+  donation  Donation? @relation(fields: [donationId], references: [id])
+  createdBy User      @relation("MealCreatedBy", fields: [createdById], references: [id])
+
+  @@index([donorId])
+  @@index([mealServiceDate])
+  @@index([donationReceivedDate])
+  @@map("meal_sponsorships")
 }

@@ -1,5 +1,36 @@
 # NGO Donor Management System
 
+## Recent Changes (Meals Module Phase 1 — Apr 2026)
+
+### Schema (Prisma) — Additive Only
+- Added `MEAL_DONATION` value to existing `DonationPurpose` enum
+- Added 5 new enums: `MealSponsorshipType` (ENTIRE_DAY/SELECTED_MEALS), `MealFoodType` (VEG/NON_VEG), `MealPaymentType` (ADVANCE/FULL), `MealOccasionType` (NONE/BIRTHDAY/WEDDING_ANNIVERSARY/MEMORIAL/OTHER), `MealOccasionFor` (SELF/OTHER)
+- New `MealSponsorship` model (`meal_sponsorships` table) with donor link, homes array, meal slots, food type, dates, payment, occasion, donation link, audit fields
+- Added `mealSponsorships MealSponsorship[]` reverse relation to `Donor` model
+- Added `mealSponsorship MealSponsorship?` reverse relation to `Donation` model
+- Added `createdMealSponsorships MealSponsorship[] @relation("MealCreatedBy")` to `User` model
+- Migration applied via `prisma db push` (non-destructive)
+
+### Backend (`apps/api/src/meals/`)
+- **meals.module.ts**: NestJS module; imports PrismaModule
+- **meals.controller.ts**: REST endpoints (GET /api/meals, POST /api/meals, GET /api/meals/:id, PATCH /api/meals/:id, DELETE /api/meals/:id) guarded by JwtAuthGuard + RolesGuard; FOUNDER/ADMIN/STAFF can read/create/update; FOUNDER/ADMIN only can delete
+- **meals.service.ts**: create() auto-creates linked Donation record (donationPurpose=MEAL_DONATION) in a Prisma transaction; findAll() with filters (date range, home, slot, donor, type); full CRUD
+- **app.module.ts**: MealsModule imported
+- **donors.timeline.service.ts**: Added MEAL_SPONSORSHIP type to allTypes array and new query block that fetches mealSponsorships and appends them to the donor timeline
+
+### Frontend (`apps/web/`)
+- **sidebar.tsx**: Added "Meals" nav item (UtensilsCrossed icon) to Core group, pointing to `/dashboard/meals`, `permissionModule: "donations"`
+- **dashboard/meals/page.tsx**: Full-featured meals management page with:
+  - Filter bar: meal date range, home, slot, sponsorship type
+  - Responsive table with all fields, color-coded badges for homes/slots/food type, pagination
+  - "Add Meal Sponsorship" dialog with complete form: donor search, homes multi-select (with All Homes shortcut), sponsorship type (Entire Day auto-selects all slots), food type, menu notes, dates, payment type, amount, occasion section (conditional fields), internal notes
+  - Delete confirmation dialog
+
+### How It Links
+- Creating a meal sponsorship → transaction creates Donation (purpose=MEAL_DONATION) + MealSponsorship linked via donationId
+- Donor timeline includes MEAL_SPONSORSHIP entries (meal date, homes, slots, amount)
+- Linked donation appears naturally in donor's donations list/history
+
 ## Recent Changes (Donor Action Engine — Mar 2026)
 
 ### Schema (Prisma)

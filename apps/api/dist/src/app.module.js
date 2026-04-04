@@ -53,6 +53,7 @@ const staff_leaves_module_1 = require("./staff-leaves/staff-leaves.module");
 const staff_attendance_module_1 = require("./staff-attendance/staff-attendance.module");
 const task_templates_module_1 = require("./task-templates/task-templates.module");
 const tasks_module_1 = require("./tasks/tasks.module");
+const meals_module_1 = require("./meals/meals.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -104,6 +105,7 @@ exports.AppModule = AppModule = __decorate([
             staff_attendance_module_1.StaffAttendanceModule,
             task_templates_module_1.TaskTemplatesModule,
             tasks_module_1.TasksModule,
+            meals_module_1.MealsModule,
         ],
     })
 ], AppModule);
