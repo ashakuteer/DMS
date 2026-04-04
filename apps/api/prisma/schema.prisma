@@ -152,6 +152,10 @@ model Donor {
   healthStatus       HealthStatus           @default(GREEN)
   lastHealthCheck    DateTime?
 
+  // Communication channel status fields
+  twilioStatus        TwilioStatus          @default(UNKNOWN)
+  googleReviewStatus  GoogleReviewStatus    @default(UNKNOWN)
+
   // ✅ One owner (staff user) for follow-ups
   assignedToUserId   String?
   assignedToUser     User?                  @relation("DonorAssignedToUser", fields: [assignedToUserId], references: [id], onDelete: SetNull)
@@ -333,9 +337,14 @@ model Pledge {
   deletedAt                 DateTime?
   createdAt                 DateTime     @default(now())
   updatedAt                 DateTime     @updatedAt
+
+  // Auto-link to a MealSponsorship when created from a meal promise
+  mealSponsorshipId         String?      @unique
+
   createdBy                 User         @relation(fields: [createdById], references: [id])
   donor                     Donor        @relation(fields: [donorId], references: [id])
   fulfilledDonation         Donation?    @relation("PledgeFulfilledByDonation", fields: [fulfilledDonationId], references: [id])
+  mealSponsorship           MealSponsorship? @relation("MealLinkedPledge", fields: [mealSponsorshipId], references: [id], onDelete: SetNull)
   reminderTasks             ReminderTask[] @relation("ReminderTaskSourcePledge")
   actionTasks               Task[]       @relation("TaskSourcePledge")
 
@@ -2565,10 +2574,11 @@ model MealSponsorship {
   extraItemNotes            String?
   extraItemEstimatedValue   Decimal?            @db.Decimal(15, 2)
 
-  donor       Donor            @relation(fields: [donorId], references: [id])
-  donation    Donation?        @relation(fields: [donationId], references: [id])
-  createdBy   User             @relation("MealCreatedBy", fields: [createdById], references: [id])
-  visitRecord MealVisitRecord?
+  donor        Donor            @relation(fields: [donorId], references: [id])
+  donation     Donation?        @relation(fields: [donationId], references: [id])
+  createdBy    User             @relation("MealCreatedBy", fields: [createdById], references: [id])
+  visitRecord  MealVisitRecord?
+  linkedPledge Pledge?          @relation("MealLinkedPledge")
 
   @@index([donorId])
   @@index([mealServiceDate])
@@ -2590,4 +2600,16 @@ model MealVisitRecord {
 
   @@index([donorId])
   @@map("meal_visit_records")
+}
+
+enum TwilioStatus {
+  UNKNOWN
+  ACTIVE
+  NOT_ACTIVE
+}
+
+enum GoogleReviewStatus {
+  UNKNOWN
+  GIVEN
+  NOT_GIVEN
 }

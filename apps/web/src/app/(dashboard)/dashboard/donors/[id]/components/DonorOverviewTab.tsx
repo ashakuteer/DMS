@@ -1,14 +1,18 @@
 "use client";
 
-import { Building, Lock, MapPin, MessageSquare, Phone, Star, User, Activity, TrendingUp, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Building, Lock, MapPin, MessageSquare, Phone, Star, User, Activity, TrendingUp, Loader2, Wifi, WifiOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from "react-i18next";
 import type { Donor } from "../types";
 import { formatDate, getDonorLoyaltyTier } from "../utils";
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { fetchWithAuth } from "@/lib/auth";
+import { useToast } from "@/hooks/use-toast";
 
 interface DonorOverviewTabProps {
   donor: Donor;
@@ -63,6 +67,42 @@ export default function DonorOverviewTab({
   isDataMasked,
 }: DonorOverviewTabProps) {
   const { t } = useTranslation();
+  const { toast } = useToast();
+
+  // Local optimistic state for inline-editable status fields
+  const [twilioStatus, setTwilioStatus] = useState<string>(
+    donor.twilioStatus ?? "UNKNOWN",
+  );
+  const [googleReviewStatus, setGoogleReviewStatus] = useState<string>(
+    donor.googleReviewStatus ?? "UNKNOWN",
+  );
+  const [savingTwilio, setSavingTwilio] = useState(false);
+  const [savingGoogle, setSavingGoogle] = useState(false);
+
+  async function handleStatusChange(
+    field: "twilioStatus" | "googleReviewStatus",
+    value: string,
+    setter: (v: string) => void,
+    prevValue: string,
+    setSaving: (v: boolean) => void,
+  ) {
+    setter(value);
+    setSaving(true);
+    try {
+      const res = await fetchWithAuth(`/api/donors/${donor.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ [field]: value }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+      toast({ title: "Saved", description: "Status updated successfully." });
+    } catch {
+      setter(prevValue); // revert on failure
+      toast({ title: "Error", description: "Could not save status.", variant: "destructive" });
+    } finally {
+      setSaving(false);
+    }
+  }
 
   const { data: healthScore, isLoading: healthLoading } =
     useQuery<HealthScoreData>({
@@ -505,6 +545,151 @@ export default function DonorOverviewTab({
           </CardContent>
         </Card>
       </div>
+
+      {/* ── Outreach Status Card ── */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Wifi className="h-5 w-5" />
+            Outreach Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Twilio / WhatsApp Status */}
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium">Twilio / WhatsApp Status</p>
+              <p className="text-xs text-muted-foreground">
+                Whether this donor's number is reachable via Twilio
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {savingTwilio && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+              <Select
+                value={twilioStatus}
+                onValueChange={(val) =>
+                  handleStatusChange(
+                    "twilioStatus",
+                    val,
+                    setTwilioStatus,
+                    twilioStatus,
+                    setSavingTwilio,
+                  )
+                }
+                disabled={savingTwilio}
+              >
+                <SelectTrigger
+                  className="w-36 h-8 text-xs"
+                  data-testid="select-twilio-status"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UNKNOWN">
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-2 h-2 rounded-full bg-gray-400" />
+                      Unknown
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="ACTIVE">
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+                      Active
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="NOT_ACTIVE">
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-2 h-2 rounded-full bg-red-500" />
+                      Not Active
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <Badge
+                variant="outline"
+                className={`text-xs shrink-0 ${
+                  twilioStatus === "ACTIVE"
+                    ? "border-green-400 text-green-700 bg-green-50 dark:bg-green-950 dark:text-green-300"
+                    : twilioStatus === "NOT_ACTIVE"
+                    ? "border-red-400 text-red-700 bg-red-50 dark:bg-red-950 dark:text-red-300"
+                    : "border-gray-300 text-gray-500"
+                }`}
+                data-testid="badge-twilio-status"
+              >
+                {twilioStatus === "ACTIVE" ? "Active" : twilioStatus === "NOT_ACTIVE" ? "Not Active" : "Unknown"}
+              </Badge>
+            </div>
+          </div>
+
+          <div className="border-t" />
+
+          {/* Google Review Status */}
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium">Google Review Status</p>
+              <p className="text-xs text-muted-foreground">
+                Whether this donor has submitted a Google review
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {savingGoogle && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+              <Select
+                value={googleReviewStatus}
+                onValueChange={(val) =>
+                  handleStatusChange(
+                    "googleReviewStatus",
+                    val,
+                    setGoogleReviewStatus,
+                    googleReviewStatus,
+                    setSavingGoogle,
+                  )
+                }
+                disabled={savingGoogle}
+              >
+                <SelectTrigger
+                  className="w-36 h-8 text-xs"
+                  data-testid="select-google-review-status"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="UNKNOWN">
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-2 h-2 rounded-full bg-gray-400" />
+                      Unknown
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="GIVEN">
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-2 h-2 rounded-full bg-green-500" />
+                      Given
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="NOT_GIVEN">
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block w-2 h-2 rounded-full bg-yellow-500" />
+                      Not Given
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <Badge
+                variant="outline"
+                className={`text-xs shrink-0 ${
+                  googleReviewStatus === "GIVEN"
+                    ? "border-green-400 text-green-700 bg-green-50 dark:bg-green-950 dark:text-green-300"
+                    : googleReviewStatus === "NOT_GIVEN"
+                    ? "border-yellow-400 text-yellow-700 bg-yellow-50 dark:bg-yellow-950 dark:text-yellow-300"
+                    : "border-gray-300 text-gray-500"
+                }`}
+                data-testid="badge-google-review-status"
+              >
+                {googleReviewStatus === "GIVEN" ? "Given" : googleReviewStatus === "NOT_GIVEN" ? "Not Given" : "Unknown"}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

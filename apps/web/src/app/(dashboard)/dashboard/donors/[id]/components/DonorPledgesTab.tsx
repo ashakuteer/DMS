@@ -17,6 +17,7 @@ import {
   Copy,
   Trash2,
   X,
+  Utensils,
 } from "lucide-react";
 import type { Pledge, PledgeFormData } from "../types";
 import { formatCurrency, formatDate, getPledgeStatusColor, getPledgeTypeLabel } from "../utils";
@@ -137,6 +138,17 @@ export default function DonorPledgesTab({
                       >
                         {pledge.status}
                       </Badge>
+
+                      {pledge.mealSponsorshipId && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs border-orange-300 text-orange-700 bg-orange-50 dark:bg-orange-950 dark:text-orange-300 gap-1"
+                          data-testid={`badge-meal-promise-${pledge.id}`}
+                        >
+                          <Utensils className="h-3 w-3" />
+                          From Meal Promise
+                        </Badge>
+                      )}
                     </div>
 
                     <p className="text-sm text-muted-foreground">

@@ -81,6 +81,8 @@ export declare class DonorsExportService {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     })[]>;
     exportMasterDonorExcel(user: UserContext, filters?: {
         home?: string;

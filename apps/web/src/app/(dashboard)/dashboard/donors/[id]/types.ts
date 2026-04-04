@@ -41,6 +41,8 @@ export interface Donor {
   updatedAt: string;
   healthScore?: number;
   healthStatus?: "GREEN" | "YELLOW" | "RED";
+  twilioStatus?: "UNKNOWN" | "ACTIVE" | "NOT_ACTIVE";
+  googleReviewStatus?: "UNKNOWN" | "GIVEN" | "NOT_GIVEN";
   assignedTo?: {
     id: string;
     name: string;
@@ -99,6 +101,7 @@ export interface Pledge {
   status: string;
   notes?: string;
   createdAt: string;
+  mealSponsorshipId?: string | null;
   createdBy?: {
     id: string;
     name: string;

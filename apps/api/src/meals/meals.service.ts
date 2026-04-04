@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { DonationHomeType, DonationType, DonationPurpose, MealOccasionType, MealPaymentStatus } from "@prisma/client";
+import { DonationHomeType, DonationType, DonationPurpose, MealOccasionType, MealPaymentStatus, PledgeStatus, PledgeType } from "@prisma/client";
 import {
   CreateMealSponsorshipDto,
   UpdateMealSponsorshipDto,
@@ -431,6 +431,42 @@ export class MealsService {
       } else if (dto.donorVisited === false) {
         await tx.mealVisitRecord.deleteMany({ where: { mealSponsorshipId: id } });
         this.logger.log(`Visit record removed for meal=${id} (donorVisited set to false)`);
+      }
+
+      // ── Meal Promise → auto-pledge (duplicate-safe via @unique on mealSponsorshipId) ──
+      const promiseMade = dto.promiseMade ?? meal.promiseMade;
+      const promiseNotes = dto.promiseNotes ?? meal.promiseNotes ?? "";
+      if (promiseMade === true && promiseNotes.trim().length > 0) {
+        // Expected 30 days after the meal service date
+        const expectedFulfillmentDate = new Date(meal.mealServiceDate);
+        expectedFulfillmentDate.setDate(expectedFulfillmentDate.getDate() + 30);
+
+        await tx.pledge.upsert({
+          where: { mealSponsorshipId: id },
+          create: {
+            donorId: meal.donorId,
+            pledgeType: PledgeType.MEAL_SPONSOR,
+            mealSponsorshipId: id,
+            notes: promiseNotes.trim(),
+            expectedFulfillmentDate,
+            status: PledgeStatus.PENDING,
+            createdById: updatedById,
+          },
+          update: {
+            notes: promiseNotes.trim(),
+            status: PledgeStatus.PENDING, // restore if it was previously cancelled
+            deletedAt: null,
+            isDeleted: false,
+          },
+        });
+        this.logger.log(`Pledge upserted for meal promise: meal=${id} donor=${meal.donorId}`);
+      } else if (dto.promiseMade === false) {
+        // Soft-cancel only the auto-linked pledge (manual pledges unaffected)
+        await tx.pledge.updateMany({
+          where: { mealSponsorshipId: id, isDeleted: false },
+          data: { status: PledgeStatus.CANCELLED, isDeleted: true, deletedAt: new Date() },
+        });
+        this.logger.log(`Auto-pledge soft-cancelled for meal=${id} (promiseMade unchecked)`);
       }
 
       return [updatedMeal];

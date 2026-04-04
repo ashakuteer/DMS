@@ -50,6 +50,8 @@ export declare class DonorsController {
             primaryRole: import(".prisma/client").$Enums.PersonRole;
             primaryHomeInterest: string;
             donorSince: Date;
+            twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+            googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
             assignedToUser: {
                 email: string;
                 name: string;
@@ -156,6 +158,8 @@ export declare class DonorsController {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     })[]>;
     exportMasterDonorExcel(user: UserContext, home?: string, donorType?: string, activity?: string, req?: Request, res?: Response): Promise<void>;
     findDuplicates(): Promise<void>;
@@ -280,6 +284,7 @@ export declare class DonorsController {
             promisedDay: number | null;
             expectedFulfillmentDate: Date;
             fulfilledDonationId: string | null;
+            mealSponsorshipId: string | null;
         }[];
         pan: string;
         createdById: string;
@@ -345,6 +350,8 @@ export declare class DonorsController {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
         assignedToUser: {
             email: string;
             name: string;
@@ -498,6 +505,8 @@ export declare class DonorsController {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
     update(user: UserContext, id: string, data: Record<string, unknown>, req: Request): Promise<{
         id: string;
@@ -567,6 +576,8 @@ export declare class DonorsController {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
     remove(user: UserContext, id: string, req: Request, reason?: string): Promise<{
         id: string;
@@ -636,6 +647,8 @@ export declare class DonorsController {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
     restore(user: UserContext, id: string): Promise<{
         id: string;
@@ -705,6 +718,8 @@ export declare class DonorsController {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
     requestFullAccess(user: UserContext, id: string, reason?: string, req?: Request): Promise<{
         success: boolean;
@@ -854,6 +869,8 @@ export declare class DonorsController {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
     assignDonor(id: string, body: {
         assignedToUserId: string | null;
@@ -925,6 +942,8 @@ export declare class DonorsController {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
     getHealthScore(id: string): Promise<import("./donor-fundraising.service").HealthScoreResult>;
     getPrediction(id: string): Promise<import("./donor-fundraising.service").PredictionResult>;

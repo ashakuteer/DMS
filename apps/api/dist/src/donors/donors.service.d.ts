@@ -55,6 +55,8 @@ export declare class DonorsService {
             primaryRole: import(".prisma/client").$Enums.PersonRole;
             primaryHomeInterest: string;
             donorSince: Date;
+            twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+            googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
             assignedToUser: {
                 email: string;
                 name: string;
@@ -158,6 +160,7 @@ export declare class DonorsService {
             promisedDay: number | null;
             expectedFulfillmentDate: Date;
             fulfilledDonationId: string | null;
+            mealSponsorshipId: string | null;
         }[];
         pan: string;
         createdById: string;
@@ -223,6 +226,8 @@ export declare class DonorsService {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
         assignedToUser: {
             email: string;
             name: string;
@@ -380,6 +385,8 @@ export declare class DonorsService {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
     update(user: UserContext, id: string, data: any, ipAddress?: string, userAgent?: string): Promise<{
         id: string;
@@ -449,6 +456,8 @@ export declare class DonorsService {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
     softDelete(user: UserContext, id: string, deleteReason?: string, ipAddress?: string, userAgent?: string): Promise<{
         id: string;
@@ -518,6 +527,8 @@ export declare class DonorsService {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
     restore(user: UserContext, id: string): Promise<{
         id: string;
@@ -587,6 +598,8 @@ export declare class DonorsService {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
     findArchived(user: UserContext, search?: string, page?: number, limit?: number): Promise<{
         data: {
@@ -675,6 +688,8 @@ export declare class DonorsService {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
     bulkReassignDonors(fromUserId: string, toUserId: string): Promise<{
         count: number;
@@ -801,6 +816,8 @@ export declare class DonorsService {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     })[]>;
     exportMasterDonorExcel(user: UserContext, filters?: {
         home?: string;
@@ -892,5 +909,7 @@ export declare class DonorsService {
         healthScore: number;
         healthStatus: import(".prisma/client").$Enums.HealthStatus;
         lastHealthCheck: Date | null;
+        twilioStatus: import(".prisma/client").$Enums.TwilioStatus;
+        googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
     }>;
 }

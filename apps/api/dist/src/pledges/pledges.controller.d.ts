@@ -45,6 +45,7 @@ export declare class PledgesController {
             promisedDay: number | null;
             expectedFulfillmentDate: Date;
             fulfilledDonationId: string | null;
+            mealSponsorshipId: string | null;
         }[];
         total: number;
         page: number;
@@ -127,6 +128,7 @@ export declare class PledgesController {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     getWhatsAppText(user: UserContext, id: string): Promise<{
         text: string;
@@ -157,6 +159,7 @@ export declare class PledgesController {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     update(user: UserContext, id: string, data: Record<string, unknown>, req: Request): Promise<{
         pledgeTypeLabel: string;
@@ -184,6 +187,7 @@ export declare class PledgesController {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     markFulfilled(user: UserContext, id: string, body: FulfillPledgeDto, req: Request): Promise<{
         pledgeTypeLabel: string;
@@ -250,6 +254,7 @@ export declare class PledgesController {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     postpone(user: UserContext, id: string, body: {
         newDate: string;
@@ -280,6 +285,7 @@ export declare class PledgesController {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     cancel(user: UserContext, id: string, body: {
         reason?: string;
@@ -309,6 +315,7 @@ export declare class PledgesController {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     sendReminderEmail(user: UserContext, id: string): Promise<{
         success: boolean;

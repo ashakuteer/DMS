@@ -75,6 +75,7 @@ export declare class PledgesService {
             promisedDay: number | null;
             expectedFulfillmentDate: Date;
             fulfilledDonationId: string | null;
+            mealSponsorshipId: string | null;
         }[];
         total: number;
         page: number;
@@ -148,6 +149,7 @@ export declare class PledgesService {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     create(user: UserContext, data: any, ipAddress: string, userAgent: string): Promise<{
         pledgeTypeLabel: string;
@@ -175,6 +177,7 @@ export declare class PledgesService {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     update(user: UserContext, id: string, data: any, ipAddress: string, userAgent: string): Promise<{
         pledgeTypeLabel: string;
@@ -202,6 +205,7 @@ export declare class PledgesService {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     markFulfilled(user: UserContext, id: string, dto?: FulfillPledgeDto, ipAddress?: string, userAgent?: string): Promise<{
         pledgeTypeLabel: string;
@@ -268,6 +272,7 @@ export declare class PledgesService {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     postpone(user: UserContext, id: string, newDate: string, notes?: string, ipAddress?: string, userAgent?: string): Promise<{
         pledgeTypeLabel: string;
@@ -295,6 +300,7 @@ export declare class PledgesService {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     cancel(user: UserContext, id: string, reason?: string, ipAddress?: string, userAgent?: string): Promise<{
         pledgeTypeLabel: string;
@@ -322,6 +328,7 @@ export declare class PledgesService {
         promisedDay: number | null;
         expectedFulfillmentDate: Date;
         fulfilledDonationId: string | null;
+        mealSponsorshipId: string | null;
     }>;
     delete(user: UserContext, id: string, ipAddress: string, userAgent: string): Promise<{
         success: boolean;
