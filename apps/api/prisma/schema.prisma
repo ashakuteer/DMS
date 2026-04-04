@@ -183,6 +183,7 @@ model Donor {
   communicationMessages  CommunicationMessage[] @relation("CommunicationMessageDonor")
   tasks                  Task[]                @relation("TaskDonor")
   mealSponsorships       MealSponsorship[]
+  mealVisitRecords       MealVisitRecord[]
 
   individualProfile      IndividualDonorProfile?
   volunteerProfile       VolunteerProfile?
@@ -2547,12 +2548,46 @@ model MealSponsorship {
   createdAt            DateTime            @default(now())
   updatedAt            DateTime            @updatedAt
 
-  donor     Donor     @relation(fields: [donorId], references: [id])
-  donation  Donation? @relation(fields: [donationId], references: [id])
-  createdBy User      @relation("MealCreatedBy", fields: [createdById], references: [id])
+  // ── Phase 3A — Post-Meal Completion Fields ────────────────────────────────
+  mealCompleted             Boolean?
+  mealCompletedAt           DateTime?
+  donorVisited              Boolean?
+  donorVisitNotes           String?
+  balancePaidAfterMeal      Boolean?
+  postMealAmountReceived    Decimal?            @db.Decimal(15, 2)
+  promiseMade               Boolean?
+  promiseNotes              String?
+  thankYouSent              Boolean?
+  reviewRequested           Boolean?
+  askedToSendHi             Boolean?
+  extraItemsGiven           Boolean?
+  extraItemTypes            String[]            @default([])
+  extraItemNotes            String?
+  extraItemEstimatedValue   Decimal?            @db.Decimal(15, 2)
+
+  donor       Donor            @relation(fields: [donorId], references: [id])
+  donation    Donation?        @relation(fields: [donationId], references: [id])
+  createdBy   User             @relation("MealCreatedBy", fields: [createdById], references: [id])
+  visitRecord MealVisitRecord?
 
   @@index([donorId])
   @@index([mealServiceDate])
   @@index([donationReceivedDate])
   @@map("meal_sponsorships")
+}
+
+model MealVisitRecord {
+  id                String   @id @default(uuid())
+  mealSponsorshipId String   @unique
+  donorId           String
+  visitDate         DateTime
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  mealSponsorship MealSponsorship @relation(fields: [mealSponsorshipId], references: [id], onDelete: Cascade)
+  donor           Donor           @relation(fields: [donorId], references: [id])
+
+  @@index([donorId])
+  @@map("meal_visit_records")
 }

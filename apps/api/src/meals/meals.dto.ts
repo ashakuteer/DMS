@@ -236,6 +236,71 @@ export class UpdateMealSponsorshipDto {
   internalNotes?: string;
 }
 
+export class PostMealUpdateDto {
+  @IsOptional()
+  @IsBoolean()
+  mealCompleted?: boolean;
+
+  @IsOptional()
+  @IsDateString()
+  mealCompletedAt?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  donorVisited?: boolean;
+
+  @IsOptional()
+  @IsString()
+  donorVisitNotes?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  balancePaidAfterMeal?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  postMealAmountReceived?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  promiseMade?: boolean;
+
+  @IsOptional()
+  @IsString()
+  promiseNotes?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  thankYouSent?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  reviewRequested?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  askedToSendHi?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  extraItemsGiven?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  extraItemTypes?: string[];
+
+  @IsOptional()
+  @IsString()
+  extraItemNotes?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  extraItemEstimatedValue?: number;
+}
+
 export class MealSponsorshipQueryDto {
   @IsOptional()
   @IsString()

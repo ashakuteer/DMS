@@ -15,6 +15,7 @@ import {
   CreateMealSponsorshipDto,
   UpdateMealSponsorshipDto,
   MealSponsorshipQueryDto,
+  PostMealUpdateDto,
 } from "./meals.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
@@ -45,6 +46,15 @@ export class MealsController {
   @Patch(":id")
   update(@Param("id") id: string, @Body() dto: UpdateMealSponsorshipDto) {
     return this.mealsService.update(id, dto);
+  }
+
+  @Patch(":id/post-meal")
+  updatePostMeal(
+    @Param("id") id: string,
+    @Body() dto: PostMealUpdateDto,
+    @Request() req: any,
+  ) {
+    return this.mealsService.updatePostMeal(id, dto, req.user.id);
   }
 
   @Delete(":id")

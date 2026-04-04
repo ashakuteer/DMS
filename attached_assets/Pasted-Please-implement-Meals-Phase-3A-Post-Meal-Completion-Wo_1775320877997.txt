@@ -1,0 +1,228 @@
+Please implement Meals Phase 3A — Post-Meal Completion Workflow.
+
+IMPORTANT
+This is the next layer on top of the already working Meals Sponsorship module.
+Do NOT break:
+- existing meal save flow
+- donation linkage
+- calendar
+- people & occasions sync
+- slot-wise homes
+- donor timeline
+Production safety is highest priority.
+
+GOAL
+After a meal date/slot happens, staff must be able to record what actually happened:
+- whether meal was completed
+- whether donor visited
+- whether donor paid balance
+- whether any promise was made
+- whether donor brought extra items (sweets / groceries / etc.)
+- whether thank-you / review / WhatsApp follow-up was done
+- whether donor was asked to send "Hi" to 9700711700
+
+==================================================
+PART 1 — NEW POST-MEAL FIELDS
+==================================================
+
+Add additive fields to MealSponsorship (nullable / backward compatible only):
+
+1. mealCompleted            Boolean? 
+2. mealCompletedAt          DateTime?
+3. donorVisited             Boolean?
+4. donorVisitNotes          String?
+5. balancePaidAfterMeal     Boolean?
+6. postMealAmountReceived   Decimal?   (amount additionally received after service)
+7. promiseMade              Boolean?
+8. promiseNotes             String?
+9. thankYouSent             Boolean?
+10. reviewRequested         Boolean?
+11. askedToSendHi           Boolean?
+12. extraItemsGiven         Boolean?
+13. extraItemTypes          Json? or String[] or text[] (choose safest compatible storage)
+14. extraItemNotes          String?
+15. extraItemEstimatedValue Decimal? (optional)
+
+IMPORTANT
+Use additive schema changes only.
+Do NOT remove or rename current payment fields.
+
+==================================================
+PART 2 — EXTRA ITEM TYPES
+==================================================
+
+If donor brought extra items, allow selecting one or more of:
+
+- Sweets
+- Fruits
+- Groceries
+- Biscuits / Snacks
+- Clothes
+- Medicines
+- Stationery
+- Toiletries
+- Other
+
+Also allow:
+- free text notes
+- optional estimated value
+
+==================================================
+PART 3 — POST-MEAL UPDATE UI
+==================================================
+
+Add a new action in Meals module for each record:
+
+- "Complete / Update"
+or
+- "Post-Meal Update"
+
+This should open a compact modal/form.
+
+In this modal, include:
+
+A. Meal completion
+- Meal completed? Yes/No
+- Completed at (optional, default now if easy)
+
+B. Donor visit
+- Did donor visit? Yes/No
+- Visit notes
+
+C. Balance/payment follow-up
+- Was balance paid after meal? Yes/No
+- Additional amount received after meal
+- Do NOT break existing total/received/balance logic
+- If postMealAmountReceived entered, update the effective received/balance safely
+
+D. Promise
+- Any promise made? Yes/No
+- Promise notes
+
+E. Extra items
+- Did donor bring extra items? Yes/No
+- Extra item types multi-select
+- Extra item notes
+- Estimated value
+
+F. Follow-up actions
+- Thank-you sent? Yes/No
+- Review requested? Yes/No
+- Asked donor to send “Hi” to 9700711700? Yes/No
+
+==================================================
+PART 4 — PAYMENT / BALANCE LOGIC
+==================================================
+
+Current meal sponsorship already stores:
+- totalAmount
+- amountReceived
+- balanceAmount
+- paymentStatus
+
+Now extend safely:
+
+Effective received amount should consider:
+- original amountReceived
+- plus postMealAmountReceived (if any)
+
+Effective balance should be:
+- totalAmount - (amountReceived + postMealAmountReceived)
+
+Rules:
+- never allow effective received > totalAmount unless explicitly intended; keep safe validation
+- if balance becomes 0, payment status can remain existing or be updated safely if appropriate
+- do NOT break old records
+
+Tell me in final summary exactly how you handled this.
+
+==================================================
+PART 5 — DONOR TIMELINE INTEGRATION
+==================================================
+
+If donorVisited = true from post-meal update:
+- create a Visit entry in donor timeline/history
+OR
+- ensure Visits timeline has a proper record source from this action
+
+This is important because currently "Visits" is not really useful without recordable entries.
+
+IMPORTANT
+Do not create duplicate visit entries if post-meal update is edited repeatedly.
+Use safe duplicate prevention for the same donor + meal sponsorship + date.
+
+==================================================
+PART 6 — REMINDER / ACTION HOOK (PHASE 3A LIGHT)
+==================================================
+
+Do NOT build full automation yet.
+But prepare basic visibility:
+
+In Meals list and/or calendar detail modal, show compact post-meal status if available:
+- Completed
+- Visited
+- Balance pending / cleared
+- Promise made
+- Extra items given
+
+No popup automation yet.
+Just make the data recordable and visible.
+
+==================================================
+PART 7 — HOME INCHARGE COMPATIBILITY
+==================================================
+
+Design this so it can later be used by restricted home incharge users too.
+For now, founder/admin/staff can update it.
+Do not build full home-incharge portal in this step.
+
+==================================================
+PART 8 — BACKWARD COMPATIBILITY
+==================================================
+
+- Existing meal records must still work
+- Existing donation linkage must still work
+- Existing calendar must still work
+- Existing People & Occasions sync must still work
+- Existing list/table must still work
+
+==================================================
+PART 9 — DO NOT CHANGE
+==================================================
+
+Do NOT:
+- refactor unrelated donor modules
+- redesign donations module
+- build WhatsApp automation yet
+- build popups/reminders yet
+- build external app
+- remove old payment fields
+
+==================================================
+PART 10 — AFTER IMPLEMENTATION
+==================================================
+
+Tell me clearly:
+
+A. What files changed
+B. What schema/model fields were added
+C. How post-meal update UI works
+D. How donor visit is recorded into timeline
+E. How duplicate visit prevention works
+F. How effective received/balance is calculated
+G. How extra items are stored
+H. Whether old records remain compatible
+I. Confirm no existing donation logic was broken
+
+IMPORTANT FINAL REMINDER
+Implement ONLY Meals Phase 3A:
+- post-meal completion tracking
+- donor visit
+- balance payment after meal
+- promise
+- extra items given
+- thank-you / review / hi-request flags
+
+No automation yet.
+No external app.
+Smallest safe production-grade implementation only.

@@ -141,6 +141,43 @@ ALTER TABLE "meal_sponsorships"
   ADD COLUMN IF NOT EXISTS "slotHomes" JSONB;
 
 -- ═══════════════════════════════════════════════════════════════════════
+-- PART C — Phase 3A: Post-Meal Completion Fields (idempotent, additive)
+-- ═══════════════════════════════════════════════════════════════════════
+
+ALTER TABLE "meal_sponsorships"
+  ADD COLUMN IF NOT EXISTS "mealCompleted"             BOOLEAN,
+  ADD COLUMN IF NOT EXISTS "mealCompletedAt"           TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS "donorVisited"              BOOLEAN,
+  ADD COLUMN IF NOT EXISTS "donorVisitNotes"           TEXT,
+  ADD COLUMN IF NOT EXISTS "balancePaidAfterMeal"      BOOLEAN,
+  ADD COLUMN IF NOT EXISTS "postMealAmountReceived"    NUMERIC(15,2),
+  ADD COLUMN IF NOT EXISTS "promiseMade"               BOOLEAN,
+  ADD COLUMN IF NOT EXISTS "promiseNotes"              TEXT,
+  ADD COLUMN IF NOT EXISTS "thankYouSent"              BOOLEAN,
+  ADD COLUMN IF NOT EXISTS "reviewRequested"           BOOLEAN,
+  ADD COLUMN IF NOT EXISTS "askedToSendHi"             BOOLEAN,
+  ADD COLUMN IF NOT EXISTS "extraItemsGiven"           BOOLEAN,
+  ADD COLUMN IF NOT EXISTS "extraItemTypes"            TEXT[] NOT NULL DEFAULT '{}',
+  ADD COLUMN IF NOT EXISTS "extraItemNotes"            TEXT,
+  ADD COLUMN IF NOT EXISTS "extraItemEstimatedValue"   NUMERIC(15,2);
+
+-- Phase 3A: Meal Visit Records table (duplicate-safe via unique mealSponsorshipId)
+CREATE TABLE IF NOT EXISTS "meal_visit_records" (
+  "id"                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  "mealSponsorshipId" UUID NOT NULL,
+  "donorId"           TEXT NOT NULL,
+  "visitDate"         TIMESTAMPTZ NOT NULL,
+  "notes"             TEXT,
+  "createdAt"         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  "updatedAt"         TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT "meal_visit_records_mealSponsorshipId_unique" UNIQUE ("mealSponsorshipId"),
+  CONSTRAINT "meal_visit_records_mealSponsorshipId_fkey"
+    FOREIGN KEY ("mealSponsorshipId") REFERENCES "meal_sponsorships"("id") ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS "meal_visit_records_donorId_idx" ON "meal_visit_records" ("donorId");
+
+-- ═══════════════════════════════════════════════════════════════════════
 -- VERIFICATION (uncomment and run to confirm)
 -- ═══════════════════════════════════════════════════════════════════════
 -- SELECT EXISTS (

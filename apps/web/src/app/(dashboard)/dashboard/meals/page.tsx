@@ -45,6 +45,7 @@ import {
   List,
 } from "lucide-react";
 import { MealsCalendar } from "./MealsCalendar";
+import { PostMealModal, type PostMealMeal } from "./PostMealModal";
 
 // ─── Menu Options ────────────────────────────────────────────────────────────
 
@@ -219,6 +220,23 @@ interface MealSponsorship {
   donor: { id: string; firstName: string; lastName: string; donorCode: string };
   donation?: { id: string; donationAmount: string };
   createdBy?: { name: string };
+  visitRecord?: { id: string; visitDate: string } | null;
+  // Phase 3A — Post-Meal
+  mealCompleted?: boolean | null;
+  mealCompletedAt?: string | null;
+  donorVisited?: boolean | null;
+  donorVisitNotes?: string | null;
+  balancePaidAfterMeal?: boolean | null;
+  postMealAmountReceived?: string | null;
+  promiseMade?: boolean | null;
+  promiseNotes?: string | null;
+  thankYouSent?: boolean | null;
+  reviewRequested?: boolean | null;
+  askedToSendHi?: boolean | null;
+  extraItemsGiven?: boolean | null;
+  extraItemTypes?: string[];
+  extraItemNotes?: string | null;
+  extraItemEstimatedValue?: string | null;
 }
 
 interface FormState {
@@ -292,6 +310,7 @@ export default function MealsPage() {
   const [donorLoading, setDonorLoading] = useState(false);
   const [showDonorDropdown, setShowDonorDropdown] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [postMealMeal, setPostMealMeal] = useState<PostMealMeal | null>(null);
 
   const [filters, setFilters] = useState({
     mealServiceDate: "",
@@ -696,19 +715,20 @@ export default function MealsPage() {
               <TableHead>Status</TableHead>
               <TableHead>Occasion</TableHead>
               <TableHead>By</TableHead>
+              <TableHead>Post-Meal</TableHead>
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={12} className="text-center py-12">
+                <TableCell colSpan={13} className="text-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                 </TableCell>
               </TableRow>
             ) : items.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={12} className="text-center py-12 text-muted-foreground">
+                <TableCell colSpan={13} className="text-center py-12 text-muted-foreground">
                   No meal sponsorships found.
                 </TableCell>
               </TableRow>
@@ -719,7 +739,9 @@ export default function MealsPage() {
                 // Legacy fix: Phase 1 records (totalAmount IS null) with paymentType FULL
                 // had no amountReceived tracking — treat them as fully paid for display.
                 const isLegacyFullPaid = item.totalAmount == null && item.paymentType === "FULL" && rawReceived === 0;
-                const received = isLegacyFullPaid ? total : rawReceived;
+                const baseReceived = isLegacyFullPaid ? total : rawReceived;
+                const postMealExtra = Number(item.postMealAmountReceived ?? 0);
+                const received = baseReceived + postMealExtra;
                 const balance = Math.max(0, total - received);
                 const menuCount = item.selectedMenuItems?.length ?? 0;
                 const hasSpecial = !!item.specialMenuItem;
@@ -796,6 +818,34 @@ export default function MealsPage() {
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {item.createdBy?.name ?? "—"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1 min-w-[80px]">
+                        {item.mealCompleted === true && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 font-medium w-fit">✓ Done</span>
+                        )}
+                        {item.donorVisited === true && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 font-medium w-fit">Visited</span>
+                        )}
+                        {item.promiseMade === true && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 font-medium w-fit">Promise</span>
+                        )}
+                        {item.extraItemsGiven === true && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100 font-medium w-fit">Extras</span>
+                        )}
+                        {(item.balancePaidAfterMeal === true || (postMealExtra > 0 && balance === 0)) && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-100 font-medium w-fit">Bal Clr</span>
+                        )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-6 px-2 mt-0.5"
+                          data-testid={`button-post-meal-${item.id}`}
+                          onClick={() => setPostMealMeal(item as PostMealMeal)}
+                        >
+                          Post-Meal
+                        </Button>
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Button variant="ghost" size="icon" data-testid={`button-delete-meal-${item.id}`}
@@ -1215,6 +1265,13 @@ export default function MealsPage() {
       </Dialog>
 
       {/* Delete Confirm */}
+      {/* Post-Meal Update Modal */}
+      <PostMealModal
+        meal={postMealMeal}
+        open={!!postMealMeal}
+        onClose={() => setPostMealMeal(null)}
+      />
+
       <Dialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader><DialogTitle>Delete Meal Sponsorship?</DialogTitle></DialogHeader>

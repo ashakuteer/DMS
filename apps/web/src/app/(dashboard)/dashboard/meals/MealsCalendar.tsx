@@ -43,6 +43,13 @@ interface CalendarMealRecord {
   occasionPersonName?: string;
   selectedMenuItems?: string[];
   telecallerName?: string;
+  // Phase 3A — Post-Meal
+  mealCompleted?: boolean | null;
+  donorVisited?: boolean | null;
+  promiseMade?: boolean | null;
+  extraItemsGiven?: boolean | null;
+  balancePaidAfterMeal?: boolean | null;
+  postMealAmountReceived?: string | null;
 }
 
 type SlotKey = "breakfast" | "lunch" | "eveningSnacks" | "dinner";
@@ -482,6 +489,27 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                     {r.telecallerName && (
                       <div className="text-xs text-muted-foreground">
                         Telecaller: {r.telecallerName}
+                      </div>
+                    )}
+
+                    {/* Post-meal status badges */}
+                    {(r.mealCompleted || r.donorVisited || r.promiseMade || r.extraItemsGiven || r.balancePaidAfterMeal) && (
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {r.mealCompleted && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100 font-medium">✓ Completed</span>
+                        )}
+                        {r.donorVisited && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100 font-medium">Visited</span>
+                        )}
+                        {r.promiseMade && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100 font-medium">Promise Made</span>
+                        )}
+                        {r.extraItemsGiven && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100 font-medium">Extra Items</span>
+                        )}
+                        {(r.balancePaidAfterMeal || (Number(r.postMealAmountReceived ?? 0) > 0)) && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-100 font-medium">Bal Cleared</span>
+                        )}
                       </div>
                     )}
                   </div>

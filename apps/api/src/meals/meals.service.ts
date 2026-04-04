@@ -5,6 +5,7 @@ import {
   CreateMealSponsorshipDto,
   UpdateMealSponsorshipDto,
   MealSponsorshipQueryDto,
+  PostMealUpdateDto,
 } from "./meals.dto";
 
 @Injectable()
@@ -310,6 +311,7 @@ export class MealsService {
           donor: { select: { id: true, firstName: true, lastName: true, donorCode: true } },
           donation: { select: { id: true, donationAmount: true } },
           createdBy: { select: { name: true } },
+          visitRecord: { select: { id: true, visitDate: true } },
         },
       }),
       this.prisma.mealSponsorship.count({ where }),
@@ -331,10 +333,88 @@ export class MealsService {
         donor: { select: { id: true, firstName: true, lastName: true, donorCode: true } },
         donation: { select: { id: true, donationAmount: true, receiptNumber: true } },
         createdBy: { select: { name: true } },
+        visitRecord: { select: { id: true, visitDate: true } },
       },
     });
     if (!meal) throw new NotFoundException("Meal sponsorship not found");
     return meal;
+  }
+
+  async updatePostMeal(id: string, dto: PostMealUpdateDto, updatedById: string) {
+    const meal = await this.findOne(id);
+
+    // Validate effective received does not exceed totalAmount
+    if (dto.postMealAmountReceived !== undefined && meal.totalAmount) {
+      const existingReceived = Number(meal.amountReceived ?? 0);
+      const newPostMeal = Number(dto.postMealAmountReceived);
+      const effectiveReceived = existingReceived + newPostMeal;
+      const total = Number(meal.totalAmount);
+      if (effectiveReceived > total * 1.05) {
+        throw new BadRequestException(
+          `Effective received amount (${effectiveReceived}) would exceed total amount (${total})`,
+        );
+      }
+    }
+
+    const data: any = {};
+
+    if (dto.mealCompleted !== undefined) data.mealCompleted = dto.mealCompleted;
+    if (dto.mealCompletedAt !== undefined) data.mealCompletedAt = dto.mealCompletedAt ? new Date(dto.mealCompletedAt) : null;
+    if (dto.donorVisited !== undefined) data.donorVisited = dto.donorVisited;
+    if (dto.donorVisitNotes !== undefined) data.donorVisitNotes = dto.donorVisitNotes;
+    if (dto.balancePaidAfterMeal !== undefined) data.balancePaidAfterMeal = dto.balancePaidAfterMeal;
+    if (dto.postMealAmountReceived !== undefined) data.postMealAmountReceived = dto.postMealAmountReceived;
+    if (dto.promiseMade !== undefined) data.promiseMade = dto.promiseMade;
+    if (dto.promiseNotes !== undefined) data.promiseNotes = dto.promiseNotes;
+    if (dto.thankYouSent !== undefined) data.thankYouSent = dto.thankYouSent;
+    if (dto.reviewRequested !== undefined) data.reviewRequested = dto.reviewRequested;
+    if (dto.askedToSendHi !== undefined) data.askedToSendHi = dto.askedToSendHi;
+    if (dto.extraItemsGiven !== undefined) data.extraItemsGiven = dto.extraItemsGiven;
+    if (dto.extraItemTypes !== undefined) data.extraItemTypes = dto.extraItemTypes;
+    if (dto.extraItemNotes !== undefined) data.extraItemNotes = dto.extraItemNotes;
+    if (dto.extraItemEstimatedValue !== undefined) data.extraItemEstimatedValue = dto.extraItemEstimatedValue;
+
+    const [updated] = await this.prisma.$transaction(async (tx) => {
+      const updatedMeal = await tx.mealSponsorship.update({
+        where: { id },
+        data,
+        include: {
+          donor: { select: { id: true, firstName: true, lastName: true, donorCode: true } },
+          donation: { select: { id: true, donationAmount: true } },
+          createdBy: { select: { name: true } },
+          visitRecord: { select: { id: true, visitDate: true } },
+        },
+      });
+
+      // ── Donor visit record (duplicate-safe via @unique on mealSponsorshipId) ──
+      if (dto.donorVisited === true) {
+        const visitDate = dto.mealCompletedAt
+          ? new Date(dto.mealCompletedAt)
+          : (meal.mealServiceDate ? new Date(meal.mealServiceDate) : new Date());
+
+        await tx.mealVisitRecord.upsert({
+          where: { mealSponsorshipId: id },
+          create: {
+            mealSponsorshipId: id,
+            donorId: meal.donorId,
+            visitDate,
+            notes: dto.donorVisitNotes ?? null,
+          },
+          update: {
+            visitDate,
+            notes: dto.donorVisitNotes ?? undefined,
+          },
+        });
+        this.logger.log(`Visit record upserted for meal=${id} donor=${meal.donorId}`);
+      } else if (dto.donorVisited === false) {
+        await tx.mealVisitRecord.deleteMany({ where: { mealSponsorshipId: id } });
+        this.logger.log(`Visit record removed for meal=${id} (donorVisited set to false)`);
+      }
+
+      return [updatedMeal];
+    });
+
+    return updated;
   }
 
   async update(id: string, dto: UpdateMealSponsorshipDto) {
