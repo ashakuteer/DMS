@@ -113,6 +113,7 @@ export class MealsService {
           occasionType: dto.occasionType ?? MealOccasionType.NONE,
           occasionFor: dto.occasionFor,
           occasionPersonName: dto.occasionPersonName,
+          occasionRelationship: dto.occasionRelationship,
           occasionNotes: dto.occasionNotes,
           internalNotes: dto.internalNotes,
           donationId: donation.id,

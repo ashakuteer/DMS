@@ -130,6 +130,11 @@ WHERE
   AND "paymentType" = 'FULL'::"MealPaymentType"
   AND "amountReceived" = 0;
 
+-- Phase 1.8 — Occasion Relationship field ──────────────────────────────
+
+ALTER TABLE "meal_sponsorships"
+  ADD COLUMN IF NOT EXISTS "occasionRelationship" TEXT;
+
 -- ═══════════════════════════════════════════════════════════════════════
 -- VERIFICATION (uncomment and run to confirm)
 -- ═══════════════════════════════════════════════════════════════════════

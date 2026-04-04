@@ -111,6 +111,10 @@ export class CreateMealSponsorshipDto {
 
   @IsOptional()
   @IsString()
+  occasionRelationship?: string;
+
+  @IsOptional()
+  @IsString()
   occasionNotes?: string;
 
   @IsOptional()
@@ -212,6 +216,10 @@ export class UpdateMealSponsorshipDto {
   @IsOptional()
   @IsString()
   occasionPersonName?: string;
+
+  @IsOptional()
+  @IsString()
+  occasionRelationship?: string;
 
   @IsOptional()
   @IsString()

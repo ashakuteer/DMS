@@ -2531,6 +2531,7 @@ model MealSponsorship {
   occasionType         MealOccasionType    @default(NONE)
   occasionFor          MealOccasionFor?
   occasionPersonName   String?
+  occasionRelationship String?
   occasionNotes        String?
   internalNotes        String?
   selectedMenuItems    String[]            @default([])

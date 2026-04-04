@@ -103,6 +103,48 @@ const OCCASION_TYPES = [
   { value: "OTHER", label: "Other" },
 ];
 
+// Reused from donor profile utils.ts — same list, no duplicate master
+const OCCASION_RELATION_OPTIONS = [
+  { value: "SELF", label: "Self" },
+  { value: "SELF_AND_SPOUSE", label: "Self & Spouse" },
+  { value: "SPOUSE", label: "Spouse" },
+  { value: "SON", label: "Son" },
+  { value: "DAUGHTER", label: "Daughter" },
+  { value: "CHILD", label: "Child" },
+  { value: "FATHER", label: "Father" },
+  { value: "MOTHER", label: "Mother" },
+  { value: "BROTHER", label: "Brother" },
+  { value: "SISTER", label: "Sister" },
+  { value: "SIBLING", label: "Sibling" },
+  { value: "PARENTS", label: "Parents" },
+  { value: "FATHER_IN_LAW", label: "Father-in-law" },
+  { value: "MOTHER_IN_LAW", label: "Mother-in-law" },
+  { value: "BROTHER_IN_LAW", label: "Brother-in-law" },
+  { value: "SISTER_IN_LAW", label: "Sister-in-law" },
+  { value: "SON_IN_LAW", label: "Son-in-law" },
+  { value: "DAUGHTER_IN_LAW", label: "Daughter-in-law" },
+  { value: "IN_LAW", label: "In-law" },
+  { value: "GRANDFATHER", label: "Grandfather" },
+  { value: "GRANDMOTHER", label: "Grandmother" },
+  { value: "GRANDPARENT", label: "Grandparent" },
+  { value: "GRANDPARENTS", label: "Grandparents" },
+  { value: "GRANDSON", label: "Grandson" },
+  { value: "GRANDDAUGHTER", label: "Granddaughter" },
+  { value: "GRANDCHILD", label: "Grandchild" },
+  { value: "GRANDCHILDREN", label: "Grandchildren" },
+  { value: "COUSIN", label: "Cousin" },
+  { value: "UNCLE", label: "Uncle" },
+  { value: "AUNT", label: "Aunt" },
+  { value: "FIANCE", label: "Fiancé" },
+  { value: "FIANCEE", label: "Fiancée" },
+  { value: "FAMILY", label: "Family" },
+  { value: "FRIEND", label: "Friend" },
+  { value: "COLLEAGUE", label: "Colleague" },
+  { value: "BOSS", label: "Boss" },
+  { value: "MENTOR", label: "Mentor" },
+  { value: "OTHER", label: "Other" },
+];
+
 const PAYMENT_STATUS_OPTIONS = [
   { value: "FULL", label: "Full Payment" },
   { value: "ADVANCE", label: "Advance" },
@@ -167,6 +209,7 @@ interface MealSponsorship {
   occasionType: string;
   occasionFor?: string;
   occasionPersonName?: string;
+  occasionRelationship?: string;
   internalNotes?: string;
   donationId?: string;
   donor: { id: string; firstName: string; lastName: string; donorCode: string };
@@ -199,6 +242,7 @@ interface FormState {
   occasionType: string;
   occasionFor: string;
   occasionPersonName: string;
+  occasionRelationship: string;
   occasionNotes: string;
   internalNotes: string;
 }
@@ -228,6 +272,7 @@ const defaultForm = (): FormState => ({
   occasionType: "NONE",
   occasionFor: "",
   occasionPersonName: "",
+  occasionRelationship: "",
   occasionNotes: "",
   internalNotes: "",
 });
@@ -464,6 +509,7 @@ export default function MealsPage() {
       occasionType: form.occasionType || "NONE",
       occasionFor: form.occasionFor || undefined,
       occasionPersonName: form.occasionPersonName || undefined,
+      occasionRelationship: form.occasionFor === "OTHER" && form.occasionRelationship ? form.occasionRelationship : undefined,
       occasionNotes: form.occasionNotes || undefined,
       internalNotes: form.internalNotes || undefined,
     });
@@ -981,10 +1027,29 @@ export default function MealsPage() {
             </div>
 
             {form.occasionType !== "NONE" && form.occasionFor === "OTHER" && (
-              <div className="space-y-1">
-                <Label>Occasion Person Name</Label>
-                <Input data-testid="input-occasion-person" placeholder="Name of the person"
-                  value={form.occasionPersonName} onChange={(e) => setField("occasionPersonName", e.target.value as any)} />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <Label>Relationship</Label>
+                  <Select
+                    value={form.occasionRelationship || "__none__"}
+                    onValueChange={(v) => setField("occasionRelationship", v === "__none__" ? "" as any : v as any)}
+                  >
+                    <SelectTrigger data-testid="select-occasion-relationship">
+                      <SelectValue placeholder="Select relationship…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">— Select —</SelectItem>
+                      {OCCASION_RELATION_OPTIONS.map((r) => (
+                        <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label>Occasion Person Name</Label>
+                  <Input data-testid="input-occasion-person" placeholder="Name of the person"
+                    value={form.occasionPersonName} onChange={(e) => setField("occasionPersonName", e.target.value as any)} />
+                </div>
               </div>
             )}
 

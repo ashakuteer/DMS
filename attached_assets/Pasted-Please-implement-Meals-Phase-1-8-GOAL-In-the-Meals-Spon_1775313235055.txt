@@ -1,0 +1,88 @@
+Please implement Meals Phase 1.8.
+
+GOAL
+In the Meals Sponsorship form, when Occasion For = Other Person, add a Relationship field and reuse the same relationship options already used in the donor profile People & Occasions form.
+
+IMPORTANT
+Do NOT invent a new relationship list.
+Use the existing relationship source/options already used in People & Occasions / donor profile.
+
+WHAT TO DO
+
+1. Add new field in Meals form:
+- Occasion Relationship
+
+2. Show this field ONLY when:
+- Occasion For = Other Person
+
+3. Populate it using the same existing relationship list/source already used in:
+- donor People & Occasions
+- family/relationship dropdown
+
+This should include the same grouped relations such as:
+- Self
+- Self & Spouse
+- Parents
+- In-Laws
+- Grandparents
+- Grandchildren
+- Family
+- Spouse
+- Son
+- Daughter
+- Child
+- Father
+- Mother
+- Brother
+- Sister
+- Sibling
+- Father-in-law
+- Mother-in-law
+- Brother-in-law
+- Sister-in-law
+- Son-in-law
+- Daughter-in-law
+- Grandfather
+- Grandmother
+- Grandparent
+- Grandson
+- Granddaughter
+- Grandchild
+- Cousin
+- Uncle
+- Aunt
+...and all other existing relations from that dropdown
+
+4. Store this relationship in the Meals record
+Suggested field name:
+- occasionRelationship
+
+5. Do NOT automatically create or update People & Occasions records yet.
+This phase is only to capture and store the relationship in Meals.
+
+6. Keep all existing Meals logic working:
+- payment fields
+- menu fields
+- snacks
+- donor linkage
+- donation linkage
+- occasion person name
+- occasion notes
+
+7. Optional small UI improvement:
+If possible, place the new Occasion Relationship field near:
+- Occasion For
+- Occasion Person Name
+
+AFTER IMPLEMENTATION
+Tell me clearly:
+A. What files changed
+B. What schema/model field was added
+C. Whether the relationship list was reused from the existing People & Occasions source
+D. Confirm that no new duplicate relationship master was created
+E. Confirm this only stores data in Meals and does not yet auto-write to People & Occasions
+
+IMPORTANT FINAL REMINDER
+Do not build People & Occasions integration yet.
+Do not refactor unrelated modules.
+Smallest safe production-grade change only.
