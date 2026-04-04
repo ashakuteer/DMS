@@ -1,0 +1,199 @@
+Please implement Meals Phase 3B — Pending Actions / Reminder System.
+
+IMPORTANT
+Add this inside the existing Meals page as a new tab:
+- Calendar
+- List
+- Pending Actions
+
+Do NOT build popups/automation yet.
+Do NOT refactor unrelated modules.
+Keep it production-safe and internal-use focused.
+
+GOAL
+Create a Pending Actions tab for Meals follow-up work so staff can quickly see what still needs attention after booking and after the meal date.
+
+==================================================
+PART 1 — NEW TAB
+==================================================
+
+Add a new tab/view inside Meals page:
+- Pending Actions
+
+Keep existing:
+- Calendar
+- List
+
+Do not remove any existing functionality.
+
+==================================================
+PART 2 — ACTION TYPES
+==================================================
+
+Generate action items from existing Meal Sponsorship data.
+
+At minimum support these action types:
+
+1. MEAL_COMPLETION_PENDING
+Show when:
+- mealServiceDate is today or in the past
+- AND mealCompleted is null or false
+
+2. DONOR_VISIT_PENDING
+Show when:
+- mealServiceDate is today or in the past
+- AND donorVisited is null
+- AND mealCompleted is true or meal date has passed
+
+3. BALANCE_PENDING
+Show when:
+- effectiveBalance > 0
+
+effectiveBalance =
+totalAmount - (amountReceived + postMealAmountReceived)
+
+4. PROMISE_FOLLOWUP_PENDING
+Show when:
+- promiseMade = true
+- AND promiseNotes is not empty
+
+5. THANK_YOU_PENDING
+Show when:
+- mealServiceDate is today or in the past
+- AND thankYouSent is null or false
+
+6. REVIEW_PENDING
+Show when:
+- mealServiceDate is today or in the past
+- AND reviewRequested is null or false
+
+7. ASK_HI_PENDING
+Show when:
+- mealServiceDate is today or in the past
+- AND askedToSendHi is null or false
+
+8. EXTRA_ITEMS_NOT_RECORDED
+Show when:
+- mealServiceDate is today or in the past
+- AND extraItemsGiven is null
+This means staff has not yet recorded whether donor brought anything extra.
+
+IMPORTANT:
+Do not create duplicate action rows unnecessarily.
+One meal sponsorship may generate multiple different action types if several follow-ups are still pending.
+
+==================================================
+PART 3 — PENDING ACTIONS UI
+==================================================
+
+Create a clear table/list in Pending Actions tab.
+
+Recommended columns:
+- Meal Date
+- Donor
+- Home(s)
+- Slot(s)
+- Action Type
+- Telecaller / Owner
+- Timing bucket (Overdue / Today / Upcoming)
+- Quick Action
+
+Quick Action should be:
+- Open Post-Meal Update
+
+If useful, allow clicking the donor name to open donor profile.
+
+==================================================
+PART 4 — BUCKETS / GROUPING
+==================================================
+
+Group actions into:
+- Overdue
+- Today
+- Upcoming
+
+Rules:
+- Overdue = mealServiceDate < today
+- Today = mealServiceDate = today
+- Upcoming = future-dated follow-up if applicable
+If easier, start with Overdue + Today first and add Upcoming only where meaningful.
+
+==================================================
+PART 5 — FILTERS
+==================================================
+
+Add useful filters if practical:
+- Action Type
+- Home
+- Telecaller / Owner
+- Date range or bucket
+
+Keep it simple.
+
+==================================================
+PART 6 — DATA SOURCE
+==================================================
+
+Use existing Meals data and existing post-meal fields.
+Do NOT create a separate actions table yet unless absolutely necessary.
+
+This phase should derive actions dynamically from Meal Sponsorship records.
+
+==================================================
+PART 7 — QUICK ACTION INTEGRATION
+==================================================
+
+When user clicks "Open Post-Meal Update":
+- open the existing PostMealModal for that meal sponsorship
+- after saving, refresh Pending Actions tab
+- resolved actions should disappear automatically if conditions are no longer true
+
+==================================================
+PART 8 — DONOR TIMELINE VISITS CHECK
+==================================================
+
+Also in this phase:
+First ensure donor Timeline → Visits actually shows meal visit records correctly.
+
+If meal_visit_records already exists and is being created:
+- make sure donor timeline / visits section reads and displays them
+- do not create duplicate visit systems
+- use the existing meal_visit_records source
+
+IMPORTANT:
+Visits must become visible/useful in donor profile.
+
+==================================================
+PART 9 — BACKWARD COMPATIBILITY
+==================================================
+
+- Do not break Calendar
+- Do not break List
+- Do not break meal save
+- Do not break donation linkage
+- Do not break People & Occasions sync
+- Do not break home-slot matrix
+- Do not break Post-Meal modal
+
+==================================================
+PART 10 — AFTER IMPLEMENTATION
+==================================================
+
+Tell me clearly:
+A. What files changed
+B. How Pending Actions are generated
+C. What exact logic is used for each action type
+D. How overdue/today/upcoming is calculated
+E. How Open Post-Meal Update is wired
+F. How donor Timeline → Visits was fixed/verified
+G. Confirm no new unrelated modules were changed
+
+IMPORTANT FINAL REMINDER
+Implement ONLY Meals Phase 3B:
+- Pending Actions tab
+- derived reminder/action rows
+- Visits visibility in donor timeline
+No WhatsApp automation yet.
+No external app.
+No popup system yet.
+Keep it small, useful, and production-safe.

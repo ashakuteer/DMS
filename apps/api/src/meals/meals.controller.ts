@@ -38,6 +38,11 @@ export class MealsController {
     return this.mealsService.findAll(query);
   }
 
+  @Get("pending-actions")
+  findPendingActions() {
+    return this.mealsService.findPendingActions();
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.mealsService.findOne(id);

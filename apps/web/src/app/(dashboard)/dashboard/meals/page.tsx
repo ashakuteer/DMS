@@ -43,9 +43,11 @@ import {
   Trash2,
   Calendar,
   List,
+  ClipboardList,
 } from "lucide-react";
 import { MealsCalendar } from "./MealsCalendar";
 import { PostMealModal, type PostMealMeal } from "./PostMealModal";
+import { PendingActionsTab } from "./PendingActionsTab";
 
 // ─── Menu Options ────────────────────────────────────────────────────────────
 
@@ -304,7 +306,7 @@ export default function MealsPage() {
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<"list" | "calendar">("list");
+  const [view, setView] = useState<"list" | "calendar" | "pending">("list");
   const [form, setForm] = useState<FormState>(defaultForm());
   const [donorResults, setDonorResults] = useState<any[]>([]);
   const [donorLoading, setDonorLoading] = useState(false);
@@ -624,6 +626,17 @@ export default function MealsPage() {
             >
               <Calendar className="h-4 w-4" /> Calendar
             </button>
+            <button
+              data-testid="view-toggle-pending"
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors ${
+                view === "pending"
+                  ? "bg-primary text-primary-foreground"
+                  : "hover:bg-muted text-muted-foreground"
+              }`}
+              onClick={() => setView("pending")}
+            >
+              <ClipboardList className="h-4 w-4" /> Pending Actions
+            </button>
           </div>
           <Button data-testid="button-add-meal" onClick={() => { setOpen(true); setForm(defaultForm()); }}>
             <Plus className="h-4 w-4 mr-2" /> Add Meal Sponsorship
@@ -634,6 +647,13 @@ export default function MealsPage() {
       {/* Calendar view */}
       {view === "calendar" && (
         <MealsCalendar onAddWithPrefill={handleAddWithPrefill} />
+      )}
+
+      {/* Pending Actions view */}
+      {view === "pending" && (
+        <PendingActionsTab
+          onOpenPostMeal={(meal) => setPostMealMeal(meal)}
+        />
       )}
 
       {/* Filters — only in list view */}

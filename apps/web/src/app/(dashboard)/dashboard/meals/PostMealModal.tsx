@@ -173,6 +173,7 @@ export function PostMealModal({ meal, open, onClose }: Props) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meals/pending-actions"] });
       toast({ title: "Post-meal update saved" });
       onClose();
     },

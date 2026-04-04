@@ -102,6 +102,64 @@ let DonorsTimelineService = class DonorsTimelineService {
                 }
             }
         }
+        if (activeTypes.includes("VISIT")) {
+            const mealVisits = await this.prisma.mealVisitRecord.findMany({
+                where: {
+                    donorId,
+                    ...(hasDateFilter ? { visitDate: dateFilter } : {}),
+                },
+                orderBy: { visitDate: "desc" },
+                include: {
+                    mealSponsorship: {
+                        select: {
+                            homes: true,
+                            breakfast: true,
+                            lunch: true,
+                            eveningSnacks: true,
+                            dinner: true,
+                            foodType: true,
+                            occasionType: true,
+                        },
+                    },
+                },
+            });
+            const homeLabels = {
+                GIRLS_HOME: "Girls Home",
+                BLIND_BOYS_HOME: "Blind Boys Home",
+                OLD_AGE_HOME: "Old Age Home",
+                GENERAL: "General",
+            };
+            for (const v of mealVisits) {
+                const slots = [];
+                if (v.mealSponsorship.breakfast)
+                    slots.push("Breakfast");
+                if (v.mealSponsorship.lunch)
+                    slots.push("Lunch");
+                if (v.mealSponsorship.eveningSnacks)
+                    slots.push("Evening Snacks");
+                if (v.mealSponsorship.dinner)
+                    slots.push("Dinner");
+                const homesDesc = v.mealSponsorship.homes
+                    .map((h) => homeLabels[h] ?? h)
+                    .join(", ");
+                const slotsDesc = slots.join(" + ") || "Meal";
+                items.push({
+                    id: `meal-visit-${v.id}`,
+                    type: "VISIT",
+                    date: v.visitDate.toISOString(),
+                    title: "Meal Sponsorship Visit",
+                    description: `Visited during ${slotsDesc} at ${homesDesc}${v.notes ? ` — ${v.notes}` : ""}`,
+                    metadata: {
+                        homesDesc,
+                        slotsDesc,
+                        foodType: v.mealSponsorship.foodType,
+                        occasionType: v.mealSponsorship.occasionType,
+                        notes: v.notes,
+                        mealSponsorshipId: v.mealSponsorshipId,
+                    },
+                });
+            }
+        }
         if (activeTypes.includes("COMMUNICATION") ||
             activeTypes.includes("BIRTHDAY_WISH")) {
             const logs = await this.prisma.communicationLog.findMany({

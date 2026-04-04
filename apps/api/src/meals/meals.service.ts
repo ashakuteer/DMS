@@ -326,6 +326,28 @@ export class MealsService {
     };
   }
 
+  async findPendingActions() {
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+
+    const meals = await this.prisma.mealSponsorship.findMany({
+      where: {
+        OR: [
+          { mealServiceDate: { lte: today } },
+          { promiseMade: true },
+        ],
+      },
+      orderBy: { mealServiceDate: "asc" },
+      include: {
+        donor: { select: { id: true, firstName: true, lastName: true, donorCode: true } },
+        createdBy: { select: { name: true } },
+        visitRecord: { select: { id: true, visitDate: true } },
+      },
+    });
+
+    return { items: meals };
+  }
+
   async findOne(id: string) {
     const meal = await this.prisma.mealSponsorship.findUnique({
       where: { id },
