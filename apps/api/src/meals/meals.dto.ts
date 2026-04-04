@@ -39,6 +39,10 @@ export class CreateMealSponsorshipDto {
   @IsBoolean()
   lunch: boolean;
 
+  @IsOptional()
+  @IsBoolean()
+  eveningSnacks?: boolean;
+
   @IsBoolean()
   dinner: boolean;
 
@@ -132,6 +136,10 @@ export class UpdateMealSponsorshipDto {
   @IsOptional()
   @IsBoolean()
   lunch?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  eveningSnacks?: boolean;
 
   @IsOptional()
   @IsBoolean()
@@ -237,7 +245,7 @@ export class MealSponsorshipQueryDto {
 
   @IsOptional()
   @IsString()
-  slot?: "breakfast" | "lunch" | "dinner";
+  slot?: "breakfast" | "lunch" | "evening_snacks" | "dinner";
 
   @IsOptional()
   @IsString()

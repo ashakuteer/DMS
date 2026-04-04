@@ -110,6 +110,26 @@ DO $$ BEGIN
   ALTER TABLE "meal_sponsorships" ALTER COLUMN "paymentType" DROP NOT NULL;
 EXCEPTION WHEN OTHERS THEN null; END $$;
 
+-- Phase 1.6 — Evening Snacks slot ──────────────────────────────────────
+
+ALTER TABLE "meal_sponsorships"
+  ADD COLUMN IF NOT EXISTS "eveningSnacks" BOOLEAN NOT NULL DEFAULT false;
+
+-- Phase 1.6 — Backfill legacy full-paid records ────────────────────────
+-- Rule: records where totalAmount IS NULL (pre-Phase-1.5), paymentType = FULL,
+-- and amountReceived = 0 are old entries that were fully paid but had no
+-- Phase 1.5 tracking fields filled. Backfill so they display correctly.
+
+UPDATE meal_sponsorships
+SET
+  "totalAmount" = amount,
+  "amountReceived" = amount,
+  "paymentStatus" = 'FULL'::"MealPaymentStatus"
+WHERE
+  "totalAmount" IS NULL
+  AND "paymentType" = 'FULL'::"MealPaymentType"
+  AND "amountReceived" = 0;
+
 -- ═══════════════════════════════════════════════════════════════════════
 -- VERIFICATION (uncomment and run to confirm)
 -- ═══════════════════════════════════════════════════════════════════════

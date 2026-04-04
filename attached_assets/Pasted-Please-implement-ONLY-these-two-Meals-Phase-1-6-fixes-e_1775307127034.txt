@@ -1,0 +1,131 @@
+Please implement ONLY these two Meals Phase 1.6 fixes/enhancements in our existing working Meals module. Do not do unrelated refactors. Production safety is highest priority.
+
+GOAL
+1. Fix old meal records that currently show incorrect payment values (₹0 received / non-zero balance even when they should be treated as paid).
+2. Add a new meal slot: Evening Snacks, with the snack menu options provided.
+
+CURRENT ISSUE 1 — OLD ENTRIES DISPLAY WRONG PAYMENT
+Some earlier meal sponsorship entries are showing:
+- Total Amount = non-zero
+- Amount Received = ₹0
+- Balance = full amount
+- but status/intent should effectively be paid / given money
+
+We want to correct this for old existing entries so they display properly.
+
+REQUIRED FIX FOR OLD ENTRIES
+For existing old records where:
+- payment status is FULL (or legacy full-payment meaning)
+- totalAmount > 0
+- amountReceived is null or 0
+- and/or balanceAmount equals totalAmount
+
+Then backfill/fix them safely so:
+- amountReceived = totalAmount
+- balanceAmount = 0
+
+IMPORTANT:
+- This should apply only to old inconsistent records
+- Do NOT corrupt newer records that are intentionally PARTIAL / ADVANCE / AFTER_SERVICE
+- Make the backfill safe and idempotent
+- If best, do this as a one-time backend/data fix or migration script
+- Also make list display logic resilient so legacy records do not show misleading amounts
+
+CURRENT ISSUE 2 — ADD EVENING SNACKS SLOT
+Right now slot support is:
+- Breakfast
+- Lunch
+- Dinner
+
+Add:
+- EVENING_SNACKS
+
+Update all relevant places:
+- schema/model
+- DTOs
+- backend logic
+- filtering
+- UI form
+- list display
+- validation
+- auto behaviors if needed
+
+1) SLOT MODEL / UI UPDATE
+Meals sponsorship must now support:
+- Breakfast
+- Lunch
+- Evening Snacks
+- Dinner
+
+Implement Evening Snacks as a proper structured slot, not just notes.
+
+If current schema uses booleans like breakfast/lunch/dinner:
+- add eveningSnacks boolean safely
+- keep backward compatibility with old records
+
+2) FORM UPDATE
+In Add/Edit Meal Sponsorship form:
+- show Evening Snacks along with Breakfast, Lunch, Dinner
+- if Sponsorship Type = Entire Day, do NOT auto-select Evening Snacks unless you decide that is the existing org policy
+- Entire Day should continue existing behavior unless explicitly extended
+- For now, keep Entire Day = Breakfast + Lunch + Dinner only
+- Evening Snacks can be selected explicitly when needed
+
+3) MENU OPTIONS FOR EVENING SNACKS
+Add these ready-made snack items for Evening Snacks:
+- Samosa
+- Biscuits
+- Chips
+- Puff
+- Ice Cream
+- Fruit
+- Fruit Juice
+- Own Preparation
+- Pakodi / Pakora
+- Burger
+- Pizza
+- Noodles
+- Mirchi Bujji
+
+Rules:
+- If Evening Snacks is selected, show the snack menu group
+- Keep Special / Custom Item field
+- Keep existing breakfast / veg lunch-dinner / non-veg lunch-dinner menus working
+- If multiple slots are selected, allow combined menu selection in the simplest safe way for now
+
+4) FILTER / LIST UPDATE
+Update Meals filters and list/table:
+- slot filter should include Evening Snacks
+- meals list should display Evening Snacks properly
+
+5) BACKWARD COMPATIBILITY
+Do NOT break existing working meal saves.
+Do NOT break linked donation creation.
+Do NOT break donor timeline integration.
+
+6) DATA BACKFILL / LEGACY PAYMENT FIX
+Implement one safe backfill for old inconsistent records:
+- identify records that are effectively full-paid legacy entries
+- set amountReceived = totalAmount
+- set balanceAmount = 0
+
+Tell me clearly in your response what exact rule you used for identifying those old records.
+
+7) AFTER IMPLEMENTATION
+Tell me clearly:
+A. What files changed
+B. What schema/model fields were added/changed
+C. Whether DB migration/db push is required
+D. How old records were fixed
+E. What rule was used to identify legacy paid records
+F. How Evening Snacks was added across backend + frontend
+G. Whether Entire Day behavior changed or stayed the same
+
+IMPORTANT FINAL REMINDER
+Implement ONLY:
+- old entries payment fix
+- Evening Snacks slot + snack menu
+Do not add calendar yet.
+Do not add portal yet.
+Do not refactor unrelated meals or donations code.
+Smallest safe production-grade implementation only.

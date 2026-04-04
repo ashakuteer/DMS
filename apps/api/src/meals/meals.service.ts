@@ -13,10 +13,16 @@ export class MealsService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  private buildMealSlotDescription(breakfast: boolean, lunch: boolean, dinner: boolean): string {
+  private buildMealSlotDescription(
+    breakfast: boolean,
+    lunch: boolean,
+    eveningSnacks: boolean,
+    dinner: boolean,
+  ): string {
     const slots: string[] = [];
     if (breakfast) slots.push("Breakfast");
     if (lunch) slots.push("Lunch");
+    if (eveningSnacks) slots.push("Evening Snacks");
     if (dinner) slots.push("Dinner");
     return slots.join(" + ") || "No slots";
   }
@@ -38,7 +44,9 @@ export class MealsService {
     });
     if (!donor) throw new NotFoundException("Donor not found");
 
-    if (!dto.breakfast && !dto.lunch && !dto.dinner) {
+    const eveningSnacks = dto.eveningSnacks ?? false;
+
+    if (!dto.breakfast && !dto.lunch && !eveningSnacks && !dto.dinner) {
       throw new BadRequestException("At least one meal slot must be selected");
     }
     if (!dto.homes || dto.homes.length === 0) {
@@ -55,7 +63,7 @@ export class MealsService {
     const mealServiceDate = new Date(dto.mealServiceDate);
     const donationReceivedDate = new Date(dto.donationReceivedDate);
 
-    const slotsDesc = this.buildMealSlotDescription(dto.breakfast, dto.lunch, dto.dinner);
+    const slotsDesc = this.buildMealSlotDescription(dto.breakfast, dto.lunch, eveningSnacks, dto.dinner);
     const homesDesc = this.buildHomesDescription(dto.homes);
     const remarks = `Meal Sponsorship — ${slotsDesc} | Homes: ${homesDesc} | Meal Date: ${mealServiceDate.toLocaleDateString("en-IN")}${dto.occasionType && dto.occasionType !== MealOccasionType.NONE ? ` | Occasion: ${dto.occasionType}` : ""}`;
 
@@ -83,6 +91,7 @@ export class MealsService {
           sponsorshipType: dto.sponsorshipType,
           breakfast: dto.breakfast,
           lunch: dto.lunch,
+          eveningSnacks,
           dinner: dto.dinner,
           foodType: dto.foodType,
           mealNotes: dto.mealNotes,
@@ -155,6 +164,7 @@ export class MealsService {
 
     if (query.slot === "breakfast") where.breakfast = true;
     if (query.slot === "lunch") where.lunch = true;
+    if (query.slot === "evening_snacks") where.eveningSnacks = true;
     if (query.slot === "dinner") where.dinner = true;
 
     if (query.paymentStatus) {

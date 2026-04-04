@@ -67,6 +67,11 @@ const NON_VEG_LUNCH_DINNER_ITEMS = [
   "Own Preparation", "Noodles", "Chicken Curry", "Raitha / Curd Chutney", "Curd",
 ];
 
+const EVENING_SNACKS_ITEMS = [
+  "Samosa", "Biscuits", "Chips", "Puff", "Ice Cream", "Fruit", "Fruit Juice",
+  "Own Preparation", "Pakodi / Pakora", "Burger", "Pizza", "Noodles", "Mirchi Bujji",
+];
+
 // ─── Static Options ───────────────────────────────────────────────────────────
 
 const HOME_OPTIONS = [
@@ -79,6 +84,14 @@ const ALL_HOMES = HOME_OPTIONS.map((h) => h.value);
 const SLOT_OPTIONS = [
   { key: "breakfast", label: "Breakfast" },
   { key: "lunch", label: "Lunch" },
+  { key: "eveningSnacks", label: "Evening Snacks", filterKey: "evening_snacks" },
+  { key: "dinner", label: "Dinner" },
+];
+
+const SLOT_FILTER_OPTIONS = [
+  { key: "breakfast", label: "Breakfast" },
+  { key: "lunch", label: "Lunch" },
+  { key: "evening_snacks", label: "Evening Snacks" },
   { key: "dinner", label: "Dinner" },
 ];
 
@@ -103,10 +116,11 @@ function homeLabel(val: string) {
   return HOME_OPTIONS.find((h) => h.value === val)?.label ?? val;
 }
 
-function slotBadges(breakfast: boolean, lunch: boolean, dinner: boolean) {
+function slotBadges(breakfast: boolean, lunch: boolean, eveningSnacks: boolean, dinner: boolean) {
   const slots = [];
   if (breakfast) slots.push("Breakfast");
   if (lunch) slots.push("Lunch");
+  if (eveningSnacks) slots.push("Evening Snacks");
   if (dinner) slots.push("Dinner");
   return slots;
 }
@@ -135,6 +149,7 @@ interface MealSponsorship {
   sponsorshipType: string;
   breakfast: boolean;
   lunch: boolean;
+  eveningSnacks: boolean;
   dinner: boolean;
   foodType: string;
   mealNotes?: string;
@@ -168,6 +183,7 @@ interface FormState {
   sponsorshipType: "ENTIRE_DAY" | "SELECTED_MEALS";
   breakfast: boolean;
   lunch: boolean;
+  eveningSnacks: boolean;
   dinner: boolean;
   foodType: "VEG" | "NON_VEG";
   mealNotes: string;
@@ -196,6 +212,7 @@ const defaultForm = (): FormState => ({
   sponsorshipType: "ENTIRE_DAY",
   breakfast: true,
   lunch: true,
+  eveningSnacks: false,
   dinner: true,
   foodType: "VEG",
   mealNotes: "",
@@ -276,10 +293,12 @@ export default function MealsPage() {
   // ─── Dynamic Menu Options ───────────────────────────────────────────────────
 
   const applicableMenuSections = useMemo(() => {
+    const entireDay = form.sponsorshipType === "ENTIRE_DAY";
     const activeSlots = {
-      breakfast: form.sponsorshipType === "ENTIRE_DAY" ? true : form.breakfast,
-      lunch: form.sponsorshipType === "ENTIRE_DAY" ? true : form.lunch,
-      dinner: form.sponsorshipType === "ENTIRE_DAY" ? true : form.dinner,
+      breakfast: entireDay ? true : form.breakfast,
+      lunch: entireDay ? true : form.lunch,
+      eveningSnacks: form.eveningSnacks,
+      dinner: entireDay ? true : form.dinner,
     };
     const sections: { label: string; items: string[] }[] = [];
 
@@ -293,8 +312,11 @@ export default function MealsPage() {
         sections.push({ label: "Non-Veg Lunch / Dinner Items", items: NON_VEG_LUNCH_DINNER_ITEMS });
       }
     }
+    if (activeSlots.eveningSnacks) {
+      sections.push({ label: "Evening Snacks Items", items: EVENING_SNACKS_ITEMS });
+    }
     return sections;
-  }, [form.sponsorshipType, form.breakfast, form.lunch, form.dinner, form.foodType]);
+  }, [form.sponsorshipType, form.breakfast, form.lunch, form.eveningSnacks, form.dinner, form.foodType]);
 
   // ─── Computed Values ────────────────────────────────────────────────────────
 
@@ -368,6 +390,7 @@ export default function MealsPage() {
   function handleSponsorshipTypeChange(val: "ENTIRE_DAY" | "SELECTED_MEALS") {
     setField("sponsorshipType", val);
     if (val === "ENTIRE_DAY") {
+      // Entire Day = Breakfast + Lunch + Dinner. Evening Snacks is NOT auto-selected.
       setForm((prev) => ({ ...prev, sponsorshipType: val, breakfast: true, lunch: true, dinner: true }));
     }
   }
@@ -414,7 +437,7 @@ export default function MealsPage() {
       toast({ title: "Validation", description: "Select at least one home.", variant: "destructive" });
       return;
     }
-    if (form.sponsorshipType === "SELECTED_MEALS" && !form.breakfast && !form.lunch && !form.dinner) {
+    if (form.sponsorshipType === "SELECTED_MEALS" && !form.breakfast && !form.lunch && !form.eveningSnacks && !form.dinner) {
       toast({ title: "Validation", description: "Select at least one meal slot.", variant: "destructive" });
       return;
     }
@@ -435,6 +458,7 @@ export default function MealsPage() {
       sponsorshipType: form.sponsorshipType,
       breakfast: form.sponsorshipType === "ENTIRE_DAY" ? true : form.breakfast,
       lunch: form.sponsorshipType === "ENTIRE_DAY" ? true : form.lunch,
+      eveningSnacks: form.eveningSnacks,
       dinner: form.sponsorshipType === "ENTIRE_DAY" ? true : form.dinner,
       foodType: form.foodType,
       mealNotes: form.mealNotes || undefined,
@@ -504,7 +528,7 @@ export default function MealsPage() {
             <SelectTrigger data-testid="filter-slot"><SelectValue placeholder="All Slots" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Slots</SelectItem>
-              {SLOT_OPTIONS.map((s) => <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>)}
+              {SLOT_FILTER_OPTIONS.map((s) => <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>
@@ -572,7 +596,11 @@ export default function MealsPage() {
             ) : (
               items.map((item) => {
                 const total = item.totalAmount != null ? Number(item.totalAmount) : Number(item.amount);
-                const received = Number(item.amountReceived ?? 0);
+                const rawReceived = Number(item.amountReceived ?? 0);
+                // Legacy fix: Phase 1 records (totalAmount IS null) with paymentType FULL
+                // had no amountReceived tracking — treat them as fully paid for display.
+                const isLegacyFullPaid = item.totalAmount == null && item.paymentType === "FULL" && rawReceived === 0;
+                const received = isLegacyFullPaid ? total : rawReceived;
                 const balance = Math.max(0, total - received);
                 const menuCount = item.selectedMenuItems?.length ?? 0;
                 const hasSpecial = !!item.specialMenuItem;
@@ -599,7 +627,7 @@ export default function MealsPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {slotBadges(item.breakfast, item.lunch, item.dinner).map((s) => (
+                        {slotBadges(item.breakfast, item.lunch, item.eveningSnacks ?? false, item.dinner).map((s) => (
                           <Badge key={s} className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100 border-0">{s}</Badge>
                         ))}
                       </div>
