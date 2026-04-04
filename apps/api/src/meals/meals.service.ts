@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { DonationHomeType, DonationType, DonationPurpose, MealOccasionType } from "@prisma/client";
+import { DonationHomeType, DonationType, DonationPurpose, MealOccasionType, MealPaymentStatus } from "@prisma/client";
 import {
   CreateMealSponsorshipDto,
   UpdateMealSponsorshipDto,
@@ -45,12 +45,18 @@ export class MealsService {
       throw new BadRequestException("At least one home must be selected");
     }
 
+    const totalAmount = dto.totalAmount ?? dto.amount;
+    const amountReceived = dto.amountReceived ?? 0;
+
+    if (amountReceived > totalAmount) {
+      throw new BadRequestException("Amount received cannot exceed total amount");
+    }
+
     const mealServiceDate = new Date(dto.mealServiceDate);
     const donationReceivedDate = new Date(dto.donationReceivedDate);
 
     const slotsDesc = this.buildMealSlotDescription(dto.breakfast, dto.lunch, dto.dinner);
     const homesDesc = this.buildHomesDescription(dto.homes);
-    const donorName = [donor.firstName, donor.lastName].filter(Boolean).join(" ");
     const remarks = `Meal Sponsorship — ${slotsDesc} | Homes: ${homesDesc} | Meal Date: ${mealServiceDate.toLocaleDateString("en-IN")}${dto.occasionType && dto.occasionType !== MealOccasionType.NONE ? ` | Occasion: ${dto.occasionType}` : ""}`;
 
     const primaryHome = dto.homes[0];
@@ -60,10 +66,11 @@ export class MealsService {
         data: {
           donorId: dto.donorId,
           donationDate: donationReceivedDate,
-          donationAmount: dto.amount,
+          donationAmount: totalAmount,
           donationType: DonationType.CASH,
           donationPurpose: DonationPurpose.MEAL_DONATION,
           donationHomeType: primaryHome,
+          transactionId: dto.transactionId,
           remarks,
           createdById,
         },
@@ -81,8 +88,19 @@ export class MealsService {
           mealNotes: dto.mealNotes,
           donationReceivedDate,
           mealServiceDate,
-          paymentType: dto.paymentType,
-          amount: dto.amount,
+          paymentType: dto.paymentType ?? (amountReceived >= totalAmount ? "FULL" : "ADVANCE"),
+          amount: totalAmount,
+          totalAmount,
+          amountReceived,
+          paymentStatus: dto.paymentStatus ?? (
+            amountReceived >= totalAmount ? MealPaymentStatus.FULL :
+            amountReceived > 0 ? MealPaymentStatus.PARTIAL :
+            MealPaymentStatus.AFTER_SERVICE
+          ),
+          transactionId: dto.transactionId,
+          selectedMenuItems: dto.selectedMenuItems ?? [],
+          specialMenuItem: dto.specialMenuItem,
+          telecallerName: dto.telecallerName,
           occasionType: dto.occasionType ?? MealOccasionType.NONE,
           occasionFor: dto.occasionFor,
           occasionPersonName: dto.occasionPersonName,
@@ -139,6 +157,10 @@ export class MealsService {
     if (query.slot === "lunch") where.lunch = true;
     if (query.slot === "dinner") where.dinner = true;
 
+    if (query.paymentStatus) {
+      where.paymentStatus = query.paymentStatus;
+    }
+
     const [items, total] = await Promise.all([
       this.prisma.mealSponsorship.findMany({
         where,
@@ -182,7 +204,13 @@ export class MealsService {
     const data: any = { ...dto };
     if (dto.donationReceivedDate) data.donationReceivedDate = new Date(dto.donationReceivedDate);
     if (dto.mealServiceDate) data.mealServiceDate = new Date(dto.mealServiceDate);
-    if (dto.amount !== undefined) data.amount = dto.amount;
+    if (dto.totalAmount !== undefined) {
+      data.totalAmount = dto.totalAmount;
+      data.amount = dto.totalAmount;
+    }
+    if (dto.amount !== undefined && dto.totalAmount === undefined) {
+      data.amount = dto.amount;
+    }
 
     return this.prisma.mealSponsorship.update({
       where: { id },

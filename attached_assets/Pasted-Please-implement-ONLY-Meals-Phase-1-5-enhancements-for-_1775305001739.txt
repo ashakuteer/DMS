@@ -1,0 +1,210 @@
+Please implement ONLY Meals Phase 1.5 enhancements for our existing working Meals module inside NGO Donor Hub. Do not do unrelated refactors. Production safety is highest priority.
+
+CURRENT STATUS
+Meals Phase 1 is already working:
+- Meals page loads
+- Meal sponsorship saves
+- Linked donation record is created
+- Meals appear in list
+
+GOAL OF PHASE 1.5
+Enhance the Meals module form/data so staff can capture:
+1. ready-made meal menu options
+2. special custom item
+3. telecaller / owner
+4. transaction ID / payment reference
+5. total amount
+6. amount received now
+7. balance amount
+8. better payment status handling
+
+IMPORTANT
+Do NOT build calendar view yet.
+Do NOT build home incharge portal yet.
+Only improve the Meals data model + form + table/list display.
+
+1) MENU OPTIONS
+Add structured ready-made menu options to meals booking.
+
+We need standard menu selections depending on meal context. For now, hardcode these options in the form (admin cannot edit master list yet).
+
+A. Breakfast options
+- Idly
+- Vada
+- Bonda / Mysore Bajji
+- Semiya Upma
+- Own Preparation
+- Boiled Egg
+- Bread
+- Fruit
+- Milk
+- Flavoured Rice (Pulihora / Jeera Rice / Tomato Rice)
+- Kichidi
+- Poori
+- Noodles
+
+B. Veg Snacks options
+- Samosa
+- Biscuits
+- Chips
+- Puff
+- Ice Cream
+- Fruit
+- Fruit Juice
+- Own Preparation
+- Pakodi / Pakora
+- Burger
+- Pizza
+- Noodles
+- Mirchi Bujji
+
+C. Veg Lunch / Dinner options
+- Bagara Rice
+- White Rice
+- Flavoured Rice (Pulihora / Jeera Rice / Tomato Rice)
+- Own Preparation
+- Vegetable Curry
+- Vegetable Biryani
+- Dal
+- Sambar
+- Sweet
+- Fruit
+- Curd
+- Papad
+- Aloo Kurma
+- Raitha / Curd Chutney
+- Masala Brinjal
+- Chutney
+- Panner Curry
+- Noodles
+
+D. Non-Veg Lunch / Dinner options
+- Bagara Rice
+- White Rice
+- Chicken Biryani
+- Mutton Curry
+- Fish Curry
+- Chicken Fry
+- Fish Fry
+- Vegetable Curry
+- Dal
+- Panner Curry & Boiled Egg
+- Boiled Egg
+- Sambar
+- Fruit
+- Sweet
+- Own Preparation
+- Noodles
+- Chicken Curry
+- Raitha / Curd Chutney
+- Curd
+
+2) MENU UI BEHAVIOR
+Add a section in the Add/Edit Meal Sponsorship form:
+
+- Standard Menu Items (checkboxes / multi-select chips)
+- Special Item (free text input)
+
+Rules:
+- If food type is VEG and meal slot is Breakfast → show Breakfast options
+- If food type is VEG and meal slot is Lunch or Dinner → show Veg Lunch/Dinner options
+- If food type is NON_VEG and meal slot is Lunch or Dinner → show Non-Veg Lunch/Dinner options
+- If meal type is snacks in future, keep code extensible but do not build snacks workflow separately right now
+- If multiple meal slots are selected, allow the same selected menu set to apply for now (keep Phase 1.5 simple)
+- Preserve existing menu / mealNotes field if useful, but integrate menu selections cleanly
+
+Store:
+- selectedMenuItems (array/text[] if possible)
+- specialMenuItem (optional text)
+
+3) TELECALLER / OWNER
+Add field:
+- telecallerName OR assignedOwnerName
+
+Use the simplest safe implementation based on your existing system:
+- preferably a dropdown/select from staff/users if already available
+- otherwise a free text field for now
+
+This field should show in meals list/table too.
+
+4) PAYMENT / AMOUNT ENHANCEMENTS
+Right now amount is too simple. We need to support advance/full/partial tracking.
+
+Add these fields:
+
+- totalAmount (required)
+- amountReceived (required, default 0 if needed)
+- balanceAmount (auto-calculated = totalAmount - amountReceived)
+- paymentStatus:
+  - ADVANCE
+  - PARTIAL
+  - FULL
+  - AFTER_SERVICE
+
+Important:
+- Keep old paymentType compatible if it already exists, but migrate UI and backend toward the new clearer model
+- If you must preserve existing paymentType column, map safely without breaking existing records
+
+Rules:
+- If amountReceived = 0 and paymentStatus = AFTER_SERVICE, allow it
+- If amountReceived = totalAmount, paymentStatus can be FULL
+- If amountReceived > 0 but < totalAmount, paymentStatus should support PARTIAL / ADVANCE
+- balanceAmount should be auto-calculated and stored or derived safely
+
+5) TRANSACTION DETAILS
+Add field:
+- transactionId / paymentReference (optional text)
+
+This is to store UTR / bank ref / payment reference.
+
+Show it in detail/list view where reasonable.
+
+6) FORM VALIDATION
+Ensure:
+- totalAmount is required
+- amountReceived cannot be greater than totalAmount
+- balanceAmount auto-updates on UI
+- special item is optional
+- selected menu items are optional but available
+- transaction ID optional
+
+7) TABLE / LIST DISPLAY
+Enhance Meals list/table to show useful additional info at minimum:
+- telecaller / owner
+- total amount
+- amount received
+- balance amount
+- payment status
+- maybe a compact menu indicator like:
+  "3 menu items + special"
+No need to overcrowd the list. Keep it clean.
+
+8) DONATION LINKAGE
+Do NOT break existing donation linkage.
+Meals sponsorship should still create/link one donation record as before.
+
+For now:
+- linked donation amount should use totalAmount
+- do not redesign the donation module yet
+- keep existing integration stable
+
+9) BACKWARD COMPATIBILITY
+Do NOT break existing saved meals.
+Existing records should still load and display.
+Use additive schema changes only.
+
+10) AFTER IMPLEMENTATION
+Tell me clearly:
+A. What files changed
+B. What schema fields were added/changed
+C. Whether migration/db push is required
+D. How old meal records remain compatible
+E. How balance amount is calculated
+F. How menu options are selected and stored
+
+IMPORTANT FINAL REMINDER
+Implement ONLY Meals Phase 1.5.
+No calendar yet.
+No home portal yet.
+No unrelated donation refactor.
+Smallest safe production-grade enhancement only.

@@ -7,13 +7,16 @@ import {
   IsArray,
   IsNumber,
   Min,
+  Max,
   ArrayMinSize,
+  ValidateIf,
 } from "class-validator";
 import {
   DonationHomeType,
   MealSponsorshipType,
   MealFoodType,
   MealPaymentType,
+  MealPaymentStatus,
   MealOccasionType,
   MealOccasionFor,
 } from "@prisma/client";
@@ -52,12 +55,43 @@ export class CreateMealSponsorshipDto {
   @IsDateString()
   mealServiceDate: string;
 
+  @IsOptional()
   @IsEnum(MealPaymentType)
-  paymentType: MealPaymentType;
+  paymentType?: MealPaymentType;
 
   @IsNumber()
   @Min(0)
   amount: number;
+
+  @IsNumber()
+  @Min(0)
+  totalAmount: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  amountReceived?: number;
+
+  @IsOptional()
+  @IsEnum(MealPaymentStatus)
+  paymentStatus?: MealPaymentStatus;
+
+  @IsOptional()
+  @IsString()
+  transactionId?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  selectedMenuItems?: string[];
+
+  @IsOptional()
+  @IsString()
+  specialMenuItem?: string;
+
+  @IsOptional()
+  @IsString()
+  telecallerName?: string;
 
   @IsOptional()
   @IsEnum(MealOccasionType)
@@ -129,6 +163,37 @@ export class UpdateMealSponsorshipDto {
   amount?: number;
 
   @IsOptional()
+  @IsNumber()
+  @Min(0)
+  totalAmount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  amountReceived?: number;
+
+  @IsOptional()
+  @IsEnum(MealPaymentStatus)
+  paymentStatus?: MealPaymentStatus;
+
+  @IsOptional()
+  @IsString()
+  transactionId?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  selectedMenuItems?: string[];
+
+  @IsOptional()
+  @IsString()
+  specialMenuItem?: string;
+
+  @IsOptional()
+  @IsString()
+  telecallerName?: string;
+
+  @IsOptional()
   @IsEnum(MealOccasionType)
   occasionType?: MealOccasionType;
 
@@ -173,6 +238,10 @@ export class MealSponsorshipQueryDto {
   @IsOptional()
   @IsString()
   slot?: "breakfast" | "lunch" | "dinner";
+
+  @IsOptional()
+  @IsString()
+  paymentStatus?: string;
 
   @IsOptional()
   @IsString()

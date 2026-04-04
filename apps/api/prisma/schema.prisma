@@ -2493,6 +2493,13 @@ enum MealPaymentType {
   FULL
 }
 
+enum MealPaymentStatus {
+  ADVANCE
+  PARTIAL
+  FULL
+  AFTER_SERVICE
+}
+
 enum MealOccasionType {
   NONE
   BIRTHDAY
@@ -2525,6 +2532,13 @@ model MealSponsorship {
   occasionPersonName   String?
   occasionNotes        String?
   internalNotes        String?
+  selectedMenuItems    String[]            @default([])
+  specialMenuItem      String?
+  telecallerName       String?
+  totalAmount          Decimal?            @db.Decimal(15, 2)
+  amountReceived       Decimal             @db.Decimal(15, 2) @default(0)
+  paymentStatus        MealPaymentStatus?
+  transactionId        String?
   donationId           String?             @unique
   createdById          String
   createdAt            DateTime            @default(now())
