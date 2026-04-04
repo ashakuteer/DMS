@@ -35,7 +35,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node node_modules/tsx/dist/cli.mjs server/index.ts"
+args = "npm run dev"
 waitForPort = 5000
 
 [userenv]
@@ -62,7 +62,3 @@ externalPort = 3001
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5555
-externalPort = 3000
