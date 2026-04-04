@@ -2,16 +2,16 @@
 
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format, startOfMonth, endOfMonth, getDaysInMonth, addMonths, subMonths } from "date-fns";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  getDaysInMonth,
+  addMonths,
+  subMonths,
+} from "date-fns";
 import { fetchWithAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -62,6 +62,11 @@ const SLOTS: { key: SlotKey; label: string }[] = [
   { key: "dinner", label: "Dinner" },
 ];
 
+// Column width for each date cell (px)
+const CELL_W = 52;
+// Frozen label column width (px)
+const LABEL_W = 148;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function homeLabel(h: string) {
@@ -70,6 +75,24 @@ function homeLabel(h: string) {
 
 function isoDate(year: number, month0: number, day: number) {
   return format(new Date(year, month0, day), "yyyy-MM-dd");
+}
+
+/** Returns records that cover a given (day, slotKey, homeValue) cell */
+function getMatchingRecords(
+  records: CalendarMealRecord[],
+  day: number,
+  slotKey: SlotKey,
+  homeValue: string,
+): CalendarMealRecord[] {
+  return records.filter((r) => {
+    if (new Date(r.mealServiceDate).getDate() !== day) return false;
+    if (!r[slotKey]) return false;
+    const sh = r.slotHomes as Record<string, string[]> | null | undefined;
+    if (sh && Array.isArray(sh[slotKey])) {
+      return sh[slotKey].includes(homeValue);
+    }
+    return r.homes.includes(homeValue);
+  });
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -86,24 +109,28 @@ interface Props {
 
 export function MealsCalendar({ onAddWithPrefill }: Props) {
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
-  const [homeFilter, setHomeFilter] = useState("all");
   const [selectedCell, setSelectedCell] = useState<{
     day: number;
-    slot: { key: SlotKey; label: string };
+    slotKey: SlotKey;
+    homeValue: string;
   } | null>(null);
 
   const firstDay = startOfMonth(month);
   const lastDay = endOfMonth(month);
   const daysInMonth = getDaysInMonth(month);
-  const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+  const days = useMemo(
+    () => Array.from({ length: daysInMonth }, (_, i) => i + 1),
+    [daysInMonth],
+  );
+  const todayStr = format(new Date(), "yyyy-MM-dd");
 
+  // ── Data fetch (all homes, full month) ──────────────────────────────────────
   const { data, isLoading } = useQuery<{ items: CalendarMealRecord[] }>({
-    queryKey: ["/api/meals/calendar", format(month, "yyyy-MM"), homeFilter],
+    queryKey: ["/api/meals/matrix", format(month, "yyyy-MM")],
     queryFn: async () => {
       const p = new URLSearchParams();
       p.set("mealServiceDate", format(firstDay, "yyyy-MM-dd"));
       p.set("mealServiceDateTo", format(lastDay, "yyyy-MM-dd"));
-      if (homeFilter !== "all") p.set("home", homeFilter);
       p.set("limit", "500");
       const res = await fetchWithAuth(`/api/meals?${p.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch meals");
@@ -114,92 +141,77 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
 
   const records = data?.items ?? [];
 
-  const byDay = useMemo(() => {
-    const map: Record<number, CalendarMealRecord[]> = {};
-    for (const r of records) {
-      const d = new Date(r.mealServiceDate).getDate();
-      if (!map[d]) map[d] = [];
-      map[d].push(r);
-    }
-    return map;
-  }, [records]);
-
-  function getCellRecords(day: number, slotKey: SlotKey): CalendarMealRecord[] {
-    return (byDay[day] ?? []).filter((r) => {
-      if (!r[slotKey]) return false;
-      if (homeFilter === "all") return true;
-      // If record has slotHomes, check slot-specific homes
-      if (r.slotHomes && (r.slotHomes as Record<string, string[]>)[slotKey]) {
-        return ((r.slotHomes as Record<string, string[]>)[slotKey]).includes(homeFilter);
+  // ── Build matrix: matrixData[homeValue][slotKey][day] ───────────────────────
+  const matrixData = useMemo(() => {
+    const m: Record<string, Record<string, Record<number, CalendarMealRecord[]>>> = {};
+    for (const home of HOME_OPTIONS) {
+      m[home.value] = {};
+      for (const slot of SLOTS) {
+        m[home.value][slot.key] = {};
+        for (const d of days) {
+          m[home.value][slot.key][d] = getMatchingRecords(records, d, slot.key, home.value);
+        }
       }
-      // Fall back to legacy homes array
-      return r.homes.includes(homeFilter);
-    });
-  }
+    }
+    return m;
+  }, [records, days]);
 
-  const todayStr = format(new Date(), "yyyy-MM-dd");
+  // ── Modal records ────────────────────────────────────────────────────────────
+  const cellRecordsForModal = useMemo(() => {
+    if (!selectedCell) return [];
+    return (
+      matrixData[selectedCell.homeValue]?.[selectedCell.slotKey]?.[selectedCell.day] ?? []
+    );
+  }, [selectedCell, matrixData]);
 
-  const cellRecordsForModal = selectedCell
-    ? getCellRecords(selectedCell.day, selectedCell.slot.key)
-    : [];
+  const modalSlotLabel = selectedCell
+    ? SLOTS.find((s) => s.key === selectedCell.slotKey)?.label ?? ""
+    : "";
 
-  function openAdd(day: number, slot: { key: SlotKey; label: string }) {
+  // ── Handlers ─────────────────────────────────────────────────────────────────
+  function openAdd() {
+    if (!selectedCell) return;
+    const { day, slotKey, homeValue } = selectedCell;
     setSelectedCell(null);
-    const slotPayload: Partial<Record<SlotKey, boolean>> = { [slot.key]: true };
     const dateStr = isoDate(month.getFullYear(), month.getMonth(), day);
-    onAddWithPrefill(dateStr, slotPayload, homeFilter !== "all" ? homeFilter : "");
+    onAddWithPrefill(dateStr, { [slotKey]: true }, homeValue);
   }
 
+  // ── Render ───────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-4">
-      {/* ── Controls ── */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            data-testid="calendar-prev-month"
-            onClick={() => setMonth((m) => subMonths(m, 1))}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-lg font-semibold min-w-[180px] text-center">
-            {format(month, "MMMM yyyy")}
-          </span>
-          <Button
-            variant="outline"
-            size="icon"
-            data-testid="calendar-next-month"
-            onClick={() => setMonth((m) => addMonths(m, 1))}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            data-testid="calendar-today"
-            onClick={() => setMonth(startOfMonth(new Date()))}
-          >
-            Today
-          </Button>
-        </div>
-
-        <Select value={homeFilter} onValueChange={setHomeFilter}>
-          <SelectTrigger className="w-44" data-testid="calendar-home-filter">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Homes</SelectItem>
-            {HOME_OPTIONS.map((h) => (
-              <SelectItem key={h.value} value={h.value}>
-                {h.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Controls */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Button
+          variant="outline"
+          size="icon"
+          data-testid="calendar-prev-month"
+          onClick={() => setMonth((m) => subMonths(m, 1))}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-lg font-semibold min-w-[180px] text-center">
+          {format(month, "MMMM yyyy")}
+        </span>
+        <Button
+          variant="outline"
+          size="icon"
+          data-testid="calendar-next-month"
+          onClick={() => setMonth((m) => addMonths(m, 1))}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          data-testid="calendar-today"
+          onClick={() => setMonth(startOfMonth(new Date()))}
+        >
+          Today
+        </Button>
       </div>
 
-      {/* ── Legend ── */}
+      {/* Legend */}
       <div className="flex items-center gap-5 text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-green-200 dark:bg-green-900/60 border border-green-300" />
@@ -211,23 +223,34 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-muted border" />
-          Available
+          Available — click to book
         </span>
       </div>
 
-      {/* ── Grid ── */}
+      {/* Matrix grid */}
       {isLoading ? (
-        <div className="flex justify-center py-12">
+        <div className="flex justify-center py-16">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
         <div className="border rounded-lg overflow-x-auto">
-          <div className="min-w-max">
-            {/* Header: Slot label column + day columns */}
-            <div className="flex border-b bg-muted/50">
-              <div className="w-32 shrink-0 p-2 border-r text-xs font-semibold text-muted-foreground">
-                Slot
+          {/* wrapper sets minimum total width so scroll appears only when needed */}
+          <div style={{ minWidth: `${LABEL_W + daysInMonth * CELL_W}px` }}>
+
+            {/* ── Date header row ── */}
+            <div
+              className="flex border-b bg-muted/60"
+              style={{ position: "sticky", top: 0, zIndex: 20 }}
+            >
+              {/* Frozen corner */}
+              <div
+                className="shrink-0 border-r flex items-center px-3 text-[11px] font-semibold text-muted-foreground bg-muted/60"
+                style={{ width: LABEL_W, position: "sticky", left: 0, zIndex: 21 }}
+              >
+                Home · Slot
               </div>
+
+              {/* Date columns */}
               {days.map((d) => {
                 const dateStr = isoDate(month.getFullYear(), month.getMonth(), d);
                 const isToday = dateStr === todayStr;
@@ -235,15 +258,16 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                 return (
                   <div
                     key={d}
-                    className={`w-[72px] shrink-0 py-1.5 px-0.5 border-r text-center ${
+                    className={`shrink-0 py-1.5 px-0 border-r text-center ${
                       isToday ? "bg-primary/10" : ""
                     }`}
+                    style={{ width: CELL_W }}
                   >
-                    <div className="text-[10px] text-muted-foreground">
+                    <div className="text-[9px] text-muted-foreground leading-none">
                       {format(dateObj, "EEE")}
                     </div>
                     <div
-                      className={`text-sm font-bold ${
+                      className={`text-xs font-bold leading-tight mt-0.5 ${
                         isToday ? "text-primary" : "text-foreground"
                       }`}
                     >
@@ -254,53 +278,93 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
               })}
             </div>
 
-            {/* Slot rows */}
-            {SLOTS.map((slot) => (
-              <div key={slot.key} className="flex border-b last:border-b-0">
-                {/* Row label */}
-                <div className="w-32 shrink-0 p-2 border-r text-xs font-semibold bg-muted/20 flex items-center">
-                  {slot.label}
+            {/* ── Home groups ── */}
+            {HOME_OPTIONS.map((home, hIdx) => (
+              <div key={home.value}>
+                {/* Home group header */}
+                <div className="flex border-b bg-muted/40">
+                  <div
+                    className="shrink-0 px-3 py-1 border-r text-[11px] font-bold tracking-wide text-foreground bg-muted/40 flex items-center"
+                    style={{ width: LABEL_W, position: "sticky", left: 0, zIndex: 10 }}
+                  >
+                    {home.label}
+                  </div>
+                  {/* Span remaining columns with the same background */}
+                  <div className="flex-1" />
                 </div>
 
-                {/* Day cells */}
-                {days.map((d) => {
-                  const cellRecords = getCellRecords(d, slot.key);
-                  const count = cellRecords.length;
-                  const hasBalance = cellRecords.some((r) => {
-                    const total = Number(r.totalAmount ?? r.amount);
-                    const rcvd = Number(r.amountReceived ?? 0);
-                    return rcvd < total;
-                  });
-
-                  let bgClass = "";
-                  if (count > 0) {
-                    bgClass = hasBalance
-                      ? "bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
-                      : "bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30";
-                  } else {
-                    bgClass = "hover:bg-muted/60";
-                  }
-
+                {/* Slot rows */}
+                {SLOTS.map((slot, sIdx) => {
+                  const isLastRow =
+                    hIdx === HOME_OPTIONS.length - 1 && sIdx === SLOTS.length - 1;
                   return (
                     <div
-                      key={d}
-                      className={`w-[72px] shrink-0 min-h-[52px] border-r cursor-pointer transition-colors flex flex-col items-center justify-center p-1 gap-0.5 ${bgClass}`}
-                      onClick={() => setSelectedCell({ day: d, slot })}
-                      data-testid={`calendar-cell-${slot.key}-${d}`}
+                      key={slot.key}
+                      className={`flex ${isLastRow ? "" : "border-b"}`}
                     >
-                      {count === 0 ? (
-                        <span className="text-[10px] text-muted-foreground/40">—</span>
-                      ) : (
-                        <>
-                          <span className="text-xs font-bold text-green-700 dark:text-green-400">
-                            {count}
-                          </span>
-                          <span className="text-[10px] text-muted-foreground leading-tight text-center max-w-full truncate px-0.5">
-                            {cellRecords[0].donor.firstName}
-                            {count > 1 ? ` +${count - 1}` : ""}
-                          </span>
-                        </>
-                      )}
+                      {/* Frozen slot label */}
+                      <div
+                        className="shrink-0 border-r text-[11px] text-muted-foreground bg-background flex items-center px-3"
+                        style={{ width: LABEL_W, minHeight: 40, position: "sticky", left: 0, zIndex: 10 }}
+                      >
+                        {slot.label}
+                      </div>
+
+                      {/* Day cells */}
+                      {days.map((d) => {
+                        const dateStr = isoDate(month.getFullYear(), month.getMonth(), d);
+                        const isToday = dateStr === todayStr;
+                        const cellRecords =
+                          matrixData[home.value]?.[slot.key]?.[d] ?? [];
+                        const count = cellRecords.length;
+                        const hasBalance = cellRecords.some((r) => {
+                          const total = Number(r.totalAmount ?? r.amount);
+                          const rcvd = Number(r.amountReceived ?? 0);
+                          return rcvd < total;
+                        });
+
+                        let bgCls: string;
+                        let textCls: string;
+                        if (count === 0) {
+                          bgCls = "hover:bg-muted/60";
+                          textCls = "";
+                        } else if (hasBalance) {
+                          bgCls =
+                            "bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30";
+                          textCls = "text-yellow-800 dark:text-yellow-300";
+                        } else {
+                          bgCls =
+                            "bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30";
+                          textCls = "text-green-800 dark:text-green-300";
+                        }
+
+                        return (
+                          <div
+                            key={d}
+                            className={`shrink-0 border-r cursor-pointer transition-colors flex flex-col items-center justify-center p-0.5 gap-0 ${bgCls} ${
+                              isToday ? "ring-inset ring-1 ring-primary/40" : ""
+                            }`}
+                            style={{ width: CELL_W, minHeight: 40 }}
+                            onClick={() =>
+                              setSelectedCell({ day: d, slotKey: slot.key, homeValue: home.value })
+                            }
+                            data-testid={`matrix-cell-${home.value}-${slot.key}-${d}`}
+                          >
+                            {count === 0 ? (
+                              <span className="text-[10px] text-muted-foreground/30 select-none">
+                                —
+                              </span>
+                            ) : (
+                              <span
+                                className={`text-[10px] font-semibold leading-tight text-center max-w-full truncate px-0.5 ${textCls}`}
+                              >
+                                {cellRecords[0].donor.firstName}
+                                {count > 1 ? ` +${count - 1}` : ""}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })}
@@ -313,43 +377,46 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
       {/* ── Cell detail modal ── */}
       <Dialog
         open={selectedCell !== null}
-        onOpenChange={(open) => { if (!open) setSelectedCell(null); }}
+        onOpenChange={(open) => {
+          if (!open) setSelectedCell(null);
+        }}
       >
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {selectedCell?.slot.label}
-              {" — "}
-              {selectedCell
-                ? format(
+            <DialogTitle className="text-base leading-snug">
+              {modalSlotLabel}
+              {selectedCell && (
+                <span className="text-muted-foreground font-normal">
+                  {" "}— {homeLabel(selectedCell.homeValue)}
+                </span>
+              )}
+              {selectedCell && (
+                <div className="text-sm font-normal text-muted-foreground mt-0.5">
+                  {format(
                     new Date(
                       month.getFullYear(),
                       month.getMonth(),
                       selectedCell.day,
                     ),
-                    "dd MMM yyyy",
-                  )
-                : ""}
-              {homeFilter !== "all" && (
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  ({homeLabel(homeFilter)})
-                </span>
+                    "dd MMMM yyyy",
+                  )}
+                </div>
               )}
             </DialogTitle>
           </DialogHeader>
 
           {cellRecordsForModal.length === 0 ? (
             <div className="py-8 text-center space-y-3">
-              <p className="text-muted-foreground text-sm">No sponsorship for this slot.</p>
-              {selectedCell && (
-                <Button
-                  size="sm"
-                  data-testid="calendar-add-from-empty-cell"
-                  onClick={() => openAdd(selectedCell.day, selectedCell.slot)}
-                >
-                  + Add Sponsorship
-                </Button>
-              )}
+              <p className="text-muted-foreground text-sm">
+                No sponsorship booked for this slot.
+              </p>
+              <Button
+                size="sm"
+                data-testid="calendar-add-from-empty-cell"
+                onClick={openAdd}
+              >
+                + Add Sponsorship
+              </Button>
             </div>
           ) : (
             <div className="space-y-3">
@@ -369,13 +436,8 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                       </Badge>
                     </div>
 
-                    <div className="flex flex-wrap gap-1.5 text-xs text-muted-foreground">
-                      <span>{r.foodType === "VEG" ? "🟢 Veg" : "🔴 Non-Veg"}</span>
-                      {r.homes.map((h) => (
-                        <span key={h} className="bg-muted px-1.5 py-0.5 rounded">
-                          {homeLabel(h)}
-                        </span>
-                      ))}
+                    <div className="text-xs text-muted-foreground">
+                      {r.foodType === "VEG" ? "🟢 Veg" : "🔴 Non-Veg"}
                     </div>
 
                     <div className="grid grid-cols-3 gap-1 text-xs">
@@ -389,7 +451,9 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                       </div>
                       <div
                         className={
-                          balance > 0 ? "text-orange-600 font-medium" : "text-green-600"
+                          balance > 0
+                            ? "text-orange-600 font-medium"
+                            : "text-green-600"
                         }
                       >
                         Bal: ₹{balance.toLocaleString("en-IN")}
@@ -400,13 +464,14 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                       <div className="text-xs text-muted-foreground">
                         Occasion:{" "}
                         {r.occasionType.replace(/_/g, " ")}
-                        {r.occasionPersonName && ` — ${r.occasionPersonName}`}
+                        {r.occasionPersonName ? ` — ${r.occasionPersonName}` : ""}
                       </div>
                     )}
 
                     {menuCount > 0 && (
                       <div className="text-xs text-muted-foreground">
-                        Menu: {r.selectedMenuItems!.slice(0, 3).join(", ")}
+                        Menu:{" "}
+                        {r.selectedMenuItems!.slice(0, 3).join(", ")}
                         {menuCount > 3 ? ` +${menuCount - 3} more` : ""}
                       </div>
                     )}
@@ -420,17 +485,15 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                 );
               })}
 
-              {selectedCell && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full"
-                  data-testid="calendar-add-another"
-                  onClick={() => openAdd(selectedCell.day, selectedCell.slot)}
-                >
-                  + Add Another Sponsorship
-                </Button>
-              )}
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full"
+                data-testid="calendar-add-another"
+                onClick={openAdd}
+              >
+                + Add Another Sponsorship
+              </Button>
             </div>
           )}
         </DialogContent>
