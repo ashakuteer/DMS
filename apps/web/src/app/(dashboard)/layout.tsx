@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { authStorage } from "@/lib/auth";
 import { Sidebar } from "@/components/sidebar";
 import { GlobalSearchTrigger } from "@/components/global-search";
@@ -15,6 +15,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -24,10 +25,17 @@ export default function DashboardLayout({
 
     if (!user || !token) {
       router.push("/login");
-    } else {
-      setIsLoading(false);
+      return;
     }
-  }, [router]);
+
+    // HOME_INCHARGE: force-redirect to meals if they land anywhere else
+    if (user.role === 'HOME_INCHARGE' && !pathname.startsWith('/dashboard/meals')) {
+      router.replace('/dashboard/meals');
+      return;
+    }
+
+    setIsLoading(false);
+  }, [router, pathname]);
 
   if (isLoading) {
     return (

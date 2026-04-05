@@ -73,7 +73,7 @@ const navGroups: NavGroup[] = [
     items: [
       { title: "Donors", tKey: "nav.donors", href: "/dashboard/donors", icon: Users, permissionModule: "donors" },
       { title: "Donations", tKey: "nav.donations", href: "/dashboard/donations", icon: IndianRupee, permissionModule: "donations" },
-      { title: "Meals Sponsorship", tKey: "nav.meals", href: "/dashboard/meals", icon: UtensilsCrossed, permissionModule: "donations" },
+      { title: "Meals Sponsorship", tKey: "nav.meals", href: "/dashboard/meals", icon: UtensilsCrossed, permissionModule: "meals" },
       { title: "Donor Actions", tKey: "nav.donor_actions", href: "/dashboard/donor-actions", icon: Zap, permissionModule: "donors" },
       { title: "Beneficiaries", tKey: "nav.beneficiaries", href: "/dashboard/beneficiaries", icon: HandHeart, permissionModule: "beneficiaries" },
       { title: "Campaigns", tKey: "nav.campaigns", href: "/dashboard/campaigns", icon: Target, permissionModule: "campaigns" },
@@ -185,8 +185,14 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const toggleGroup = (label: string) =>
     setExpandedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
 
+  const isHomeInchargeUser = user?.role === 'HOME_INCHARGE';
+
   const getFilteredItems = (group: NavGroup): NavItem[] =>
     group.items.filter((item) => {
+      // HOME_INCHARGE: only show the Meals Sponsorship item
+      if (isHomeInchargeUser) {
+        return item.href === '/dashboard/meals';
+      }
       if (item.permissionModule && !canAccessModule(item.permissionModule)) return false;
       if (item.roles && user && !item.roles.includes(user.role)) return false;
       return true;
@@ -453,7 +459,12 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               {!collapsed && (
                 <div className="flex flex-col items-start text-left min-w-0 flex-1">
                   <span className="text-xs font-semibold truncate max-w-[120px]" style={{ color: TEXT_ACTIVE }}>{user?.name || "User"}</span>
-                  <span className="text-xs truncate max-w-[120px]" style={{ color: TEXT_LABEL }}>{user?.role || "Role"}</span>
+                  <span className="text-xs truncate max-w-[120px]" style={{ color: TEXT_LABEL }}>
+                    {user?.role === 'HOME_INCHARGE' && user?.assignedHome
+                      ? `Home Incharge · ${user.assignedHome === 'GIRLS_HOME' ? 'Girls Home' : user.assignedHome === 'BLIND_BOYS_HOME' ? 'Blind Boys Home' : 'Old Age Home'}`
+                      : user?.role === 'OFFICE_INCHARGE' ? 'Office Incharge'
+                      : user?.role || "Role"}
+                  </span>
                 </div>
               )}
             </button>

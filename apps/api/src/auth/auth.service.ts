@@ -109,6 +109,7 @@ export class AuthService {
           name: user.name,
           role: user.role,
           isActive: user.isActive,
+          assignedHome: user.assignedHome ?? null,
         },
         tokens,
       };

@@ -1,12 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { DonationHomeType, DonationType, DonationPurpose, MealOccasionType, MealPaymentStatus, PledgeStatus, PledgeType } from "@prisma/client";
+import { DonationHomeType, DonationType, DonationPurpose, HomeAssignment, MealOccasionType, MealPaymentStatus, PledgeStatus, PledgeType, Role } from "@prisma/client";
 import {
   CreateMealSponsorshipDto,
   UpdateMealSponsorshipDto,
   MealSponsorshipQueryDto,
   PostMealUpdateDto,
 } from "./meals.dto";
+
+interface MealUserContext {
+  id: string;
+  role: Role;
+  assignedHome?: HomeAssignment | null;
+}
 
 @Injectable()
 export class MealsService {
@@ -261,7 +267,7 @@ export class MealsService {
     }
   }
 
-  async findAll(query: MealSponsorshipQueryDto) {
+  async findAll(query: MealSponsorshipQueryDto, user?: MealUserContext) {
     const page = parseInt(query.page ?? "1", 10);
     const limit = parseInt(query.limit ?? "25", 10);
     const skip = (page - 1) * limit;
@@ -280,7 +286,11 @@ export class MealsService {
       }
     }
 
-    if (query.home) {
+    // HOME_INCHARGE: always scope to their assigned home regardless of query params
+    if (user?.role === Role.HOME_INCHARGE) {
+      if (!user.assignedHome) throw new ForbiddenException("No assigned home configured for this account");
+      where.homes = { has: user.assignedHome as unknown as DonationHomeType };
+    } else if (query.home) {
       where.homes = { has: query.home };
     }
 
@@ -326,12 +336,18 @@ export class MealsService {
     };
   }
 
-  async findPendingActions() {
+  async findPendingActions(user?: MealUserContext) {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
 
+    const homeFilter: any =
+      user?.role === Role.HOME_INCHARGE && user.assignedHome
+        ? { homes: { has: user.assignedHome as unknown as DonationHomeType } }
+        : {};
+
     const meals = await this.prisma.mealSponsorship.findMany({
       where: {
+        ...homeFilter,
         OR: [
           { mealServiceDate: { lte: today } },
           { promiseMade: true },
@@ -362,8 +378,17 @@ export class MealsService {
     return meal;
   }
 
-  async updatePostMeal(id: string, dto: PostMealUpdateDto, updatedById: string) {
+  async updatePostMeal(id: string, dto: PostMealUpdateDto, updatedById: string, user?: MealUserContext) {
     const meal = await this.findOne(id);
+
+    // HOME_INCHARGE: verify the meal belongs to their home
+    if (user?.role === Role.HOME_INCHARGE) {
+      if (!user.assignedHome) throw new ForbiddenException("No assigned home configured for this account");
+      const mealHomes = (meal as any).homes as string[];
+      if (!mealHomes.includes(user.assignedHome)) {
+        throw new ForbiddenException("You can only update post-meal details for your assigned home");
+      }
+    }
 
     // Validate effective received does not exceed totalAmount
     if (dto.postMealAmountReceived !== undefined && meal.totalAmount) {

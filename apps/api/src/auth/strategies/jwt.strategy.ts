@@ -36,6 +36,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         name: true,
         role: true,
         isActive: true,
+        assignedHome: true,
       },
     });
 

@@ -14,6 +14,7 @@ model User {
   password          String
   name              String
   role              Role                    @default(STAFF)
+  assignedHome      HomeAssignment?
   phone             String?                 @unique
   isActive          Boolean                 @default(true)
   refreshToken           String?
@@ -1051,6 +1052,14 @@ enum Role {
   MANAGER
   CARETAKER
   VIEWER
+  OFFICE_INCHARGE
+  HOME_INCHARGE
+}
+
+enum HomeAssignment {
+  GIRLS_HOME
+  BLIND_BOYS_HOME
+  OLD_AGE_HOME
 }
 
 enum DonorCategory {

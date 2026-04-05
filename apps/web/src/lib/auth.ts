@@ -14,9 +14,10 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'FOUNDER' | 'ADMIN' | 'STAFF';
+  role: 'FOUNDER' | 'ADMIN' | 'STAFF' | 'TELECALLER' | 'ACCOUNTANT' | 'OFFICE_ASSISTANT' | 'MANAGER' | 'CARETAKER' | 'VIEWER' | 'OFFICE_INCHARGE' | 'HOME_INCHARGE';
   phone?: string;
   isActive: boolean;
+  assignedHome?: 'GIRLS_HOME' | 'BLIND_BOYS_HOME' | 'OLD_AGE_HOME' | null;
 }
 
 export interface AuthTokens {

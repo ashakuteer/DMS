@@ -20,6 +20,8 @@ export interface PermissionMatrix {
 const STAFF_LIKE_ROLES = [Role.STAFF, Role.TELECALLER, Role.ACCOUNTANT, Role.OFFICE_ASSISTANT];
 const ADMIN_LIKE_ROLES = [Role.FOUNDER, Role.ADMIN];
 const ALL_ACTIVE_ROLES = [...ADMIN_LIKE_ROLES, ...STAFF_LIKE_ROLES];
+const MEAL_ROLES = [...ALL_ACTIVE_ROLES, Role.OFFICE_INCHARGE, Role.HOME_INCHARGE];
+const MEAL_CREATE_ROLES = [...ALL_ACTIVE_ROLES, Role.OFFICE_INCHARGE];
 
 const DEFAULT_PERMISSIONS: Record<string, Record<string, Role[]>> = {
   donors: {
@@ -160,6 +162,13 @@ const DEFAULT_PERMISSIONS: Record<string, Record<string, Role[]>> = {
   },
   dashboard: {
     view: ALL_ACTIVE_ROLES,
+  },
+  meals: {
+    view: MEAL_ROLES,
+    create: MEAL_CREATE_ROLES,
+    edit: MEAL_ROLES,
+    postMeal: MEAL_ROLES,
+    delete: ADMIN_LIKE_ROLES,
   },
   staffTasks: {
     view: ALL_ACTIVE_ROLES,

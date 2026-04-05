@@ -1,0 +1,112 @@
+Please implement internal user access for meals workflow.
+
+GOAL
+Add login credentials / access setup for:
+- 1 Office Incharge
+- 3 Home Incharges
+
+IMPORTANT
+Keep everything inside the existing DMS.
+Do NOT build a separate external app.
+Production-safe only.
+Do not refactor unrelated modules.
+
+REQUIREMENTS
+
+1. Roles
+Use these roles:
+- OFFICE_INCHARGE
+- HOME_INCHARGE
+
+For HOME_INCHARGE also store assigned home:
+- GIRLS_HOME
+- BLIND_BOYS_HOME
+- OLD_AGE_HOME
+
+2. Office Incharge access
+Office Incharge should be able to:
+- log in
+- view Meals Sponsorship module
+- use Calendar / List / Pending Actions
+- create meal sponsorships
+- update post-meal details
+- see all homes for meals-related work
+
+3. Home Incharge access
+Home Incharge should be able to:
+- log in
+- see only their assigned home meals
+- see only their assigned home in calendar/list/pending actions
+- update post-meal details for their home only
+- record:
+  - meal completed
+  - donor visited
+  - extra items
+  - balance/payment after meal
+  - promise/follow-up fields if allowed
+- NOT see:
+  - all donors list
+  - other homes’ meals
+  - admin tools
+  - unrelated reports/modules
+
+4. Security / restriction
+Home Incharge must never see other homes’ data.
+Enforce this in backend, not only frontend hiding.
+
+5. Meals-only restricted view
+For HOME_INCHARGE users, give a simplified internal view:
+- Today’s meals
+- Upcoming meals
+- Meals calendar
+- Pending actions
+restricted to their home only
+
+6. Language support
+Add language option for this restricted view:
+- English
+- Telugu
+
+Use existing localization/i18n approach if already present.
+Do not build a brand new translation framework.
+
+7. User creation / credentials
+Create or enable a clear way to create these users:
+- Office Incharge
+- Girls Home Incharge
+- Blind Boys Home Incharge
+- Old Age Home Incharge
+
+If automatic seed creation is not the safest approach, provide the admin-safe/manual way to create them.
+
+8. Existing users
+Do NOT break or change:
+- Founder
+- Admin
+- Staff
+- existing role logic unless required for these two new roles
+
+9. Backward compatibility
+This must be additive only.
+
+AFTER IMPLEMENTATION
+Tell me clearly:
+A. what files changed
+B. what schema/role changes were added
+C. how OFFICE_INCHARGE access works
+D. how HOME_INCHARGE access works
+E. how assigned home restriction is enforced in backend
+F. where language switching is available
+G. how to create the 4 users / login credentials
+H. confirm founder/admin/staff are unaffected
+
+IMPORTANT FINAL REMINDER
+Implement ONLY:
+- OFFICE_INCHARGE
+- HOME_INCHARGE
+- assigned home restriction
+- meals-only restricted view
+- English/Telugu option
+Do not build external app.
+Do not refactor unrelated modules.
+Keep it production-safe.

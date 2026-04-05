@@ -1,4 +1,4 @@
-type Role = 'FOUNDER' | 'ADMIN' | 'STAFF' | 'TELECALLER' | 'ACCOUNTANT' | 'OFFICE_ASSISTANT';
+type Role = 'FOUNDER' | 'ADMIN' | 'STAFF' | 'TELECALLER' | 'ACCOUNTANT' | 'OFFICE_ASSISTANT' | 'MANAGER' | 'CARETAKER' | 'VIEWER' | 'OFFICE_INCHARGE' | 'HOME_INCHARGE';
 
 export const DEFAULT_PERMISSIONS: Record<string, Record<string, Role[]>> = {
   donors: {
@@ -155,6 +155,13 @@ export const DEFAULT_PERMISSIONS: Record<string, Record<string, Role[]>> = {
   dashboard: {
     view: ['FOUNDER', 'ADMIN', 'STAFF'],
   },
+  meals: {
+    view: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'ACCOUNTANT', 'OFFICE_ASSISTANT', 'OFFICE_INCHARGE', 'HOME_INCHARGE'],
+    create: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'ACCOUNTANT', 'OFFICE_ASSISTANT', 'OFFICE_INCHARGE'],
+    edit: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'ACCOUNTANT', 'OFFICE_ASSISTANT', 'OFFICE_INCHARGE', 'HOME_INCHARGE'],
+    postMeal: ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'ACCOUNTANT', 'OFFICE_ASSISTANT', 'OFFICE_INCHARGE', 'HOME_INCHARGE'],
+    delete: ['FOUNDER', 'ADMIN'],
+  },
 };
 
 export const PERMISSIONS = DEFAULT_PERMISSIONS;
@@ -193,6 +200,18 @@ export function hasPermission(
   return allowedRoles.includes(effectiveRole as Role);
 }
 
+export function isHomeIncharge(userRole: string | undefined | null): boolean {
+  return userRole === 'HOME_INCHARGE';
+}
+
+export function isOfficeIncharge(userRole: string | undefined | null): boolean {
+  return userRole === 'OFFICE_INCHARGE';
+}
+
+export function isMealsOnlyRole(userRole: string | undefined | null): boolean {
+  return userRole === 'HOME_INCHARGE';
+}
+
 export function canAccessModule(
   userRole: string | undefined | null,
   module: string
@@ -200,7 +219,7 @@ export function canAccessModule(
   return hasPermission(userRole, module, 'view');
 }
 
-export const ALL_ROLES: Role[] = ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'ACCOUNTANT', 'OFFICE_ASSISTANT'];
+export const ALL_ROLES: Role[] = ['FOUNDER', 'ADMIN', 'STAFF', 'TELECALLER', 'ACCOUNTANT', 'OFFICE_ASSISTANT', 'MANAGER', 'CARETAKER', 'VIEWER', 'OFFICE_INCHARGE', 'HOME_INCHARGE'];
 
 export const ROLE_LABELS: Record<string, string> = {
   FOUNDER: 'Founder',
@@ -209,6 +228,17 @@ export const ROLE_LABELS: Record<string, string> = {
   TELECALLER: 'Telecaller',
   ACCOUNTANT: 'Accountant',
   OFFICE_ASSISTANT: 'Office Assistant',
+  MANAGER: 'Manager',
+  CARETAKER: 'Caretaker',
+  VIEWER: 'Viewer',
+  OFFICE_INCHARGE: 'Office Incharge',
+  HOME_INCHARGE: 'Home Incharge',
+};
+
+export const HOME_LABELS: Record<string, string> = {
+  GIRLS_HOME: 'Girls Home',
+  BLIND_BOYS_HOME: 'Blind Boys Home',
+  OLD_AGE_HOME: 'Old Age Home',
 };
 
 export function isAdmin(user: { role?: string } | null | undefined): boolean {

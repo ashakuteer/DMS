@@ -164,7 +164,7 @@ export class UsersService {
     });
   }
 
-  async createStaff(data: { name: string; email: string; phone?: string; role: string; password: string }) {
+  async createStaff(data: { name: string; email: string; phone?: string; role: string; password: string; assignedHome?: string }) {
     const existing = await this.prisma.user.findFirst({
       where: {
         OR: [
@@ -191,6 +191,7 @@ export class UsersService {
         phone: data.phone || null,
         role: data.role as Role,
         password: hashedPassword,
+        ...(data.assignedHome ? { assignedHome: data.assignedHome as any } : {}),
       },
       select: {
         id: true,
@@ -198,6 +199,7 @@ export class UsersService {
         email: true,
         phone: true,
         role: true,
+        assignedHome: true,
         isActive: true,
         createdAt: true,
       },
