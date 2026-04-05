@@ -19,6 +19,7 @@ import {
   MealPaymentStatus,
   MealOccasionType,
   MealOccasionFor,
+  CancellationBy,
 } from "@prisma/client";
 
 export class CreateMealSponsorshipDto {
@@ -299,6 +300,36 @@ export class PostMealUpdateDto {
   @IsNumber()
   @Min(0)
   extraItemEstimatedValue?: number;
+
+  // ── Phase 3B — Cancellation / Refund ─────────────────────────────────────
+  @IsOptional()
+  @IsBoolean()
+  mealCancelled?: boolean;
+
+  @IsOptional()
+  @IsEnum(CancellationBy)
+  cancellationBy?: CancellationBy;
+
+  @IsOptional()
+  @IsString()
+  cancellationReason?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  amountReturned?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  refundAmount?: number;
+
+  @IsOptional()
+  @IsDateString()
+  refundDate?: string;
+
+  @IsOptional()
+  @IsString()
+  refundNotes?: string;
 }
 
 export class MealSponsorshipQueryDto {

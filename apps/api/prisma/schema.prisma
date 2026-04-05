@@ -2532,6 +2532,12 @@ enum MealOccasionFor {
   OTHER
 }
 
+enum CancellationBy {
+  OUR_SIDE
+  DONOR_SIDE
+  OTHER
+}
+
 model MealSponsorship {
   id                   String              @id @default(uuid())
   donorId              String
@@ -2582,6 +2588,15 @@ model MealSponsorship {
   extraItemTypes            String[]            @default([])
   extraItemNotes            String?
   extraItemEstimatedValue   Decimal?            @db.Decimal(15, 2)
+
+  // ── Phase 3B — Cancellation / Refund Fields ──────────────────────────────
+  mealCancelled             Boolean?
+  cancellationBy            CancellationBy?
+  cancellationReason        String?
+  amountReturned            Boolean?
+  refundAmount              Decimal?            @db.Decimal(15, 2)
+  refundDate                DateTime?
+  refundNotes               String?
 
   donor        Donor            @relation(fields: [donorId], references: [id])
   donation     Donation?        @relation(fields: [donationId], references: [id])

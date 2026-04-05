@@ -1,0 +1,111 @@
+Please do a focused enhancement only for the Meals Post-Meal Update form.
+
+IMPORTANT
+Do NOT work on home incharge login details yet.
+Do ONLY the Post-Meal Update form now.
+Keep it production-safe and additive only.
+
+GOAL
+The current Post-Meal Update form is incomplete.
+
+We now need to support:
+
+1. Meal cancelled
+2. Cancelled by whose side
+3. Cancellation reason
+4. Amount returned/refunded
+5. Refund amount
+6. Refund date
+7. Refund notes
+8. Donor visited should be explicit Yes / No, not unclear checkbox-only style
+
+==================================================
+PART 1 — IMPROVE EXISTING YES/NO FIELDS
+==================================================
+
+For these fields, use a clear Yes / No selector (radio buttons or select), not only a checkbox:
+
+- Meal was completed
+- Donor visited
+- Balance paid after meal
+- Promise made by donor
+- Donor brought extra items
+- Thank-you sent
+- Review requested from donor
+- Asked donor to send "Hi" to 9700711700
+
+This should be visually clear and easy for staff.
+
+==================================================
+PART 2 — ADD CANCELLATION / REFUND FIELDS
+==================================================
+
+Add these fields to MealSponsorship if not already added:
+
+- mealCancelled
+- cancellationBy
+- cancellationReason
+- amountReturned
+- refundAmount
+- refundDate
+- refundNotes
+
+Suggested values for cancellationBy:
+- OUR_SIDE
+- DONOR_SIDE
+- OTHER
+
+==================================================
+PART 3 — UI IN POST-MEAL UPDATE
+==================================================
+
+Add a new section in Post-Meal Update:
+
+G. CANCELLATION / REFUND
+
+Fields:
+- Was meal cancelled? Yes / No
+- Cancelled by:
+  - Our side
+  - Donor side
+  - Other
+- Cancellation reason
+- Was amount returned/refunded? Yes / No
+- Refund amount
+- Refund date
+- Refund notes
+
+Behavior:
+- Show cancellation detail fields only when mealCancelled = Yes
+- Show refund detail fields only when amountReturned = Yes
+
+==================================================
+PART 4 — SAFE LOGIC
+==================================================
+
+Rules:
+- Existing records must remain unaffected
+- Existing payment logic must not break
+- Existing post-meal workflow must not break
+- Existing pending actions must not break
+- This is additive only
+
+==================================================
+PART 5 — AFTER IMPLEMENTATION
+==================================================
+
+Tell me clearly:
+A. what files changed
+B. what schema fields were added
+C. how the new cancellation/refund section works
+D. which fields now use explicit Yes / No selection
+E. confirm old records remain safe
+F. confirm payment logic is unchanged except for storing refund data
+
+IMPORTANT FINAL REMINDER
+Do ONLY:
+- Post-Meal Update form improvement
+- Yes/No clarity
+- cancellation/refund fields
+
+Do not work on home incharge login in this prompt.

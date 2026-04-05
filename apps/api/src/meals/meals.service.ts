@@ -421,6 +421,15 @@ export class MealsService {
     if (dto.extraItemNotes !== undefined) data.extraItemNotes = dto.extraItemNotes;
     if (dto.extraItemEstimatedValue !== undefined) data.extraItemEstimatedValue = dto.extraItemEstimatedValue;
 
+    // ── Phase 3B — Cancellation / Refund ─────────────────────────────────────
+    if (dto.mealCancelled !== undefined) data.mealCancelled = dto.mealCancelled;
+    if (dto.cancellationBy !== undefined) data.cancellationBy = dto.cancellationBy;
+    if (dto.cancellationReason !== undefined) data.cancellationReason = dto.cancellationReason || null;
+    if (dto.amountReturned !== undefined) data.amountReturned = dto.amountReturned;
+    if (dto.refundAmount !== undefined) data.refundAmount = dto.refundAmount;
+    if (dto.refundDate !== undefined) data.refundDate = dto.refundDate ? new Date(dto.refundDate) : null;
+    if (dto.refundNotes !== undefined) data.refundNotes = dto.refundNotes || null;
+
     const [updated] = await this.prisma.$transaction(async (tx) => {
       const updatedMeal = await tx.mealSponsorship.update({
         where: { id },

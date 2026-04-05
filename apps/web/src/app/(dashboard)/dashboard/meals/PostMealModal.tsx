@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -30,6 +31,12 @@ const EXTRA_ITEM_TYPES = [
   "Stationery",
   "Toiletries",
   "Other",
+];
+
+const CANCELLATION_BY_OPTIONS = [
+  { value: "OUR_SIDE", label: "Our side" },
+  { value: "DONOR_SIDE", label: "Donor side" },
+  { value: "OTHER", label: "Other" },
 ];
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -57,6 +64,14 @@ export interface PostMealMeal {
   extraItemTypes?: string[];
   extraItemNotes?: string | null;
   extraItemEstimatedValue?: string | null;
+  // Phase 3B
+  mealCancelled?: boolean | null;
+  cancellationBy?: string | null;
+  cancellationReason?: string | null;
+  amountReturned?: boolean | null;
+  refundAmount?: string | null;
+  refundDate?: string | null;
+  refundNotes?: string | null;
 }
 
 interface PostMealFormState {
@@ -75,6 +90,14 @@ interface PostMealFormState {
   extraItemTypes: string[];
   extraItemNotes: string;
   extraItemEstimatedValue: string;
+  // Phase 3B
+  mealCancelled: boolean;
+  cancellationBy: string;
+  cancellationReason: string;
+  amountReturned: boolean;
+  refundAmount: string;
+  refundDate: string;
+  refundNotes: string;
 }
 
 function buildInitialState(meal: PostMealMeal): PostMealFormState {
@@ -100,33 +123,63 @@ function buildInitialState(meal: PostMealMeal): PostMealFormState {
     extraItemEstimatedValue: meal.extraItemEstimatedValue
       ? String(Number(meal.extraItemEstimatedValue))
       : "",
+    // Phase 3B
+    mealCancelled: meal.mealCancelled ?? false,
+    cancellationBy: meal.cancellationBy ?? "",
+    cancellationReason: meal.cancellationReason ?? "",
+    amountReturned: meal.amountReturned ?? false,
+    refundAmount: meal.refundAmount ? String(Number(meal.refundAmount)) : "",
+    refundDate: meal.refundDate
+      ? new Date(meal.refundDate).toISOString().slice(0, 10)
+      : "",
+    refundNotes: meal.refundNotes ?? "",
   };
 }
 
-// ── BoolToggle ────────────────────────────────────────────────────────────────
+// ── YesNo Button Toggle ──────────────────────────────────────────────────────
 
-function BoolToggle({
+function YesNo({
   id,
-  checked,
+  value,
   onChange,
   label,
 }: {
   id: string;
-  checked: boolean;
+  value: boolean;
   onChange: (v: boolean) => void;
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <Checkbox
-        id={id}
-        checked={checked}
-        onCheckedChange={(v) => onChange(v === true)}
-        data-testid={`pm-checkbox-${id}`}
-      />
-      <Label htmlFor={id} className="text-sm font-normal cursor-pointer">
-        {label}
-      </Label>
+    <div className="flex items-center justify-between gap-3 py-0.5">
+      <span className="text-sm" id={`yn-label-${id}`}>{label}</span>
+      <div className="flex rounded-md border overflow-hidden flex-shrink-0" role="group" aria-labelledby={`yn-label-${id}`}>
+        <button
+          type="button"
+          data-testid={`pm-no-${id}`}
+          onClick={() => onChange(false)}
+          className={cn(
+            "px-3 py-1 text-xs font-medium transition-colors border-r",
+            !value
+              ? "bg-red-50 text-red-700 border-red-200"
+              : "bg-background text-muted-foreground hover:bg-muted"
+          )}
+        >
+          No
+        </button>
+        <button
+          type="button"
+          data-testid={`pm-yes-${id}`}
+          onClick={() => onChange(true)}
+          className={cn(
+            "px-3 py-1 text-xs font-medium transition-colors",
+            value
+              ? "bg-green-50 text-green-700"
+              : "bg-background text-muted-foreground hover:bg-muted"
+          )}
+        >
+          Yes
+        </button>
+      </div>
     </div>
   );
 }
@@ -219,6 +272,9 @@ export function PostMealModal({ meal, open, onClose }: Props) {
       askedToSendHi: form.askedToSendHi,
       extraItemsGiven: form.extraItemsGiven,
       extraItemTypes: form.extraItemTypes,
+      // Phase 3B
+      mealCancelled: form.mealCancelled,
+      amountReturned: form.amountReturned,
     };
     if (form.mealCompletedAt) payload.mealCompletedAt = form.mealCompletedAt;
     if (form.donorVisitNotes.trim()) payload.donorVisitNotes = form.donorVisitNotes.trim();
@@ -228,6 +284,29 @@ export function PostMealModal({ meal, open, onClose }: Props) {
     if (form.extraItemNotes.trim()) payload.extraItemNotes = form.extraItemNotes.trim();
     if (form.extraItemEstimatedValue !== "")
       payload.extraItemEstimatedValue = parseFloat(form.extraItemEstimatedValue);
+
+    // Cancellation detail fields (only when mealCancelled = true)
+    if (form.mealCancelled) {
+      if (form.cancellationBy) payload.cancellationBy = form.cancellationBy;
+      if (form.cancellationReason.trim()) payload.cancellationReason = form.cancellationReason.trim();
+    } else {
+      // clear cancellation detail if toggled off
+      payload.cancellationBy = null;
+      payload.cancellationReason = null;
+    }
+
+    // Refund detail fields (only when amountReturned = true)
+    if (form.amountReturned) {
+      if (form.refundAmount !== "") payload.refundAmount = parseFloat(form.refundAmount);
+      if (form.refundDate) payload.refundDate = form.refundDate;
+      if (form.refundNotes.trim()) payload.refundNotes = form.refundNotes.trim();
+    } else {
+      // clear refund details if toggled off
+      payload.refundAmount = null;
+      payload.refundDate = null;
+      payload.refundNotes = null;
+    }
+
     mutation.mutate(payload);
   }
 
@@ -250,9 +329,9 @@ export function PostMealModal({ meal, open, onClose }: Props) {
 
           {/* A. Meal Completion */}
           <SectionHead>A · Meal Completion</SectionHead>
-          <BoolToggle id="mealCompleted" checked={form.mealCompleted} onChange={(v) => set("mealCompleted", v)} label="Meal was completed" />
+          <YesNo id="mealCompleted" value={form.mealCompleted} onChange={(v) => set("mealCompleted", v)} label="Meal was completed" />
           {form.mealCompleted && (
-            <div className="space-y-1 pl-6 pt-1">
+            <div className="space-y-1 pl-2 pt-1">
               <Label className="text-xs text-muted-foreground">Completed at (optional)</Label>
               <Input
                 type="datetime-local"
@@ -266,9 +345,9 @@ export function PostMealModal({ meal, open, onClose }: Props) {
 
           {/* B. Donor Visit */}
           <SectionHead>B · Donor Visit</SectionHead>
-          <BoolToggle id="donorVisited" checked={form.donorVisited} onChange={(v) => set("donorVisited", v)} label="Donor visited" />
+          <YesNo id="donorVisited" value={form.donorVisited} onChange={(v) => set("donorVisited", v)} label="Donor visited" />
           {form.donorVisited && (
-            <div className="pl-6 pt-1">
+            <div className="pl-2 pt-1">
               <Textarea
                 placeholder="Visit notes (optional)"
                 value={form.donorVisitNotes}
@@ -291,8 +370,8 @@ export function PostMealModal({ meal, open, onClose }: Props) {
               </div>
             </div>
           )}
-          <BoolToggle id="balancePaidAfterMeal" checked={form.balancePaidAfterMeal} onChange={(v) => set("balancePaidAfterMeal", v)} label="Balance paid after meal" />
-          <div className="space-y-1">
+          <YesNo id="balancePaidAfterMeal" value={form.balancePaidAfterMeal} onChange={(v) => set("balancePaidAfterMeal", v)} label="Balance paid after meal" />
+          <div className="space-y-1 pt-1">
             <Label className="text-xs text-muted-foreground">Additional amount received after meal (₹)</Label>
             <Input
               type="number"
@@ -308,9 +387,9 @@ export function PostMealModal({ meal, open, onClose }: Props) {
 
           {/* D. Promise */}
           <SectionHead>D · Promise</SectionHead>
-          <BoolToggle id="promiseMade" checked={form.promiseMade} onChange={(v) => set("promiseMade", v)} label="Promise made by donor" />
+          <YesNo id="promiseMade" value={form.promiseMade} onChange={(v) => set("promiseMade", v)} label="Promise made by donor" />
           {form.promiseMade && (
-            <div className="pl-6 pt-1">
+            <div className="pl-2 pt-1">
               <Textarea
                 placeholder="Promise notes"
                 value={form.promiseNotes}
@@ -324,9 +403,9 @@ export function PostMealModal({ meal, open, onClose }: Props) {
 
           {/* E. Extra Items */}
           <SectionHead>E · Extra Items Given</SectionHead>
-          <BoolToggle id="extraItemsGiven" checked={form.extraItemsGiven} onChange={(v) => set("extraItemsGiven", v)} label="Donor brought extra items" />
+          <YesNo id="extraItemsGiven" value={form.extraItemsGiven} onChange={(v) => set("extraItemsGiven", v)} label="Donor brought extra items" />
           {form.extraItemsGiven && (
-            <div className="pl-6 space-y-2 pt-1">
+            <div className="pl-2 space-y-2 pt-1">
               <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                 {EXTRA_ITEM_TYPES.map((type) => (
                   <div key={type} className="flex items-center gap-2">
@@ -366,9 +445,95 @@ export function PostMealModal({ meal, open, onClose }: Props) {
 
           {/* F. Follow-up Actions */}
           <SectionHead>F · Follow-up Actions</SectionHead>
-          <BoolToggle id="thankYouSent" checked={form.thankYouSent} onChange={(v) => set("thankYouSent", v)} label="Thank-you sent" />
-          <BoolToggle id="reviewRequested" checked={form.reviewRequested} onChange={(v) => set("reviewRequested", v)} label="Review requested from donor" />
-          <BoolToggle id="askedToSendHi" checked={form.askedToSendHi} onChange={(v) => set("askedToSendHi", v)} label='Asked donor to send "Hi" to 9700711700' />
+          <YesNo id="thankYouSent" value={form.thankYouSent} onChange={(v) => set("thankYouSent", v)} label="Thank-you sent" />
+          <YesNo id="reviewRequested" value={form.reviewRequested} onChange={(v) => set("reviewRequested", v)} label="Review requested from donor" />
+          <YesNo id="askedToSendHi" value={form.askedToSendHi} onChange={(v) => set("askedToSendHi", v)} label='Asked donor to send "Hi" to 9700711700' />
+
+          {/* G. Cancellation / Refund */}
+          <SectionHead>G · Cancellation / Refund</SectionHead>
+          <YesNo id="mealCancelled" value={form.mealCancelled} onChange={(v) => set("mealCancelled", v)} label="Was meal cancelled?" />
+
+          {form.mealCancelled && (
+            <div className="pl-2 space-y-3 pt-1">
+              {/* Cancelled by */}
+              <div className="space-y-1.5">
+                <Label className="text-xs text-muted-foreground">Cancelled by</Label>
+                <div className="flex gap-2 flex-wrap">
+                  {CANCELLATION_BY_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      data-testid={`pm-cancelby-${opt.value}`}
+                      onClick={() => set("cancellationBy", form.cancellationBy === opt.value ? "" : opt.value)}
+                      className={cn(
+                        "px-3 py-1 rounded-full text-xs font-medium border transition-colors",
+                        form.cancellationBy === opt.value
+                          ? "bg-orange-100 text-orange-800 border-orange-300"
+                          : "bg-background text-muted-foreground border-border hover:bg-muted"
+                      )}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Cancellation reason */}
+              <div className="space-y-1">
+                <Label className="text-xs text-muted-foreground">Cancellation reason (optional)</Label>
+                <Textarea
+                  placeholder="Describe why the meal was cancelled..."
+                  value={form.cancellationReason}
+                  onChange={(e) => set("cancellationReason", e.target.value)}
+                  rows={2}
+                  data-testid="pm-textarea-cancellationReason"
+                  className="text-sm"
+                />
+              </div>
+
+              {/* Amount returned */}
+              <YesNo id="amountReturned" value={form.amountReturned} onChange={(v) => set("amountReturned", v)} label="Was amount returned / refunded?" />
+
+              {form.amountReturned && (
+                <div className="pl-2 space-y-2 pt-1">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Refund amount (₹)</Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.01}
+                      value={form.refundAmount}
+                      onChange={(e) => set("refundAmount", e.target.value)}
+                      placeholder="0"
+                      data-testid="pm-input-refundAmount"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Refund date</Label>
+                    <Input
+                      type="date"
+                      value={form.refundDate}
+                      onChange={(e) => set("refundDate", e.target.value)}
+                      data-testid="pm-input-refundDate"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Refund notes (optional)</Label>
+                    <Textarea
+                      placeholder="e.g. Refunded via UPI to donor"
+                      value={form.refundNotes}
+                      onChange={(e) => set("refundNotes", e.target.value)}
+                      rows={2}
+                      data-testid="pm-textarea-refundNotes"
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
         </div>
 
