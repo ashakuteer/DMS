@@ -51,7 +51,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { authStorage, fetchWithAuth } from "@/lib/auth";
-import { canAccessModule, ALL_ROLES, ROLE_LABELS } from "@/lib/permissions";
+import { canAccessModule, ALL_ROLES, ROLE_LABELS, HOME_LABELS } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -63,10 +63,17 @@ interface SystemUser {
   name: string;
   phone?: string | null;
   role: string;
+  assignedHome?: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
+
+const HOME_OPTIONS = [
+  { value: 'GIRLS_HOME', label: 'Girls Home' },
+  { value: 'BLIND_BOYS_HOME', label: 'Blind Boys Home' },
+  { value: 'OLD_AGE_HOME', label: 'Old Age Home' },
+];
 
 const ROLE_BADGE_COLORS: Record<string, string> = {
   FOUNDER: "bg-purple-100 text-purple-800 border-purple-200",
@@ -75,6 +82,8 @@ const ROLE_BADGE_COLORS: Record<string, string> = {
   TELECALLER: "bg-blue-100 text-blue-800 border-blue-200",
   ACCOUNTANT: "bg-yellow-100 text-yellow-800 border-yellow-200",
   OFFICE_ASSISTANT: "bg-orange-100 text-orange-800 border-orange-200",
+  OFFICE_INCHARGE: "bg-teal-100 text-teal-800 border-teal-200",
+  HOME_INCHARGE: "bg-cyan-100 text-cyan-800 border-cyan-200",
 };
 
 async function fetchUsers(): Promise<{ items: SystemUser[]; total: number }> {
@@ -103,11 +112,12 @@ export default function UsersPage() {
     email: "",
     phone: "",
     role: "STAFF",
+    assignedHome: "",
     password: "",
     confirmPassword: "",
   });
 
-  const [editData, setEditData] = useState({ name: "", phone: "", role: "" });
+  const [editData, setEditData] = useState({ name: "", phone: "", role: "", assignedHome: "" });
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
@@ -142,6 +152,7 @@ export default function UsersPage() {
           phone: data.phone || undefined,
           role: data.role,
           password: data.password,
+          ...(data.role === 'HOME_INCHARGE' && data.assignedHome ? { assignedHome: data.assignedHome } : {}),
         }),
       });
       if (!res.ok) {
@@ -153,7 +164,7 @@ export default function UsersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
       setAddDialogOpen(false);
-      setNewUser({ name: "", email: "", phone: "", role: "STAFF", password: "", confirmPassword: "" });
+      setNewUser({ name: "", email: "", phone: "", role: "STAFF", assignedHome: "", password: "", confirmPassword: "" });
       toast({ title: "User created", description: "New user account has been created successfully." });
     },
     onError: (err: Error) => {
@@ -162,7 +173,7 @@ export default function UsersPage() {
   });
 
   const editMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: { name?: string; phone?: string; role?: string } }) => {
+    mutationFn: async ({ id, data }: { id: string; data: { name?: string; phone?: string; role?: string; assignedHome?: string | null } }) => {
       const res = await fetchWithAuth(`/api/users/${id}`, {
         method: "PATCH",
         body: JSON.stringify(data),
@@ -253,7 +264,7 @@ export default function UsersPage() {
 
   function openEditDialog(user: SystemUser) {
     setSelectedUser(user);
-    setEditData({ name: user.name, phone: user.phone ?? "", role: user.role });
+    setEditData({ name: user.name, phone: user.phone ?? "", role: user.role, assignedHome: user.assignedHome ?? "" });
     setEditDialogOpen(true);
   }
 
@@ -274,6 +285,10 @@ export default function UsersPage() {
       toast({ title: "Validation error", description: "Name, email, and password are required.", variant: "destructive" });
       return;
     }
+    if (newUser.role === 'HOME_INCHARGE' && !newUser.assignedHome) {
+      toast({ title: "Validation error", description: "Please select an assigned home for Home Incharge.", variant: "destructive" });
+      return;
+    }
     if (newUser.password !== newUser.confirmPassword) {
       toast({ title: "Validation error", description: "Passwords do not match.", variant: "destructive" });
       return;
@@ -287,7 +302,17 @@ export default function UsersPage() {
 
   function handleEditSubmit() {
     if (!selectedUser) return;
-    editMutation.mutate({ id: selectedUser.id, data: editData });
+    editMutation.mutate({
+      id: selectedUser.id,
+      data: {
+        name: editData.name,
+        phone: editData.phone || undefined,
+        role: editData.role,
+        ...(editData.role === 'HOME_INCHARGE'
+          ? { assignedHome: editData.assignedHome || null }
+          : { assignedHome: null }),
+      },
+    });
   }
 
   function handleResetSubmit() {
@@ -412,6 +437,7 @@ export default function UsersPage() {
                     <TableHead>{t("admin.user_email")}</TableHead>
                     <TableHead>{t("admin.user_phone")}</TableHead>
                     <TableHead>{t("admin.user_role")}</TableHead>
+                    <TableHead>Assigned Home</TableHead>
                     <TableHead>{t("users.status")}</TableHead>
                     <TableHead>{t("users.joined")}</TableHead>
                     <TableHead className="text-right">{t("common.actions")}</TableHead>
@@ -439,6 +465,11 @@ export default function UsersPage() {
                         >
                           {ROLE_LABELS[user.role] ?? user.role}
                         </span>
+                      </TableCell>
+                      <TableCell data-testid={`text-home-${user.id}`} className="text-muted-foreground text-sm">
+                        {user.assignedHome
+                          ? <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border bg-cyan-50 text-cyan-700 border-cyan-200">{HOME_LABELS[user.assignedHome] ?? user.assignedHome}</span>
+                          : <span className="text-xs italic">—</span>}
                       </TableCell>
                       <TableCell>
                         <Badge
@@ -562,7 +593,7 @@ export default function UsersPage() {
               <Label htmlFor="new-role">{t("users.role_required")}</Label>
               <Select
                 value={newUser.role}
-                onValueChange={(v) => setNewUser({ ...newUser, role: v })}
+                onValueChange={(v) => setNewUser({ ...newUser, role: v, assignedHome: "" })}
               >
                 <SelectTrigger id="new-role" data-testid="select-new-role">
                   <SelectValue />
@@ -574,6 +605,25 @@ export default function UsersPage() {
                 </SelectContent>
               </Select>
             </div>
+            {newUser.role === 'HOME_INCHARGE' && (
+              <div className="space-y-1.5">
+                <Label htmlFor="new-assigned-home">Assigned Home <span className="text-destructive">*</span></Label>
+                <Select
+                  value={newUser.assignedHome}
+                  onValueChange={(v) => setNewUser({ ...newUser, assignedHome: v })}
+                >
+                  <SelectTrigger id="new-assigned-home" data-testid="select-new-assigned-home">
+                    <SelectValue placeholder="Select home..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {HOME_OPTIONS.map((h) => (
+                      <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">This user will only see meal data for this home.</p>
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label htmlFor="new-password">{t("users.password_required")}</Label>
               <Input
@@ -645,7 +695,7 @@ export default function UsersPage() {
               <Label htmlFor="edit-role">{t("admin.user_role")}</Label>
               <Select
                 value={editData.role}
-                onValueChange={(v) => setEditData({ ...editData, role: v })}
+                onValueChange={(v) => setEditData({ ...editData, role: v, assignedHome: "" })}
                 disabled={selectedUser?.id === currentUser?.id}
               >
                 <SelectTrigger id="edit-role" data-testid="select-edit-role">
@@ -661,6 +711,25 @@ export default function UsersPage() {
                 <p className="text-xs text-muted-foreground">{t("users.cannot_change_own_role")}</p>
               )}
             </div>
+            {editData.role === 'HOME_INCHARGE' && (
+              <div className="space-y-1.5">
+                <Label htmlFor="edit-assigned-home">Assigned Home</Label>
+                <Select
+                  value={editData.assignedHome}
+                  onValueChange={(v) => setEditData({ ...editData, assignedHome: v })}
+                >
+                  <SelectTrigger id="edit-assigned-home" data-testid="select-edit-assigned-home">
+                    <SelectValue placeholder="Select home..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {HOME_OPTIONS.map((h) => (
+                      <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">This user will only see meal data for this home.</p>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditDialogOpen(false)}>

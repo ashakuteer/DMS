@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { AuditService } from "../audit/audit.service";
-import { Role } from "@prisma/client";
+import { Role, HomeAssignment } from "@prisma/client";
 
 @Injectable()
 export class UsersService {
@@ -23,6 +23,7 @@ export class UsersService {
           name: true,
           phone: true,
           role: true,
+          assignedHome: true,
           isActive: true,
           createdAt: true,
           updatedAt: true,
@@ -103,7 +104,7 @@ export class UsersService {
     return updated;
   }
 
-  async updateUser(id: string, data: { name?: string; phone?: string; role?: Role }) {
+  async updateUser(id: string, data: { name?: string; phone?: string; role?: Role; assignedHome?: HomeAssignment | null }) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) throw new NotFoundException("User not found");
 
@@ -121,6 +122,7 @@ export class UsersService {
         name: true,
         phone: true,
         role: true,
+        assignedHome: true,
         isActive: true,
         updatedAt: true,
       },
