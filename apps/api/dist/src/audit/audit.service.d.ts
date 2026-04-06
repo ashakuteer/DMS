@@ -45,27 +45,8 @@ export declare class AuditService {
         startDate?: Date;
         endDate?: Date;
     }, page?: number, limit?: number): Promise<{
-        items: ({
-            user: {
-                email: string;
-                name: string;
-                role: import(".prisma/client").$Enums.Role;
-                id: string;
-            };
-        } & {
-            id: string;
-            userId: string;
-            action: import(".prisma/client").$Enums.AuditAction;
-            entityType: string | null;
-            entityId: string | null;
-            oldValue: import("@prisma/client/runtime/library").JsonValue | null;
-            newValue: import("@prisma/client/runtime/library").JsonValue | null;
-            ipAddress: string | null;
-            userAgent: string | null;
-            metadata: import("@prisma/client/runtime/library").JsonValue | null;
-            createdAt: Date;
-        })[];
-        total: number;
+        items: any;
+        total: any;
         page: number;
         limit: number;
         totalPages: number;

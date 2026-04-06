@@ -38,6 +38,7 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
                 name: true,
                 role: true,
                 isActive: true,
+                assignedHome: true,
             },
         });
         if (!user || !user.isActive) {

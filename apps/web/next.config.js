@@ -12,11 +12,13 @@ const nextConfig = {
     "*.spock.replit.dev",
     "*.janeway.replit.dev",
     "*.riker.replit.dev",
+    "*.picard.replit.dev",
     "*.repl.co",
     "*.replit.app",
     "*.kirk.replit.dev",
     "*.repl.run",
-  ],
+    process.env.REPLIT_DEV_DOMAIN,
+  ].filter(Boolean),
 
   images: {
     remotePatterns: [

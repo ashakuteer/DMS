@@ -12,7 +12,7 @@ export declare class RolePermissionsController {
     private getClientInfo;
     getMyPermissions(user: UserContext): Promise<Record<string, string[]>>;
     getPermissionMatrix(): Promise<import("./role-permissions.service").PermissionMatrix>;
-    getAllRoles(): Promise<import(".prisma/client").$Enums.Role[]>;
+    getAllRoles(): Promise<Role[]>;
     getAllModules(): Promise<{
         name: string;
         actions: string[];
@@ -30,34 +30,12 @@ export declare class RolePermissionsController {
         module: string;
         action: string;
         allowed: boolean;
-    }, user: UserContext, req: Request): Promise<{
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-        action: string;
-        createdAt: Date;
-        updatedAt: Date;
-        module: string;
-        allowed: boolean;
-    }>;
-    getSensitiveFieldConfigs(): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        roles: import(".prisma/client").$Enums.Role[];
-        module: string;
-        fieldName: string;
-    }[]>;
+    }, user: UserContext, req: Request): Promise<any>;
+    getSensitiveFieldConfigs(): Promise<any>;
     updateSensitiveFieldConfig(body: {
         module: string;
         fieldName: string;
         roles: Role[];
-    }, user: UserContext, req: Request): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        roles: import(".prisma/client").$Enums.Role[];
-        module: string;
-        fieldName: string;
-    }>;
+    }, user: UserContext, req: Request): Promise<any>;
 }
 export {};

@@ -51,29 +51,14 @@ export declare class BroadcastingService {
     constructor(prisma: PrismaService, communicationsService: CommunicationsService, emailService: EmailService, auditService: AuditService);
     buildWhereClause(filters: BroadcastFilters): any;
     previewAudience(filters: BroadcastFilters, channel: 'WHATSAPP' | 'EMAIL'): Promise<{
-        total: number;
+        total: any;
         reachable: number;
         unreachable: number;
-        sampleDonors: {
-            id: string;
-            name: string;
-            contact: string;
-        }[];
+        sampleDonors: any;
     }>;
     sendBroadcast(request: BroadcastRequest, userId: string): Promise<BroadcastResult>;
     getAvailableWhatsAppTemplates(): Promise<Record<import("../communications/twilio-whatsapp.service").WhatsAppTemplateKey, boolean>>;
-    getAvailableEmailTemplates(): Promise<{
-        name: string;
-        id: string;
-        type: import(".prisma/client").$Enums.TemplateType;
-        description: string;
-        emailSubject: string;
-        emailBody: string;
-    }[]>;
-    getStaffList(): Promise<{
-        name: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-    }[]>;
+    getAvailableEmailTemplates(): Promise<any>;
+    getStaffList(): Promise<any>;
     getProfessionList(): Promise<string[]>;
 }

@@ -1,0 +1,89 @@
+We are now implementing internal user access control for meals.
+
+IMPORTANT
+Do NOT touch any existing meals logic, cancellation, or refund.
+Do NOT refactor unrelated modules.
+
+GOAL
+We need role-based access for:
+- OFFICE_INCHARGE → can see ALL homes
+- HOME_INCHARGE → can see ONLY assignedHome
+
+==================================================
+PART 1 — BACKEND (STRICT FILTERING)
+==================================================
+
+Update meals APIs so that:
+
+1. Get current logged-in user from request (req.user)
+
+2. Apply this logic in ALL meals queries:
+
+IF role = HOME_INCHARGE:
+    - Filter data by assignedHome
+    - Only return records where slotHomes includes user's assignedHome
+
+IF role = OFFICE_INCHARGE:
+    - No restriction (can see all homes)
+
+IF role = ADMIN / FOUNDER:
+    - Full access (no restriction)
+
+3. Apply filtering in:
+- meals list
+- meals calendar
+- pending actions
+- post-meal updates
+
+IMPORTANT:
+Filtering must be done in backend (NOT only frontend)
+
+==================================================
+PART 2 — FRONTEND (UI RESTRICTION)
+==================================================
+
+In Meals UI:
+
+IF user is HOME_INCHARGE:
+    - Hide other homes completely
+    - Show only their assignedHome rows in matrix calendar
+    - Disable any ability to select other homes
+
+IF user is OFFICE_INCHARGE:
+    - Show all homes
+
+==================================================
+PART 3 — USERS MANAGEMENT SUPPORT
+==================================================
+
+Ensure Users admin supports:
+
+- role = OFFICE_INCHARGE
+- role = HOME_INCHARGE
+- assignedHome field (string or enum)
+
+Make sure:
+- assignedHome is saved correctly
+- editing user updates assignedHome
+
+==================================================
+PART 4 — SAFETY
+==================================================
+
+- Existing users must not break
+- Existing meals data must not break
+- No change to donation logic
+- No change to pending actions logic
+
+==================================================
+PART 5 — AFTER IMPLEMENTATION
+==================================================
+
+Tell me clearly:
+
+A. which files were modified
+B. how backend filtering works
+C. how frontend hides other homes
+D. how assignedHome is used
+E. confirm HOME_INCHARGE cannot access other homes
+F. confirm OFFICE_INCHARGE sees all homes

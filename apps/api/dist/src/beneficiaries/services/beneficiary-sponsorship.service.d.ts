@@ -9,179 +9,13 @@ export declare class BeneficiarySponsorshipService {
     private communicationLogService;
     private readonly logger;
     constructor(prisma: PrismaService, communicationsService: CommunicationsService, emailService: EmailService, communicationLogService: CommunicationLogService);
-    getSponsors(beneficiaryId: string): Promise<({
-        donor: {
-            id: string;
-            donorCode: string;
-            firstName: string;
-            lastName: string;
-            primaryPhone: string;
-            personalEmail: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    })[]>;
-    addSponsor(user: any, beneficiaryId: string, dto: any): Promise<{
-        donor: {
-            id: string;
-            donorCode: string;
-            firstName: string;
-            lastName: string;
-            primaryPhone: string;
-            personalEmail: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    }>;
-    getSponsorshipsByBeneficiary(beneficiaryId: string): Promise<({
-        donor: {
-            id: string;
-            donorCode: string;
-            firstName: string;
-            lastName: string;
-            primaryPhone: string;
-            personalEmail: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    })[]>;
-    updateSponsorship(user: any, id: string, dto: any): Promise<{
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    }>;
-    deleteSponsorship(id: string): Promise<{
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    }>;
-    getSponsorshipHistory(sponsorshipId: string): Promise<({
-        changedBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        sponsorshipId: string;
-        oldStatus: import(".prisma/client").$Enums.SponsorshipStatus;
-        newStatus: import(".prisma/client").$Enums.SponsorshipStatus;
-        oldAmount: import("@prisma/client/runtime/library").Decimal | null;
-        newAmount: import("@prisma/client/runtime/library").Decimal | null;
-        note: string | null;
-        changedAt: Date;
-        changedById: string;
-    })[]>;
-    getSponsorsByDonor(donorId: string): Promise<({
-        beneficiary: {
-            code: string;
-            id: string;
-            status: import(".prisma/client").$Enums.BeneficiaryStatus;
-            fullName: string;
-            homeType: import(".prisma/client").$Enums.HomeType;
-            photoUrl: string;
-            updates: {
-                id: string;
-                createdAt: Date;
-                content: string;
-                title: string;
-                updateType: import(".prisma/client").$Enums.BeneficiaryUpdateType;
-            }[];
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    })[]>;
+    getSponsors(beneficiaryId: string): Promise<any>;
+    addSponsor(user: any, beneficiaryId: string, dto: any): Promise<any>;
+    getSponsorshipsByBeneficiary(beneficiaryId: string): Promise<any>;
+    updateSponsorship(user: any, id: string, dto: any): Promise<any>;
+    deleteSponsorship(id: string): Promise<any>;
+    getSponsorshipHistory(sponsorshipId: string): Promise<any>;
+    getSponsorsByDonor(donorId: string): Promise<any>;
     createSponsorshipForDonor(user: any, dto: {
         donorId: string;
         beneficiaryId: string;
@@ -192,43 +26,16 @@ export declare class BeneficiarySponsorshipService {
         startDate?: string;
         status?: string;
         notes?: string;
-    }): Promise<{
-        beneficiary: {
-            code: string;
-            id: string;
-            status: import(".prisma/client").$Enums.BeneficiaryStatus;
-            fullName: string;
-            homeType: import(".prisma/client").$Enums.HomeType;
-            photoUrl: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    }>;
-    getSponsorshipSummary(): Promise<number>;
+    }): Promise<any>;
+    getSponsorshipSummary(): Promise<any>;
     sendUpdateToSponsor(userId: string, sponsorshipId: string): Promise<{
         success: boolean;
         donorName: string;
-        beneficiaryName: string;
+        beneficiaryName: any;
         results: {
             whatsapp?: string;
             email?: string;
         };
-        latestUpdateTitle: string;
+        latestUpdateTitle: any;
     }>;
 }

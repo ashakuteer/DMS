@@ -7,221 +7,29 @@ export declare class BeneficiariesController {
     private readonly storageService;
     constructor(beneficiariesService: BeneficiariesService, storageService: StorageService);
     findAll(user: UserContext, page?: string, limit?: string, search?: string, homeType?: string, status?: string, sponsored?: string, classGrade?: string, school?: string, academicYear?: string): Promise<{
-        data: any[];
+        data: any;
         pagination: {
-            total: number;
+            total: any;
             page: any;
             limit: any;
             totalPages: number;
         };
     }>;
-    exportExcel(user: UserContext): Promise<{
-        code: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        status: import(".prisma/client").$Enums.BeneficiaryStatus;
-        createdById: string;
-        isDeleted: boolean;
-        deletedAt: Date;
-        gender: import(".prisma/client").$Enums.Gender;
-        category: import(".prisma/client").$Enums.BeneficiaryCategory;
-        dobDay: number;
-        dobMonth: number;
-        fullName: string;
-        homeType: import(".prisma/client").$Enums.HomeType;
-        dobYear: number;
-        approxAge: number;
-        joinDate: Date;
-        heightCmAtJoin: number;
-        weightKgAtJoin: import("@prisma/client/runtime/library").Decimal;
-        educationClassOrRole: string;
-        schoolOrCollege: string;
-        healthNotes: string;
-        currentHealthStatus: string;
-        background: string;
-        hobbies: string;
-        dreamCareer: string;
-        favouriteSubject: string;
-        favouriteGame: string;
-        favouriteActivityAtHome: string;
-        bestFriend: string;
-        sourceOfPrideOrHappiness: string;
-        funFact: string;
-        additionalNotes: string;
-        protectPrivacy: boolean;
-        photoUrl: string;
-        photoPath: string;
-    }[]>;
+    exportExcel(user: UserContext): Promise<any>;
     downloadBulkTemplate(): Promise<void>;
     bulkUpload(user: UserContext, file: Express.Multer.File, mode?: string): Promise<void>;
     findArchived(user: UserContext, search?: string, page?: string, limit?: string): Promise<{
-        data: {
-            code: string;
-            id: string;
-            status: import(".prisma/client").$Enums.BeneficiaryStatus;
-            deletedAt: Date;
-            deletedBy: string;
-            deleteReason: string;
-            fullName: string;
-            homeType: import(".prisma/client").$Enums.HomeType;
-        }[];
+        data: any;
         pagination: {
-            total: number;
+            total: any;
             page: number;
             limit: number;
             pages: number;
         };
     }>;
-    quickSearch(q: string): Promise<{
-        code: string;
-        id: string;
-        fullName: string;
-        homeType: import(".prisma/client").$Enums.HomeType;
-    }[]>;
-    findById(id: string): Promise<{
-        activeSponsorsCount: number;
-        updatesCount: number;
-        code: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        status: import(".prisma/client").$Enums.BeneficiaryStatus;
-        createdById: string;
-        createdBy: {
-            name: string;
-            id: string;
-        };
-        isDeleted: boolean;
-        deletedAt: Date;
-        gender: import(".prisma/client").$Enums.Gender;
-        category: import(".prisma/client").$Enums.BeneficiaryCategory;
-        dobDay: number;
-        dobMonth: number;
-        sponsorships: {
-            donor: {
-                id: string;
-                donorCode: string;
-                firstName: string;
-                lastName: string;
-                primaryPhone: string;
-                personalEmail: string;
-            };
-            id: string;
-            createdAt: Date;
-            isActive: boolean;
-            updatedAt: Date;
-            currency: string;
-            startDate: Date;
-            endDate: Date;
-            donorId: string;
-            status: import(".prisma/client").$Enums.SponsorshipStatus;
-            notes: string;
-            beneficiaryId: string;
-            sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            inKindItem: string;
-            frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-            dueDayOfMonth: number;
-            nextDueDate: Date;
-        }[];
-        fullName: string;
-        homeType: import(".prisma/client").$Enums.HomeType;
-        dobYear: number;
-        approxAge: number;
-        joinDate: Date;
-        heightCmAtJoin: number;
-        weightKgAtJoin: import("@prisma/client/runtime/library").Decimal;
-        educationClassOrRole: string;
-        schoolOrCollege: string;
-        healthNotes: string;
-        currentHealthStatus: string;
-        background: string;
-        hobbies: string;
-        dreamCareer: string;
-        favouriteSubject: string;
-        favouriteGame: string;
-        favouriteActivityAtHome: string;
-        bestFriend: string;
-        sourceOfPrideOrHappiness: string;
-        funFact: string;
-        additionalNotes: string;
-        protectPrivacy: boolean;
-        photoUrl: string;
-        photoPath: string;
-        updates: {
-            id: string;
-            createdAt: Date;
-            attachments: {
-                document: {
-                    id: string;
-                    title: string;
-                    storagePath: string;
-                    mimeType: string;
-                };
-                id: string;
-                documentId: string;
-            }[];
-            content: string;
-            createdById: string;
-            createdBy: {
-                name: string;
-                id: string;
-            };
-            title: string;
-            beneficiaryId: string;
-            updateType: import(".prisma/client").$Enums.BeneficiaryUpdateType;
-            mediaUrls: string[];
-            isPrivate: boolean;
-            shareWithDonor: boolean;
-        }[];
-        timelineEvents: {
-            id: string;
-            createdAt: Date;
-            description: string;
-            beneficiaryId: string;
-            eventType: import(".prisma/client").$Enums.BeneficiaryEventType;
-            eventDate: Date;
-        }[];
-    }>;
-    create(user: UserContext, dto: CreateBeneficiaryDto): Promise<{
-        code: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        status: import(".prisma/client").$Enums.BeneficiaryStatus;
-        createdById: string;
-        isDeleted: boolean;
-        deletedAt: Date;
-        gender: import(".prisma/client").$Enums.Gender;
-        category: import(".prisma/client").$Enums.BeneficiaryCategory;
-        dobDay: number;
-        dobMonth: number;
-        fullName: string;
-        homeType: import(".prisma/client").$Enums.HomeType;
-        dobYear: number;
-        approxAge: number;
-        joinDate: Date;
-        heightCmAtJoin: number;
-        weightKgAtJoin: import("@prisma/client/runtime/library").Decimal;
-        educationClassOrRole: string;
-        schoolOrCollege: string;
-        healthNotes: string;
-        currentHealthStatus: string;
-        background: string;
-        hobbies: string;
-        dreamCareer: string;
-        favouriteSubject: string;
-        favouriteGame: string;
-        favouriteActivityAtHome: string;
-        bestFriend: string;
-        sourceOfPrideOrHappiness: string;
-        funFact: string;
-        additionalNotes: string;
-        protectPrivacy: boolean;
-        photoUrl: string;
-        photoPath: string;
-    }>;
+    quickSearch(q: string): Promise<any>;
+    findById(id: string): Promise<any>;
+    create(user: UserContext, dto: CreateBeneficiaryDto): Promise<any>;
     update(user: UserContext, id: string, dto: UpdateBeneficiaryDto): Promise<any>;
     delete(user: UserContext, id: string, reason?: string): Promise<{
         success: boolean;
@@ -243,129 +51,17 @@ export declare class BeneficiariesController {
         photoUrl: string;
         photoPath: string;
     }>;
-    getSponsors(id: string): Promise<({
-        donor: {
-            id: string;
-            donorCode: string;
-            firstName: string;
-            lastName: string;
-            primaryPhone: string;
-            personalEmail: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    })[]>;
+    getSponsors(id: string): Promise<any>;
     addSponsor(user: UserContext, id: string, dto: CreateSponsorshipDto): Promise<any>;
-    getUpdates(id: string): Promise<({
-        attachments: ({
-            document: {
-                id: string;
-                title: string;
-                storagePath: string;
-                mimeType: string;
-            };
-        } & {
-            id: string;
-            updateId: string;
-            documentId: string;
-        })[];
-        createdBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        content: string;
-        createdById: string;
-        title: string;
-        beneficiaryId: string;
-        updateType: import(".prisma/client").$Enums.BeneficiaryUpdateType;
-        mediaUrls: string[];
-        isPrivate: boolean;
-        shareWithDonor: boolean;
-    })[]>;
-    addUpdate(user: UserContext, id: string, dto: CreateBeneficiaryUpdateDto): Promise<{
-        createdBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        content: string;
-        createdById: string;
-        title: string;
-        beneficiaryId: string;
-        updateType: import(".prisma/client").$Enums.BeneficiaryUpdateType;
-        mediaUrls: string[];
-        isPrivate: boolean;
-        shareWithDonor: boolean;
-    }>;
+    getUpdates(id: string): Promise<any>;
+    addUpdate(user: UserContext, id: string, dto: CreateBeneficiaryUpdateDto): Promise<any>;
     getTimelineEvents(id: string): Promise<any>;
     addTimelineEvent(id: string, dto: CreateTimelineEventDto): Promise<any>;
     getMetrics(id: string): Promise<any[]>;
     addMetric(user: UserContext, id: string, dto: CreateMetricDto): Promise<any>;
-    getProgressCards(id: string): Promise<({
-        createdBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        createdById: string;
-        remarks: string | null;
-        classGrade: string;
-        school: string | null;
-        academicYear: string;
-        beneficiaryId: string;
-        term: import(".prisma/client").$Enums.ProgressTerm;
-        overallPercentage: import("@prisma/client/runtime/library").Decimal | null;
-        fileDocumentId: string | null;
-    })[]>;
-    addProgressCard(user: UserContext, id: string, dto: CreateProgressCardDto): Promise<{
-        id: string;
-        createdAt: Date;
-        createdById: string;
-        remarks: string | null;
-        classGrade: string;
-        school: string | null;
-        academicYear: string;
-        beneficiaryId: string;
-        term: import(".prisma/client").$Enums.ProgressTerm;
-        overallPercentage: import("@prisma/client/runtime/library").Decimal | null;
-        fileDocumentId: string | null;
-    }>;
-    getEducationTimeline(id: string): Promise<{
-        id: string;
-        createdAt: Date;
-        createdById: string;
-        remarks: string | null;
-        classGrade: string;
-        school: string | null;
-        academicYear: string;
-        beneficiaryId: string;
-        term: import(".prisma/client").$Enums.ProgressTerm;
-        overallPercentage: import("@prisma/client/runtime/library").Decimal | null;
-        fileDocumentId: string | null;
-    }[]>;
+    getProgressCards(id: string): Promise<any>;
+    addProgressCard(user: UserContext, id: string, dto: CreateProgressCardDto): Promise<any>;
+    getEducationTimeline(id: string): Promise<any>;
     exportEducationSummary(id: string, res: any): Promise<void>;
     getHealthEvents(id: string): Promise<any[]>;
     addHealthEvent(user: UserContext, id: string, dto: CreateHealthEventDto): Promise<{
@@ -376,102 +72,15 @@ export declare class BeneficiariesController {
     }>;
     getHealthTimeline(id: string): Promise<any[]>;
     exportHealthHistoryPdf(id: string, res: Response): Promise<void>;
-    getDocuments(user: UserContext, id: string): Promise<({
-        createdBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        description: string | null;
-        createdById: string;
-        title: string;
-        shareWithDonor: boolean;
-        ownerType: import(".prisma/client").$Enums.DocumentOwnerType;
-        ownerId: string | null;
-        docType: import(".prisma/client").$Enums.DocumentType;
-        storageBucket: string;
-        storagePath: string;
-        mimeType: string;
-        sizeBytes: number;
-        isSensitive: boolean;
-    })[]>;
-    createDocument(user: UserContext, id: string, file: Express.Multer.File, body: any): Promise<{
-        id: string;
-        createdAt: Date;
-        description: string | null;
-        createdById: string;
-        title: string;
-        shareWithDonor: boolean;
-        ownerType: import(".prisma/client").$Enums.DocumentOwnerType;
-        ownerId: string | null;
-        docType: import(".prisma/client").$Enums.DocumentType;
-        storageBucket: string;
-        storagePath: string;
-        mimeType: string;
-        sizeBytes: number;
-        isSensitive: boolean;
-    }>;
-    getDocument(user: UserContext, docId: string): Promise<{
-        id: string;
-        createdAt: Date;
-        description: string | null;
-        createdById: string;
-        title: string;
-        shareWithDonor: boolean;
-        ownerType: import(".prisma/client").$Enums.DocumentOwnerType;
-        ownerId: string | null;
-        docType: import(".prisma/client").$Enums.DocumentType;
-        storageBucket: string;
-        storagePath: string;
-        mimeType: string;
-        sizeBytes: number;
-        isSensitive: boolean;
-    }>;
+    getDocuments(user: UserContext, id: string): Promise<any>;
+    createDocument(user: UserContext, id: string, file: Express.Multer.File, body: any): Promise<any>;
+    getDocument(user: UserContext, docId: string): Promise<any>;
 }
 export declare class ReportCampaignsController {
     private readonly beneficiariesService;
     constructor(beneficiariesService: BeneficiariesService);
-    findAll(): Promise<({
-        createdBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        name: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        type: import(".prisma/client").$Enums.ReportCampaignType;
-        status: import(".prisma/client").$Enums.ReportCampaignStatus;
-        createdById: string;
-        notes: string | null;
-        sentAt: Date | null;
-        documentId: string | null;
-        periodStart: Date;
-        periodEnd: Date;
-        target: import(".prisma/client").$Enums.ReportTarget;
-        customDonorIds: string[];
-        emailsSent: number;
-    })[]>;
-    create(user: UserContext, dto: CreateReportCampaignDto): Promise<{
-        name: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        type: import(".prisma/client").$Enums.ReportCampaignType;
-        status: import(".prisma/client").$Enums.ReportCampaignStatus;
-        createdById: string;
-        notes: string | null;
-        sentAt: Date | null;
-        documentId: string | null;
-        periodStart: Date;
-        periodEnd: Date;
-        target: import(".prisma/client").$Enums.ReportTarget;
-        customDonorIds: string[];
-        emailsSent: number;
-    }>;
+    findAll(): Promise<any>;
+    create(user: UserContext, dto: CreateReportCampaignDto): Promise<any>;
     sendEmails(user: UserContext, id: string): Promise<{
         status: string;
         campaignId: string;
@@ -482,145 +91,21 @@ export declare class SponsorshipsController {
     private readonly logger;
     constructor(beneficiariesService: BeneficiariesService);
     getDue(window?: string): Promise<any>;
-    getSummary(): Promise<number>;
-    getByDonor(donorId: string): Promise<({
-        beneficiary: {
-            code: string;
-            id: string;
-            status: import(".prisma/client").$Enums.BeneficiaryStatus;
-            fullName: string;
-            homeType: import(".prisma/client").$Enums.HomeType;
-            photoUrl: string;
-            updates: {
-                id: string;
-                createdAt: Date;
-                content: string;
-                title: string;
-                updateType: import(".prisma/client").$Enums.BeneficiaryUpdateType;
-            }[];
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    })[]>;
-    getByBeneficiary(beneficiaryId: string): Promise<({
-        donor: {
-            id: string;
-            donorCode: string;
-            firstName: string;
-            lastName: string;
-            primaryPhone: string;
-            personalEmail: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    })[]>;
-    create(user: UserContext, dto: any): Promise<{
-        beneficiary: {
-            code: string;
-            id: string;
-            status: import(".prisma/client").$Enums.BeneficiaryStatus;
-            fullName: string;
-            homeType: import(".prisma/client").$Enums.HomeType;
-            photoUrl: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    }>;
-    update(user: UserContext, id: string, dto: UpdateSponsorshipDto): Promise<{
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    }>;
-    delete(id: string): Promise<{
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        currency: string;
-        startDate: Date | null;
-        endDate: Date | null;
-        donorId: string;
-        status: import(".prisma/client").$Enums.SponsorshipStatus;
-        notes: string | null;
-        beneficiaryId: string;
-        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-        amount: import("@prisma/client/runtime/library").Decimal | null;
-        inKindItem: string | null;
-        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-        dueDayOfMonth: number | null;
-        nextDueDate: Date | null;
-    }>;
+    getSummary(): Promise<any>;
+    getByDonor(donorId: string): Promise<any>;
+    getByBeneficiary(beneficiaryId: string): Promise<any>;
+    create(user: UserContext, dto: any): Promise<any>;
+    update(user: UserContext, id: string, dto: UpdateSponsorshipDto): Promise<any>;
+    delete(id: string): Promise<any>;
     sendUpdate(user: UserContext, id: string): Promise<{
         success: boolean;
         donorName: string;
-        beneficiaryName: string;
+        beneficiaryName: any;
         results: {
             whatsapp?: string;
             email?: string;
         };
-        latestUpdateTitle: string;
+        latestUpdateTitle: any;
     }>;
     markPaid(user: UserContext, id: string, body: {
         paymentMode?: string;
@@ -635,22 +120,7 @@ export declare class SponsorshipsController {
         message: string;
     }>;
     skip(user: UserContext, id: string): Promise<any>;
-    getHistory(id: string): Promise<({
-        changedBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        id: string;
-        sponsorshipId: string;
-        oldStatus: import(".prisma/client").$Enums.SponsorshipStatus;
-        newStatus: import(".prisma/client").$Enums.SponsorshipStatus;
-        oldAmount: import("@prisma/client/runtime/library").Decimal | null;
-        newAmount: import("@prisma/client/runtime/library").Decimal | null;
-        note: string | null;
-        changedAt: Date;
-        changedById: string;
-    })[]>;
+    getHistory(id: string): Promise<any>;
 }
 export declare class BeneficiaryUpdatesController {
     private readonly beneficiariesService;
@@ -660,60 +130,24 @@ export declare class BeneficiaryUpdatesController {
     }>;
     getSponsorsForUpdate(id: string): Promise<{
         update: {
-            id: string;
-            title: string;
-            content: string;
-            updateType: import(".prisma/client").$Enums.BeneficiaryUpdateType;
-            isPrivate: boolean;
+            id: any;
+            title: any;
+            content: any;
+            updateType: any;
+            isPrivate: any;
         };
-        sponsors: ({
-            donor: {
-                id: string;
-                donorCode: string;
-                firstName: string;
-                lastName: string;
-                primaryPhone: string;
-                personalEmail: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            isActive: boolean;
-            updatedAt: Date;
-            currency: string;
-            startDate: Date | null;
-            endDate: Date | null;
-            donorId: string;
-            status: import(".prisma/client").$Enums.SponsorshipStatus;
-            notes: string | null;
-            beneficiaryId: string;
-            sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
-            amount: import("@prisma/client/runtime/library").Decimal | null;
-            inKindItem: string | null;
-            frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
-            dueDayOfMonth: number | null;
-            nextDueDate: Date | null;
-        })[];
+        sponsors: any;
     }>;
     sendToSponsors(user: UserContext, id: string, body: {
         donorIds?: string[];
         channel: 'EMAIL' | 'WHATSAPP';
     }): Promise<{
         success: boolean;
-        dispatchCount: number;
+        dispatchCount: any;
     }>;
 }
 export declare class SponsorDispatchesController {
     private readonly beneficiariesService;
     constructor(beneficiariesService: BeneficiariesService);
-    markCopied(id: string): Promise<{
-        error: string | null;
-        id: string;
-        createdAt: Date;
-        donorId: string;
-        channel: import(".prisma/client").$Enums.SponsorDispatchChannel;
-        status: import(".prisma/client").$Enums.SponsorDispatchStatus;
-        sentAt: Date | null;
-        updateId: string;
-    }>;
+    markCopied(id: string): Promise<any>;
 }

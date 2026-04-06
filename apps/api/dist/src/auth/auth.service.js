@@ -121,6 +121,7 @@ let AuthService = AuthService_1 = class AuthService {
                     name: user.name,
                     role: user.role,
                     isActive: user.isActive,
+                    assignedHome: user.assignedHome ?? null,
                 },
                 tokens,
             };

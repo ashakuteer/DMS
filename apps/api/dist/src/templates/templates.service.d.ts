@@ -21,94 +21,11 @@ export declare class TemplatesService {
     private prisma;
     private orgProfileService;
     constructor(prisma: PrismaService, orgProfileService: OrganizationProfileService);
-    findAll(): Promise<({
-        createdBy: {
-            name: string;
-            id: string;
-        };
-        updatedBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        name: string;
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        type: import(".prisma/client").$Enums.TemplateType;
-        description: string | null;
-        whatsappMessage: string;
-        emailSubject: string;
-        emailBody: string;
-        createdById: string;
-        updatedById: string | null;
-    })[]>;
-    findOne(id: string): Promise<{
-        createdBy: {
-            name: string;
-            id: string;
-        };
-        updatedBy: {
-            name: string;
-            id: string;
-        };
-    } & {
-        name: string;
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        type: import(".prisma/client").$Enums.TemplateType;
-        description: string | null;
-        whatsappMessage: string;
-        emailSubject: string;
-        emailBody: string;
-        createdById: string;
-        updatedById: string | null;
-    }>;
-    findByType(type: TemplateType): Promise<{
-        name: string;
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        type: import(".prisma/client").$Enums.TemplateType;
-        description: string | null;
-        whatsappMessage: string;
-        emailSubject: string;
-        emailBody: string;
-        createdById: string;
-        updatedById: string | null;
-    }>;
-    create(dto: CreateTemplateDto, userId: string): Promise<{
-        name: string;
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        type: import(".prisma/client").$Enums.TemplateType;
-        description: string | null;
-        whatsappMessage: string;
-        emailSubject: string;
-        emailBody: string;
-        createdById: string;
-        updatedById: string | null;
-    }>;
-    update(id: string, dto: UpdateTemplateDto, userId: string): Promise<{
-        name: string;
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-        type: import(".prisma/client").$Enums.TemplateType;
-        description: string | null;
-        whatsappMessage: string;
-        emailSubject: string;
-        emailBody: string;
-        createdById: string;
-        updatedById: string | null;
-    }>;
+    findAll(): Promise<any>;
+    findOne(id: string): Promise<any>;
+    findByType(type: TemplateType): Promise<any>;
+    create(dto: CreateTemplateDto, userId: string): Promise<any>;
+    update(id: string, dto: UpdateTemplateDto, userId: string): Promise<any>;
     delete(id: string): Promise<{
         success: boolean;
     }>;

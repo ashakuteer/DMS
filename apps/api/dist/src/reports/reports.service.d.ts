@@ -16,7 +16,6 @@ interface DonorReportParams extends PaginationParams {
 interface ReceiptAuditParams extends PaginationParams {
     paymentMode?: string;
 }
-type DonorHealth = 'HEALTHY' | 'AT_RISK' | 'DORMANT';
 export declare class ReportsService {
     private readonly prisma;
     private orgProfileService;
@@ -24,110 +23,59 @@ export declare class ReportsService {
     private getFYDates;
     private buildDateFilter;
     getMonthlyDonations(filter: DateFilter, pagination: PaginationParams): Promise<{
-        data: {
-            id: string;
-            donationDate: Date;
-            donorName: string;
-            donorCode: string;
-            donationType: import(".prisma/client").$Enums.DonationType;
-            donationMode: import(".prisma/client").$Enums.DonationMode;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            receiptNumber: string;
-            remarks: string;
-        }[];
+        data: any;
         pagination: {
             page: number;
             limit: number;
-            total: number;
+            total: any;
             totalPages: number;
         };
         summary: {
-            totalAmount: number | import("@prisma/client/runtime/library").Decimal;
-            totalCount: number;
+            totalAmount: any;
+            totalCount: any;
         };
     }>;
     getDonorSummary(filter: DateFilter, pagination: PaginationParams): Promise<{
-        data: {
-            id: string;
-            donorName: string;
-            donorCode: string;
-            category: import(".prisma/client").$Enums.DonorCategory;
-            fyTotal: number;
-            fyCount: number;
-            lifetimeTotal: number;
-            lifetimeCount: number;
-            lastDonation: Date;
-        }[];
+        data: any;
         pagination: {
             page: number;
             limit: number;
-            total: number;
+            total: any;
             totalPages: number;
         };
     }>;
     getDonorReport(filter: DateFilter, params: DonorReportParams): Promise<{
-        data: {
-            id: string;
-            donorCode: string;
-            donorName: string;
-            city: string;
-            country: string;
-            lifetimeTotal: number;
-            fyTotal: number;
-            donationCount: number;
-            lastDonation: Date;
-            healthStatus: DonorHealth;
-        }[];
+        data: any;
         pagination: {
             page: number;
             limit: number;
-            total: number;
+            total: any;
             totalPages: number;
         };
     }>;
     exportDonorReportExcel(filter: DateFilter): Promise<Buffer>;
     exportDonorReportPdf(filter: DateFilter): Promise<Buffer>;
     getReceiptsAudit(filter: DateFilter, params: ReceiptAuditParams): Promise<{
-        data: {
-            id: string;
-            receiptNumber: string;
-            receiptDate: Date;
-            donorName: string;
-            donorCode: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            paymentMode: import(".prisma/client").$Enums.DonationMode;
-            financialYear: string;
-            donationCategory: import(".prisma/client").$Enums.DonationType;
-            generatedBy: string;
-        }[];
+        data: any;
         pagination: {
             page: number;
             limit: number;
-            total: number;
+            total: any;
             totalPages: number;
         };
         summary: {
-            totalAmount: import("@prisma/client/runtime/library").Decimal;
-            totalCount: number;
+            totalAmount: any;
+            totalCount: any;
         };
     }>;
     exportReceiptsAuditExcel(filter: DateFilter, paymentMode?: string): Promise<Buffer>;
     exportReceiptsAuditPdf(filter: DateFilter, paymentMode?: string): Promise<Buffer>;
     getReceiptRegister(filter: DateFilter, pagination: PaginationParams): Promise<{
-        data: {
-            id: string;
-            receiptNumber: string;
-            donationDate: Date;
-            donorName: string;
-            donorCode: string;
-            amount: import("@prisma/client/runtime/library").Decimal;
-            donationMode: import(".prisma/client").$Enums.DonationMode;
-            donationType: import(".prisma/client").$Enums.DonationType;
-        }[];
+        data: any;
         pagination: {
             page: number;
             limit: number;
-            total: number;
+            total: any;
             totalPages: number;
         };
     }>;

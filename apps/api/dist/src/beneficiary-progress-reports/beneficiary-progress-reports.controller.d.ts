@@ -4,75 +4,17 @@ export declare class BeneficiaryProgressReportsController {
     private readonly service;
     constructor(service: BeneficiaryProgressReportsService);
     generate(body: any, req: any): Promise<{
-        id: string;
+        id: any;
         status: string;
     }>;
     findAll(page?: string, limit?: string, beneficiaryId?: string): Promise<{
-        items: ({
-            beneficiary: {
-                code: string;
-                fullName: string;
-                homeType: import(".prisma/client").$Enums.HomeType;
-            };
-            generatedBy: {
-                name: string;
-            };
-        } & {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            status: import(".prisma/client").$Enums.ProgressReportStatus;
-            title: string;
-            beneficiaryId: string;
-            periodStart: Date;
-            periodEnd: Date;
-            reportData: import("@prisma/client/runtime/library").JsonValue | null;
-            sharedAt: Date | null;
-            sharedTo: string[];
-            generatedById: string;
-            includePhotos: boolean;
-            includeHealth: boolean;
-            includeEducation: boolean;
-            includeUpdates: boolean;
-        })[];
-        total: number;
+        items: any;
+        total: any;
         page: number;
         totalPages: number;
     }>;
-    searchBeneficiaries(q: string): Promise<{
-        code: string;
-        id: string;
-        fullName: string;
-        homeType: import(".prisma/client").$Enums.HomeType;
-    }[]>;
-    findOne(id: string): Promise<{
-        beneficiary: {
-            code: string;
-            fullName: string;
-            homeType: import(".prisma/client").$Enums.HomeType;
-            photoUrl: string;
-        };
-        generatedBy: {
-            name: string;
-        };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        status: import(".prisma/client").$Enums.ProgressReportStatus;
-        title: string;
-        beneficiaryId: string;
-        periodStart: Date;
-        periodEnd: Date;
-        reportData: import("@prisma/client/runtime/library").JsonValue | null;
-        sharedAt: Date | null;
-        sharedTo: string[];
-        generatedById: string;
-        includePhotos: boolean;
-        includeHealth: boolean;
-        includeEducation: boolean;
-        includeUpdates: boolean;
-    }>;
+    searchBeneficiaries(q: string): Promise<any>;
+    findOne(id: string): Promise<any>;
     downloadPdf(id: string, res: Response): Promise<void>;
     shareWithSponsors(id: string, req: any): Promise<{
         sharedCount: number;

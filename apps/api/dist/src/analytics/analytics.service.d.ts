@@ -16,27 +16,12 @@ export declare class AnalyticsService {
     constructor(summaryService: AnalyticsSummaryService, chartsService: AnalyticsChartsService, segmentsService: AnalyticsSegmentsService, riskService: AnalyticsRiskService, exportService: AnalyticsExportService, dashboardService: AnalyticsDashboardService, donorSegmentationService: DonorSegmentationService);
     getSummary(): Promise<any>;
     getCharts(): Promise<{
-        monthlyDonations: any[];
-        donationsByType: any[];
-        donationsByHome: any[];
-        sponsorshipsDue: any[];
+        monthlyDonations: any;
+        donationsByType: any;
+        donationsByHome: any;
+        sponsorshipsDue: any;
     }>;
-    getSegment(segment: string): Promise<{
-        donorId: string;
-        donorCode: string;
-        donorName: string;
-        totalAmount: number;
-        donationCount: number;
-    }[] | {
-        donorId: string;
-        donorCode: string;
-        donorName: string;
-        lastDonationDate: Date;
-        lastDonationAmount: number;
-        daysSinceLastDonation: number;
-        hasEmail: boolean;
-        hasPhone: boolean;
-    }[]>;
+    getSegment(segment: string): Promise<any>;
     exportSummaryPdf(data: any): Promise<Buffer>;
     exportDonationsDetailXlsx(filters: any): Promise<Buffer>;
     exportDonationsXlsx(): Promise<Buffer>;
@@ -48,32 +33,17 @@ export declare class AnalyticsService {
         summary: any;
         charts: {
             monthlyDonations: {
-                monthlyDonations: any[];
-                donationsByType: any[];
-                donationsByHome: any[];
-                sponsorshipsDue: any[];
+                monthlyDonations: any;
+                donationsByType: any;
+                donationsByHome: any;
+                sponsorshipsDue: any;
             };
         };
         segments: {
-            topDonors: {
-                donorId: string;
-                donorCode: string;
-                donorName: string;
-                totalAmount: number;
-                donationCount: number;
-            }[];
+            topDonors: any;
         };
         risks: {
-            atRiskDonors: {
-                donorId: string;
-                donorCode: string;
-                donorName: string;
-                lastDonationDate: Date;
-                lastDonationAmount: number;
-                daysSinceLastDonation: number;
-                hasEmail: boolean;
-                hasPhone: boolean;
-            }[];
+            atRiskDonors: any;
         };
         generatedAt: Date;
     }>;

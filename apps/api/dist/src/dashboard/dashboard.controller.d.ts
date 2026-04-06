@@ -6,88 +6,42 @@ export declare class DashboardController {
     constructor(dashboardService: DashboardService, dashboardTodayService: DashboardTodayService);
     getToday(): Promise<{
         todayStats: {
-            totalDonationsToday: number;
+            totalDonationsToday: any;
             totalDonorsToday: number;
             totalAmountToday: any;
         };
         todayEvents: {
-            birthdays: {
-                id: string;
-                name: string;
-                phone: string;
-                city: string;
-            }[];
+            birthdays: any;
             anniversaries: any[];
             memorials: any[];
             specialDays: any[];
         };
         todayTasks: {
-            followUps: {
-                id: string;
-                title: string;
-                priority: import(".prisma/client").$Enums.TaskPriority;
-                dueDate: Date;
-                status: import(".prisma/client").$Enums.TaskStatus;
-                donorName: string;
-            }[];
-            pledgeReminders: {
-                id: string;
-                title: string;
-                priority: import(".prisma/client").$Enums.TaskPriority;
-                dueDate: Date;
-                status: import(".prisma/client").$Enums.TaskStatus;
-                donorName: string;
-            }[];
-            monthlyDonorReminders: {
-                id: string;
-                title: string;
-                dueDate: Date;
-                donorName: string;
-                donorPhone: string;
-            }[];
+            followUps: any;
+            pledgeReminders: any;
+            monthlyDonorReminders: any;
         };
     }>;
     getSummary(user: any): Promise<any>;
     getStats(): Promise<{
-        totalDonationsFY: number;
-        donationsThisMonth: number;
-        activeDonors: number;
-        totalBeneficiaries: number;
+        totalDonationsFY: any;
+        donationsThisMonth: any;
+        activeDonors: any;
+        totalBeneficiaries: any;
     }>;
     getMonthlyTrends(): Promise<any[]>;
     getMonthlyDonorTarget(): Promise<{
-        raised: number;
-        count: number;
-        totalMonthlyDonors: number;
+        raised: any;
+        count: any;
+        totalMonthlyDonors: any;
         target: number;
         remaining: number;
         progressPct: number;
         achieved: boolean;
     }>;
-    getDonationModeSplit(): Promise<{
-        mode: import(".prisma/client").$Enums.DonationMode;
-        amount: number;
-        count: number;
-    }[]>;
-    getTopDonors(): Promise<{
-        donorId: string;
-        donorCode: string;
-        name: string;
-        category: import(".prisma/client").$Enums.DonorCategory;
-        totalAmount: number;
-        donationCount: number;
-    }[]>;
-    getRecentDonations(): Promise<{
-        id: string;
-        donorId: string;
-        donorCode: string;
-        donorName: string;
-        amount: number;
-        date: Date;
-        mode: import(".prisma/client").$Enums.DonationMode;
-        type: import(".prisma/client").$Enums.DonationType;
-        receiptNumber: string;
-    }[]>;
+    getDonationModeSplit(): Promise<any>;
+    getTopDonors(): Promise<any>;
+    getRecentDonations(): Promise<any>;
     getAIInsights(): Promise<any[]>;
     getDonorInsights(donorId: string): Promise<{
         avgDonation: number;
@@ -97,8 +51,8 @@ export declare class DashboardController {
         preferredDonationType: string;
         mostSponsoredHome: string;
         sponsoredBeneficiariesCount: number;
-        totalDonations: number;
-        donationCount: number;
+        totalDonations: any;
+        donationCount: any;
     }>;
     getImpactDashboard(): Promise<any>;
     getRetentionAnalytics(): Promise<any>;
@@ -139,198 +93,35 @@ export declare class DashboardController {
             next15Days: any[];
         };
         reminders: {
-            today: {
-                id: any;
-                type: any;
-                donorId: any;
-                donorName: string;
-                donorCode: any;
-                title: any;
-                dueDate: any;
-                status: any;
-                offsetDays: any;
-                pledgeId: any;
-                pledgeType: any;
-                pledgeAmount: any;
-                pledgeQuantity: any;
-                daysOverdue: number;
-                daysUntil: number;
-                donor: any;
-            }[];
-            overdue: {
-                id: any;
-                type: any;
-                donorId: any;
-                donorName: string;
-                donorCode: any;
-                title: any;
-                dueDate: any;
-                status: any;
-                offsetDays: any;
-                pledgeId: any;
-                pledgeType: any;
-                pledgeAmount: any;
-                pledgeQuantity: any;
-                daysOverdue: number;
-                daysUntil: number;
-                donor: any;
-            }[];
-            upcoming7: {
-                id: any;
-                type: any;
-                donorId: any;
-                donorName: string;
-                donorCode: any;
-                title: any;
-                dueDate: any;
-                status: any;
-                offsetDays: any;
-                pledgeId: any;
-                pledgeType: any;
-                pledgeAmount: any;
-                pledgeQuantity: any;
-                daysOverdue: number;
-                daysUntil: number;
-                donor: any;
-            }[];
-            upcoming15: {
-                id: any;
-                type: any;
-                donorId: any;
-                donorName: string;
-                donorCode: any;
-                title: any;
-                dueDate: any;
-                status: any;
-                offsetDays: any;
-                pledgeId: any;
-                pledgeType: any;
-                pledgeAmount: any;
-                pledgeQuantity: any;
-                daysOverdue: number;
-                daysUntil: number;
-                donor: any;
-            }[];
+            today: any;
+            overdue: any;
+            upcoming7: any;
+            upcoming15: any;
         };
         pledges: {
-            overdue: {
-                id: any;
-                donorId: any;
-                donorName: string;
-                donorCode: any;
-                pledgeType: any;
-                amount: any;
-                quantity: any;
-                currency: any;
-                expectedFulfillmentDate: any;
-                notes: any;
-                daysOverdue: number;
-                daysUntil: number;
-                donor: any;
-            }[];
-            dueToday: {
-                id: any;
-                donorId: any;
-                donorName: string;
-                donorCode: any;
-                pledgeType: any;
-                amount: any;
-                quantity: any;
-                currency: any;
-                expectedFulfillmentDate: any;
-                notes: any;
-                daysOverdue: number;
-                daysUntil: number;
-                donor: any;
-            }[];
-            upcoming7: {
-                id: any;
-                donorId: any;
-                donorName: string;
-                donorCode: any;
-                pledgeType: any;
-                amount: any;
-                quantity: any;
-                currency: any;
-                expectedFulfillmentDate: any;
-                notes: any;
-                daysOverdue: number;
-                daysUntil: number;
-                donor: any;
-            }[];
+            overdue: any;
+            dueToday: any;
+            upcoming7: any;
         };
         followUps: {
-            dueToday: {
-                id: any;
-                type: any;
-                donorId: any;
-                donorName: string;
-                donorCode: any;
-                title: any;
-                dueDate: any;
-                status: any;
-                offsetDays: any;
-                pledgeId: any;
-                pledgeType: any;
-                pledgeAmount: any;
-                pledgeQuantity: any;
-                daysOverdue: number;
-                daysUntil: number;
-                donor: any;
-            }[];
-            overdue: {
-                id: any;
-                type: any;
-                donorId: any;
-                donorName: string;
-                donorCode: any;
-                title: any;
-                dueDate: any;
-                status: any;
-                offsetDays: any;
-                pledgeId: any;
-                pledgeType: any;
-                pledgeAmount: any;
-                pledgeQuantity: any;
-                daysOverdue: number;
-                daysUntil: number;
-                donor: any;
-            }[];
+            dueToday: any;
+            overdue: any;
         };
-        atRiskDonors: {
-            id: string;
-            donorId: string;
-            donorName: string;
-            donorCode: string;
-            healthScore: number;
-            healthStatus: import(".prisma/client").$Enums.HealthStatus;
-            donor: {
-                id: string;
-                donorCode: string;
-                firstName: string;
-                lastName: string;
-                primaryPhone: string;
-                whatsappPhone: string;
-                personalEmail: string;
-                officialEmail: string;
-                healthScore: number;
-                healthStatus: import(".prisma/client").$Enums.HealthStatus;
-            };
-        }[];
+        atRiskDonors: any;
         beneficiaryBirthdays: {
             today: any[];
             upcoming7: any[];
         };
         sponsorshipsDue: any[];
         stats: {
-            todayTotal: number;
-            upcoming7Total: number;
-            upcoming15Total: number;
-            overdueTotal: number;
-            pledgesDue: number;
-            followUpsDueToday: number;
-            overdueFollowUps: number;
-            atRiskCount: number;
+            todayTotal: any;
+            upcoming7Total: any;
+            upcoming15Total: any;
+            overdueTotal: any;
+            pledgesDue: any;
+            followUpsDueToday: any;
+            overdueFollowUps: any;
+            atRiskCount: any;
             beneficiaryBirthdaysCount: number;
             sponsorshipsDueCount: number;
         };

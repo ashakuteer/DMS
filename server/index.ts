@@ -33,21 +33,18 @@ killByName("nest start");
 killPort(3001);
 killPort(5000);
 
-const rootBin = path.join(rootDir, "node_modules", ".bin");
+const pnpmBin = execSync("which pnpm", { encoding: "utf8" }).trim();
 
 function startWeb() {
   console.log("Starting Next.js frontend on port 5000...");
-  const nextBin = path.join(rootBin, "next");
-  const webDir = path.join(rootDir, "apps", "web");
-  webProcess = spawn(nextBin, ["dev", "-p", "5000", "-H", "0.0.0.0"], {
-    cwd: webDir,
+  webProcess = spawn(pnpmBin, ["--filter", "@ngo-donor/web", "run", "dev"], {
+    cwd: rootDir,
     stdio: "inherit",
     env: {
       ...process.env,
       PORT: "5000",
       NEXT_TELEMETRY_DISABLED: "1",
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
-      PATH: `${rootBin}:${process.env.PATH}`,
     }
   });
   webProcess.on("error", (err) => console.error("Web error:", err));
@@ -56,16 +53,14 @@ function startWeb() {
 
 function startAPI() {
   console.log("Starting NestJS API on port 3001...");
-  const nestBin = path.join(rootBin, "nest");
-  apiProcess = spawn(nestBin, ["start", "--watch"], {
-    cwd: path.join(rootDir, "apps", "api"),
+  apiProcess = spawn(pnpmBin, ["--filter", "@ngo-donor/api", "run", "dev"], {
+    cwd: rootDir,
     stdio: "inherit",
     env: {
       ...process.env,
       PORT: "3001",
       API_PORT: "3001",
       DATABASE_URL: process.env.DATABASE_URL || "",
-      PATH: `${rootBin}:${process.env.PATH}`,
     }
   });
   apiProcess.on("error", (err) => console.error("API error:", err));

@@ -17,6 +17,8 @@ const client_1 = require("@prisma/client");
 const STAFF_LIKE_ROLES = [client_1.Role.STAFF, client_1.Role.TELECALLER, client_1.Role.ACCOUNTANT, client_1.Role.OFFICE_ASSISTANT];
 const ADMIN_LIKE_ROLES = [client_1.Role.FOUNDER, client_1.Role.ADMIN];
 const ALL_ACTIVE_ROLES = [...ADMIN_LIKE_ROLES, ...STAFF_LIKE_ROLES];
+const MEAL_ROLES = [...ALL_ACTIVE_ROLES, client_1.Role.OFFICE_INCHARGE, client_1.Role.HOME_INCHARGE];
+const MEAL_CREATE_ROLES = [...ALL_ACTIVE_ROLES, client_1.Role.OFFICE_INCHARGE];
 const DEFAULT_PERMISSIONS = {
     donors: {
         view: ALL_ACTIVE_ROLES,
@@ -156,6 +158,13 @@ const DEFAULT_PERMISSIONS = {
     },
     dashboard: {
         view: ALL_ACTIVE_ROLES,
+    },
+    meals: {
+        view: MEAL_ROLES,
+        create: MEAL_CREATE_ROLES,
+        edit: MEAL_ROLES,
+        postMeal: MEAL_ROLES,
+        delete: ADMIN_LIKE_ROLES,
     },
     staffTasks: {
         view: ALL_ACTIVE_ROLES,

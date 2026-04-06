@@ -15,14 +15,7 @@ export declare class AuthService {
     constructor(prisma: PrismaService, jwtService: JwtService, configService: ConfigService, auditService: AuditService, emailService: EmailService);
     private hashToken;
     register(dto: RegisterDto): Promise<{
-        user: {
-            email: string;
-            name: string;
-            phone: string;
-            role: import(".prisma/client").$Enums.Role;
-            id: string;
-            isActive: boolean;
-        };
+        user: any;
         tokens: {
             accessToken: string;
             refreshToken: string;
@@ -30,11 +23,12 @@ export declare class AuthService {
     }>;
     login(dto: LoginDto): Promise<{
         user: {
-            id: string;
-            email: string;
-            name: string;
-            role: import(".prisma/client").$Enums.Role;
-            isActive: true;
+            id: any;
+            email: any;
+            name: any;
+            role: any;
+            isActive: any;
+            assignedHome: any;
         };
         tokens: {
             accessToken: string;
@@ -46,26 +40,18 @@ export declare class AuthService {
     }>;
     refreshTokens(dto: RefreshTokenDto): Promise<{
         user: {
-            id: string;
-            email: string;
-            name: string;
-            role: import(".prisma/client").$Enums.Role;
-            isActive: true;
+            id: any;
+            email: any;
+            name: any;
+            role: any;
+            isActive: any;
         };
         tokens: {
             accessToken: string;
             refreshToken: string;
         };
     }>;
-    getProfile(userId: string): Promise<{
-        email: string;
-        name: string;
-        role: import(".prisma/client").$Enums.Role;
-        id: string;
-        createdAt: Date;
-        isActive: boolean;
-        updatedAt: Date;
-    }>;
+    getProfile(userId: string): Promise<any>;
     forgotPassword(dto: ForgotPasswordDto): Promise<{
         message: string;
     }>;
