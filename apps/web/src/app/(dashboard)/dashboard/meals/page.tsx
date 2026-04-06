@@ -161,6 +161,7 @@ function paymentStatusColor(status?: string) {
     case "PARTIAL": return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100";
     case "ADVANCE": return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100";
     case "AFTER_SERVICE": return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100";
+    case "NOT_YET": return "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300";
     default: return "bg-muted text-muted-foreground";
   }
 }
@@ -321,9 +322,10 @@ export default function MealsPage() {
   );
   const PAYMENT_STATUS_OPTIONS = useMemo(
     () => [
-      { value: "FULL", label: PAYMENT_STATUS_LANG[lang].FULL },
+      { value: "NOT_YET", label: PAYMENT_STATUS_LANG[lang].NOT_YET },
       { value: "ADVANCE", label: PAYMENT_STATUS_LANG[lang].ADVANCE },
       { value: "PARTIAL", label: PAYMENT_STATUS_LANG[lang].PARTIAL },
+      { value: "FULL", label: PAYMENT_STATUS_LANG[lang].FULL },
       { value: "AFTER_SERVICE", label: PAYMENT_STATUS_LANG[lang].AFTER_SERVICE },
     ],
     [lang],

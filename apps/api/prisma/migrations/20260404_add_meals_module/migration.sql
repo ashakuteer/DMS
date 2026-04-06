@@ -38,8 +38,11 @@ EXCEPTION WHEN duplicate_object THEN null; END $$;
 -- Phase 1.5 enum ────────────────────────────────────────────────────────
 
 DO $$ BEGIN
-  CREATE TYPE "MealPaymentStatus" AS ENUM ('ADVANCE', 'PARTIAL', 'FULL', 'AFTER_SERVICE');
+  CREATE TYPE "MealPaymentStatus" AS ENUM ('ADVANCE', 'PARTIAL', 'FULL', 'AFTER_SERVICE', 'NOT_YET');
 EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+-- Add NOT_YET to existing MealPaymentStatus enum (idempotent for existing DBs)
+ALTER TYPE "MealPaymentStatus" ADD VALUE IF NOT EXISTS 'NOT_YET';
 
 -- Phase 1 table ─────────────────────────────────────────────────────────
 

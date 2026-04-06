@@ -71,12 +71,14 @@ export const PAYMENT_STATUS_LANG: Record<MealsLang, Record<string, string>> = {
     PARTIAL: "Partial",
     ADVANCE: "Advance",
     AFTER_SERVICE: "After Service",
+    NOT_YET: "Not Yet Paid",
   },
   te: {
     FULL: "పూర్తి (Full)",
     PARTIAL: "పాక్షిక (Partial)",
     ADVANCE: "అడ్వాన్స్ (Advance)",
     AFTER_SERVICE: "సేవ తర్వాత (After Service)",
+    NOT_YET: "చెల్లింపు లేదు (Not Yet Paid)",
   },
 };
 

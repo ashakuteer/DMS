@@ -2517,6 +2517,7 @@ enum MealPaymentStatus {
   PARTIAL
   FULL
   AFTER_SERVICE
+  NOT_YET
 }
 
 enum MealOccasionType {
