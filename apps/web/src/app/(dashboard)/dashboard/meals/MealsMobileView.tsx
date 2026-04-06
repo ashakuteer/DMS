@@ -13,10 +13,19 @@ import {
   ClipboardList,
   ChevronDown,
   ChevronUp,
-  Calendar,
 } from "lucide-react";
 import { type PostMealMeal } from "./PostMealModal";
 import { cn } from "@/lib/utils";
+import { useMealsLang } from "./useMealsLang";
+import {
+  HOME_LANG,
+  SLOT_LANG,
+  BOOKING_STATUS_LANG,
+  PAYMENT_STATUS_LANG,
+  FOOD_TYPE_LANG,
+  DONOR_VISIT_LANG,
+  type MealsLang,
+} from "./mealsLang";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,34 +63,21 @@ interface MobileMealRecord {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const HOME_LABELS: Record<string, string> = {
-  GIRLS_HOME: "బాలికల గృహం (Girls)",
-  BLIND_BOYS_HOME: "అంధ బాలుర గృహం (Blind Boys)",
-  OLD_AGE_HOME: "వృద్ధాశ్రమం (Old Age)",
-};
-
-const SLOT_LABELS: Record<string, string> = {
-  breakfast: "అల్పాహారం (Breakfast)",
-  lunch: "మధ్యాహ్న భోజనం (Lunch)",
-  eveningSnacks: "సాయంత్రం (Snacks)",
-  dinner: "రాత్రి భోజనం (Dinner)",
-};
-
 const SLOT_KEYS = ["breakfast", "lunch", "eveningSnacks", "dinner"] as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getMealSlots(r: MobileMealRecord): string[] {
-  return SLOT_KEYS.filter((s) => r[s]).map((s) => SLOT_LABELS[s]);
+function getMealSlots(r: MobileMealRecord, lang: MealsLang): string[] {
+  return SLOT_KEYS.filter((s) => r[s]).map((s) => SLOT_LANG[lang][s] ?? s);
 }
 
-function getMealHomes(r: MobileMealRecord): string[] {
+function getMealHomes(r: MobileMealRecord, lang: MealsLang): string[] {
   const sh = r.slotHomes as Record<string, string[]> | null | undefined;
   if (sh && Object.keys(sh).length > 0) {
     const allHomes = [...new Set(Object.values(sh).flat())];
-    return allHomes.map((h) => HOME_LABELS[h] ?? h);
+    return allHomes.map((h) => HOME_LANG[lang][h] ?? h);
   }
-  return (r.homes ?? []).map((h) => HOME_LABELS[h] ?? h);
+  return (r.homes ?? []).map((h) => HOME_LANG[lang][h] ?? h);
 }
 
 function getPaymentColor(status?: string): string {
@@ -90,16 +86,21 @@ function getPaymentColor(status?: string): string {
     case "PARTIAL": return "bg-yellow-100 text-yellow-800";
     case "ADVANCE": return "bg-blue-100 text-blue-800";
     case "AFTER_SERVICE": return "bg-orange-100 text-orange-800";
+    case "NOT_YET": return "bg-slate-100 text-slate-600";
     default: return "bg-muted text-muted-foreground";
   }
 }
 
-function getBookingStatusBadge(status?: string) {
+function getBookingStatusBadge(status: string | undefined, lang: MealsLang) {
   switch (status) {
-    case "HOLD": return { cls: "bg-yellow-100 text-yellow-800 border border-yellow-300 border-dashed", label: "⏸ హోల్డ్" };
-    case "CANCELLED": return { cls: "bg-red-100 text-red-800", label: "❌ రద్దు" };
-    case "COMPLETED": return { cls: "bg-blue-100 text-blue-800", label: "✅ పూర్తి" };
-    default: return null;
+    case "HOLD":
+      return { cls: "bg-yellow-100 text-yellow-800 border border-yellow-300 border-dashed", label: `⏸ ${BOOKING_STATUS_LANG[lang].HOLD}` };
+    case "CANCELLED":
+      return { cls: "bg-red-100 text-red-800", label: `❌ ${BOOKING_STATUS_LANG[lang].CANCELLED}` };
+    case "COMPLETED":
+      return { cls: "bg-blue-100 text-blue-800", label: `✅ ${BOOKING_STATUS_LANG[lang].COMPLETED}` };
+    default:
+      return null;
   }
 }
 
@@ -125,11 +126,13 @@ function toPostMealMeal(r: MobileMealRecord): PostMealMeal {
 
 function MealCard({
   record,
+  lang,
   canPostMeal,
   onOpenPostMeal,
   isHomeIncharge,
 }: {
   record: MobileMealRecord;
+  lang: MealsLang;
   canPostMeal: boolean;
   onOpenPostMeal: (meal: PostMealMeal) => void;
   isHomeIncharge: boolean;
@@ -139,11 +142,15 @@ function MealCard({
   const total = Number(record.totalAmount ?? record.amount ?? 0);
   const rcvd = Number(record.amountReceived ?? 0) + Number(record.postMealAmountReceived ?? 0);
   const balance = Math.max(0, total - rcvd);
-  const slots = getMealSlots(record);
-  const homes = getMealHomes(record);
-  const bookingBadge = getBookingStatusBadge(record.bookingStatus);
+  const slots = getMealSlots(record, lang);
+  const homes = getMealHomes(record, lang);
+  const bookingBadge = getBookingStatusBadge(record.bookingStatus, lang);
   const isMealDate = isToday(new Date(record.mealServiceDate.slice(0, 10) + "T00:00:00"));
   const isPast = isBefore(new Date(record.mealServiceDate.slice(0, 10) + "T00:00:00"), startOfDay(new Date()));
+
+  const paymentLabel = record.paymentStatus
+    ? (PAYMENT_STATUS_LANG[lang][record.paymentStatus] ?? record.paymentStatus.replace(/_/g, " "))
+    : (record.paymentType ?? "—");
 
   return (
     <div
@@ -174,7 +181,7 @@ function MealCard({
             </span>
           ) : (
             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getPaymentColor(record.paymentStatus)}`}>
-              {record.paymentStatus?.replace(/_/g, " ") ?? record.paymentType ?? "—"}
+              {paymentLabel}
             </span>
           )}
           {record.mealCompleted && (
@@ -196,7 +203,7 @@ function MealCard({
           </Badge>
         ))}
         <Badge variant="outline" className="text-xs">
-          {record.foodType === "VEG" ? "🟢 వెజ్" : "🔴 నాన్ వెజ్"}
+          {FOOD_TYPE_LANG[lang][record.foodType] ?? record.foodType}
         </Badge>
       </div>
 
@@ -209,7 +216,7 @@ function MealCard({
             <span className="italic">No telecaller</span>
           )}
           {record.donorVisitExpected === false && (
-            <span className="ml-2 text-orange-600">📷 Photo only</span>
+            <span className="ml-2 text-orange-600">{DONOR_VISIT_LANG[lang].photo}</span>
           )}
         </div>
         <div className="text-right">
@@ -270,6 +277,7 @@ function MealSection({
   title,
   icon,
   items,
+  lang,
   canPostMeal,
   onOpenPostMeal,
   isHomeIncharge,
@@ -278,6 +286,7 @@ function MealSection({
   title: string;
   icon?: string;
   items: MobileMealRecord[];
+  lang: MealsLang;
   canPostMeal: boolean;
   onOpenPostMeal: (meal: PostMealMeal) => void;
   isHomeIncharge: boolean;
@@ -301,13 +310,14 @@ function MealSection({
         <div className="space-y-3">
           {items.length === 0 ? (
             <div className="text-sm text-muted-foreground text-center py-4 border rounded-xl bg-muted/20">
-              ఏమీ లేదు — Nothing here
+              {lang === "en" ? "Nothing here" : "ఏమీ లేదు — Nothing here"}
             </div>
           ) : (
             items.map((r) => (
               <MealCard
                 key={r.id}
                 record={r}
+                lang={lang}
                 canPostMeal={canPostMeal}
                 onOpenPostMeal={onOpenPostMeal}
                 isHomeIncharge={isHomeIncharge}
@@ -330,6 +340,7 @@ interface Props {
 }
 
 export function MealsMobileView({ isHomeIncharge, canCreate, onAddMeal, onOpenPostMeal }: Props) {
+  const [lang] = useMealsLang();
   const today = format(new Date(), "yyyy-MM-dd");
   const from = format(subDays(new Date(), 7), "yyyy-MM-dd");
   const to = format(addDays(new Date(), 30), "yyyy-MM-dd");
@@ -373,6 +384,10 @@ export function MealsMobileView({ isHomeIncharge, canCreate, onAddMeal, onOpenPo
     return { todayItems, upcomingItems, pendingItems };
   }, [items]);
 
+  const sectionTitles = lang === "en"
+    ? { today: "Today's Meals", pending: "Pending Post-Meal", upcoming: "Upcoming Meals" }
+    : { today: "నేటి భోజన కార్యక్రమాలు (Today)", pending: "పెండింగ్ చర్యలు (Pending Post-Meal)", upcoming: "రాబోయే భోజన కార్యక్రమాలు (Upcoming)" };
+
   return (
     <div className="min-h-screen bg-background pb-24">
       {/* Header */}
@@ -412,9 +427,10 @@ export function MealsMobileView({ isHomeIncharge, canCreate, onAddMeal, onOpenPo
 
           {/* Today Section */}
           <MealSection
-            title="నేటి భోజన కార్యక్రమాలు (Today)"
+            title={sectionTitles.today}
             icon="🍽"
             items={todayItems}
+            lang={lang}
             canPostMeal={true}
             onOpenPostMeal={onOpenPostMeal}
             isHomeIncharge={isHomeIncharge}
@@ -424,9 +440,10 @@ export function MealsMobileView({ isHomeIncharge, canCreate, onAddMeal, onOpenPo
           {/* Pending Actions Section */}
           {pendingItems.length > 0 && (
             <MealSection
-              title="పెండింగ్ చర్యలు (Pending Post-Meal)"
+              title={sectionTitles.pending}
               icon="⏳"
               items={pendingItems}
+              lang={lang}
               canPostMeal={true}
               onOpenPostMeal={onOpenPostMeal}
               isHomeIncharge={isHomeIncharge}
@@ -436,9 +453,10 @@ export function MealsMobileView({ isHomeIncharge, canCreate, onAddMeal, onOpenPo
 
           {/* Upcoming Section */}
           <MealSection
-            title="రాబోయే భోజన కార్యక్రమాలు (Upcoming)"
+            title={sectionTitles.upcoming}
             icon="📅"
             items={upcomingItems}
+            lang={lang}
             canPostMeal={false}
             onOpenPostMeal={onOpenPostMeal}
             isHomeIncharge={isHomeIncharge}

@@ -21,7 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useMealsLang } from "./useMealsLang";
-import { SLOT_LANG, HOME_LANG, FOOD_TYPE_LANG, BOOKING_STATUS_LANG, TELECALLER_LANG, LEGEND_LANG } from "./mealsLang";
+import { SLOT_LANG, HOME_LANG, FOOD_TYPE_LANG, BOOKING_STATUS_LANG, TELECALLER_LANG, LEGEND_LANG, DONOR_VISIT_LANG } from "./mealsLang";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -582,7 +582,7 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                     )}
                     {r.donorVisitExpected === false && (
                       <div className="text-xs text-orange-600 font-medium">
-                        {lang === "en" ? "📷 Photo / Video only" : "📷 ఫోటో / వీడియో మాత్రమే (Photo / Video only)"}
+                        {DONOR_VISIT_LANG[lang].photo}
                       </div>
                     )}
 

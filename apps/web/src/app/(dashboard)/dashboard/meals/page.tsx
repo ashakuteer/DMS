@@ -166,8 +166,8 @@ function paymentStatusColor(status?: string) {
   }
 }
 
-function paymentStatusLabel(status?: string, legacyType?: string) {
-  if (status) return status.replace(/_/g, " ");
+function paymentStatusLabel(status?: string, legacyType?: string, lang: MealsLang = "te") {
+  if (status) return PAYMENT_STATUS_LANG[lang][status] ?? status.replace(/_/g, " ");
   if (legacyType) return legacyType;
   return "—";
 }
@@ -618,7 +618,7 @@ export default function MealsPage() {
 
     // Validate each active slot has at least one home
     for (const slot of activeSlots) {
-      const slotLabel = { breakfast: "అల్పాహారం (Breakfast)", lunch: "మధ్యాహ్న భోజనం (Lunch)", eveningSnacks: "సాయంత్రం అల్పాహారం (Snacks)", dinner: "రాత్రి భోజనం (Dinner)" }[slot];
+      const slotLabel = SLOT_LANG[lang][slot] ?? slot;
       if ((form.slotHomes[slot] ?? []).length === 0) {
         toast({ title: "Validation", description: `Select at least one home for ${slotLabel}.`, variant: "destructive" });
         return;
@@ -951,7 +951,7 @@ export default function MealsPage() {
                     </TableCell>
                     <TableCell>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${paymentStatusColor(item.paymentStatus)}`}>
-                        {paymentStatusLabel(item.paymentStatus, item.paymentType)}
+                        {paymentStatusLabel(item.paymentStatus, item.paymentType, lang)}
                       </span>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
