@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
@@ -48,6 +48,7 @@ import {
 import { MealsCalendar } from "./MealsCalendar";
 import { PostMealModal, type PostMealMeal } from "./PostMealModal";
 import { PendingActionsTab } from "./PendingActionsTab";
+import { MealsMobileView } from "./MealsMobileView";
 
 // ─── Menu Options ────────────────────────────────────────────────────────────
 
@@ -369,7 +370,17 @@ export default function MealsPage() {
 
   const currentUser = authStorage.getUser();
   const isHomeIncharge = currentUser?.role === "HOME_INCHARGE";
+  const isOfficeIncharge = currentUser?.role === "OFFICE_INCHARGE";
   const canCreate = !isHomeIncharge;
+
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"list" | "calendar" | "pending">("list");
@@ -657,10 +668,23 @@ export default function MealsPage() {
   const items = data?.items ?? [];
   const totalPages = data?.totalPages ?? 1;
 
+  // ─── Mobile check ────────────────────────────────────────────────────────────
+
+  const showMobileView = isMobile && (isHomeIncharge || isOfficeIncharge);
+
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-6 space-y-6">
+    <>
+    {showMobileView && (
+      <MealsMobileView
+        isHomeIncharge={isHomeIncharge}
+        canCreate={canCreate}
+        onAddMeal={() => { setOpen(true); setForm(defaultForm()); }}
+        onOpenPostMeal={(meal) => setPostMealMeal(meal)}
+      />
+    )}
+    <div className={showMobileView ? "hidden" : "p-6 space-y-6"}>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <UtensilsCrossed className="h-7 w-7 text-primary" />
@@ -1417,5 +1441,6 @@ export default function MealsPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </>
   );
 }

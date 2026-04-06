@@ -1,0 +1,142 @@
+Please implement a mobile-first Meals view for internal roles.
+
+GOAL
+Make Meals module easy to use on mobile phones for:
+- OFFICE_INCHARGE
+- HOME_INCHARGE
+
+IMPORTANT
+- Keep everything inside the existing DMS
+- Do NOT build a separate external app
+- Do NOT break desktop view
+- Do NOT refactor unrelated modules
+- Mobile view should be for Meals workflows only
+
+==================================================
+PART 1 — WHO SHOULD GET MOBILE VIEW
+==================================================
+
+Apply mobile-first meals layout for:
+- OFFICE_INCHARGE
+- HOME_INCHARGE
+
+On mobile screen sizes, these users should see a simplified Meals UI.
+
+Desktop users should keep the existing full view.
+
+==================================================
+PART 2 — MOBILE VIEW FOR OFFICE_INCHARGE
+==================================================
+
+OFFICE_INCHARGE mobile view should show:
+
+1. Today’s meals
+2. Upcoming meals
+3. Pending actions
+4. Ability to add meal sponsorship
+5. Ability to open post-meal update
+6. Ability to see all homes
+7. Ability to see telecaller/owner name
+8. Ability to see booking status (when hold system is added)
+
+Use a card layout instead of large tables/calendar matrix.
+
+Each meal card should show:
+- date
+- slot
+- home
+- donor
+- telecaller
+- food type
+- payment / balance status
+- occasion if any
+- action button
+
+==================================================
+PART 3 — MOBILE VIEW FOR HOME_INCHARGE
+==================================================
+
+HOME_INCHARGE mobile view should show only their assigned home.
+
+They should see:
+
+1. Today’s meals
+2. Upcoming meals
+3. Pending actions
+4. Post-meal update button
+5. Meal completed yes/no
+6. Donor visited yes/no
+7. Extra items given
+8. Balance received
+9. Thank-you / review / hi follow-up fields
+10. Cancellation / refund section if already applicable
+
+HOME_INCHARGE must NOT see:
+- other homes
+- donors list
+- admin tools
+- campaigns
+- analytics
+- unrelated modules
+
+==================================================
+PART 4 — MOBILE UI STYLE
+==================================================
+
+Design mobile UI as cards, not tables.
+
+Requirements:
+- big tap targets
+- clear Telugu + English labels where already used
+- minimal scrolling inside modals
+- one meal = one card
+- sticky bottom action button if useful
+- avoid desktop matrix calendar on mobile
+- use a simple day-wise grouped layout
+
+Suggested sections:
+- Today
+- Upcoming
+- Pending Actions
+- Add Meal
+
+==================================================
+PART 5 — RESPONSIVE BEHAVIOR
+==================================================
+
+On mobile width:
+- switch to mobile meals layout for OFFICE_INCHARGE and HOME_INCHARGE
+
+On desktop width:
+- keep current desktop layout
+
+Do not affect Founder/Admin desktop experience.
+
+==================================================
+PART 6 — KEEP EXISTING SECURITY
+==================================================
+
+Do NOT weaken backend restrictions.
+
+- HOME_INCHARGE must still be restricted to assignedHome in backend
+- OFFICE_INCHARGE can still access all homes in meals
+- frontend mobile view must follow existing access rules
+
+==================================================
+PART 7 — AFTER IMPLEMENTATION
+==================================================
+
+Tell me clearly:
+A. what files changed
+B. how mobile layout is triggered
+C. what OFFICE_INCHARGE sees on mobile
+D. what HOME_INCHARGE sees on mobile
+E. confirm desktop view is unchanged
+F. confirm backend restrictions are unchanged
+G. confirm no separate app was created
+
+IMPORTANT FINAL REMINDER
+This is only a mobile-friendly internal Meals interface inside the existing DMS.
+Do not build a separate app.
+Do not touch unrelated modules.
+Keep it production-safe.
