@@ -70,8 +70,8 @@ const LABEL_W = 148;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function homeLabel(h: string) {
-  return HOME_OPTIONS.find((x) => x.value === h)?.label ?? h;
+function homeLabel(h: string, lang: import("./mealsLang").MealsLang) {
+  return HOME_LANG[lang][h] ?? h;
 }
 
 function isoDate(year: number, month0: number, day: number) {
@@ -473,7 +473,7 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
               {modalSlotLabel}
               {selectedCell && (
                 <span className="text-muted-foreground font-normal">
-                  {" "}— {homeLabel(selectedCell.homeValue)}
+                  {" "}— {homeLabel(selectedCell.homeValue, lang)}
                 </span>
               )}
               {selectedCell && (
