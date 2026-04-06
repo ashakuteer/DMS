@@ -1,0 +1,124 @@
+We need 3 focused fixes in Meals module.
+
+IMPORTANT
+Do NOT refactor unrelated modules.
+Do NOT break existing meal save, donation linkage, calendar, pending actions, or role restrictions.
+Keep this production-safe and additive only.
+
+==================================================
+PART 1 — RESTORE / SHOW EXISTING BOOKING DATA PROPERLY
+==================================================
+
+Problem:
+Some existing bookings are not appearing correctly in the Meals calendar after the recent changes.
+
+Please fix the calendar data rendering so both old and new bookings appear correctly.
+
+Requirements:
+1. Existing saved meal sponsorship records must still show in calendar
+2. Support both:
+   - legacy records
+   - new records with slotHomes / bookingStatus / telecaller / donorVisitExpected
+3. Do not lose old bookings visually
+4. Conflict / hold / telecaller display must work on top of old records too
+5. If fallback logic is needed, use safe backward compatibility
+
+After fix, confirm:
+- old bookings visible
+- new bookings visible
+- no cell leakage
+- no missing bookings
+
+==================================================
+PART 2 — TRUE LANGUAGE SWITCH (ENGLISH / TELUGU)
+==================================================
+
+Problem:
+Right now labels are mixed Telugu + English together.
+If English is selected, Telugu should not appear.
+If Telugu is selected, English may appear as helper if needed, but the selected mode must be respected.
+
+Implement a proper display language switch for Meals UI.
+
+Requirements:
+1. If current UI language = English:
+   - show only English labels
+   - do NOT show Telugu in slots/menu/home/payment labels
+
+2. If current UI language = Telugu:
+   - show Telugu labels
+   - English may appear in brackets only if already intended, but keep Telugu-first
+
+3. Apply this to:
+   - meal slots
+   - food type
+   - home names
+   - payment labels
+   - booking status
+   - donor visit expected
+   - menu item labels
+   - telecaller label
+   - calendar legend labels
+
+4. Do NOT change backend values
+5. Do NOT change enum values
+6. This must be frontend display-only
+
+==================================================
+PART 3 — QUICK NEW DONOR INSIDE ADD MEAL FORM
+==================================================
+
+Business need:
+If donor record does not exist, office/meals staff should be able to add a new donor quickly inside the same Add Meal Sponsorship form.
+
+Only collect:
+- donor name
+- phone number
+
+Then continue meal save without forcing full donor profile.
+
+Requirements:
+1. In Add Meal Sponsorship form:
+   - keep donor search
+   - add option like:
+     "Donor not found? Add quick donor"
+
+2. Quick donor fields:
+   - full name (required)
+   - phone number (required)
+
+3. On save:
+   - create donor record first
+   - then create meal sponsorship linked to that donor
+   - continue same form flow
+
+4. Duplicate prevention:
+   - if same phone number already exists, warn user and use/select existing donor instead of creating duplicate
+
+5. Mark quick donor clearly for later profile completion if easy/safe
+   Suggested:
+   - source/note/profile incomplete/basic donor indicator
+   But only if easy and non-breaking
+
+6. Do NOT force address/email/source/language at this stage
+
+==================================================
+PART 4 — AFTER IMPLEMENTATION
+==================================================
+
+Tell me clearly:
+A. what files changed
+B. how old bookings were restored in calendar
+C. how language switching now works
+D. whether English mode is English-only
+E. how quick donor is created from Add Meal form
+F. how duplicate phone number prevention works
+G. confirm no existing meal/donation logic was broken
+
+IMPORTANT FINAL REMINDER
+Do only these 3 items:
+- restore old booking visibility
+- true English/Telugu display switch
+- quick donor creation inside Add Meal form
+
+This is the right next prompt.

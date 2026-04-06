@@ -541,4 +541,54 @@ export class MealsService {
     await this.prisma.mealSponsorship.delete({ where: { id } });
     return { message: "Meal sponsorship deleted" };
   }
+
+  async quickCreateDonor(
+    dto: { firstName: string; lastName?: string; phone: string },
+    createdById: string,
+  ) {
+    const cleaned = dto.phone.replace(/[\s\-\(\)\+\.]/g, "");
+
+    // Check for duplicate by phone
+    const existing = await this.prisma.donor.findFirst({
+      where: {
+        OR: [
+          { primaryPhone: cleaned },
+          { whatsappPhone: cleaned },
+          { alternatePhone: cleaned },
+        ],
+        isDeleted: false,
+      },
+      select: { id: true, firstName: true, lastName: true, donorCode: true },
+    });
+
+    if (existing) {
+      return {
+        created: false,
+        existed: true,
+        donor: {
+          id: existing.id,
+          firstName: existing.firstName,
+          lastName: existing.lastName ?? "",
+          donorCode: existing.donorCode,
+        },
+      };
+    }
+
+    const donorCode = `AKF-DNR-${Date.now()}`;
+    const donor = await this.prisma.donor.create({
+      data: {
+        donorCode,
+        firstName: dto.firstName.trim(),
+        lastName: dto.lastName?.trim() ?? "",
+        primaryPhone: cleaned,
+        whatsappPhone: cleaned,
+        donorSince: new Date(),
+        sourceDetails: "Quick add from meals booking form",
+        createdById,
+      },
+      select: { id: true, firstName: true, lastName: true, donorCode: true },
+    });
+
+    return { created: true, existed: false, donor };
+  }
 }

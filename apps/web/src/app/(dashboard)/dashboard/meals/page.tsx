@@ -49,6 +49,8 @@ import { MealsCalendar } from "./MealsCalendar";
 import { PostMealModal, type PostMealMeal } from "./PostMealModal";
 import { PendingActionsTab } from "./PendingActionsTab";
 import { MealsMobileView } from "./MealsMobileView";
+import { useMealsLang } from "./useMealsLang";
+import { SLOT_LANG, HOME_LANG, FOOD_TYPE_LANG, BOOKING_STATUS_LANG, PAYMENT_STATUS_LANG, DONOR_VISIT_LANG, TELECALLER_LANG, getMenuLabel, type MealsLang } from "./mealsLang";
 
 // ─── Menu Options ────────────────────────────────────────────────────────────
 
@@ -79,84 +81,13 @@ const EVENING_SNACKS_ITEMS = [
   "Own Preparation", "Pakodi / Pakora", "Burger", "Pizza", "Noodles", "Mirchi Bujji",
 ];
 
-// Telugu label map for menu items (value stays English for DB, label shown in UI)
-const MENU_LABEL_MAP: Record<string, string> = {
-  "Idly": "ఇడ్లీ (Idly)",
-  "Vada": "వడ (Vada)",
-  "Bonda / Mysore Bajji": "బొండా / మైసూర్ బజ్జి",
-  "Semiya Upma": "సేమియా ఉప్మా",
-  "Own Preparation": "స్వీయ తయారీ",
-  "Boiled Egg": "ఉడికించిన గుడ్డు",
-  "Bread": "బ్రెడ్",
-  "Fruit": "పండ్లు",
-  "Milk": "పాలు",
-  "Flavoured Rice (Pulihora / Jeera Rice / Tomato Rice)": "పులిహోర / జీరా రైస్ / టమోటా రైస్",
-  "Kichidi": "ఖిచిడి",
-  "Poori": "పూరీ",
-  "Noodles": "నూడుల్స్",
-  "Bagara Rice": "బగారా రైస్",
-  "White Rice": "సాధారణ అన్నం",
-  "Vegetable Curry": "కూర",
-  "Vegetable Biryani": "వెజ్ బిర్యానీ",
-  "Dal": "పప్పు",
-  "Sambar": "సాంబార్",
-  "Sweet": "స్వీట్",
-  "Curd": "పెరుగు",
-  "Papad": "అప్పడం",
-  "Aloo Kurma": "ఆలూ కుర్మా",
-  "Raitha / Curd Chutney": "రైతా / పెరుగు చట్నీ",
-  "Masala Brinjal": "గుత్తి వంకాయ",
-  "Chutney": "చట్నీ",
-  "Panner Curry": "పనీర్ కర్రీ",
-  "Chicken Biryani": "చికెన్ బిర్యానీ",
-  "Mutton Curry": "మటన్ కర్రీ",
-  "Fish Curry": "చేప కూర",
-  "Fish Fry": "చేప వేపుడు",
-  "Chicken Fry": "చికెన్ ఫ్రై",
-  "Panner Curry & Boiled Egg": "పనీర్ + గుడ్డు",
-  "Samosa": "సమోసా",
-  "Biscuits": "బిస్కెట్లు",
-  "Chips": "చిప్స్",
-  "Puff": "పఫ్",
-  "Ice Cream": "ఐస్ క్రీమ్",
-  "Fruit Juice": "ఫ్రూట్ జ్యూస్",
-  "Burger": "బర్గర్",
-  "Pakodi / Pakora": "పకోడీ",
-  "Pizza": "పిజ్జా",
-  "Mirchi Bujji": "మిర్చి బజ్జి",
-};
-
-function menuLabel(item: string): string {
-  return MENU_LABEL_MAP[item] ?? item;
-}
-
-const BOOKING_STATUS_OPTIONS = [
-  { value: "HOLD", label: "హోల్డ్ — చెల్లింపు లేదు (Hold)" },
-  { value: "CONFIRMED", label: "నిర్ధారించబడింది (Confirmed)" },
-];
-
 // ─── Static Options ───────────────────────────────────────────────────────────
 
-const HOME_OPTIONS = [
-  { value: "GIRLS_HOME", label: "బాలికల గృహం (Girls Home)" },
-  { value: "BLIND_BOYS_HOME", label: "అంధ బాలుర గృహం (Blind Boys Home)" },
-  { value: "OLD_AGE_HOME", label: "వృద్ధాశ్రమం (Old Age Home)" },
-];
-const ALL_HOMES = HOME_OPTIONS.map((h) => h.value);
+const HOME_VALUES_CONST = ["GIRLS_HOME", "BLIND_BOYS_HOME", "OLD_AGE_HOME"];
+const ALL_HOMES = HOME_VALUES_CONST;
 
-const SLOT_OPTIONS = [
-  { key: "breakfast", label: "అల్పాహారం (Breakfast)" },
-  { key: "lunch", label: "మధ్యాహ్న భోజనం (Lunch)" },
-  { key: "eveningSnacks", label: "సాయంత్రం అల్పాహారం (Snacks)", filterKey: "evening_snacks" },
-  { key: "dinner", label: "రాత్రి భోజనం (Dinner)" },
-];
-
-const SLOT_FILTER_OPTIONS = [
-  { key: "breakfast", label: "అల్పాహారం (Breakfast)" },
-  { key: "lunch", label: "మధ్యాహ్న భోజనం (Lunch)" },
-  { key: "evening_snacks", label: "సాయంత్రం అల్పాహారం (Snacks)" },
-  { key: "dinner", label: "రాత్రి భోజనం (Dinner)" },
-];
+const SLOT_KEYS = ["breakfast", "lunch", "eveningSnacks", "dinner"] as const;
+const SLOT_FILTER_KEYS = ["breakfast", "lunch", "evening_snacks", "dinner"] as const;
 
 const OCCASION_TYPES = [
   { value: "NONE", label: "None" },
@@ -208,25 +139,19 @@ const OCCASION_RELATION_OPTIONS = [
   { value: "OTHER", label: "Other" },
 ];
 
-const PAYMENT_STATUS_OPTIONS = [
-  { value: "FULL", label: "పూర్తి చెల్లింపు (Full Payment)" },
-  { value: "ADVANCE", label: "ముందస్తు చెల్లింపు (Advance)" },
-  { value: "PARTIAL", label: "Partial" },
-  { value: "AFTER_SERVICE", label: "After Service" },
-];
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function homeLabel(val: string) {
-  return HOME_OPTIONS.find((h) => h.value === val)?.label ?? val;
+function homeLabel(val: string, lang: MealsLang = "te") {
+  return HOME_LANG[lang][val] ?? val;
 }
 
-function slotBadges(breakfast: boolean, lunch: boolean, eveningSnacks: boolean, dinner: boolean) {
+function slotBadges(breakfast: boolean, lunch: boolean, eveningSnacks: boolean, dinner: boolean, lang: MealsLang = "te") {
+  const sl = SLOT_LANG[lang];
   const slots = [];
-  if (breakfast) slots.push("అల్పాహారం (Breakfast)");
-  if (lunch) slots.push("మధ్యాహ్న భోజనం (Lunch)");
-  if (eveningSnacks) slots.push("సాయంత్రం అల్పాహారం (Snacks)");
-  if (dinner) slots.push("రాత్రి భోజనం (Dinner)");
+  if (breakfast) slots.push(sl.breakfast);
+  if (lunch) slots.push(sl.lunch);
+  if (eveningSnacks) slots.push(sl.eveningSnacks);
+  if (dinner) slots.push(sl.dinner);
   return slots;
 }
 
@@ -367,6 +292,42 @@ const defaultForm = (): FormState => ({
 export default function MealsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [lang, setLang] = useMealsLang();
+
+  // Dynamic label arrays based on lang
+  const HOME_OPTIONS = useMemo(
+    () => HOME_VALUES_CONST.map((v) => ({ value: v, label: HOME_LANG[lang][v] ?? v })),
+    [lang],
+  );
+  const SLOT_OPTIONS = useMemo(
+    () => SLOT_KEYS.map((k) => ({ key: k, label: SLOT_LANG[lang][k] ?? k })),
+    [lang],
+  );
+  const SLOT_FILTER_OPTIONS = useMemo(
+    () => [
+      { key: "breakfast", label: SLOT_LANG[lang].breakfast },
+      { key: "lunch", label: SLOT_LANG[lang].lunch },
+      { key: "evening_snacks", label: SLOT_LANG[lang].eveningSnacks },
+      { key: "dinner", label: SLOT_LANG[lang].dinner },
+    ],
+    [lang],
+  );
+  const BOOKING_STATUS_OPTIONS = useMemo(
+    () => [
+      { value: "HOLD", label: BOOKING_STATUS_LANG[lang].HOLD },
+      { value: "CONFIRMED", label: BOOKING_STATUS_LANG[lang].CONFIRMED },
+    ],
+    [lang],
+  );
+  const PAYMENT_STATUS_OPTIONS = useMemo(
+    () => [
+      { value: "FULL", label: PAYMENT_STATUS_LANG[lang].FULL },
+      { value: "ADVANCE", label: PAYMENT_STATUS_LANG[lang].ADVANCE },
+      { value: "PARTIAL", label: PAYMENT_STATUS_LANG[lang].PARTIAL },
+      { value: "AFTER_SERVICE", label: PAYMENT_STATUS_LANG[lang].AFTER_SERVICE },
+    ],
+    [lang],
+  );
 
   const currentUser = authStorage.getUser();
   const isHomeIncharge = currentUser?.role === "HOME_INCHARGE";
@@ -390,6 +351,11 @@ export default function MealsPage() {
   const [showDonorDropdown, setShowDonorDropdown] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [postMealMeal, setPostMealMeal] = useState<PostMealMeal | null>(null);
+
+  // Quick donor inline form state
+  const [showQuickDonor, setShowQuickDonor] = useState(false);
+  const [quickDonorForm, setQuickDonorForm] = useState({ firstName: "", lastName: "", phone: "" });
+  const [quickDonorLoading, setQuickDonorLoading] = useState(false);
 
   const [filters, setFilters] = useState({
     mealServiceDate: "",
@@ -479,10 +445,13 @@ export default function MealsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meals/matrix"] });
       toast({ title: "Meal sponsorship created", description: "Linked donation record also created." });
       setOpen(false);
       setForm(defaultForm());
       setDonorResults([]);
+      setShowQuickDonor(false);
+      setQuickDonorForm({ firstName: "", lastName: "", phone: "" });
     },
     onError: (err: Error) => {
       toast({ title: "Error", description: err.message, variant: "destructive" });
@@ -497,6 +466,7 @@ export default function MealsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meals/matrix"] });
       toast({ title: "Deleted", description: "Meal sponsorship removed." });
       setDeleteId(null);
     },
@@ -506,6 +476,46 @@ export default function MealsPage() {
   });
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
+
+  async function handleQuickDonorSubmit() {
+    if (!quickDonorForm.firstName.trim() || !quickDonorForm.phone.trim()) {
+      toast({ title: "Required fields", description: "First name and phone number are required.", variant: "destructive" });
+      return;
+    }
+    setQuickDonorLoading(true);
+    try {
+      const res = await fetchWithAuth("/api/meals/quick-donor", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(quickDonorForm),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as any).message || "Failed to create donor");
+      }
+      const result = await res.json();
+      const d = result.donor;
+      if (result.existed) {
+        toast({ title: "Donor already exists", description: `Using existing donor: ${d.firstName} ${d.lastName ?? ""} (${d.donorCode})` });
+      } else {
+        toast({ title: "Donor created", description: `${d.firstName} ${d.lastName ?? ""} added as a new donor.` });
+      }
+      setForm((prev) => ({
+        ...prev,
+        donorId: d.id,
+        donorSearch: `${d.firstName} ${d.lastName ?? ""}`.trim(),
+        selectedDonor: { id: d.id, firstName: d.firstName, lastName: d.lastName ?? "", donorCode: d.donorCode },
+      }));
+      setDonorResults([]);
+      setShowDonorDropdown(false);
+      setShowQuickDonor(false);
+      setQuickDonorForm({ firstName: "", lastName: "", phone: "" });
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message ?? "Failed to create donor", variant: "destructive" });
+    } finally {
+      setQuickDonorLoading(false);
+    }
+  }
 
   const searchDonors = useCallback(async (query: string) => {
     if (!query || query.length < 2) { setDonorResults([]); return; }
@@ -694,6 +704,19 @@ export default function MealsPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Language toggle */}
+          <div className="flex items-center border rounded-lg overflow-hidden text-xs">
+            <button
+              data-testid="lang-toggle-en"
+              className={`px-2.5 py-1.5 transition-colors ${lang === "en" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"}`}
+              onClick={() => setLang("en")}
+            >EN</button>
+            <button
+              data-testid="lang-toggle-te"
+              className={`px-2.5 py-1.5 transition-colors ${lang === "te" ? "bg-primary text-primary-foreground" : "hover:bg-muted text-muted-foreground"}`}
+              onClick={() => setLang("te")}
+            >తె</button>
+          </div>
           {/* View toggle */}
           <div className="flex items-center border rounded-lg overflow-hidden">
             <button
@@ -826,7 +849,7 @@ export default function MealsPage() {
               <TableHead>Slots</TableHead>
               <TableHead>Food</TableHead>
               <TableHead>Menu</TableHead>
-              <TableHead>కాల్ బాధ్యుడు (Telecaller)</TableHead>
+              <TableHead>{TELECALLER_LANG[lang]}</TableHead>
               <TableHead>Total / Rcvd / Balance</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Occasion</TableHead>
@@ -887,7 +910,7 @@ export default function MealsPage() {
                                 <div key={s} className="flex items-center gap-1 flex-wrap">
                                   <span className="text-xs font-medium text-muted-foreground w-10 shrink-0">{slotLabel}:</span>
                                   {hs.map((h) => (
-                                    <Badge key={h} variant="outline" className="text-xs px-1 py-0">{homeLabel(h)}</Badge>
+                                    <Badge key={h} variant="outline" className="text-xs px-1 py-0">{homeLabel(h, lang)}</Badge>
                                   ))}
                                 </div>
                               );
@@ -896,21 +919,21 @@ export default function MealsPage() {
                       ) : (
                         <div className="flex flex-wrap gap-1">
                           {item.homes.map((h) => (
-                            <Badge key={h} variant="outline" className="text-xs">{homeLabel(h)}</Badge>
+                            <Badge key={h} variant="outline" className="text-xs">{homeLabel(h, lang)}</Badge>
                           ))}
                         </div>
                       )}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {slotBadges(item.breakfast, item.lunch, item.eveningSnacks ?? false, item.dinner).map((s) => (
+                        {slotBadges(item.breakfast, item.lunch, item.eveningSnacks ?? false, item.dinner, lang).map((s) => (
                           <Badge key={s} className="text-xs bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100 border-0">{s}</Badge>
                         ))}
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge variant={item.foodType === "VEG" ? "outline" : "secondary"} className="text-xs">
-                        {item.foodType === "VEG" ? "🟢 వెజ్ (Veg)" : "🔴 నాన్ వెజ్ (Non-Veg)"}
+                        {FOOD_TYPE_LANG[lang][item.foodType] ?? (item.foodType === "VEG" ? "🟢 Veg" : "🔴 Non-Veg")}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -1035,13 +1058,24 @@ export default function MealsPage() {
                     }}
                   />
                   {showDonorDropdown && form.donorSearch.length >= 2 && (
-                    <div className="absolute z-50 w-full mt-1 border rounded-lg bg-background shadow-lg max-h-48 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-1 border rounded-lg bg-background shadow-lg max-h-64 overflow-y-auto">
                       {donorLoading ? (
                         <div className="p-3 text-center text-sm text-muted-foreground">
                           <Loader2 className="h-4 w-4 animate-spin inline mr-2" />Searching…
                         </div>
                       ) : donorResults.length === 0 ? (
-                        <div className="p-3 text-center text-sm text-muted-foreground">No donors found</div>
+                        <>
+                          <div className="p-3 text-center text-sm text-muted-foreground border-b">No donors found</div>
+                          {!showQuickDonor && (
+                            <button
+                              data-testid="button-add-quick-donor"
+                              className="w-full text-left px-3 py-2.5 text-sm font-medium text-primary hover:bg-muted transition-colors flex items-center gap-2"
+                              onClick={() => setShowQuickDonor(true)}
+                            >
+                              <Plus className="h-4 w-4" /> Add as new donor
+                            </button>
+                          )}
+                        </>
                       ) : (
                         donorResults.map((d) => (
                           <button key={d.id} className="w-full text-left px-3 py-2 hover:bg-muted transition-colors text-sm"
@@ -1057,6 +1091,55 @@ export default function MealsPage() {
                           </button>
                         ))
                       )}
+                    </div>
+                  )}
+                  {/* Quick Donor inline form */}
+                  {showQuickDonor && !form.selectedDonor && (
+                    <div className="mt-2 p-3 border rounded-lg bg-muted/40 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold">Add Quick Donor</p>
+                        <button className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setShowQuickDonor(false)}>✕ Cancel</button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs">First Name <span className="text-destructive">*</span></Label>
+                          <Input
+                            data-testid="input-quick-donor-firstname"
+                            placeholder="First name"
+                            value={quickDonorForm.firstName}
+                            onChange={(e) => setQuickDonorForm((p) => ({ ...p, firstName: e.target.value }))}
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Last Name</Label>
+                          <Input
+                            data-testid="input-quick-donor-lastname"
+                            placeholder="Last name"
+                            value={quickDonorForm.lastName}
+                            onChange={(e) => setQuickDonorForm((p) => ({ ...p, lastName: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Phone (WhatsApp) <span className="text-destructive">*</span></Label>
+                        <Input
+                          data-testid="input-quick-donor-phone"
+                          placeholder="Phone number"
+                          type="tel"
+                          value={quickDonorForm.phone}
+                          onChange={(e) => setQuickDonorForm((p) => ({ ...p, phone: e.target.value }))}
+                        />
+                      </div>
+                      <Button
+                        data-testid="button-quick-donor-submit"
+                        size="sm"
+                        className="w-full"
+                        disabled={quickDonorLoading}
+                        onClick={handleQuickDonorSubmit}
+                      >
+                        {quickDonorLoading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
+                        {quickDonorLoading ? "Creating…" : "Create Donor & Select"}
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -1083,8 +1166,8 @@ export default function MealsPage() {
                 }}>
                   <SelectTrigger data-testid="select-food-type"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="VEG">🟢 వెజ్ (Veg)</SelectItem>
-                    <SelectItem value="NON_VEG">🔴 నాన్ వెజ్ (Non-Veg)</SelectItem>
+                    <SelectItem value="VEG">{FOOD_TYPE_LANG[lang].VEG}</SelectItem>
+                    <SelectItem value="NON_VEG">{FOOD_TYPE_LANG[lang].NON_VEG}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1174,7 +1257,7 @@ export default function MealsPage() {
                             checked={form.selectedMenuItems.includes(item)}
                             onCheckedChange={() => toggleMenuItem(item)}
                           />
-                          <Label htmlFor={`menu-${item}`} className="cursor-pointer text-sm font-normal">{menuLabel(item)}</Label>
+                          <Label htmlFor={`menu-${item}`} className="cursor-pointer text-sm font-normal">{getMenuLabel(item, lang)}</Label>
                         </div>
                       ))}
                     </div>
@@ -1207,7 +1290,7 @@ export default function MealsPage() {
 
             {/* Telecaller */}
             <div className="space-y-1">
-              <Label>కాల్ బాధ్యుడు (Telecaller)</Label>
+              <Label>{TELECALLER_LANG[lang]}</Label>
               {staffList.length > 0 ? (
                 <Select value={form.telecallerName || "__none__"} onValueChange={(v) => setField("telecallerName", v === "__none__" ? "" as any : v as any)}>
                   <SelectTrigger data-testid="select-telecaller"><SelectValue placeholder="Select staff member…" /></SelectTrigger>
@@ -1242,7 +1325,7 @@ export default function MealsPage() {
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>దాత సందర్శన ఆశించబడుతుందా? (Donor Visit Expected?)</Label>
+                <Label>{DONOR_VISIT_LANG[lang].label}</Label>
                 <div className="flex rounded-md border overflow-hidden h-10">
                   <button
                     type="button"
@@ -1250,7 +1333,7 @@ export default function MealsPage() {
                     onClick={() => setField("donorVisitExpected", false as any)}
                     className={`flex-1 text-sm font-medium transition-colors border-r ${!form.donorVisitExpected ? "bg-orange-50 text-orange-700" : "bg-background text-muted-foreground hover:bg-muted"}`}
                   >
-                    📷 ఫోటో మాత్రమే (Photo only)
+                    {DONOR_VISIT_LANG[lang].photo}
                   </button>
                   <button
                     type="button"
@@ -1258,7 +1341,7 @@ export default function MealsPage() {
                     onClick={() => setField("donorVisitExpected", true as any)}
                     className={`flex-1 text-sm font-medium transition-colors ${form.donorVisitExpected ? "bg-green-50 text-green-700" : "bg-background text-muted-foreground hover:bg-muted"}`}
                   >
-                    ✅ సందర్శన (Visit)
+                    {DONOR_VISIT_LANG[lang].visit}
                   </button>
                 </div>
               </div>

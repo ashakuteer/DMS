@@ -53,6 +53,15 @@ export class MealsController {
     return this.mealsService.findPendingActions(req.user);
   }
 
+  @Post("quick-donor")
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.OFFICE_INCHARGE)
+  quickCreateDonor(
+    @Body() body: { firstName: string; lastName?: string; phone: string },
+    @Request() req: any,
+  ) {
+    return this.mealsService.quickCreateDonor(body, req.user.id);
+  }
+
   @Get(":id")
   findOne(@Param("id") id: string) {
     return this.mealsService.findOne(id);

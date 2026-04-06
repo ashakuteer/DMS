@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useMealsLang } from "./useMealsLang";
+import { SLOT_LANG, HOME_LANG, FOOD_TYPE_LANG, BOOKING_STATUS_LANG, TELECALLER_LANG, LEGEND_LANG } from "./mealsLang";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -58,18 +60,8 @@ type SlotKey = "breakfast" | "lunch" | "eveningSnacks" | "dinner";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const HOME_OPTIONS = [
-  { value: "GIRLS_HOME", label: "బాలికల గృహం (Girls Home)" },
-  { value: "BLIND_BOYS_HOME", label: "అంధ బాలుర గృహం (Blind Boys Home)" },
-  { value: "OLD_AGE_HOME", label: "వృద్ధాశ్రమం (Old Age Home)" },
-];
-
-const SLOTS: { key: SlotKey; label: string }[] = [
-  { key: "breakfast", label: "అల్పాహారం (Breakfast)" },
-  { key: "lunch", label: "మధ్యాహ్న భోజనం (Lunch)" },
-  { key: "eveningSnacks", label: "సాయంత్రం అల్పాహారం (Snacks)" },
-  { key: "dinner", label: "రాత్రి భోజనం (Dinner)" },
-];
+const HOME_VALUES = ["GIRLS_HOME", "BLIND_BOYS_HOME", "OLD_AGE_HOME"];
+const SLOT_KEYS_ORDERED: SlotKey[] = ["breakfast", "lunch", "eveningSnacks", "dinner"];
 
 // Column width for each date cell (px)
 const CELL_W = 52;
@@ -130,12 +122,23 @@ interface Props {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function MealsCalendar({ onAddWithPrefill }: Props) {
+  const [lang] = useMealsLang();
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [selectedCell, setSelectedCell] = useState<{
     day: number;
     slotKey: SlotKey;
     homeValue: string;
   } | null>(null);
+
+  // Build HOME_OPTIONS + SLOTS dynamically based on lang
+  const HOME_OPTIONS = useMemo(
+    () => HOME_VALUES.map((v) => ({ value: v, label: HOME_LANG[lang][v] ?? v })),
+    [lang],
+  );
+  const SLOTS: { key: SlotKey; label: string }[] = useMemo(
+    () => SLOT_KEYS_ORDERED.map((k) => ({ key: k, label: SLOT_LANG[lang][k] ?? k })),
+    [lang],
+  );
 
   // Derive visible homes based on role
   const currentUser = authStorage.getUser();
@@ -147,7 +150,7 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
       return HOME_OPTIONS.filter((h) => h.value === currentUser.assignedHome);
     }
     return HOME_OPTIONS;
-  }, [isHomeIncharge, currentUser?.assignedHome]);
+  }, [isHomeIncharge, currentUser?.assignedHome, HOME_OPTIONS]);
 
   const firstDay = startOfMonth(month);
   const lastDay = endOfMonth(month);
@@ -253,27 +256,27 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
       <div className="flex items-center gap-4 flex-wrap text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-green-200 dark:bg-green-900/60 border border-green-300" />
-          పూర్తి చెల్లింపు (Paid)
+          {LEGEND_LANG[lang].paid}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-300" />
-          బ్యాలెన్స్ (Balance)
+          {LEGEND_LANG[lang].balance}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-yellow-100 border-2 border-dashed border-yellow-400" />
-          హోల్డ్ (Hold)
+          {LEGEND_LANG[lang].hold}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-orange-200 border-2 border-orange-400" />
-          ⚠ వివాదం (Conflict)
+          {LEGEND_LANG[lang].conflict}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-blue-100 border border-blue-300" />
-          పూర్తయింది (Completed)
+          {LEGEND_LANG[lang].completed}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-muted border" />
-          అందుబాటులో (Available)
+          {LEGEND_LANG[lang].available}
         </span>
       </div>
 
@@ -522,7 +525,7 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                     </div>
 
                     <div className="text-xs text-muted-foreground">
-                      {r.foodType === "VEG" ? "🟢 Veg" : "🔴 Non-Veg"}
+                      {FOOD_TYPE_LANG[lang][r.foodType] ?? (r.foodType === "VEG" ? "🟢 Veg" : "🔴 Non-Veg")}
                     </div>
 
                     <div className="grid grid-cols-3 gap-1 text-xs">
@@ -563,7 +566,7 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
 
                     {r.telecallerName && (
                       <div className="text-xs text-muted-foreground">
-                        కాల్ బాధ్యుడు: {r.telecallerName}
+                        {TELECALLER_LANG[lang]}: {r.telecallerName}
                       </div>
                     )}
                     {r.bookingStatus && r.bookingStatus !== "CONFIRMED" && (
@@ -572,14 +575,14 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                         r.bookingStatus === "CANCELLED" ? "text-red-600" :
                         r.bookingStatus === "COMPLETED" ? "text-blue-600" : ""
                       }`}>
-                        {r.bookingStatus === "HOLD" ? "⏸ హోల్డ్ (Hold)" :
-                         r.bookingStatus === "CANCELLED" ? "❌ రద్దు (Cancelled)" :
-                         r.bookingStatus === "COMPLETED" ? "✅ పూర్తయింది (Completed)" : r.bookingStatus}
+                        {r.bookingStatus === "HOLD" ? `⏸ ${BOOKING_STATUS_LANG[lang].HOLD}` :
+                         r.bookingStatus === "CANCELLED" ? `❌ ${BOOKING_STATUS_LANG[lang].CANCELLED}` :
+                         r.bookingStatus === "COMPLETED" ? `✅ ${BOOKING_STATUS_LANG[lang].COMPLETED}` : r.bookingStatus}
                       </div>
                     )}
                     {r.donorVisitExpected === false && (
                       <div className="text-xs text-orange-600 font-medium">
-                        📷 ఫోటో / వీడియో మాత్రమే (Photo / Video only)
+                        {lang === "en" ? "📷 Photo / Video only" : "📷 ఫోటో / వీడియో మాత్రమే (Photo / Video only)"}
                       </div>
                     )}
 
