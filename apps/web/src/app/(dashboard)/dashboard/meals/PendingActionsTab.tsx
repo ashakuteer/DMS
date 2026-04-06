@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format, isToday, isPast, startOfDay } from "date-fns";
 import { fetchWithAuth } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
@@ -22,9 +22,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, AlertTriangle, Clock, Calendar } from "lucide-react";
+import { Loader2, AlertTriangle, Clock, Calendar, Phone, CheckCircle2, XCircle, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { type PostMealMeal } from "./PostMealModal";
+import { useToast } from "@/hooks/use-toast";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,8 @@ interface MealRecord {
   paymentType?: string;
   telecallerName?: string;
   createdBy?: { name: string };
-  donor: { id: string; firstName: string; lastName: string; donorCode: string };
+  bookingStatus?: string;
+  donor: { id: string; firstName: string; lastName: string; donorCode: string; phone?: string | null };
   mealCompleted?: boolean | null;
   donorVisited?: boolean | null;
   donorVisitNotes?: string | null;
@@ -305,6 +307,238 @@ function BucketSection({
   );
 }
 
+// ── HOLD Follow-up Section ────────────────────────────────────────────────────
+
+interface HoldRecord {
+  id: string;
+  mealServiceDate: string;
+  breakfast: boolean;
+  lunch: boolean;
+  eveningSnacks: boolean;
+  dinner: boolean;
+  homes: string[];
+  slotHomes?: Record<string, string[]> | null;
+  telecallerName?: string;
+  createdBy?: { name: string };
+  bookingStatus?: string;
+  donor: { id: string; firstName: string; lastName: string; donorCode: string; primaryPhone?: string | null };
+}
+
+function HoldFollowUpSection({ onStatusChange }: { onStatusChange: () => void }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, refetch, isFetching } = useQuery<{ items: HoldRecord[] }>({
+    queryKey: ["/api/meals/hold-followup"],
+    queryFn: async () => {
+      const params = new URLSearchParams({ bookingStatus: "HOLD", limit: "200", orderBy: "mealServiceDate" });
+      const res = await fetchWithAuth(`/api/meals?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch HOLD bookings");
+      return res.json();
+    },
+    staleTime: 30_000,
+  });
+
+  const confirmMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetchWithAuth(`/api/meals/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingStatus: "CONFIRMED" }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message ?? "Failed to confirm booking");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meals/hold-followup"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meals/matrix"] });
+      toast({ title: "Booking confirmed", description: "HOLD booking has been confirmed." });
+      onStatusChange();
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message ?? "Could not confirm booking.", variant: "destructive" });
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetchWithAuth(`/api/meals/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingStatus: "CANCELLED" }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message ?? "Failed to cancel booking");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/meals/hold-followup"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/meals/matrix"] });
+      toast({ title: "Booking cancelled", description: "HOLD booking has been cancelled.", variant: "destructive" });
+      onStatusChange();
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message ?? "Could not cancel booking.", variant: "destructive" });
+    },
+  });
+
+  const holds = data?.items ?? [];
+  const pending = confirmMutation.isPending || cancelMutation.isPending;
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 p-4 border rounded-lg text-muted-foreground text-sm">
+        <Loader2 className="h-4 w-4 animate-spin" /> Loading HOLD bookings…
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {/* Section header */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-yellow-800 dark:text-yellow-300">⏸ HOLD Follow-up</span>
+          {holds.length > 0 && (
+            <Badge className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border border-yellow-300 border-dashed text-xs">
+              {holds.length}
+            </Badge>
+          )}
+        </div>
+        <button
+          className="text-muted-foreground hover:text-foreground transition-colors"
+          onClick={() => refetch()}
+          disabled={isFetching}
+          data-testid="hold-refresh"
+          title="Refresh"
+        >
+          <RefreshCw className={`h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+
+      {holds.length === 0 ? (
+        <div className="flex items-center gap-2 px-4 py-3 border rounded-lg border-dashed border-yellow-300 bg-yellow-50/50 dark:bg-yellow-900/10 text-sm text-yellow-700 dark:text-yellow-400">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <span>No HOLD bookings pending follow-up.</span>
+        </div>
+      ) : (
+        <div className="border border-yellow-200 dark:border-yellow-800 rounded-lg overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-yellow-50 dark:bg-yellow-900/20">
+                <TableHead className="text-xs">Meal Date</TableHead>
+                <TableHead className="text-xs">Donor</TableHead>
+                <TableHead className="text-xs">Contact</TableHead>
+                <TableHead className="text-xs">Homes</TableHead>
+                <TableHead className="text-xs">Slots</TableHead>
+                <TableHead className="text-xs">Telecaller</TableHead>
+                <TableHead className="text-xs">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {holds.map((h) => {
+                const homes = h.slotHomes
+                  ? [...new Set(Object.values(h.slotHomes as Record<string, string[]>).flat())]
+                  : h.homes;
+                const slots: string[] = [];
+                if (h.breakfast) slots.push("Breakfast");
+                if (h.lunch) slots.push("Lunch");
+                if (h.eveningSnacks) slots.push("Evening");
+                if (h.dinner) slots.push("Dinner");
+                const isConfirming = confirmMutation.isPending && confirmMutation.variables === h.id;
+                const isCancelling = cancelMutation.isPending && cancelMutation.variables === h.id;
+
+                return (
+                  <TableRow key={h.id} data-testid={`hold-row-${h.id}`}>
+                    <TableCell className="text-xs font-medium whitespace-nowrap">
+                      {format(new Date(h.mealServiceDate.slice(0, 10) + "T00:00:00"), "dd MMM yyyy")}
+                      <div className="text-[10px] text-muted-foreground">
+                        {format(new Date(h.mealServiceDate.slice(0, 10) + "T00:00:00"), "EEEE")}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      <Link
+                        href={`/dashboard/donors/${h.donor.id}`}
+                        className="font-medium text-primary hover:underline"
+                        data-testid={`hold-donor-link-${h.id}`}
+                      >
+                        {h.donor.firstName} {h.donor.lastName}
+                      </Link>
+                      <div className="text-muted-foreground">{h.donor.donorCode}</div>
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {h.donor.primaryPhone ? (
+                        <a
+                          href={`tel:${h.donor.primaryPhone}`}
+                          className="flex items-center gap-1 text-green-700 dark:text-green-400 hover:text-green-800 font-medium whitespace-nowrap"
+                          data-testid={`hold-call-${h.id}`}
+                        >
+                          <Phone className="h-3 w-3" />
+                          {h.donor.primaryPhone}
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground italic">No phone</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      <div className="flex flex-wrap gap-1">
+                        {homes.map((hm) => (
+                          <Badge key={hm} variant="outline" className="text-xs px-1 py-0">
+                            {homeLabel(hm)}
+                          </Badge>
+                        ))}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                      {slots.join(", ") || "—"}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {h.telecallerName || h.createdBy?.name || "—"}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={pending}
+                          className="h-7 px-2 text-xs text-green-700 border-green-300 hover:bg-green-50 dark:text-green-400 dark:border-green-700 dark:hover:bg-green-900/20 whitespace-nowrap"
+                          onClick={() => confirmMutation.mutate(h.id)}
+                          data-testid={`hold-confirm-${h.id}`}
+                        >
+                          {isConfirming ? <Loader2 className="h-3 w-3 animate-spin" /> : <CheckCircle2 className="h-3 w-3" />}
+                          Confirm
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={pending}
+                          className="h-7 px-2 text-xs text-red-700 border-red-300 hover:bg-red-50 dark:text-red-400 dark:border-red-700 dark:hover:bg-red-900/20 whitespace-nowrap"
+                          onClick={() => cancelMutation.mutate(h.id)}
+                          data-testid={`hold-cancel-${h.id}`}
+                        >
+                          {isCancelling ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3 w-3" />}
+                          Cancel
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Component ─────────────────────────────────────────────────────────────
 
 interface Props {
@@ -312,6 +546,7 @@ interface Props {
 }
 
 export function PendingActionsTab({ onOpenPostMeal }: Props) {
+  const queryClient = useQueryClient();
   const [filterActionType, setFilterActionType] = useState<string>("all");
   const [filterHome, setFilterHome] = useState<string>("all");
   const [filterTelecaller, setFilterTelecaller] = useState<string>("all");
@@ -380,7 +615,14 @@ export function PendingActionsTab({ onOpenPostMeal }: Props) {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
+      {/* ── HOLD Follow-up ── */}
+      <HoldFollowUpSection onStatusChange={() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/meals/pending-actions"] });
+      }} />
+
+      <div className="border-t" />
+
       {/* Summary strip */}
       <div className="flex flex-wrap items-center gap-3 p-3 border rounded-lg bg-muted/30">
         <div className="flex items-center gap-2 text-sm font-medium">

@@ -349,6 +349,10 @@ export class MealsService {
       where.paymentStatus = query.paymentStatus;
     }
 
+    if (query.bookingStatus) {
+      where.bookingStatus = query.bookingStatus as any;
+    }
+
     const [items, total] = await Promise.all([
       this.prisma.mealSponsorship.findMany({
         where,
@@ -356,7 +360,7 @@ export class MealsService {
         take: limit,
         orderBy: { mealServiceDate: "desc" },
         include: {
-          donor: { select: { id: true, firstName: true, lastName: true, donorCode: true } },
+          donor: { select: { id: true, firstName: true, lastName: true, donorCode: true, primaryPhone: true } },
           donation: { select: { id: true, donationAmount: true } },
           createdBy: { select: { name: true } },
           visitRecord: { select: { id: true, visitDate: true } },

@@ -380,6 +380,10 @@ export class MealSponsorshipQueryDto {
 
   @IsOptional()
   @IsString()
+  bookingStatus?: string;
+
+  @IsOptional()
+  @IsString()
   page?: string;
 
   @IsOptional()
