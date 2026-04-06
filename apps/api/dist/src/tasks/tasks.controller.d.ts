@@ -8,14 +8,86 @@ export declare class TasksController {
     triggerGeneration(): Promise<{
         message: string;
     }>;
-    create(dto: CreateTaskDto): Promise<any>;
-    getToday(): Promise<{
-        dueToday: any;
-        overdue: any;
-        total: any;
+    create(dto: CreateTaskDto): Promise<{
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+            primaryPhone: string;
+            whatsappPhone: string;
+            prefWhatsapp: boolean;
+            assignedToUser: {
+                email: string;
+                name: string;
+                id: string;
+            };
+        };
+        beneficiary: {
+            id: string;
+            fullName: string;
+        };
+        sourceOccasion: {
+            id: string;
+            type: import("@prisma/client").$Enums.OccasionType;
+            relatedPersonName: string;
+            month: number;
+            day: number;
+        };
+        sourcePledge: {
+            id: string;
+            quantity: string;
+            amount: import("@prisma/client/runtime/library").Decimal;
+            pledgeType: import("@prisma/client").$Enums.PledgeType;
+            expectedFulfillmentDate: Date;
+        };
+        assignedUser: {
+            email: string;
+            name: string;
+            id: string;
+        };
+        sourceSponsorship: {
+            beneficiary: {
+                id: string;
+                fullName: string;
+            };
+            id: string;
+            sponsorshipType: import("@prisma/client").$Enums.SponsorshipType;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import("@prisma/client").$Enums.TaskPriority;
+        donorId: string | null;
+        type: import("@prisma/client").$Enums.TaskType;
+        status: import("@prisma/client").$Enums.TaskStatus;
+        description: string | null;
+        title: string;
+        dueDate: Date;
+        completedAt: Date | null;
+        beneficiaryId: string | null;
+        assignedTo: string | null;
+        sourceOccasionId: string | null;
+        sourcePledgeId: string | null;
+        autoWhatsAppPossible: boolean;
+        manualRequired: boolean;
+        sourceSponsorshipId: string | null;
+        sourceFamilyMemberId: string | null;
+        contactCount: number;
+        lastContactedAt: Date | null;
     }>;
-    getStaffList(): Promise<any>;
-    findAll(status: string, type: string, category: string, dueDate: string, timeWindow: string, assignedTo: string, priority: string, donorId: string): Promise<any>;
+    getToday(): Promise<{
+        dueToday: any[];
+        overdue: any[];
+        total: number;
+    }>;
+    getStaffList(): Promise<{
+        name: string;
+        role: import("@prisma/client").$Enums.Role;
+        id: string;
+    }[]>;
+    findAll(status: string, type: string, category: string, dueDate: string, timeWindow: string, assignedTo: string, priority: string, donorId: string): Promise<any[]>;
     getDebugInfo(): Promise<{
         serverTime: {
             nowUTC: string;
@@ -25,27 +97,56 @@ export declare class TasksController {
             utcOffset: number;
         };
         donors: {
-            total: any;
-            withDobData: any;
+            total: number;
+            withDobData: number;
             withoutDobData: number;
         };
-        occasions: any;
-        taskSummary: any;
+        occasions: {
+            type: import("@prisma/client").$Enums.OccasionType;
+            count: number;
+        }[];
+        taskSummary: {
+            type: import("@prisma/client").$Enums.TaskType;
+            status: import("@prisma/client").$Enums.TaskStatus;
+            count: number;
+        }[];
         birthdayTasks: {
-            totalInDB: any;
-            pendingNext7Days: any;
-            pendingNext30Days: any;
-            all: any;
+            totalInDB: number;
+            pendingNext7Days: number;
+            pendingNext30Days: number;
+            all: {
+                id: string;
+                title: string;
+                dueDate: Date;
+                dueDateISO: string;
+                status: import("@prisma/client").$Enums.TaskStatus;
+                daysUntil: number;
+            }[];
         };
         anniversaryTasks: {
-            totalInDB: any;
-            all: any;
+            totalInDB: number;
+            all: {
+                id: string;
+                title: string;
+                dueDate: Date;
+                dueDateISO: string;
+                status: import("@prisma/client").$Enums.TaskStatus;
+                daysUntil: number;
+            }[];
         };
         pledges: {
-            pendingTotal: any;
-            pendingDueIn30DaysOrOverdue: any;
-            tasksGeneratedInDB: any;
-            tasks: any;
+            pendingTotal: number;
+            pendingDueIn30DaysOrOverdue: number;
+            tasksGeneratedInDB: number;
+            tasks: {
+                id: string;
+                title: string;
+                dueDate: Date;
+                dueDateISO: string;
+                status: import("@prisma/client").$Enums.TaskStatus;
+                sourcePledgeId: string;
+                daysUntil: number;
+            }[];
         };
         filterWindowDates: {
             today: string;
@@ -54,10 +155,73 @@ export declare class TasksController {
         };
     }>;
     findOne(id: string): Promise<any>;
-    logContact(id: string, dto: LogContactDto, req: any): Promise<any>;
-    getContactLogs(id: string): Promise<any>;
+    logContact(id: string, dto: LogContactDto, req: any): Promise<{
+        id: string;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        createdAt: Date;
+        subject: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
+        channel: import("@prisma/client").$Enums.CommunicationChannel;
+        type: import("@prisma/client").$Enums.CommunicationType;
+        status: import("@prisma/client").$Enums.CommunicationStatus;
+        contactMethod: string | null;
+        outcome: string | null;
+        recipient: string | null;
+        messagePreview: string | null;
+        errorMessage: string | null;
+        sentById: string | null;
+    }>;
+    getContactLogs(id: string): Promise<({
+        sentBy: {
+            name: string;
+            id: string;
+        };
+    } & {
+        id: string;
+        metadata: import("@prisma/client/runtime/library").JsonValue | null;
+        createdAt: Date;
+        subject: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
+        channel: import("@prisma/client").$Enums.CommunicationChannel;
+        type: import("@prisma/client").$Enums.CommunicationType;
+        status: import("@prisma/client").$Enums.CommunicationStatus;
+        contactMethod: string | null;
+        outcome: string | null;
+        recipient: string | null;
+        messagePreview: string | null;
+        errorMessage: string | null;
+        sentById: string | null;
+    })[]>;
     completeTask(id: string): Promise<any>;
     updateStatus(id: string, dto: UpdateTaskStatusDto): Promise<any>;
     updateTask(id: string, dto: UpdateTaskDto): Promise<any>;
-    deleteTask(id: string): Promise<any>;
+    deleteTask(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import("@prisma/client").$Enums.TaskPriority;
+        donorId: string | null;
+        type: import("@prisma/client").$Enums.TaskType;
+        status: import("@prisma/client").$Enums.TaskStatus;
+        description: string | null;
+        title: string;
+        dueDate: Date;
+        completedAt: Date | null;
+        beneficiaryId: string | null;
+        assignedTo: string | null;
+        sourceOccasionId: string | null;
+        sourcePledgeId: string | null;
+        autoWhatsAppPossible: boolean;
+        manualRequired: boolean;
+        sourceSponsorshipId: string | null;
+        sourceFamilyMemberId: string | null;
+        contactCount: number;
+        lastContactedAt: Date | null;
+    }>;
 }

@@ -18,19 +18,56 @@ export declare class EmailJobsController {
     private readonly logger;
     constructor(emailJobsService: EmailJobsService, prisma: PrismaService, orgProfileService: OrganizationProfileService, communicationLogService: CommunicationLogService, emailService: EmailService);
     findAll(status?: EmailJobStatus, type?: EmailJobType, startDate?: string, endDate?: string, page?: string, limit?: string): Promise<{
-        jobs: any;
-        total: any;
+        jobs: ({
+            donor: {
+                id: string;
+                donorCode: string;
+                firstName: string;
+                lastName: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            subject: string;
+            body: string;
+            donorId: string | null;
+            type: import("@prisma/client").$Enums.EmailJobType;
+            status: import("@prisma/client").$Enums.EmailJobStatus;
+            toEmail: string;
+            sentAt: Date | null;
+            relatedId: string | null;
+            attempts: number;
+            lastError: string | null;
+            scheduledAt: Date;
+        })[];
+        total: number;
         page: number;
         limit: number;
         totalPages: number;
     }>;
     getStats(): Promise<{
-        queued: any;
-        sent: any;
-        failed: any;
-        total: any;
+        queued: number;
+        sent: number;
+        failed: number;
+        total: number;
     }>;
-    retry(id: string): Promise<any>;
+    retry(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        subject: string;
+        body: string;
+        donorId: string | null;
+        type: import("@prisma/client").$Enums.EmailJobType;
+        status: import("@prisma/client").$Enums.EmailJobStatus;
+        toEmail: string;
+        sentAt: Date | null;
+        relatedId: string | null;
+        attempts: number;
+        lastError: string | null;
+        scheduledAt: Date;
+    }>;
     delete(id: string): Promise<{
         success: boolean;
     }>;

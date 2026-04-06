@@ -21,16 +21,124 @@ export declare class ReportCampaignsService {
     private orgProfileService;
     private readonly logger;
     constructor(prisma: PrismaService, emailJobsService: EmailJobsService, orgProfileService: OrganizationProfileService);
-    findAll(): Promise<any>;
-    findOne(id: string): Promise<any>;
-    create(dto: CreateCampaignDto, user: UserContext): Promise<any>;
+    findAll(): Promise<({
+        document: {
+            id: string;
+            title: string;
+            storagePath: string;
+            mimeType: string;
+        };
+        createdBy: {
+            name: string;
+            id: string;
+        };
+    } & {
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        type: import("@prisma/client").$Enums.ReportCampaignType;
+        status: import("@prisma/client").$Enums.ReportCampaignStatus;
+        createdById: string;
+        notes: string | null;
+        sentAt: Date | null;
+        documentId: string | null;
+        periodStart: Date;
+        periodEnd: Date;
+        target: import("@prisma/client").$Enums.ReportTarget;
+        customDonorIds: string[];
+        emailsSent: number;
+    })[]>;
+    findOne(id: string): Promise<{
+        document: {
+            id: string;
+            title: string;
+            storagePath: string;
+            mimeType: string;
+        };
+        createdBy: {
+            name: string;
+            id: string;
+        };
+    } & {
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        type: import("@prisma/client").$Enums.ReportCampaignType;
+        status: import("@prisma/client").$Enums.ReportCampaignStatus;
+        createdById: string;
+        notes: string | null;
+        sentAt: Date | null;
+        documentId: string | null;
+        periodStart: Date;
+        periodEnd: Date;
+        target: import("@prisma/client").$Enums.ReportTarget;
+        customDonorIds: string[];
+        emailsSent: number;
+    }>;
+    create(dto: CreateCampaignDto, user: UserContext): Promise<{
+        document: {
+            id: string;
+            title: string;
+            storagePath: string;
+            mimeType: string;
+        };
+        createdBy: {
+            name: string;
+            id: string;
+        };
+    } & {
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        type: import("@prisma/client").$Enums.ReportCampaignType;
+        status: import("@prisma/client").$Enums.ReportCampaignStatus;
+        createdById: string;
+        notes: string | null;
+        sentAt: Date | null;
+        documentId: string | null;
+        periodStart: Date;
+        periodEnd: Date;
+        target: import("@prisma/client").$Enums.ReportTarget;
+        customDonorIds: string[];
+        emailsSent: number;
+    }>;
     attachDocument(campaignId: string, documentData: {
         title: string;
         storagePath: string;
         storageBucket: string;
         mimeType: string;
         sizeBytes: number;
-    }, user: UserContext): Promise<any>;
+    }, user: UserContext): Promise<{
+        document: {
+            id: string;
+            title: string;
+            storagePath: string;
+            mimeType: string;
+        };
+        createdBy: {
+            name: string;
+            id: string;
+        };
+    } & {
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        type: import("@prisma/client").$Enums.ReportCampaignType;
+        status: import("@prisma/client").$Enums.ReportCampaignStatus;
+        createdById: string;
+        notes: string | null;
+        sentAt: Date | null;
+        documentId: string | null;
+        periodStart: Date;
+        periodEnd: Date;
+        target: import("@prisma/client").$Enums.ReportTarget;
+        customDonorIds: string[];
+        emailsSent: number;
+    }>;
     send(campaignId: string, user: UserContext): Promise<{
         success: boolean;
         message: string;
@@ -38,13 +146,27 @@ export declare class ReportCampaignsService {
     }>;
     getWhatsAppText(campaignId: string): Promise<{
         text: string;
-        reportUrl: any;
+        reportUrl: string;
     }>;
     markWhatsAppSent(campaignId: string, donorId: string, user: UserContext): Promise<{
         success: boolean;
     }>;
-    searchDonors(query: string): Promise<any>;
-    getCampaignDonors(campaignId: string): Promise<any>;
+    searchDonors(query: string): Promise<{
+        id: string;
+        donorCode: string;
+        firstName: string;
+        lastName: string;
+        personalEmail: string;
+        officialEmail: string;
+    }[]>;
+    getCampaignDonors(campaignId: string): Promise<{
+        id: string;
+        donorCode: string;
+        firstName: string;
+        lastName: string;
+        personalEmail: string;
+        officialEmail: string;
+    }[]>;
     private getTargetDonors;
     private formatPeriodLabel;
     private buildEmailBody;

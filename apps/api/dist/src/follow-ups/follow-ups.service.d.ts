@@ -16,13 +16,79 @@ export declare class FollowUpsService {
         userId: string;
         userRole: string;
     }): Promise<{
-        items: any;
-        total: any;
+        items: ({
+            donor: {
+                id: string;
+                donorCode: string;
+                firstName: string;
+                lastName: string;
+                primaryPhone: string;
+                personalEmail: string;
+                officialEmail: string;
+            };
+            createdBy: {
+                name: string;
+                id: string;
+            };
+            assignedTo: {
+                email: string;
+                name: string;
+                id: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            priority: import("@prisma/client").$Enums.FollowUpPriority;
+            donorId: string;
+            status: import("@prisma/client").$Enums.FollowUpStatus;
+            createdById: string;
+            isDeleted: boolean;
+            dueDate: Date;
+            completedAt: Date | null;
+            note: string;
+            assignedToId: string;
+            completedNote: string | null;
+        })[];
+        total: number;
         page: number;
         limit: number;
         totalPages: number;
     }>;
-    findOne(id: string, userId?: string, userRole?: string): Promise<any>;
+    findOne(id: string, userId?: string, userRole?: string): Promise<{
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+            primaryPhone: string;
+            personalEmail: string;
+            officialEmail: string;
+        };
+        createdBy: {
+            name: string;
+            id: string;
+        };
+        assignedTo: {
+            email: string;
+            name: string;
+            id: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import("@prisma/client").$Enums.FollowUpPriority;
+        donorId: string;
+        status: import("@prisma/client").$Enums.FollowUpStatus;
+        createdById: string;
+        isDeleted: boolean;
+        dueDate: Date;
+        completedAt: Date | null;
+        note: string;
+        assignedToId: string;
+        completedNote: string | null;
+    }>;
     create(data: {
         donorId: string;
         assignedToId: string;
@@ -30,22 +96,168 @@ export declare class FollowUpsService {
         dueDate: string;
         priority?: FollowUpPriority;
         createdById: string;
-    }): Promise<any>;
+    }): Promise<{
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+            primaryPhone: string;
+            personalEmail: string;
+            officialEmail: string;
+        };
+        createdBy: {
+            name: string;
+            id: string;
+        };
+        assignedTo: {
+            email: string;
+            name: string;
+            id: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import("@prisma/client").$Enums.FollowUpPriority;
+        donorId: string;
+        status: import("@prisma/client").$Enums.FollowUpStatus;
+        createdById: string;
+        isDeleted: boolean;
+        dueDate: Date;
+        completedAt: Date | null;
+        note: string;
+        assignedToId: string;
+        completedNote: string | null;
+    }>;
     update(id: string, data: {
         note?: string;
         dueDate?: string;
         priority?: FollowUpPriority;
         assignedToId?: string;
-    }, userId: string, userRole: string): Promise<any>;
-    markComplete(id: string, completedNote: string | null, userId: string, userRole: string): Promise<any>;
-    reopen(id: string, userId: string, userRole: string): Promise<any>;
-    remove(id: string, userId: string, userRole: string): Promise<any>;
+    }, userId: string, userRole: string): Promise<{
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+            primaryPhone: string;
+            personalEmail: string;
+            officialEmail: string;
+        };
+        createdBy: {
+            name: string;
+            id: string;
+        };
+        assignedTo: {
+            email: string;
+            name: string;
+            id: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import("@prisma/client").$Enums.FollowUpPriority;
+        donorId: string;
+        status: import("@prisma/client").$Enums.FollowUpStatus;
+        createdById: string;
+        isDeleted: boolean;
+        dueDate: Date;
+        completedAt: Date | null;
+        note: string;
+        assignedToId: string;
+        completedNote: string | null;
+    }>;
+    markComplete(id: string, completedNote: string | null, userId: string, userRole: string): Promise<{
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+            primaryPhone: string;
+            personalEmail: string;
+            officialEmail: string;
+        };
+        createdBy: {
+            name: string;
+            id: string;
+        };
+        assignedTo: {
+            email: string;
+            name: string;
+            id: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import("@prisma/client").$Enums.FollowUpPriority;
+        donorId: string;
+        status: import("@prisma/client").$Enums.FollowUpStatus;
+        createdById: string;
+        isDeleted: boolean;
+        dueDate: Date;
+        completedAt: Date | null;
+        note: string;
+        assignedToId: string;
+        completedNote: string | null;
+    }>;
+    reopen(id: string, userId: string, userRole: string): Promise<{
+        donor: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+            primaryPhone: string;
+            personalEmail: string;
+            officialEmail: string;
+        };
+        createdBy: {
+            name: string;
+            id: string;
+        };
+        assignedTo: {
+            email: string;
+            name: string;
+            id: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import("@prisma/client").$Enums.FollowUpPriority;
+        donorId: string;
+        status: import("@prisma/client").$Enums.FollowUpStatus;
+        createdById: string;
+        isDeleted: boolean;
+        dueDate: Date;
+        completedAt: Date | null;
+        note: string;
+        assignedToId: string;
+        completedNote: string | null;
+    }>;
+    remove(id: string, userId: string, userRole: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        priority: import("@prisma/client").$Enums.FollowUpPriority;
+        donorId: string;
+        status: import("@prisma/client").$Enums.FollowUpStatus;
+        createdById: string;
+        isDeleted: boolean;
+        dueDate: Date;
+        completedAt: Date | null;
+        note: string;
+        assignedToId: string;
+        completedNote: string | null;
+    }>;
     getDashboardStats(userId: string, userRole: string): Promise<{
-        total: any;
-        pending: any;
-        completed: any;
-        overdue: any;
-        dueToday: any;
-        dueThisWeek: any;
+        total: number;
+        pending: number;
+        completed: number;
+        overdue: number;
+        dueToday: number;
+        dueThisWeek: number;
     }>;
 }

@@ -192,6 +192,7 @@ let AuthService = AuthService_1 = class AuthService {
                 email: true,
                 name: true,
                 role: true,
+                assignedHome: true,
                 isActive: true,
                 createdAt: true,
                 updatedAt: true,

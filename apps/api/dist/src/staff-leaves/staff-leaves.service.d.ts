@@ -10,8 +10,42 @@ export declare class StaffLeavesService {
         type?: string;
         year?: number;
         homeId?: string;
-    }): Promise<any>;
-    findByStaff(staffId: string, year?: number): Promise<any>;
+    }): Promise<({
+        staff: {
+            home: {
+                name: string;
+                id: string;
+            };
+            name: string;
+            id: string;
+            designation: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        reason: string | null;
+        updatedAt: Date;
+        startDate: Date;
+        endDate: Date;
+        type: string;
+        status: string;
+        notes: string | null;
+        days: number;
+        staffId: string;
+    })[]>;
+    findByStaff(staffId: string, year?: number): Promise<{
+        id: string;
+        createdAt: Date;
+        reason: string | null;
+        updatedAt: Date;
+        startDate: Date;
+        endDate: Date;
+        type: string;
+        status: string;
+        notes: string | null;
+        days: number;
+        staffId: string;
+    }[]>;
     create(data: {
         staffId: string;
         type: string;
@@ -19,14 +53,61 @@ export declare class StaffLeavesService {
         endDate: string;
         days: number;
         reason?: string;
-    }): Promise<any>;
-    updateStatus(id: string, status: LeaveStatus, notes?: string): Promise<any>;
-    delete(id: string): Promise<any>;
+    }): Promise<{
+        staff: {
+            name: string;
+            id: string;
+            designation: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        reason: string | null;
+        updatedAt: Date;
+        startDate: Date;
+        endDate: Date;
+        type: string;
+        status: string;
+        notes: string | null;
+        days: number;
+        staffId: string;
+    }>;
+    updateStatus(id: string, status: LeaveStatus, notes?: string): Promise<{
+        staff: {
+            name: string;
+            id: string;
+        };
+    } & {
+        id: string;
+        createdAt: Date;
+        reason: string | null;
+        updatedAt: Date;
+        startDate: Date;
+        endDate: Date;
+        type: string;
+        status: string;
+        notes: string | null;
+        days: number;
+        staffId: string;
+    }>;
+    delete(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        reason: string | null;
+        updatedAt: Date;
+        startDate: Date;
+        endDate: Date;
+        type: string;
+        status: string;
+        notes: string | null;
+        days: number;
+        staffId: string;
+    }>;
     getSummary(staffId: string, year: number): Promise<{
         staffId: string;
         year: number;
-        approved: any;
-        totalDays: any;
+        approved: number;
+        totalDays: number;
         byType: Record<string, number>;
     }>;
 }

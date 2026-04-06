@@ -11,6 +11,13 @@ export declare class JwtStrategy extends JwtStrategy_base {
     private configService;
     private prisma;
     constructor(configService: ConfigService, prisma: PrismaService);
-    validate(payload: JwtPayload): Promise<any>;
+    validate(payload: JwtPayload): Promise<{
+        email: string;
+        name: string;
+        role: import("@prisma/client").$Enums.Role;
+        id: string;
+        assignedHome: import("@prisma/client").$Enums.HomeAssignment;
+        isActive: boolean;
+    }>;
 }
 export {};

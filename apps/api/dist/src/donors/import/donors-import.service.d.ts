@@ -13,7 +13,14 @@ export declare class DonorsImportService {
         rows: any[][];
         totalRows: number;
     }>;
-    detectDuplicates(rows: any[], mapping: Record<string, string>): Promise<any>;
+    detectDuplicates(rows: any[], mapping: Record<string, string>): Promise<{
+        id: string;
+        donorCode: string;
+        firstName: string;
+        lastName: string;
+        primaryPhone: string;
+        personalEmail: string;
+    }[]>;
     executeBulkImport(user: any, rows: any[], mapping: Record<string, string>, actions: Record<number, "skip" | "update" | "create">): Promise<{
         success: boolean;
     }>;

@@ -11,7 +11,6 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
-var _a, _b;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RolePermissionsController = void 0;
 const common_1 = require("@nestjs/common");
@@ -101,7 +100,7 @@ __decorate([
     (0, roles_decorator_1.Roles)(client_1.Role.ADMIN),
     __param(0, (0, common_1.Param)('role')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_a = typeof client_1.Role !== "undefined" && client_1.Role) === "function" ? _a : Object]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], RolePermissionsController.prototype, "getRolePermissions", null);
 __decorate([
@@ -112,7 +111,7 @@ __decorate([
     __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __param(3, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [typeof (_b = typeof client_1.Role !== "undefined" && client_1.Role) === "function" ? _b : Object, Object, Object, Object]),
+    __metadata("design:paramtypes", [String, Object, Object, Object]),
     __metadata("design:returntype", Promise)
 ], RolePermissionsController.prototype, "updateRolePermissions", null);
 __decorate([
