@@ -34,6 +34,16 @@ export default function DashboardLayout({
       return;
     }
 
+    // OFFICE_INCHARGE: only allow Dashboard and Meals — redirect everything else
+    if (
+      user.role === 'OFFICE_INCHARGE' &&
+      pathname !== '/dashboard' &&
+      !pathname.startsWith('/dashboard/meals')
+    ) {
+      router.replace('/dashboard/meals');
+      return;
+    }
+
     setIsLoading(false);
   }, [router, pathname]);
 

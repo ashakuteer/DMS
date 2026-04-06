@@ -186,12 +186,17 @@ export function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
     setExpandedGroups((prev) => ({ ...prev, [label]: !prev[label] }));
 
   const isHomeInchargeUser = user?.role === 'HOME_INCHARGE';
+  const isOfficeInchargeUser = user?.role === 'OFFICE_INCHARGE';
 
   const getFilteredItems = (group: NavGroup): NavItem[] =>
     group.items.filter((item) => {
-      // HOME_INCHARGE: only show the Meals Sponsorship item
+      // HOME_INCHARGE: only Meals Sponsorship
       if (isHomeInchargeUser) {
         return item.href === '/dashboard/meals';
+      }
+      // OFFICE_INCHARGE: only Dashboard and Meals Sponsorship
+      if (isOfficeInchargeUser) {
+        return item.href === '/dashboard/meals' || item.href === '/dashboard';
       }
       if (item.permissionModule && !canAccessModule(item.permissionModule)) return false;
       if (item.roles && user && !item.roles.includes(user.role)) return false;

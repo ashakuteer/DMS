@@ -16,11 +16,11 @@ export declare class AuthService {
     private hashToken;
     register(dto: RegisterDto): Promise<{
         user: {
-            id: string;
             email: string;
             name: string;
-            role: import("@prisma/client").$Enums.Role;
             phone: string;
+            role: import("@prisma/client").$Enums.Role;
+            id: string;
             isActive: boolean;
         };
         tokens: {
@@ -59,13 +59,13 @@ export declare class AuthService {
         };
     }>;
     getProfile(userId: string): Promise<{
-        id: string;
         email: string;
         name: string;
         role: import("@prisma/client").$Enums.Role;
+        id: string;
+        createdAt: Date;
         assignedHome: import("@prisma/client").$Enums.HomeAssignment;
         isActive: boolean;
-        createdAt: Date;
         updatedAt: Date;
     }>;
     forgotPassword(dto: ForgotPasswordDto): Promise<{
