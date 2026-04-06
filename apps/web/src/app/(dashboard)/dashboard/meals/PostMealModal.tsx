@@ -164,7 +164,7 @@ function YesNo({
               : "bg-background text-muted-foreground hover:bg-muted"
           )}
         >
-          No
+          కాదు (No)
         </button>
         <button
           type="button"
@@ -177,7 +177,7 @@ function YesNo({
               : "bg-background text-muted-foreground hover:bg-muted"
           )}
         >
-          Yes
+          అవును (Yes)
         </button>
       </div>
     </div>

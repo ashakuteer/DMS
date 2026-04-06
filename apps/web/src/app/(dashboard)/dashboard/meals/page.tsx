@@ -81,24 +81,24 @@ const EVENING_SNACKS_ITEMS = [
 // ─── Static Options ───────────────────────────────────────────────────────────
 
 const HOME_OPTIONS = [
-  { value: "GIRLS_HOME", label: "Girls Home" },
-  { value: "BLIND_BOYS_HOME", label: "Blind Boys Home" },
-  { value: "OLD_AGE_HOME", label: "Old Age Home" },
+  { value: "GIRLS_HOME", label: "బాలికల గృహం (Girls Home)" },
+  { value: "BLIND_BOYS_HOME", label: "అంధ బాలుర గృహం (Blind Boys Home)" },
+  { value: "OLD_AGE_HOME", label: "వృద్ధాశ్రమం (Old Age Home)" },
 ];
 const ALL_HOMES = HOME_OPTIONS.map((h) => h.value);
 
 const SLOT_OPTIONS = [
-  { key: "breakfast", label: "Breakfast" },
-  { key: "lunch", label: "Lunch" },
-  { key: "eveningSnacks", label: "Evening Snacks", filterKey: "evening_snacks" },
-  { key: "dinner", label: "Dinner" },
+  { key: "breakfast", label: "అల్పాహారం (Breakfast)" },
+  { key: "lunch", label: "మధ్యాహ్న భోజనం (Lunch)" },
+  { key: "eveningSnacks", label: "సాయంత్రం అల్పాహారం (Snacks)", filterKey: "evening_snacks" },
+  { key: "dinner", label: "రాత్రి భోజనం (Dinner)" },
 ];
 
 const SLOT_FILTER_OPTIONS = [
-  { key: "breakfast", label: "Breakfast" },
-  { key: "lunch", label: "Lunch" },
-  { key: "evening_snacks", label: "Evening Snacks" },
-  { key: "dinner", label: "Dinner" },
+  { key: "breakfast", label: "అల్పాహారం (Breakfast)" },
+  { key: "lunch", label: "మధ్యాహ్న భోజనం (Lunch)" },
+  { key: "evening_snacks", label: "సాయంత్రం అల్పాహారం (Snacks)" },
+  { key: "dinner", label: "రాత్రి భోజనం (Dinner)" },
 ];
 
 const OCCASION_TYPES = [
@@ -152,8 +152,8 @@ const OCCASION_RELATION_OPTIONS = [
 ];
 
 const PAYMENT_STATUS_OPTIONS = [
-  { value: "FULL", label: "Full Payment" },
-  { value: "ADVANCE", label: "Advance" },
+  { value: "FULL", label: "పూర్తి చెల్లింపు (Full Payment)" },
+  { value: "ADVANCE", label: "ముందస్తు చెల్లింపు (Advance)" },
   { value: "PARTIAL", label: "Partial" },
   { value: "AFTER_SERVICE", label: "After Service" },
 ];
@@ -166,10 +166,10 @@ function homeLabel(val: string) {
 
 function slotBadges(breakfast: boolean, lunch: boolean, eveningSnacks: boolean, dinner: boolean) {
   const slots = [];
-  if (breakfast) slots.push("Breakfast");
-  if (lunch) slots.push("Lunch");
-  if (eveningSnacks) slots.push("Evening Snacks");
-  if (dinner) slots.push("Dinner");
+  if (breakfast) slots.push("అల్పాహారం (Breakfast)");
+  if (lunch) slots.push("మధ్యాహ్న భోజనం (Lunch)");
+  if (eveningSnacks) slots.push("సాయంత్రం అల్పాహారం (Snacks)");
+  if (dinner) slots.push("రాత్రి భోజనం (Dinner)");
   return slots;
 }
 
@@ -533,7 +533,7 @@ export default function MealsPage() {
 
     // Validate each active slot has at least one home
     for (const slot of activeSlots) {
-      const slotLabel = { breakfast: "Breakfast", lunch: "Lunch", eveningSnacks: "Evening Snacks", dinner: "Dinner" }[slot];
+      const slotLabel = { breakfast: "అల్పాహారం (Breakfast)", lunch: "మధ్యాహ్న భోజనం (Lunch)", eveningSnacks: "సాయంత్రం అల్పాహారం (Snacks)", dinner: "రాత్రి భోజనం (Dinner)" }[slot];
       if ((form.slotHomes[slot] ?? []).length === 0) {
         toast({ title: "Validation", description: `Select at least one home for ${slotLabel}.`, variant: "destructive" });
         return;
@@ -738,7 +738,7 @@ export default function MealsPage() {
               <TableHead>Slots</TableHead>
               <TableHead>Food</TableHead>
               <TableHead>Menu</TableHead>
-              <TableHead>Telecaller</TableHead>
+              <TableHead>కాల్ బాధ్యుడు (Telecaller)</TableHead>
               <TableHead>Total / Rcvd / Balance</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Occasion</TableHead>
@@ -822,7 +822,7 @@ export default function MealsPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant={item.foodType === "VEG" ? "outline" : "secondary"} className="text-xs">
-                        {item.foodType === "VEG" ? "🟢 Veg" : "🔴 Non-Veg"}
+                        {item.foodType === "VEG" ? "🟢 వెజ్ (Veg)" : "🔴 నాన్ వెజ్ (Non-Veg)"}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -995,8 +995,8 @@ export default function MealsPage() {
                 }}>
                   <SelectTrigger data-testid="select-food-type"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="VEG">🟢 Veg</SelectItem>
-                    <SelectItem value="NON_VEG">🔴 Non-Veg</SelectItem>
+                    <SelectItem value="VEG">🟢 వెజ్ (Veg)</SelectItem>
+                    <SelectItem value="NON_VEG">🔴 నాన్ వెజ్ (Non-Veg)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1119,7 +1119,7 @@ export default function MealsPage() {
 
             {/* Telecaller */}
             <div className="space-y-1">
-              <Label>Telecaller / Owner</Label>
+              <Label>కాల్ బాధ్యుడు (Telecaller)</Label>
               {staffList.length > 0 ? (
                 <Select value={form.telecallerName || "__none__"} onValueChange={(v) => setField("telecallerName", v === "__none__" ? "" as any : v as any)}>
                   <SelectTrigger data-testid="select-telecaller"><SelectValue placeholder="Select staff member…" /></SelectTrigger>

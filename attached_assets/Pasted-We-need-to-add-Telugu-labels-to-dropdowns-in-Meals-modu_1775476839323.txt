@@ -1,0 +1,85 @@
+We need to add Telugu labels to dropdowns in Meals module.
+
+IMPORTANT
+Do NOT change database values.
+Do NOT change enums or backend.
+Only update frontend labels (UI display only).
+
+========================================
+PART 1 — MEAL SLOTS (Dropdown / Radio)
+========================================
+
+Update labels:
+
+Breakfast → అల్పాహారం (Breakfast)
+Lunch → మధ్యాహ్న భోజనం (Lunch)
+Evening Snacks → సాయంత్రం అల్పాహారం (Snacks)
+Dinner → రాత్రి భోజనం (Dinner)
+
+========================================
+PART 2 — FOOD TYPE
+========================================
+
+Veg → వెజ్ (Veg)
+Non-Veg → నాన్ వెజ్ (Non-Veg)
+
+========================================
+PART 3 — HOME NAMES
+========================================
+
+Girls Home → బాలికల గృహం (Girls Home)
+Blind Boys Home → అంధ బాలుర గృహం (Blind Boys Home)
+Old Age Home → వృద్ధాశ్రమం (Old Age Home)
+
+========================================
+PART 4 — PAYMENT STATUS
+========================================
+
+Full Payment → పూర్తి చెల్లింపు (Full Payment)
+Advance → ముందస్తు చెల్లింపు (Advance)
+Pending → పెండింగ్ (Pending)
+
+========================================
+PART 5 — YES / NO BUTTONS
+========================================
+
+Yes → అవును (Yes)
+No → కాదు (No)
+
+========================================
+PART 6 — TELECALLER LABEL
+========================================
+
+Telecaller / Owner → కాల్ బాధ్యుడు (Telecaller)
+
+========================================
+PART 7 — HOW TO IMPLEMENT
+========================================
+
+DO NOT change values like:
+"value: 'BREAKFAST'"
+
+ONLY change label:
+<label>అల్పాహారం (Breakfast)</label>
+
+OR if using options array:
+{ label: "అల్పాహారం (Breakfast)", value: "BREAKFAST" }
+
+========================================
+PART 8 — WHERE TO UPDATE
+========================================
+
+- MealsCalendar.tsx
+- AddMealModal.tsx
+- PostMealModal.tsx
+- Any dropdown config files
+
+========================================
+PART 9 — FINAL CHECK
+========================================
+
+Confirm:
+A. Telugu visible in all dropdowns
+B. Backend still receives English values
+C. No API break
+D. UI still working normally

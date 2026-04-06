@@ -57,16 +57,16 @@ type SlotKey = "breakfast" | "lunch" | "eveningSnacks" | "dinner";
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const HOME_OPTIONS = [
-  { value: "GIRLS_HOME", label: "Girls Home" },
-  { value: "BLIND_BOYS_HOME", label: "Blind Boys Home" },
-  { value: "OLD_AGE_HOME", label: "Old Age Home" },
+  { value: "GIRLS_HOME", label: "బాలికల గృహం (Girls Home)" },
+  { value: "BLIND_BOYS_HOME", label: "అంధ బాలుర గృహం (Blind Boys Home)" },
+  { value: "OLD_AGE_HOME", label: "వృద్ధాశ్రమం (Old Age Home)" },
 ];
 
 const SLOTS: { key: SlotKey; label: string }[] = [
-  { key: "breakfast", label: "Breakfast" },
-  { key: "lunch", label: "Lunch" },
-  { key: "eveningSnacks", label: "Evening Snacks" },
-  { key: "dinner", label: "Dinner" },
+  { key: "breakfast", label: "అల్పాహారం (Breakfast)" },
+  { key: "lunch", label: "మధ్యాహ్న భోజనం (Lunch)" },
+  { key: "eveningSnacks", label: "సాయంత్రం అల్పాహారం (Snacks)" },
+  { key: "dinner", label: "రాత్రి భోజనం (Dinner)" },
 ];
 
 // Column width for each date cell (px)

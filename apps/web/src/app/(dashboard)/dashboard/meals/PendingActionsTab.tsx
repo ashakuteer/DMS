@@ -82,9 +82,9 @@ interface PendingAction {
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const HOME_OPTIONS = [
-  { value: "GIRLS_HOME", label: "Girls Home" },
-  { value: "BLIND_BOYS_HOME", label: "Blind Boys Home" },
-  { value: "OLD_AGE_HOME", label: "Old Age Home" },
+  { value: "GIRLS_HOME", label: "బాలికల గృహం (Girls Home)" },
+  { value: "BLIND_BOYS_HOME", label: "అంధ బాలుర గృహం (Blind Boys Home)" },
+  { value: "OLD_AGE_HOME", label: "వృద్ధాశ్రమం (Old Age Home)" },
 ];
 
 const ACTION_LABELS: Record<ActionType, string> = {
@@ -117,10 +117,10 @@ function homeLabel(val: string) {
 
 function slotList(m: MealRecord): string {
   const s: string[] = [];
-  if (m.breakfast) s.push("BF");
-  if (m.lunch) s.push("Lunch");
-  if (m.eveningSnacks) s.push("Eve");
-  if (m.dinner) s.push("Dinner");
+  if (m.breakfast) s.push("అల్పాహారం");
+  if (m.lunch) s.push("మధ్యాహ్న");
+  if (m.eveningSnacks) s.push("సాయంత్రం");
+  if (m.dinner) s.push("రాత్రి");
   return s.join(", ") || "—";
 }
 
@@ -233,7 +233,7 @@ function BucketSection({
               <TableHead className="text-xs">Homes</TableHead>
               <TableHead className="text-xs">Slots</TableHead>
               <TableHead className="text-xs">Action</TableHead>
-              <TableHead className="text-xs">Telecaller</TableHead>
+              <TableHead className="text-xs">కాల్ బాధ్యుడు (Telecaller)</TableHead>
               <TableHead className="text-xs">Quick Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -438,7 +438,7 @@ export function PendingActionsTab({ onOpenPostMeal }: Props) {
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="text-xs">Telecaller / Owner</Label>
+          <Label className="text-xs">కాల్ బాధ్యుడు (Telecaller)</Label>
           <Select value={filterTelecaller} onValueChange={setFilterTelecaller}>
             <SelectTrigger data-testid="filter-telecaller-pending">
               <SelectValue placeholder="All" />
