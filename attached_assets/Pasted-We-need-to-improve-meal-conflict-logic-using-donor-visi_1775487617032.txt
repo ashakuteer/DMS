@@ -1,0 +1,85 @@
+We need to improve meal conflict logic using donor visit expectation.
+
+IMPORTANT
+Do NOT break existing booking logic, hold logic, calendar, or meal save flow.
+Keep this production-safe.
+
+GOAL
+Right now all multiple bookings for same home + slot + date are simply shown as orange conflict.
+
+We now need smarter business validation.
+
+==================================================
+NEW RULE
+==================================================
+
+For same:
+- mealServiceDate
+- home
+- meal slot
+
+If an existing booking has:
+- donorVisitExpected = true
+
+then adding another booking for the same home + slot + date should be BLOCKED.
+
+Reason:
+A physical visiting donor already occupies that slot.
+
+==================================================
+CASE HANDLING
+==================================================
+
+Case A:
+Existing booking = donorVisitExpected true
+New booking = donorVisitExpected true
+→ BLOCK save
+
+Case B:
+Existing booking = donorVisitExpected true
+New booking = donorVisitExpected false (photo only)
+→ BLOCK save
+
+Case C:
+Existing booking = donorVisitExpected false
+New booking = donorVisitExpected false
+→ ALLOW save (if current multiple sponsorship logic already allows)
+
+==================================================
+VALIDATION MESSAGE
+==================================================
+
+Show a clear message like:
+
+"This slot already has a visiting donor for this home and meal. Please choose another slot/date or use Photo only where allowed."
+
+If needed, improve wording slightly but keep business meaning clear.
+
+==================================================
+WHERE TO APPLY
+==================================================
+
+Apply validation during meal save in backend, not only frontend.
+
+So even if UI is bypassed, server must reject invalid booking.
+
+Also show friendly frontend toast/error.
+
+==================================================
+CALENDAR DISPLAY
+==================================================
+
+Keep existing orange conflict display for allowed multiple bookings.
+But do not allow save when a visiting donor conflict exists.
+
+==================================================
+AFTER IMPLEMENTATION
+==================================================
+
+Tell me clearly:
+A. what files changed
+B. where backend validation was added
+C. what combinations are blocked
+D. what combinations are still allowed
+E. what user-facing message is shown
+F. confirm old records still work

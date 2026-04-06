@@ -49,6 +49,7 @@ import { MealsCalendar } from "./MealsCalendar";
 import { PostMealModal, type PostMealMeal } from "./PostMealModal";
 import { PendingActionsTab } from "./PendingActionsTab";
 import { MealsMobileView } from "./MealsMobileView";
+import { MealsListView } from "./MealsListView";
 import { useMealsLang } from "./useMealsLang";
 import { SLOT_LANG, HOME_LANG, FOOD_TYPE_LANG, BOOKING_STATUS_LANG, PAYMENT_STATUS_LANG, DONOR_VISIT_LANG, TELECALLER_LANG, getMenuLabel, type MealsLang } from "./mealsLang";
 
@@ -346,7 +347,7 @@ export default function MealsPage() {
   }, []);
 
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState<"list" | "calendar" | "pending">("list");
+  const [view, setView] = useState<"list" | "calendar" | "pending" | "schedule">("list");
   const [form, setForm] = useState<FormState>(defaultForm());
   const [donorResults, setDonorResults] = useState<any[]>([]);
   const [donorLoading, setDonorLoading] = useState(false);
@@ -702,7 +703,7 @@ export default function MealsPage() {
   return (
     <>
     {showMobileView && (
-      <MealsMobileView
+      <MealsListView
         isHomeIncharge={isHomeIncharge}
         canCreate={canCreate}
         onAddMeal={() => { setOpen(true); setForm(defaultForm()); }}
@@ -767,6 +768,19 @@ export default function MealsPage() {
             >
               <ClipboardList className="h-4 w-4" /> Pending Actions
             </button>
+            {(isHomeIncharge || isOfficeIncharge) && (
+              <button
+                data-testid="view-toggle-schedule"
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-sm transition-colors border-l ${
+                  view === "schedule"
+                    ? "bg-primary text-primary-foreground"
+                    : "hover:bg-muted text-muted-foreground"
+                }`}
+                onClick={() => setView("schedule")}
+              >
+                <UtensilsCrossed className="h-4 w-4" /> Schedule
+              </button>
+            )}
           </div>
           {canCreate && (
             <Button data-testid="button-add-meal" onClick={() => { setOpen(true); setForm(defaultForm()); }}>
@@ -786,6 +800,19 @@ export default function MealsPage() {
         <PendingActionsTab
           onOpenPostMeal={(meal) => setPostMealMeal(meal)}
         />
+      )}
+
+      {/* Schedule view — mobile-first list for Home/Office Incharge */}
+      {view === "schedule" && (
+        <div className="border rounded-xl overflow-hidden">
+          <MealsListView
+            isHomeIncharge={isHomeIncharge}
+            canCreate={canCreate}
+            onAddMeal={() => { setOpen(true); setForm(defaultForm()); }}
+            onOpenPostMeal={(meal) => setPostMealMeal(meal)}
+            compact
+          />
+        </div>
       )}
 
       {/* Filters — only in list view */}
