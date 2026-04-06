@@ -94,6 +94,66 @@ export class MealsService {
       throw new BadRequestException("Amount received cannot exceed total amount");
     }
 
+    // ── Visiting-donor conflict check ─────────────────────────────────────────
+    // Rule: if ANY existing non-cancelled booking for the same date+slot+home
+    // has donorVisitExpected=true, the new booking is BLOCKED (regardless of
+    // the new booking's own donorVisitExpected value).
+    // Case C (existing=false + new=false) is still ALLOWED.
+    {
+      const dayStart = new Date(dto.mealServiceDate + "T00:00:00.000");
+      const dayEnd   = new Date(dto.mealServiceDate + "T23:59:59.999");
+
+      const visitingExisting = await this.prisma.mealSponsorship.findMany({
+        where: {
+          mealServiceDate: { gte: dayStart, lte: dayEnd },
+          bookingStatus: { notIn: ["CANCELLED" as any] },
+          donorVisitExpected: true,
+        },
+        select: {
+          breakfast: true, lunch: true, eveningSnacks: true, dinner: true,
+          homes: true, slotHomes: true,
+        },
+      });
+
+      if (visitingExisting.length > 0) {
+        const slotLabels: Record<string, string> = {
+          breakfast: "Breakfast", lunch: "Lunch", eveningSnacks: "Evening Snacks", dinner: "Dinner",
+        };
+        const homeLabels: Record<string, string> = {
+          GIRLS_HOME: "Girls Home", BLIND_BOYS_HOME: "Blind Boys Home",
+          OLD_AGE_HOME: "Old Age Home", GENERAL: "General",
+        };
+
+        for (const existing of visitingExisting) {
+          const existingSlotHomes = existing.slotHomes as Record<string, string[]> | null;
+
+          for (const slot of activeSlotKeys) {
+            if (!(existing as any)[slot]) continue; // existing doesn't have this slot
+
+            // Determine which homes the existing booking covers for this slot
+            const existingHomesForSlot: string[] =
+              existingSlotHomes && Object.keys(existingSlotHomes).length > 0
+                ? (existingSlotHomes[slot] ?? [])
+                : (existing.homes as string[]);
+
+            // Determine which homes the NEW booking covers for this slot
+            const newHomesForSlot: string[] =
+              slotHomes ? (slotHomes[slot] ?? []) : (effectiveHomes as string[]);
+
+            const clash = newHomesForSlot.find((h) => existingHomesForSlot.includes(h));
+            if (clash) {
+              throw new BadRequestException(
+                `This slot already has a visiting donor booked for ` +
+                `${homeLabels[clash] ?? clash} — ${slotLabels[slot] ?? slot} on this date. ` +
+                `Please choose a different slot or date, or use 'Photo only' where applicable.`,
+              );
+            }
+          }
+        }
+      }
+    }
+    // ── End visiting-donor conflict check ─────────────────────────────────────
+
     const mealServiceDate = new Date(dto.mealServiceDate);
     const donationReceivedDate = new Date(dto.donationReceivedDate);
 
