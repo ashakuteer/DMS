@@ -43,6 +43,8 @@ interface CalendarMealRecord {
   occasionPersonName?: string;
   selectedMenuItems?: string[];
   telecallerName?: string;
+  bookingStatus?: string;
+  donorVisitExpected?: boolean;
   // Phase 3A — Post-Meal
   mealCompleted?: boolean | null;
   donorVisited?: boolean | null;
@@ -248,18 +250,30 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-5 text-xs text-muted-foreground">
+      <div className="flex items-center gap-4 flex-wrap text-xs text-muted-foreground">
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-green-200 dark:bg-green-900/60 border border-green-300" />
-          Fully paid
+          పూర్తి చెల్లింపు (Paid)
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-yellow-100 dark:bg-yellow-900/40 border border-yellow-300" />
-          Balance pending
+          బ్యాలెన్స్ (Balance)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded bg-yellow-100 border-2 border-dashed border-yellow-400" />
+          హోల్డ్ (Hold)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded bg-orange-200 border-2 border-orange-400" />
+          ⚠ వివాదం (Conflict)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-3 h-3 rounded bg-blue-100 border border-blue-300" />
+          పూర్తయింది (Completed)
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded bg-muted border" />
-          Available — click to book
+          అందుబాటులో (Available)
         </span>
       </div>
 
@@ -353,33 +367,50 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                         const cellRecords =
                           matrixData[home.value]?.[slot.key]?.[d] ?? [];
                         const count = cellRecords.length;
-                        const hasBalance = cellRecords.some((r) => {
+                        const hasConflict = count > 1;
+                        const isHold = count === 1 && cellRecords[0].bookingStatus === "HOLD";
+                        const isCancelled = count === 1 && cellRecords[0].bookingStatus === "CANCELLED";
+                        const isCompleted = count === 1 && cellRecords[0].bookingStatus === "COMPLETED";
+                        const hasBalance = !hasConflict && !isHold && !isCancelled && !isCompleted && cellRecords.some((r) => {
                           const total = Number(r.totalAmount ?? r.amount);
                           const rcvd = Number(r.amountReceived ?? 0);
                           return rcvd < total;
                         });
+                        const photoOnly = count === 1 && cellRecords[0].donorVisitExpected === false;
+                        const telecaller = count === 1 ? cellRecords[0].telecallerName : undefined;
 
                         let bgCls: string;
                         let textCls: string;
                         if (count === 0) {
                           bgCls = "hover:bg-muted/60";
                           textCls = "";
+                        } else if (hasConflict) {
+                          bgCls = "bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 border-2 border-orange-400";
+                          textCls = "text-orange-900 dark:text-orange-200";
+                        } else if (isHold) {
+                          bgCls = "bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 border border-yellow-400 border-dashed";
+                          textCls = "text-yellow-800 dark:text-yellow-300";
+                        } else if (isCancelled) {
+                          bgCls = "bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30";
+                          textCls = "text-red-700 dark:text-red-300";
+                        } else if (isCompleted) {
+                          bgCls = "bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30";
+                          textCls = "text-blue-700 dark:text-blue-300";
                         } else if (hasBalance) {
-                          bgCls =
-                            "bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30";
+                          bgCls = "bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30";
                           textCls = "text-yellow-800 dark:text-yellow-300";
                         } else {
-                          bgCls =
-                            "bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30";
+                          bgCls = "bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30";
                           textCls = "text-green-800 dark:text-green-300";
                         }
 
                         return (
                           <div
                             key={d}
-                            className={`shrink-0 border-r cursor-pointer transition-colors flex flex-col items-center justify-center p-0.5 gap-0 ${bgCls} ${
+                            title={hasConflict ? "Multiple donors booked — conflict!" : undefined}
+                            className={`shrink-0 cursor-pointer transition-colors flex flex-col items-center justify-center p-0.5 gap-0 ${bgCls} ${
                               isToday ? "ring-inset ring-1 ring-primary/40" : ""
-                            }`}
+                            } ${!hasConflict ? "border-r" : ""}`}
                             style={{ width: CELL_W, minHeight: 40 }}
                             onClick={() =>
                               setSelectedCell({ day: d, slotKey: slot.key, homeValue: home.value })
@@ -391,12 +422,28 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                                 —
                               </span>
                             ) : (
-                              <span
-                                className={`text-[10px] font-semibold leading-tight text-center max-w-full truncate px-0.5 ${textCls}`}
-                              >
-                                {cellRecords[0].donor.firstName}
-                                {count > 1 ? ` +${count - 1}` : ""}
-                              </span>
+                              <>
+                                <span
+                                  className={`text-[10px] font-semibold leading-tight text-center max-w-full truncate px-0.5 ${textCls}`}
+                                >
+                                  {hasConflict ? `⚠ ${count} donors` : cellRecords[0].donor.firstName}
+                                </span>
+                                {!hasConflict && telecaller && (
+                                  <span className="text-[8px] text-muted-foreground leading-tight truncate max-w-full px-0.5">
+                                    {telecaller}
+                                  </span>
+                                )}
+                                {!hasConflict && photoOnly && (
+                                  <span className="text-[8px] leading-tight text-orange-600 dark:text-orange-400">
+                                    📷
+                                  </span>
+                                )}
+                                {!hasConflict && isHold && (
+                                  <span className="text-[8px] leading-tight text-yellow-600 font-bold">
+                                    HOLD
+                                  </span>
+                                )}
+                              </>
                             )}
                           </div>
                         );
@@ -516,7 +563,23 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
 
                     {r.telecallerName && (
                       <div className="text-xs text-muted-foreground">
-                        Telecaller: {r.telecallerName}
+                        కాల్ బాధ్యుడు: {r.telecallerName}
+                      </div>
+                    )}
+                    {r.bookingStatus && r.bookingStatus !== "CONFIRMED" && (
+                      <div className={`text-xs font-semibold ${
+                        r.bookingStatus === "HOLD" ? "text-yellow-700" :
+                        r.bookingStatus === "CANCELLED" ? "text-red-600" :
+                        r.bookingStatus === "COMPLETED" ? "text-blue-600" : ""
+                      }`}>
+                        {r.bookingStatus === "HOLD" ? "⏸ హోల్డ్ (Hold)" :
+                         r.bookingStatus === "CANCELLED" ? "❌ రద్దు (Cancelled)" :
+                         r.bookingStatus === "COMPLETED" ? "✅ పూర్తయింది (Completed)" : r.bookingStatus}
+                      </div>
+                    )}
+                    {r.donorVisitExpected === false && (
+                      <div className="text-xs text-orange-600 font-medium">
+                        📷 ఫోటో / వీడియో మాత్రమే (Photo / Video only)
                       </div>
                     )}
 

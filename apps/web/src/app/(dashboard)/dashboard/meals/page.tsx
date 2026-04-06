@@ -78,6 +78,62 @@ const EVENING_SNACKS_ITEMS = [
   "Own Preparation", "Pakodi / Pakora", "Burger", "Pizza", "Noodles", "Mirchi Bujji",
 ];
 
+// Telugu label map for menu items (value stays English for DB, label shown in UI)
+const MENU_LABEL_MAP: Record<string, string> = {
+  "Idly": "ఇడ్లీ (Idly)",
+  "Vada": "వడ (Vada)",
+  "Bonda / Mysore Bajji": "బొండా / మైసూర్ బజ్జి",
+  "Semiya Upma": "సేమియా ఉప్మా",
+  "Own Preparation": "స్వీయ తయారీ",
+  "Boiled Egg": "ఉడికించిన గుడ్డు",
+  "Bread": "బ్రెడ్",
+  "Fruit": "పండ్లు",
+  "Milk": "పాలు",
+  "Flavoured Rice (Pulihora / Jeera Rice / Tomato Rice)": "పులిహోర / జీరా రైస్ / టమోటా రైస్",
+  "Kichidi": "ఖిచిడి",
+  "Poori": "పూరీ",
+  "Noodles": "నూడుల్స్",
+  "Bagara Rice": "బగారా రైస్",
+  "White Rice": "సాధారణ అన్నం",
+  "Vegetable Curry": "కూర",
+  "Vegetable Biryani": "వెజ్ బిర్యానీ",
+  "Dal": "పప్పు",
+  "Sambar": "సాంబార్",
+  "Sweet": "స్వీట్",
+  "Curd": "పెరుగు",
+  "Papad": "అప్పడం",
+  "Aloo Kurma": "ఆలూ కుర్మా",
+  "Raitha / Curd Chutney": "రైతా / పెరుగు చట్నీ",
+  "Masala Brinjal": "గుత్తి వంకాయ",
+  "Chutney": "చట్నీ",
+  "Panner Curry": "పనీర్ కర్రీ",
+  "Chicken Biryani": "చికెన్ బిర్యానీ",
+  "Mutton Curry": "మటన్ కర్రీ",
+  "Fish Curry": "చేప కూర",
+  "Fish Fry": "చేప వేపుడు",
+  "Chicken Fry": "చికెన్ ఫ్రై",
+  "Panner Curry & Boiled Egg": "పనీర్ + గుడ్డు",
+  "Samosa": "సమోసా",
+  "Biscuits": "బిస్కెట్లు",
+  "Chips": "చిప్స్",
+  "Puff": "పఫ్",
+  "Ice Cream": "ఐస్ క్రీమ్",
+  "Fruit Juice": "ఫ్రూట్ జ్యూస్",
+  "Burger": "బర్గర్",
+  "Pakodi / Pakora": "పకోడీ",
+  "Pizza": "పిజ్జా",
+  "Mirchi Bujji": "మిర్చి బజ్జి",
+};
+
+function menuLabel(item: string): string {
+  return MENU_LABEL_MAP[item] ?? item;
+}
+
+const BOOKING_STATUS_OPTIONS = [
+  { value: "HOLD", label: "హోల్డ్ — చెల్లింపు లేదు (Hold)" },
+  { value: "CONFIRMED", label: "నిర్ధారించబడింది (Confirmed)" },
+];
+
 // ─── Static Options ───────────────────────────────────────────────────────────
 
 const HOME_OPTIONS = [
@@ -213,6 +269,8 @@ interface MealSponsorship {
   selectedMenuItems?: string[];
   specialMenuItem?: string;
   telecallerName?: string;
+  bookingStatus?: string;
+  donorVisitExpected?: boolean;
   occasionType: string;
   occasionFor?: string;
   occasionPersonName?: string;
@@ -262,6 +320,8 @@ interface FormState {
   selectedMenuItems: string[];
   specialMenuItem: string;
   telecallerName: string;
+  bookingStatus: string;
+  donorVisitExpected: boolean;
   occasionType: string;
   occasionFor: string;
   occasionPersonName: string;
@@ -291,6 +351,8 @@ const defaultForm = (): FormState => ({
   selectedMenuItems: [],
   specialMenuItem: "",
   telecallerName: "",
+  bookingStatus: "CONFIRMED",
+  donorVisitExpected: true,
   occasionType: "NONE",
   occasionFor: "",
   occasionPersonName: "",
@@ -581,6 +643,8 @@ export default function MealsPage() {
       selectedMenuItems: form.selectedMenuItems.length > 0 ? form.selectedMenuItems : undefined,
       specialMenuItem: form.specialMenuItem || undefined,
       telecallerName: form.telecallerName || undefined,
+      bookingStatus: form.bookingStatus || "CONFIRMED",
+      donorVisitExpected: form.donorVisitExpected,
       occasionType: form.occasionType || "NONE",
       occasionFor: form.occasionFor || undefined,
       occasionPersonName: form.occasionPersonName || undefined,
@@ -1086,7 +1150,7 @@ export default function MealsPage() {
                             checked={form.selectedMenuItems.includes(item)}
                             onCheckedChange={() => toggleMenuItem(item)}
                           />
-                          <Label htmlFor={`menu-${item}`} className="cursor-pointer text-sm font-normal">{item}</Label>
+                          <Label htmlFor={`menu-${item}`} className="cursor-pointer text-sm font-normal">{menuLabel(item)}</Label>
                         </div>
                       ))}
                     </div>
@@ -1138,6 +1202,42 @@ export default function MealsPage() {
                   onChange={(e) => setField("telecallerName", e.target.value as any)}
                 />
               )}
+            </div>
+
+            {/* Booking Status + Donor Visit */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label>Booking Status</Label>
+                <Select value={form.bookingStatus} onValueChange={(v) => setField("bookingStatus", v as any)}>
+                  <SelectTrigger data-testid="select-booking-status"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {BOOKING_STATUS_OPTIONS.map((s) => (
+                      <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label>దాత సందర్శన ఆశించబడుతుందా? (Donor Visit Expected?)</Label>
+                <div className="flex rounded-md border overflow-hidden h-10">
+                  <button
+                    type="button"
+                    data-testid="btn-visit-no"
+                    onClick={() => setField("donorVisitExpected", false as any)}
+                    className={`flex-1 text-sm font-medium transition-colors border-r ${!form.donorVisitExpected ? "bg-orange-50 text-orange-700" : "bg-background text-muted-foreground hover:bg-muted"}`}
+                  >
+                    📷 ఫోటో మాత్రమే (Photo only)
+                  </button>
+                  <button
+                    type="button"
+                    data-testid="btn-visit-yes"
+                    onClick={() => setField("donorVisitExpected", true as any)}
+                    className={`flex-1 text-sm font-medium transition-colors ${form.donorVisitExpected ? "bg-green-50 text-green-700" : "bg-background text-muted-foreground hover:bg-muted"}`}
+                  >
+                    ✅ సందర్శన (Visit)
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Dates */}

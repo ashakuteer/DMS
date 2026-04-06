@@ -164,6 +164,8 @@ export class MealsService {
           selectedMenuItems: dto.selectedMenuItems ?? [],
           specialMenuItem: dto.specialMenuItem,
           telecallerName: dto.telecallerName,
+          bookingStatus: dto.bookingStatus ?? "CONFIRMED",
+          donorVisitExpected: dto.donorVisitExpected ?? true,
           occasionType: dto.occasionType ?? MealOccasionType.NONE,
           occasionFor: dto.occasionFor,
           occasionPersonName: dto.occasionPersonName,

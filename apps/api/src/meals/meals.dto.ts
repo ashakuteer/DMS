@@ -20,6 +20,7 @@ import {
   MealOccasionType,
   MealOccasionFor,
   CancellationBy,
+  MealBookingStatus,
 } from "@prisma/client";
 
 export class CreateMealSponsorshipDto {
@@ -100,6 +101,14 @@ export class CreateMealSponsorshipDto {
   @IsOptional()
   @IsString()
   telecallerName?: string;
+
+  @IsOptional()
+  @IsEnum(MealBookingStatus)
+  bookingStatus?: MealBookingStatus;
+
+  @IsOptional()
+  @IsBoolean()
+  donorVisitExpected?: boolean;
 
   @IsOptional()
   @IsEnum(MealOccasionType)
@@ -211,6 +220,14 @@ export class UpdateMealSponsorshipDto {
   @IsOptional()
   @IsString()
   telecallerName?: string;
+
+  @IsOptional()
+  @IsEnum(MealBookingStatus)
+  bookingStatus?: MealBookingStatus;
+
+  @IsOptional()
+  @IsBoolean()
+  donorVisitExpected?: boolean;
 
   @IsOptional()
   @IsEnum(MealOccasionType)

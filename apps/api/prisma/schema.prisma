@@ -2538,6 +2538,13 @@ enum CancellationBy {
   OTHER
 }
 
+enum MealBookingStatus {
+  HOLD
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
 model MealSponsorship {
   id                   String              @id @default(uuid())
   donorId              String
@@ -2563,6 +2570,8 @@ model MealSponsorship {
   selectedMenuItems    String[]            @default([])
   specialMenuItem      String?
   telecallerName       String?
+  bookingStatus        MealBookingStatus   @default(CONFIRMED)
+  donorVisitExpected   Boolean             @default(true)
   totalAmount          Decimal?            @db.Decimal(15, 2)
   amountReceived       Decimal             @db.Decimal(15, 2) @default(0)
   paymentStatus        MealPaymentStatus?

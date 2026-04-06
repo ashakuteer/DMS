@@ -1,0 +1,232 @@
+We need to implement 5 improvements in Meals module.
+
+IMPORTANT:
+- Do NOT break existing flow
+- Do NOT change DB values unnecessarily
+- Keep everything production-safe
+- UI changes + minimal backend additions only
+
+====================================================
+PART 1 — TELUGU TRANSLATIONS (MENU ITEMS)
+====================================================
+
+Update ONLY labels (NOT values)
+
+--------------------------------
+BREAKFAST ITEMS
+--------------------------------
+Idly → ఇడ్లీ (Idly)
+Vada → వడ (Vada)
+Bonda / Mysore Bajji → బొండా / మైసూర్ బజ్జి
+Semiya Upma → సేమియా ఉప్మా
+Boiled Egg → ఉడికించిన గుడ్డు
+Bread → బ్రెడ్
+Milk → పాలు
+Fruit → పండ్లు
+Flavoured Rice → పులిహోర / జీరా రైస్ / టమోటా రైస్
+Kichidi → ఖిచిడి
+Poori → పూరీ
+Noodles → నూడుల్స్
+Own Preparation → స్వీయ తయారీ
+
+--------------------------------
+VEG LUNCH / DINNER
+--------------------------------
+Bagara Rice → బగారా రైస్
+White Rice → సాధారణ అన్నం
+Vegetable Curry → కూర
+Vegetable Biryani → వెజ్ బిర్యానీ
+Dal → పప్పు
+Sambar → సాంబార్
+Sweet → స్వీట్
+Fruit → పండ్లు
+Curd → పెరుగు
+Papad → అప్పడం
+Aloo Kurma → ఆలూ కుర్మా
+Masala Brinjal → గుత్తి వంకాయ
+Paneer Curry → పనీర్ కర్రీ
+Raita / Curd Chutney → రైతా / పెరుగు చట్నీ
+Chutney → చట్నీ
+Noodles → నూడుల్స్
+Own Preparation → స్వీయ తయారీ
+
+--------------------------------
+NON-VEG ITEMS
+--------------------------------
+Chicken Biryani → చికెన్ బిర్యానీ
+Mutton Curry → మటన్ కర్రీ
+Fish Curry → చేప కూర
+Fish Fry → చేప వేపుడు
+Chicken Fry → చికెన్ ఫ్రై
+Boiled Egg → ఉడికించిన గుడ్డు
+Paneer Curry & Boiled Egg → పనీర్ + గుడ్డు
+Curd → పెరుగు
+Fruit → పండ్లు
+
+--------------------------------
+SNACKS
+--------------------------------
+Samosa → సమోసా
+Biscuits → బిస్కెట్లు
+Chips → చిప్స్
+Puff → పఫ్
+Ice Cream → ఐస్ క్రీమ్
+Fruit → పండ్లు
+Fruit Juice → ఫ్రూట్ జ్యూస్
+Burger → బర్గర్
+Pakodi / Pakora → పకోడీ
+Pizza → పిజ్జా
+Mirchi Bajji → మిర్చి బజ్జి
+Noodles → నూడుల్స్
+Own Preparation → స్వీయ తయారీ
+
+✔ Only change label, NOT value
+
+====================================================
+PART 2 — CALENDAR CONFLICT COLOR (VERY IMPORTANT)
+====================================================
+
+Problem:
+Multiple donors booking same home + slot
+
+Solution:
+If >1 sponsorship exists for same:
+- date
+- home
+- meal slot
+
+👉 Make entire cell background ORANGE
+
+Implementation:
+
+In MealsCalendar.tsx:
+- group sponsorships by date + home + slot
+- if count > 1 → mark conflict = true
+
+UI:
+if conflict:
+  background: orange
+  border: thicker
+  tooltip: "Multiple donors booked"
+
+====================================================
+PART 3 — SHOW TELECALLER NAME IN CALENDAR
+====================================================
+
+In calendar cell:
+
+Currently shows:
+Donor name
+
+Add below:
+Telecaller: {name}
+
+Example:
+Jeevan
+Telecaller: Kavitha
+
+Small font, grey color
+
+====================================================
+PART 4 — HOLD SYSTEM (BASIC VERSION)
+====================================================
+
+Add new field:
+
+bookingStatus:
+- HOLD
+- CONFIRMED
+- CANCELLED
+- COMPLETED
+
+Default:
+CONFIRMED
+
+--------------------------------
+UI (Add Meal form)
+--------------------------------
+
+Add dropdown:
+Booking Status:
+
+Hold (no payment)
+Confirmed
+
+--------------------------------
+Calendar color:
+--------------------------------
+
+HOLD → Yellow
+CONFIRMED → Green
+CANCELLED → Red
+COMPLETED → Blue
+
+--------------------------------
+LOGIC:
+--------------------------------
+
+If CONFIRMED booking exists:
+→ it should override HOLD (visual priority)
+
+DO NOT delete HOLD
+just show confirmed on top
+
+====================================================
+PART 5 — DONOR VISIT OPTION (IMPORTANT)
+====================================================
+
+Add in AddMealModal:
+
+Field:
+
+👉 Donor Visit Expected?
+
+Options:
+Yes / No
+
+Save as:
+donorVisitExpected (boolean)
+
+--------------------------------
+Usage:
+--------------------------------
+
+If NO:
+- mark in calendar:
+"Photo / Video only"
+
+If YES:
+- normal flow
+
+--------------------------------
+In Post Meal:
+--------------------------------
+
+Already exists:
+Donor visited
+
+No change needed
+
+====================================================
+PART 6 — FINAL CHECK
+====================================================
+
+Confirm:
+
+A. Telugu visible in all menu items
+B. Conflict slots show ORANGE
+C. Telecaller name visible in calendar
+D. HOLD bookings visible (yellow)
+E. Donor Visit option visible in Add Meal form
+F. No API errors
+G. No DB breaking
+
+====================================================
+DO NOT TOUCH
+====================================================
+
+- Existing donation logic
+- Post-meal logic
+- Pledge logic
+
+Only extend safely.
