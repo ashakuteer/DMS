@@ -1,0 +1,152 @@
+Very good question 👍 — this is exactly how real operations work.
+What you’re facing is a reservation vs payment vs hold problem.
+
+Let’s make it simple and practical for your team.
+
+✅ What you need (simple logic)
+
+Right now your system assumes:
+
+either paid OR
+advance paid
+
+But in real life you need:
+
+👉 3 NEW STATES
+HOLD (no payment yet)
+CONFIRMED (paid / advance)
+CANCELLED / RELEASED
+🎯 Real-life scenario (your case)
+Case 1
+Telecaller A → donor says “I’ll confirm later”
+➡️ Put on HOLD
+Case 2
+Telecaller B → another donor pays immediately
+➡️ That meal should go to B’s donor
+So system must:
+allow HOLD
+allow overriding HOLD when confirmed donor comes
+✅ Correct solution (very important)
+Add new field in MealSponsorship:
+
+👉 bookingStatus
+
+Values:
+HOLD
+CONFIRMED
+CANCELLED
+COMPLETED
+🧠 Simple rules (very important)
+1. HOLD booking
+no payment
+slot is temporarily blocked
+visible in calendar as “Hold”
+2. CONFIRMED booking
+payment OR advance received
+highest priority
+overrides HOLD
+3. If conflict happens
+Example:
+Slot: Girls Home Lunch
+Telecaller A → HOLD
+Telecaller B → CONFIRMED
+
+👉 System should:
+
+automatically cancel HOLD
+assign slot to confirmed donor
+🟢 What user should see
+In calendar:
+Status	Color
+HOLD	Yellow
+CONFIRMED	Green
+CANCELLED	Red
+COMPLETED	Blue
+🧩 Simple UI changes
+
+In “Add Meal” form:
+
+Add:
+
+👉 Booking Type:
+
+Hold (no payment)
+Confirmed (payment/advance)
+🧩 In Pending Actions tab
+
+Add:
+
+“Follow-up for HOLD donors”
+
+Because telecallers must:
+
+call again
+confirm or cancel
+🧩 Important control (avoid confusion)
+Rule:
+
+👉 HOLD expires automatically
+
+Example:
+
+auto-expire after 24 hrs OR
+before meal date
+🧠 Very important logic
+Priority order:
+CONFIRMED > HOLD
+
+So:
+
+confirmed donor always wins
+hold is temporary only
+🧩 Your telecaller workflow becomes
+Telecaller A
+adds HOLD
+Telecaller B
+adds CONFIRMED
+
+👉 system automatically:
+
+removes HOLD
+assigns to confirmed
+🔥 Best part
+
+This avoids:
+
+double booking
+confusion
+arguments between telecallers
+⚠️ Important (do NOT implement now)
+
+Don’t implement immediately.
+
+First complete:
+login roles
+home restriction
+user testing
+👉 Next phase (after current work)
+
+We will implement:
+
+“Meal Reservation System”
+
+with:
+
+HOLD
+CONFIRMED
+override logic
+expiry
+👍 Final answer
+
+Your idea is 100% correct.
+
+You need:
+👉 HOLD system + priority override
+
+If you want, next chat I will give:
+
+exact DB changes
+exact UI changes
+exact Replit prompt (like before, step-by-step)
+
+This is a very powerful upgrade for your NGO 👍
