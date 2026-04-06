@@ -1,0 +1,104 @@
+We need to add QUICK NEW DONOR creation inside Add Meal Sponsorship form.
+
+IMPORTANT
+Do NOT refactor unrelated modules.
+Do NOT break existing meal save, donation linkage, calendar, pending actions, bookingStatus, or role restrictions.
+Keep this production-safe and additive only.
+
+GOAL
+If donor record does not already exist, user should be able to create a basic donor directly inside the same Add Meal Sponsorship form.
+
+BUSINESS NEED
+Office / Meals incharge may receive a meal booking from a brand-new donor.
+At that moment they may only know:
+- donor name
+- phone number
+
+They should not be forced to leave the form and create a full donor profile first.
+
+==================================================
+PART 1 — UI IN ADD MEAL FORM
+==================================================
+
+In Add Meal Sponsorship form:
+
+1. Keep existing donor search
+2. Add an option like:
+   "Donor not found? Add quick donor"
+
+When selected, show inline fields:
+- Donor Name (required)
+- Phone Number (required)
+
+These fields should appear inside the same Add Meal Sponsorship modal/form.
+
+==================================================
+PART 2 — SAVE FLOW
+==================================================
+
+On save:
+
+If an existing donor is selected:
+- current flow remains unchanged
+
+If quick donor is entered:
+- first create donor record
+- then create meal sponsorship linked to that new donor
+- continue in same save action
+
+==================================================
+PART 3 — DUPLICATE PREVENTION
+==================================================
+
+Before creating quick donor:
+
+1. Check if same phone number already exists
+2. If existing donor found:
+   - do NOT create duplicate
+   - use/select the existing donor instead
+   - show a friendly message
+
+Optional:
+If same name + same phone exists, definitely reuse existing donor.
+
+==================================================
+PART 4 — MINIMUM DONOR DATA
+==================================================
+
+Only require:
+- name
+- phone
+
+Do NOT require:
+- email
+- address
+- source
+- language
+- category
+- full donor profile details
+
+If useful, mark donor as:
+- new donor
+- basic profile
+- profile incomplete
+But only if easy and non-breaking
+
+==================================================
+PART 5 — BACKEND / SAFETY
+==================================================
+
+- Do not break existing donors flow
+- Do not break meal donation linkage
+- Do not break donor code generation if donor codes are auto-created
+- Keep backward compatibility
+
+==================================================
+PART 6 — AFTER IMPLEMENTATION
+==================================================
+
+Tell me clearly:
+A. what files changed
+B. how the quick donor option appears in the form
+C. how duplicate phone number checking works
+D. whether donor is created first and meal linked after
+E. whether old existing-donor flow is unchanged
