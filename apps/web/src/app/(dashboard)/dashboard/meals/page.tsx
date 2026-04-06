@@ -577,6 +577,19 @@ export default function MealsPage() {
     else setField("paymentStatus", "PARTIAL" as any);
   }
 
+  function handleBookingStatusChange(status: string) {
+    if (status === "HOLD") {
+      setForm((prev) => ({
+        ...prev,
+        bookingStatus: "HOLD",
+        paymentStatus: "NOT_YET",
+        amountReceived: "0",
+      }));
+    } else {
+      setField("bookingStatus", status as any);
+    }
+  }
+
   function handleAddWithPrefill(
     date: string,
     slots: Partial<Record<"breakfast" | "lunch" | "eveningSnacks" | "dinner", boolean>>,
@@ -950,9 +963,30 @@ export default function MealsPage() {
                       <div className="text-xs text-orange-600 dark:text-orange-400">Bal: ₹{balance.toLocaleString("en-IN")}</div>
                     </TableCell>
                     <TableCell>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${paymentStatusColor(item.paymentStatus)}`}>
-                        {paymentStatusLabel(item.paymentStatus, item.paymentType, lang)}
-                      </span>
+                      <div className="flex flex-col gap-1">
+                        {item.bookingStatus === "HOLD" ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 border border-yellow-300 border-dashed w-fit">
+                            ⏸ {BOOKING_STATUS_LANG[lang].HOLD}
+                          </span>
+                        ) : item.bookingStatus === "CANCELLED" ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300 w-fit">
+                            ❌ {BOOKING_STATUS_LANG[lang].CANCELLED}
+                          </span>
+                        ) : item.bookingStatus === "COMPLETED" ? (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 w-fit">
+                            ✅ {BOOKING_STATUS_LANG[lang].COMPLETED}
+                          </span>
+                        ) : (
+                          <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 w-fit">
+                            ✓ {BOOKING_STATUS_LANG[lang].CONFIRMED}
+                          </span>
+                        )}
+                        {item.bookingStatus !== "HOLD" && (
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium w-fit ${paymentStatusColor(item.paymentStatus)}`}>
+                            {paymentStatusLabel(item.paymentStatus, item.paymentType, lang)}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
                       {item.occasionType !== "NONE" ? item.occasionType.replace(/_/g, " ") : "—"}
@@ -1317,7 +1351,7 @@ export default function MealsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <Label>Booking Status</Label>
-                <Select value={form.bookingStatus} onValueChange={(v) => setField("bookingStatus", v as any)}>
+                <Select value={form.bookingStatus} onValueChange={handleBookingStatusChange}>
                   <SelectTrigger data-testid="select-booking-status"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {BOOKING_STATUS_OPTIONS.map((s) => (
@@ -1364,9 +1398,16 @@ export default function MealsPage() {
             </div>
 
             {/* Payment Section */}
-            <div className="space-y-3 p-4 border rounded-lg bg-muted/10">
-              <p className="text-sm font-semibold">Payment Details</p>
-              <div className="grid grid-cols-3 gap-3">
+            <div className={`space-y-3 p-4 border rounded-lg ${form.bookingStatus === "HOLD" ? "bg-yellow-50 dark:bg-yellow-900/10 border-yellow-300 dark:border-yellow-700" : "bg-muted/10"}`}>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold">Payment Details</p>
+                {form.bookingStatus === "HOLD" && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300 font-medium border border-yellow-300 dark:border-yellow-600 border-dashed">
+                    ⏸ HOLD — payment not collected yet
+                  </span>
+                )}
+              </div>
+              <div className={`grid grid-cols-3 gap-3 ${form.bookingStatus === "HOLD" ? "opacity-40 pointer-events-none select-none" : ""}`}>
                 <div className="space-y-1">
                   <Label>Total Amount (₹) <span className="text-destructive">*</span></Label>
                   <Input
@@ -1399,7 +1440,7 @@ export default function MealsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className={`grid grid-cols-2 gap-3 ${form.bookingStatus === "HOLD" ? "opacity-40 pointer-events-none select-none" : ""}`}>
                 <div className="space-y-1">
                   <Label>Payment Status <span className="text-destructive">*</span></Label>
                   <Select value={form.paymentStatus} onValueChange={(v) => setField("paymentStatus", v as any)}>

@@ -182,6 +182,42 @@ export class MealsService {
         },
       });
 
+      // Auto-cancel HOLD bookings that conflict with this CONFIRMED booking
+      if ((meal.bookingStatus as string) === "CONFIRMED") {
+        const dayStart = new Date(dto.mealServiceDate + "T00:00:00.000");
+        const dayEnd = new Date(dto.mealServiceDate + "T23:59:59.999");
+
+        const holdMeals = await tx.mealSponsorship.findMany({
+          where: {
+            id: { not: meal.id },
+            bookingStatus: "HOLD" as any,
+            mealServiceDate: { gte: dayStart, lte: dayEnd },
+          },
+          select: { id: true, breakfast: true, lunch: true, eveningSnacks: true, dinner: true, homes: true },
+        });
+
+        const newHomes = new Set<string>(effectiveHomes as string[]);
+        const toCancel = holdMeals
+          .filter((h) => {
+            const slotOverlap =
+              (dto.breakfast && h.breakfast) ||
+              (dto.lunch && h.lunch) ||
+              (eveningSnacks && h.eveningSnacks) ||
+              (dto.dinner && h.dinner);
+            const homeOverlap = h.homes.some((home) => newHomes.has(home));
+            return slotOverlap && homeOverlap;
+          })
+          .map((h) => h.id);
+
+        if (toCancel.length > 0) {
+          this.logger.log(`Auto-cancelling ${toCancel.length} HOLD booking(s) superseded by CONFIRMED meal ${meal.id}`);
+          await tx.mealSponsorship.updateMany({
+            where: { id: { in: toCancel } },
+            data: { bookingStatus: "CANCELLED" as any },
+          });
+        }
+      }
+
       return meal;
     });
 

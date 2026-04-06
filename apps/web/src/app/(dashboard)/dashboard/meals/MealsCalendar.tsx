@@ -446,6 +446,11 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                                     HOLD
                                   </span>
                                 )}
+                                {!hasConflict && !isHold && !isCancelled && !isCompleted && count === 1 && (
+                                  <span className="text-[8px] leading-tight text-green-600 font-bold">
+                                    ✓
+                                  </span>
+                                )}
                               </>
                             )}
                           </div>
@@ -569,15 +574,17 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                         {TELECALLER_LANG[lang]}: {r.telecallerName}
                       </div>
                     )}
-                    {r.bookingStatus && r.bookingStatus !== "CONFIRMED" && (
+                    {r.bookingStatus && (
                       <div className={`text-xs font-semibold ${
-                        r.bookingStatus === "HOLD" ? "text-yellow-700" :
-                        r.bookingStatus === "CANCELLED" ? "text-red-600" :
-                        r.bookingStatus === "COMPLETED" ? "text-blue-600" : ""
+                        r.bookingStatus === "HOLD" ? "text-yellow-700 dark:text-yellow-400" :
+                        r.bookingStatus === "CANCELLED" ? "text-red-600 dark:text-red-400" :
+                        r.bookingStatus === "COMPLETED" ? "text-blue-600 dark:text-blue-400" :
+                        "text-green-700 dark:text-green-400"
                       }`}>
                         {r.bookingStatus === "HOLD" ? `⏸ ${BOOKING_STATUS_LANG[lang].HOLD}` :
                          r.bookingStatus === "CANCELLED" ? `❌ ${BOOKING_STATUS_LANG[lang].CANCELLED}` :
-                         r.bookingStatus === "COMPLETED" ? `✅ ${BOOKING_STATUS_LANG[lang].COMPLETED}` : r.bookingStatus}
+                         r.bookingStatus === "COMPLETED" ? `✅ ${BOOKING_STATUS_LANG[lang].COMPLETED}` :
+                         `✓ ${BOOKING_STATUS_LANG[lang].CONFIRMED}`}
                       </div>
                     )}
                     {r.donorVisitExpected === false && (
