@@ -1126,33 +1126,43 @@ export default function MealsPage() {
                         <div className="p-3 text-center text-sm text-muted-foreground">
                           <Loader2 className="h-4 w-4 animate-spin inline mr-2" />Searching…
                         </div>
-                      ) : donorResults.length === 0 ? (
+                      ) : (
                         <>
-                          <div className="p-3 text-center text-sm text-muted-foreground border-b">No donors found</div>
+                          {donorResults.length === 0 && (
+                            <div className="p-3 text-center text-sm text-muted-foreground border-b">No donors found</div>
+                          )}
+                          {donorResults.map((d) => (
+                            <button key={d.id} className="w-full text-left px-3 py-2 hover:bg-muted transition-colors text-sm"
+                              onClick={() => {
+                                setField("selectedDonor", d as any);
+                                setField("donorId", d.id as any);
+                                setField("donorSearch", `${d.firstName} ${d.lastName}` as any);
+                                setShowDonorDropdown(false);
+                                setDonorResults([]);
+                              }}>
+                              <span className="font-medium">{d.firstName} {d.lastName}</span>
+                              <span className="ml-2 text-xs text-muted-foreground">{d.donorCode}</span>
+                            </button>
+                          ))}
                           {!showQuickDonor && (
                             <button
                               data-testid="button-add-quick-donor"
-                              className="w-full text-left px-3 py-2.5 text-sm font-medium text-primary hover:bg-muted transition-colors flex items-center gap-2"
-                              onClick={() => setShowQuickDonor(true)}
+                              className="w-full text-left px-3 py-2.5 text-sm font-medium text-primary hover:bg-muted transition-colors flex items-center gap-2 border-t"
+                              onClick={() => {
+                                const parts = form.donorSearch.trim().split(/\s+/);
+                                setQuickDonorForm({
+                                  firstName: parts[0] ?? "",
+                                  lastName: parts.slice(1).join(" "),
+                                  phone: "",
+                                });
+                                setShowQuickDonor(true);
+                                setShowDonorDropdown(false);
+                              }}
                             >
-                              <Plus className="h-4 w-4" /> Add as new donor
+                              <Plus className="h-4 w-4" /> Add new donor
                             </button>
                           )}
                         </>
-                      ) : (
-                        donorResults.map((d) => (
-                          <button key={d.id} className="w-full text-left px-3 py-2 hover:bg-muted transition-colors text-sm"
-                            onClick={() => {
-                              setField("selectedDonor", d as any);
-                              setField("donorId", d.id as any);
-                              setField("donorSearch", `${d.firstName} ${d.lastName}` as any);
-                              setShowDonorDropdown(false);
-                              setDonorResults([]);
-                            }}>
-                            <span className="font-medium">{d.firstName} {d.lastName}</span>
-                            <span className="ml-2 text-xs text-muted-foreground">{d.donorCode}</span>
-                          </button>
-                        ))
                       )}
                     </div>
                   )}
