@@ -10,7 +10,7 @@ import {
   addMonths,
   subMonths,
 } from "date-fns";
-import { fetchWithAuth } from "@/lib/auth";
+import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -135,6 +135,18 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
     homeValue: string;
   } | null>(null);
 
+  // Derive visible homes based on role
+  const currentUser = authStorage.getUser();
+  const isHomeIncharge = currentUser?.role === "HOME_INCHARGE";
+  const canCreate = !isHomeIncharge;
+
+  const visibleHomes = useMemo(() => {
+    if (isHomeIncharge && currentUser?.assignedHome) {
+      return HOME_OPTIONS.filter((h) => h.value === currentUser.assignedHome);
+    }
+    return HOME_OPTIONS;
+  }, [isHomeIncharge, currentUser?.assignedHome]);
+
   const firstDay = startOfMonth(month);
   const lastDay = endOfMonth(month);
   const daysInMonth = getDaysInMonth(month);
@@ -166,7 +178,7 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
     const year = month.getFullYear();
     const month0 = month.getMonth();
     const m: Record<string, Record<string, Record<number, CalendarMealRecord[]>>> = {};
-    for (const home of HOME_OPTIONS) {
+    for (const home of visibleHomes) {
       m[home.value] = {};
       for (const slot of SLOTS) {
         m[home.value][slot.key] = {};
@@ -178,7 +190,7 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
       }
     }
     return m;
-  }, [records, days, month]);
+  }, [records, days, month, visibleHomes]);
 
   // ── Modal records ────────────────────────────────────────────────────────────
   const cellRecordsForModal = useMemo(() => {
@@ -303,7 +315,7 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
             </div>
 
             {/* ── Home groups ── */}
-            {HOME_OPTIONS.map((home, hIdx) => (
+            {visibleHomes.map((home, hIdx) => (
               <div key={home.value}>
                 {/* Home group header */}
                 <div className="flex border-b bg-muted/40">
@@ -320,7 +332,7 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                 {/* Slot rows */}
                 {SLOTS.map((slot, sIdx) => {
                   const isLastRow =
-                    hIdx === HOME_OPTIONS.length - 1 && sIdx === SLOTS.length - 1;
+                    hIdx === visibleHomes.length - 1 && sIdx === SLOTS.length - 1;
                   return (
                     <div
                       key={slot.key}
@@ -434,13 +446,15 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
               <p className="text-muted-foreground text-sm">
                 No sponsorship booked for this slot.
               </p>
-              <Button
-                size="sm"
-                data-testid="calendar-add-from-empty-cell"
-                onClick={openAdd}
-              >
-                + Add Sponsorship
-              </Button>
+              {canCreate && (
+                <Button
+                  size="sm"
+                  data-testid="calendar-add-from-empty-cell"
+                  onClick={openAdd}
+                >
+                  + Add Sponsorship
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -530,15 +544,17 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                 );
               })}
 
-              <Button
-                size="sm"
-                variant="outline"
-                className="w-full"
-                data-testid="calendar-add-another"
-                onClick={openAdd}
-              >
-                + Add Another Sponsorship
-              </Button>
+              {canCreate && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full"
+                  data-testid="calendar-add-another"
+                  onClick={openAdd}
+                >
+                  + Add Another Sponsorship
+                </Button>
+              )}
             </div>
           )}
         </DialogContent>

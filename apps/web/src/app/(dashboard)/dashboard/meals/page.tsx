@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { fetchWithAuth } from "@/lib/auth";
+import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -304,6 +304,10 @@ const defaultForm = (): FormState => ({
 export default function MealsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  const currentUser = authStorage.getUser();
+  const isHomeIncharge = currentUser?.role === "HOME_INCHARGE";
+  const canCreate = !isHomeIncharge;
 
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"list" | "calendar" | "pending">("list");
@@ -638,9 +642,11 @@ export default function MealsPage() {
               <ClipboardList className="h-4 w-4" /> Pending Actions
             </button>
           </div>
-          <Button data-testid="button-add-meal" onClick={() => { setOpen(true); setForm(defaultForm()); }}>
-            <Plus className="h-4 w-4 mr-2" /> Add Meal Sponsorship
-          </Button>
+          {canCreate && (
+            <Button data-testid="button-add-meal" onClick={() => { setOpen(true); setForm(defaultForm()); }}>
+              <Plus className="h-4 w-4 mr-2" /> Add Meal Sponsorship
+            </Button>
+          )}
         </div>
       </div>
 
@@ -670,16 +676,18 @@ export default function MealsPage() {
           <Input data-testid="filter-date-to" type="date" value={filters.mealServiceDateTo}
             onChange={(e) => setFilters((p) => ({ ...p, mealServiceDateTo: e.target.value, page: 1 }))} />
         </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Home</Label>
-          <Select value={filters.home || "all"} onValueChange={(v) => setFilters((p) => ({ ...p, home: v === "all" ? "" : v, page: 1 }))}>
-            <SelectTrigger data-testid="filter-home"><SelectValue placeholder="All Homes" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Homes</SelectItem>
-              {HOME_OPTIONS.map((h) => <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
+        {!isHomeIncharge && (
+          <div className="space-y-1">
+            <Label className="text-xs">Home</Label>
+            <Select value={filters.home || "all"} onValueChange={(v) => setFilters((p) => ({ ...p, home: v === "all" ? "" : v, page: 1 }))}>
+              <SelectTrigger data-testid="filter-home"><SelectValue placeholder="All Homes" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Homes</SelectItem>
+                {HOME_OPTIONS.map((h) => <SelectItem key={h.value} value={h.value}>{h.label}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         <div className="space-y-1">
           <Label className="text-xs">Slot</Label>
           <Select value={filters.slot || "all"} onValueChange={(v) => setFilters((p) => ({ ...p, slot: v === "all" ? "" : v, page: 1 }))}>
