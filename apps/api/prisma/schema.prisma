@@ -2543,6 +2543,8 @@ enum MealBookingStatus {
   CONFIRMED
   CANCELLED
   COMPLETED
+
+  @@map("BookingStatus")
 }
 
 model MealSponsorship {

@@ -1,0 +1,37 @@
+Total donors: 1
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "42804", message: "column \"bookingStatus\" is of type \"BookingStatus\" but expression is of type \"MealBookingStatus\"", severity: "ERROR", detail: None, column: None, hint: Some("You will need to rewrite or cast the expression.") }), transient: false })
+  118         createdById,
+  119     },
+  120 });
+→ 121 const meal = await tx.mealSponsorship.create(
+Error occurred during query execution:
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "42804", message: "column \"bookingStatus\" is of type \"BookingStatus\" but expression is of type \"MealBookingStatus\"", severity: "ERROR", detail: None, column: None, hint: Some("You will need to rewrite or cast the expression.") }), transient: false })
+[Nest] 1  - 04/06/2026, 2:02:37 PM   ERROR [ExceptionsHandler] 
+Invalid `tx.mealSponsorship.create()` invocation in
+/app/dist/src/meals/meals.service.js:121:51
+prisma:error 
+  118         createdById,
+Invalid `tx.mealSponsorship.create()` invocation in
+/app/dist/src/meals/meals.service.js:121:51
+  119     },
+  120 });
+→ 121 const meal = await tx.mealSponsorship.create(
+Error occurred during query execution:
+    at async MealsService.create (/app/dist/src/meals/meals.service.js:107:24)
+    at async /app/node_modules/@nestjs/core/router/router-execution-context.js:46:28
+PrismaClientUnknownRequestError: 
+  120 });
+/app/dist/src/meals/meals.service.js:121:51
+→ 121 const meal = await tx.mealSponsorship.create(
+Invalid `tx.mealSponsorship.create()` invocation in
+Error occurred during query execution:
+  118         createdById,
+    at $n.handleAndLogRequestError (/app/node_modules/@prisma/client/runtime/library.js:121:6623)
+ConnectorError(ConnectorError { user_facing_error: None, kind: QueryError(PostgresError { code: "42804", message: "column \"bookingStatus\" is of type \"BookingStatus\" but expression is of type \"MealBookingStatus\"", severity: "ERROR", detail: None, column: None, hint: Some("You will need to rewrite or cast the expression.") }), transient: false })
+  119     },
+    at $n.request (/app/node_modules/@prisma/client/runtime/library.js:121:6307)
+    at $n.handleRequestError (/app/node_modules/@prisma/client/runtime/library.js:121:7505)
+    at async l (/app/node_modules/@prisma/client/runtime/library.js:130:9633)
+    at async /app/dist/src/meals/meals.service.js:121:26
+    at async Proxy._transactionWithCallback (/app/node_modules/@prisma/client/runtime/library.js:130:8000)
+    at async /app/node_modules/@nestjs/core/router/router-proxy.js:9:17

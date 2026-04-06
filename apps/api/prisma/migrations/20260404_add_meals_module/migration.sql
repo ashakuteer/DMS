@@ -105,6 +105,18 @@ ALTER TABLE "meal_sponsorships"
   ADD COLUMN IF NOT EXISTS "paymentStatus"      "MealPaymentStatus",
   ADD COLUMN IF NOT EXISTS "transactionId"      TEXT;
 
+-- Phase 1.5b — Booking status enum + column ────────────────────────────
+
+DO $$ BEGIN
+  CREATE TYPE "BookingStatus" AS ENUM ('HOLD', 'CONFIRMED', 'CANCELLED', 'COMPLETED');
+EXCEPTION WHEN duplicate_object THEN null; END $$;
+
+ALTER TABLE "meal_sponsorships"
+  ADD COLUMN IF NOT EXISTS "bookingStatus" "BookingStatus" NOT NULL DEFAULT 'CONFIRMED';
+
+ALTER TABLE "meal_sponsorships"
+  ADD COLUMN IF NOT EXISTS "donorVisitExpected" BOOLEAN NOT NULL DEFAULT true;
+
 -- Make paymentType optional so old records keep value, new records may omit it
 DO $$ BEGIN
   ALTER TABLE "meal_sponsorships" ALTER COLUMN "paymentType" DROP NOT NULL;
