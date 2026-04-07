@@ -370,7 +370,10 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                         const cellRecords =
                           matrixData[home.value]?.[slot.key]?.[d] ?? [];
                         const count = cellRecords.length;
-                        const hasConflict = count > 1;
+                        const visitingCount = cellRecords.filter(
+                          (r) => r.donorVisitExpected !== false && r.bookingStatus !== "CANCELLED"
+                        ).length;
+                        const hasConflict = visitingCount > 1;
                         const isHold = count === 1 && cellRecords[0].bookingStatus === "HOLD";
                         const isCancelled = count === 1 && cellRecords[0].bookingStatus === "CANCELLED";
                         const isCompleted = count === 1 && cellRecords[0].bookingStatus === "COMPLETED";
@@ -429,9 +432,13 @@ export function MealsCalendar({ onAddWithPrefill }: Props) {
                                 <span
                                   className={`text-[10px] font-semibold leading-tight text-center max-w-full truncate px-0.5 ${textCls}`}
                                 >
-                                  {hasConflict ? `⚠ ${count} donors` : cellRecords[0].donor.firstName}
+                                  {hasConflict
+                                    ? `⚠ ${visitingCount} visitors`
+                                    : count > 1
+                                      ? `${count} bookings`
+                                      : cellRecords[0].donor.firstName}
                                 </span>
-                                {!hasConflict && telecaller && (
+                                {!hasConflict && telecaller && count === 1 && (
                                   <span className="text-[8px] text-muted-foreground leading-tight truncate max-w-full px-0.5">
                                     {telecaller}
                                   </span>

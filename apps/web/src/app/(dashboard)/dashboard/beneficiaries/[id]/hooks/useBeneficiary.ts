@@ -904,8 +904,8 @@ export function useBeneficiary(beneficiaryId: string) {
   }, [beneficiary, metrics]);
 
   const user = authStorage.getUser();
-  const canEdit = user?.role === "ADMIN" || user?.role === "STAFF";
-  const isAdmin = user?.role === "ADMIN";
+  const canEdit = user?.role === "FOUNDER" || user?.role === "ADMIN" || user?.role === "STAFF";
+  const isAdmin = user?.role === "FOUNDER" || user?.role === "ADMIN";
 
   const dialogs = {
     addSponsor: {

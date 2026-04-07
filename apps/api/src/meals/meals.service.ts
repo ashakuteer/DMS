@@ -95,11 +95,18 @@ export class MealsService {
     }
 
     // ── Visiting-donor conflict check ─────────────────────────────────────────
-    // Rule: if ANY existing non-cancelled booking for the same date+slot+home
-    // has donorVisitExpected=true, the new booking is BLOCKED (regardless of
-    // the new booking's own donorVisitExpected value).
-    // Case C (existing=false + new=false) is still ALLOWED.
-    {
+    // Rule: Block ONLY when BOTH the existing booking AND the new booking have
+    // donorVisitExpected=true (two physical visitors at same date+slot+home).
+    //
+    // Allowed combinations:
+    //   existing=true,  new=false  → ALLOW (photo-only can coexist with visitor)
+    //   existing=false, new=false  → ALLOW (multiple photo-only bookings OK)
+    //   existing=false, new=true   → ALLOW (new visitor alongside photo-only)
+    // Blocked:
+    //   existing=true,  new=true   → BLOCK (two visiting donors clash)
+    //
+    // Cancelled bookings are always ignored.
+    if (dto.donorVisitExpected !== false) {
       const dayStart = new Date(dto.mealServiceDate + "T00:00:00.000");
       const dayEnd   = new Date(dto.mealServiceDate + "T23:59:59.999");
 
@@ -128,24 +135,23 @@ export class MealsService {
           const existingSlotHomes = existing.slotHomes as Record<string, string[]> | null;
 
           for (const slot of activeSlotKeys) {
-            if (!(existing as any)[slot]) continue; // existing doesn't have this slot
+            if (!(existing as any)[slot]) continue;
 
-            // Determine which homes the existing booking covers for this slot
             const existingHomesForSlot: string[] =
               existingSlotHomes && Object.keys(existingSlotHomes).length > 0
                 ? (existingSlotHomes[slot] ?? [])
                 : (existing.homes as string[]);
 
-            // Determine which homes the NEW booking covers for this slot
             const newHomesForSlot: string[] =
               slotHomes ? (slotHomes[slot] ?? []) : (effectiveHomes as string[]);
 
             const clash = newHomesForSlot.find((h) => existingHomesForSlot.includes(h));
             if (clash) {
               throw new BadRequestException(
-                `This slot already has a visiting donor booked for ` +
+                `A visiting donor is already booked for ` +
                 `${homeLabels[clash] ?? clash} — ${slotLabels[slot] ?? slot} on this date. ` +
-                `Please choose a different slot or date, or use 'Photo only' where applicable.`,
+                `Only one visiting donor per slot/home is allowed. ` +
+                `Use 'Photo only' if the new donor will not be physically present.`,
               );
             }
           }
