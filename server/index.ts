@@ -45,6 +45,7 @@ function startWeb() {
       PORT: "5000",
       NEXT_TELEMETRY_DISABLED: "1",
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
+      API_INTERNAL_URL: "http://localhost:3001",
     }
   });
   webProcess.on("error", (err) => console.error("Web error:", err));

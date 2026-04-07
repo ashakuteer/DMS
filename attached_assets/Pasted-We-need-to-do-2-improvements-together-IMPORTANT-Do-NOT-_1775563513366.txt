@@ -1,0 +1,109 @@
+We need to do 2 improvements together.
+
+IMPORTANT
+Do NOT refactor unrelated modules.
+Keep this production-safe.
+Do not break existing donor, meals, or beneficiary flows.
+
+==================================================
+PART 1 — MEALS: FLEXIBLE VISIT CONFLICT RULE
+==================================================
+
+CURRENT PROBLEM
+Right now if one booking is a visiting donor, the system blocks all other bookings for the same:
+- mealServiceDate
+- home
+- meal slot
+
+That is too strict.
+
+NEW BUSINESS RULE
+For same:
+- date
+- home
+- slot
+
+BLOCK only if BOTH bookings are visiting donors.
+
+ALLOW:
+1. existing booking = donorVisitExpected true
+   new booking = donorVisitExpected false (photo only)
+   → ALLOW save
+
+2. existing booking = donorVisitExpected false
+   new booking = donorVisitExpected false
+   → ALLOW save
+
+BLOCK:
+1. existing booking = donorVisitExpected true
+   new booking = donorVisitExpected true
+   → BLOCK save
+
+Also ignore bookings with bookingStatus = CANCELLED.
+
+Apply validation in backend, not only frontend.
+
+Keep friendly frontend error/toast.
+
+AFTER IMPLEMENTATION FOR PART 1
+Tell me:
+A. what file changed
+B. what combinations are blocked
+C. what combinations are allowed
+D. confirm photo-only can coexist with visiting donor
+E. confirm cancelled bookings are ignored
+
+==================================================
+PART 2 — BENEFICIARY PAGE NEEDS EDIT / UPDATE OPTION
+==================================================
+
+CURRENT PROBLEM
+Beneficiary detail page has no visible edit option, so staff/admin cannot update or add more information later.
+
+GOAL
+Add a proper Edit / Update option in Beneficiary detail page.
+
+REQUIREMENTS
+
+1. Add an "Edit Beneficiary" button on beneficiary detail page
+   - visible for roles who are allowed to edit
+   - keep hidden for roles who should not edit
+
+2. Clicking Edit should allow updating beneficiary information such as:
+   - basic details
+   - education / background
+   - interests / aspirations
+   - academics
+   - health
+   - documents-related fields if already supported
+   - any existing editable beneficiary profile fields already in schema
+
+3. If the project already has a beneficiary edit modal/page/form,
+   connect and show it properly.
+   If not, create a safe edit form using existing beneficiary fields only.
+
+4. Do NOT invent random new schema unless absolutely required.
+   Prefer using already existing beneficiary fields in DB and API.
+
+5. Save should update existing beneficiary cleanly and refresh the page.
+
+6. Keep existing beneficiary detail tabs working:
+   - Overview
+   - Sponsors
+   - Updates
+   - Timeline
+   - Health
+   - Academics
+   - Documents
+
+7. Do not break role restrictions.
+   Founder/Admin/allowed staff can edit.
+   Restricted roles should not see the edit button.
+
+AFTER IMPLEMENTATION FOR PART 2
+Tell me:
+A. what beneficiary files changed
+B. whether an existing edit flow was reused or a new one was created
+C. what fields can now be edited
+D. which roles can see the edit button
+E. confirm beneficiary page refreshes correctly after save

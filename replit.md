@@ -1,5 +1,15 @@
 # NGO Donor Management System
 
+## Replit Environment Setup (Apr 2026)
+- Migrated from Replit Agent to Replit environment
+- Project is a pnpm monorepo: `apps/api` (NestJS) + `apps/web` (Next.js 14)
+- Single workflow (`npm run dev`) starts `server/index.ts` which launches both services via pnpm
+- NestJS API runs on port 3001, Next.js frontend runs on port 5000 (webview)
+- Next.js proxies `/api/*` requests to the NestJS backend (see `apps/web/next.config.js`)
+- Database: Replit PostgreSQL via `DATABASE_URL` env var; schema managed by Prisma (`apps/api/prisma/schema.prisma`)
+- Prisma client auto-generated on `npm install` via `postinstall` script
+- To apply schema changes: `cd apps/api && npx prisma db push --schema=prisma/schema.prisma`
+
 ## Recent Changes (Meals Module Phase 1 — Apr 2026)
 
 ### Schema (Prisma) — Additive Only
