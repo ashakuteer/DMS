@@ -39,7 +39,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         return "INTERNATIONAL";
     }
     shouldMaskData(user) {
-        return user.role !== client_1.Role.FOUNDER;
+        return user.role !== client_1.Role.FOUNDER && user.role !== client_1.Role.ADMIN;
     }
     isValidUUID(id) {
         return !!id && this.UUID_REGEX.test(id);
@@ -359,7 +359,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
     async create(user, data, ipAddress, userAgent) {
         const donorCode = `AKF-DNR-${Date.now()}`;
         const { individualProfile, volunteerProfile, influencerProfile, csrProfile, ngoProfile, ...donorData } = data;
-        if (individualProfile?.donationFrequency && !donorData.donationFrequency) {
+        if (individualProfile?.donationFrequency) {
             donorData.donationFrequency = individualProfile.donationFrequency;
         }
         try {
@@ -415,7 +415,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
             ...rest,
             profession: rest.profession || professionType || null,
         };
-        if (individualProfile?.donationFrequency && !donorData.donationFrequency) {
+        if (individualProfile?.donationFrequency) {
             donorData.donationFrequency = individualProfile.donationFrequency;
         }
         const donor = await this.prisma.donor.update({

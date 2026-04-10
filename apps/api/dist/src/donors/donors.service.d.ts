@@ -30,17 +30,6 @@ export declare class DonorsService {
             healthReasons: string[];
             locationCategory: string;
             id: string;
-            createdAt: Date;
-            assignedToUserId: string;
-            updatedAt: Date;
-            _count: {
-                donations: number;
-                pledges: number;
-            };
-            createdBy: {
-                name: string;
-                id: string;
-            };
             donorCode: string;
             firstName: string;
             lastName: string;
@@ -55,12 +44,23 @@ export declare class DonorsService {
             primaryRole: import("@prisma/client").$Enums.PersonRole;
             primaryHomeInterest: string;
             donorSince: Date;
+            createdAt: Date;
+            updatedAt: Date;
             twilioStatus: import("@prisma/client").$Enums.TwilioStatus;
             googleReviewStatus: import("@prisma/client").$Enums.GoogleReviewStatus;
+            assignedToUserId: string;
             assignedToUser: {
+                id: string;
                 email: string;
                 name: string;
+            };
+            createdBy: {
                 id: string;
+                name: string;
+            };
+            _count: {
+                donations: number;
+                pledges: number;
             };
         }[];
         total: number;
@@ -70,106 +70,7 @@ export declare class DonorsService {
     }>;
     findOne(user: UserContext, id: string): Promise<{
         locationCategory: string;
-        volunteerProfile: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            donorId: string;
-            engagementLevel: string | null;
-            volunteerType: string | null;
-            workMode: string | null;
-            skills: string[];
-            areasOfInterest: string[];
-            inmatesSupport: string[];
-            adminSupport: string[];
-            availabilityType: string | null;
-            timePreference: string | null;
-            willingToDonate: boolean;
-            lastActivityDate: Date | null;
-        };
-        influencerProfile: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            donorId: string;
-            engagementLevel: string | null;
-            influenceTypes: string[];
-            groupName: string | null;
-            audienceSize: number | null;
-            contributionTypes: string[];
-            contributionPattern: string | null;
-            totalReferrals: number;
-            estimatedFunds: import("@prisma/client/runtime/library").Decimal | null;
-            lastCampaignDate: Date | null;
-            relationshipStrength: string | null;
-        };
         id: string;
-        createdAt: Date;
-        assignedToUserId: string;
-        updatedAt: Date;
-        donations: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            receiptNumber: string | null;
-            donationAmount: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
-            donationDate: Date;
-            donationMode: import("@prisma/client").$Enums.DonationMode | null;
-            donationType: import("@prisma/client").$Enums.DonationType;
-            kindDescription: string | null;
-            donorId: string;
-            createdById: string;
-            donationPurpose: import("@prisma/client").$Enums.DonationPurpose | null;
-            donationCategory: string | null;
-            donationOccasion: string | null;
-            scheduleType: string | null;
-            transactionId: string | null;
-            remarks: string | null;
-            quantity: import("@prisma/client/runtime/library").Decimal | null;
-            unit: string | null;
-            itemDescription: string | null;
-            kindCategory: import("@prisma/client").$Enums.KindCategory | null;
-            donationHomeType: import("@prisma/client").$Enums.DonationHomeType | null;
-            homeId: string | null;
-            visitedHome: boolean;
-            servedFood: boolean;
-            financialYear: string | null;
-            receiptPdfUrl: string | null;
-            attachmentUrl: string | null;
-            isDeleted: boolean;
-            deletedAt: Date | null;
-            campaignId: string | null;
-        }[];
-        pledges: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            currency: string;
-            donorId: string;
-            status: import("@prisma/client").$Enums.PledgeStatus;
-            createdById: string;
-            quantity: string | null;
-            isDeleted: boolean;
-            deletedAt: Date | null;
-            notes: string | null;
-            amount: import("@prisma/client/runtime/library").Decimal | null;
-            pledgeType: import("@prisma/client").$Enums.PledgeType;
-            promisedDate: Date | null;
-            promisedMonth: number | null;
-            promisedDay: number | null;
-            expectedFulfillmentDate: Date;
-            fulfilledDonationId: string | null;
-            mealSponsorshipId: string | null;
-        }[];
-        pan: string;
-        createdById: string;
-        createdBy: {
-            name: string;
-            id: string;
-        };
-        isDeleted: boolean;
-        deletedAt: Date;
         donorCode: string;
         firstName: string;
         middleName: string;
@@ -207,6 +108,7 @@ export declare class DonorsService {
         isDisabled: boolean;
         sourceOfDonor: import("@prisma/client").$Enums.SourceOfDonor;
         sourceDetails: string;
+        pan: string;
         profilePicUrl: string;
         supportPreferences: import("@prisma/client").$Enums.SupportPreference[];
         primaryRole: import("@prisma/client").$Enums.PersonRole;
@@ -220,7 +122,12 @@ export declare class DonorsService {
         communicationNotes: string;
         engagementLevel: import("@prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string;
+        createdById: string;
+        isDeleted: boolean;
+        deletedAt: Date;
         donorSince: Date;
+        createdAt: Date;
+        updatedAt: Date;
         dobDay: number;
         dobMonth: number;
         healthScore: number;
@@ -228,62 +135,155 @@ export declare class DonorsService {
         lastHealthCheck: Date;
         twilioStatus: import("@prisma/client").$Enums.TwilioStatus;
         googleReviewStatus: import("@prisma/client").$Enums.GoogleReviewStatus;
+        assignedToUserId: string;
         assignedToUser: {
+            id: string;
             email: string;
             name: string;
-            id: string;
         };
+        donations: {
+            id: string;
+            createdById: string;
+            isDeleted: boolean;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            donationDate: Date;
+            donorId: string;
+            donationAmount: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            donationType: import("@prisma/client").$Enums.DonationType;
+            donationMode: import("@prisma/client").$Enums.DonationMode | null;
+            donationPurpose: import("@prisma/client").$Enums.DonationPurpose | null;
+            donationCategory: string | null;
+            donationOccasion: string | null;
+            scheduleType: string | null;
+            transactionId: string | null;
+            remarks: string | null;
+            quantity: import("@prisma/client/runtime/library").Decimal | null;
+            unit: string | null;
+            itemDescription: string | null;
+            kindCategory: import("@prisma/client").$Enums.KindCategory | null;
+            kindDescription: string | null;
+            donationHomeType: import("@prisma/client").$Enums.DonationHomeType | null;
+            homeId: string | null;
+            visitedHome: boolean;
+            servedFood: boolean;
+            receiptNumber: string | null;
+            financialYear: string | null;
+            receiptPdfUrl: string | null;
+            attachmentUrl: string | null;
+            campaignId: string | null;
+        }[];
         familyMembers: {
+            id: string;
+            notes: string | null;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             name: string;
             phone: string | null;
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
             donorId: string;
-            notes: string | null;
             relationType: import("@prisma/client").$Enums.FamilyRelationType;
             birthMonth: number | null;
             birthDay: number | null;
         }[];
         specialOccasions: {
             id: string;
+            notes: string | null;
             createdAt: Date;
             updatedAt: Date;
             donorId: string;
             type: import("@prisma/client").$Enums.OccasionType;
-            notes: string | null;
             relatedPersonName: string | null;
             month: number;
             day: number;
         }[];
+        createdBy: {
+            id: string;
+            name: string;
+        };
+        pledges: {
+            id: string;
+            notes: string | null;
+            createdById: string;
+            isDeleted: boolean;
+            deletedAt: Date | null;
+            createdAt: Date;
+            updatedAt: Date;
+            donorId: string;
+            currency: string;
+            quantity: string | null;
+            pledgeType: import("@prisma/client").$Enums.PledgeType;
+            amount: import("@prisma/client/runtime/library").Decimal | null;
+            promisedDate: Date | null;
+            promisedMonth: number | null;
+            promisedDay: number | null;
+            expectedFulfillmentDate: Date;
+            status: import("@prisma/client").$Enums.PledgeStatus;
+            fulfilledDonationId: string | null;
+            mealSponsorshipId: string | null;
+        }[];
         sponsorships: {
             id: string;
-            createdAt: Date;
-            isActive: boolean;
-            updatedAt: Date;
-            currency: string;
-            startDate: Date | null;
-            endDate: Date | null;
-            donorId: string;
-            status: import("@prisma/client").$Enums.SponsorshipStatus;
             notes: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
+            donorId: string;
+            currency: string;
+            amount: import("@prisma/client/runtime/library").Decimal | null;
+            status: import("@prisma/client").$Enums.SponsorshipStatus;
             beneficiaryId: string;
             sponsorshipType: import("@prisma/client").$Enums.SponsorshipType;
-            amount: import("@prisma/client/runtime/library").Decimal | null;
             inKindItem: string | null;
             frequency: import("@prisma/client").$Enums.SponsorshipFrequency;
+            startDate: Date | null;
+            endDate: Date | null;
             dueDayOfMonth: number | null;
             nextDueDate: Date | null;
         }[];
         individualProfile: {
             id: string;
+            donationFrequency: import("@prisma/client").$Enums.DonationFrequency | null;
+            donorTags: string[];
             createdAt: Date;
             updatedAt: Date;
             donorId: string;
-            donationFrequency: import("@prisma/client").$Enums.DonationFrequency | null;
-            donorTags: string[];
             supportTypes: import("@prisma/client").$Enums.SupportPreference[];
+        };
+        volunteerProfile: {
+            id: string;
+            engagementLevel: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            donorId: string;
+            volunteerType: string | null;
+            workMode: string | null;
+            skills: string[];
+            areasOfInterest: string[];
+            inmatesSupport: string[];
+            adminSupport: string[];
+            availabilityType: string | null;
+            timePreference: string | null;
+            willingToDonate: boolean;
+            lastActivityDate: Date | null;
+        };
+        influencerProfile: {
+            id: string;
+            engagementLevel: string | null;
+            createdAt: Date;
+            updatedAt: Date;
+            donorId: string;
+            influenceTypes: string[];
+            groupName: string | null;
+            audienceSize: number | null;
+            contributionTypes: string[];
+            contributionPattern: string | null;
+            totalReferrals: number;
+            estimatedFunds: import("@prisma/client/runtime/library").Decimal | null;
+            lastCampaignDate: Date | null;
+            relationshipStrength: string | null;
         };
         csrProfile: {
             id: string;
@@ -319,13 +319,6 @@ export declare class DonorsService {
     }>;
     create(user: UserContext, data: any, ipAddress?: string, userAgent?: string): Promise<{
         id: string;
-        createdAt: Date;
-        assignedToUserId: string | null;
-        updatedAt: Date;
-        pan: string | null;
-        createdById: string;
-        isDeleted: boolean;
-        deletedAt: Date | null;
         donorCode: string;
         firstName: string;
         middleName: string | null;
@@ -364,6 +357,7 @@ export declare class DonorsService {
         isDisabled: boolean;
         sourceOfDonor: import("@prisma/client").$Enums.SourceOfDonor | null;
         sourceDetails: string | null;
+        pan: string | null;
         profilePicUrl: string | null;
         supportPreferences: import("@prisma/client").$Enums.SupportPreference[];
         primaryRole: import("@prisma/client").$Enums.PersonRole;
@@ -377,9 +371,14 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import("@prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        createdById: string;
+        isDeleted: boolean;
+        deletedAt: Date | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
         dobDay: number | null;
         dobMonth: number | null;
         healthScore: number;
@@ -387,16 +386,10 @@ export declare class DonorsService {
         lastHealthCheck: Date | null;
         twilioStatus: import("@prisma/client").$Enums.TwilioStatus;
         googleReviewStatus: import("@prisma/client").$Enums.GoogleReviewStatus;
+        assignedToUserId: string | null;
     }>;
     update(user: UserContext, id: string, data: any, ipAddress?: string, userAgent?: string): Promise<{
         id: string;
-        createdAt: Date;
-        assignedToUserId: string | null;
-        updatedAt: Date;
-        pan: string | null;
-        createdById: string;
-        isDeleted: boolean;
-        deletedAt: Date | null;
         donorCode: string;
         firstName: string;
         middleName: string | null;
@@ -435,6 +428,7 @@ export declare class DonorsService {
         isDisabled: boolean;
         sourceOfDonor: import("@prisma/client").$Enums.SourceOfDonor | null;
         sourceDetails: string | null;
+        pan: string | null;
         profilePicUrl: string | null;
         supportPreferences: import("@prisma/client").$Enums.SupportPreference[];
         primaryRole: import("@prisma/client").$Enums.PersonRole;
@@ -448,9 +442,14 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import("@prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        createdById: string;
+        isDeleted: boolean;
+        deletedAt: Date | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
         dobDay: number | null;
         dobMonth: number | null;
         healthScore: number;
@@ -458,16 +457,10 @@ export declare class DonorsService {
         lastHealthCheck: Date | null;
         twilioStatus: import("@prisma/client").$Enums.TwilioStatus;
         googleReviewStatus: import("@prisma/client").$Enums.GoogleReviewStatus;
+        assignedToUserId: string | null;
     }>;
     softDelete(user: UserContext, id: string, deleteReason?: string, ipAddress?: string, userAgent?: string): Promise<{
         id: string;
-        createdAt: Date;
-        assignedToUserId: string | null;
-        updatedAt: Date;
-        pan: string | null;
-        createdById: string;
-        isDeleted: boolean;
-        deletedAt: Date | null;
         donorCode: string;
         firstName: string;
         middleName: string | null;
@@ -506,6 +499,7 @@ export declare class DonorsService {
         isDisabled: boolean;
         sourceOfDonor: import("@prisma/client").$Enums.SourceOfDonor | null;
         sourceDetails: string | null;
+        pan: string | null;
         profilePicUrl: string | null;
         supportPreferences: import("@prisma/client").$Enums.SupportPreference[];
         primaryRole: import("@prisma/client").$Enums.PersonRole;
@@ -519,9 +513,14 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import("@prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        createdById: string;
+        isDeleted: boolean;
+        deletedAt: Date | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
         dobDay: number | null;
         dobMonth: number | null;
         healthScore: number;
@@ -529,16 +528,10 @@ export declare class DonorsService {
         lastHealthCheck: Date | null;
         twilioStatus: import("@prisma/client").$Enums.TwilioStatus;
         googleReviewStatus: import("@prisma/client").$Enums.GoogleReviewStatus;
+        assignedToUserId: string | null;
     }>;
     restore(user: UserContext, id: string): Promise<{
         id: string;
-        createdAt: Date;
-        assignedToUserId: string | null;
-        updatedAt: Date;
-        pan: string | null;
-        createdById: string;
-        isDeleted: boolean;
-        deletedAt: Date | null;
         donorCode: string;
         firstName: string;
         middleName: string | null;
@@ -577,6 +570,7 @@ export declare class DonorsService {
         isDisabled: boolean;
         sourceOfDonor: import("@prisma/client").$Enums.SourceOfDonor | null;
         sourceDetails: string | null;
+        pan: string | null;
         profilePicUrl: string | null;
         supportPreferences: import("@prisma/client").$Enums.SupportPreference[];
         primaryRole: import("@prisma/client").$Enums.PersonRole;
@@ -590,9 +584,14 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import("@prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        createdById: string;
+        isDeleted: boolean;
+        deletedAt: Date | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
         dobDay: number | null;
         dobMonth: number | null;
         healthScore: number;
@@ -600,16 +599,17 @@ export declare class DonorsService {
         lastHealthCheck: Date | null;
         twilioStatus: import("@prisma/client").$Enums.TwilioStatus;
         googleReviewStatus: import("@prisma/client").$Enums.GoogleReviewStatus;
+        assignedToUserId: string | null;
     }>;
     findArchived(user: UserContext, search?: string, page?: number, limit?: number): Promise<{
         data: {
             id: string;
-            deletedAt: Date;
             donorCode: string;
             firstName: string;
             lastName: string;
             primaryPhone: string;
             category: import("@prisma/client").$Enums.DonorCategory;
+            deletedAt: Date;
             deletedBy: string;
             deleteReason: string;
         }[];
@@ -622,13 +622,6 @@ export declare class DonorsService {
     }>;
     assignDonor(id: string, assignedToUserId: string | null): Promise<{
         id: string;
-        createdAt: Date;
-        assignedToUserId: string | null;
-        updatedAt: Date;
-        pan: string | null;
-        createdById: string;
-        isDeleted: boolean;
-        deletedAt: Date | null;
         donorCode: string;
         firstName: string;
         middleName: string | null;
@@ -667,6 +660,7 @@ export declare class DonorsService {
         isDisabled: boolean;
         sourceOfDonor: import("@prisma/client").$Enums.SourceOfDonor | null;
         sourceDetails: string | null;
+        pan: string | null;
         profilePicUrl: string | null;
         supportPreferences: import("@prisma/client").$Enums.SupportPreference[];
         primaryRole: import("@prisma/client").$Enums.PersonRole;
@@ -680,9 +674,14 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import("@prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        createdById: string;
+        isDeleted: boolean;
+        deletedAt: Date | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
         dobDay: number | null;
         dobMonth: number | null;
         healthScore: number;
@@ -690,6 +689,7 @@ export declare class DonorsService {
         lastHealthCheck: Date | null;
         twilioStatus: import("@prisma/client").$Enums.TwilioStatus;
         googleReviewStatus: import("@prisma/client").$Enums.GoogleReviewStatus;
+        assignedToUserId: string | null;
     }>;
     bulkReassignDonors(fromUserId: string, toUserId: string): Promise<{
         count: number;
@@ -741,22 +741,15 @@ export declare class DonorsService {
         user: any;
     }>;
     exportDonors(user: UserContext, filters?: any, ipAddress?: string, userAgent?: string): Promise<({
+        assignedToUser: {
+            id: string;
+            name: string;
+        };
         _count: {
             donations: number;
         };
-        assignedToUser: {
-            name: string;
-            id: string;
-        };
     } & {
         id: string;
-        createdAt: Date;
-        assignedToUserId: string | null;
-        updatedAt: Date;
-        pan: string | null;
-        createdById: string;
-        isDeleted: boolean;
-        deletedAt: Date | null;
         donorCode: string;
         firstName: string;
         middleName: string | null;
@@ -795,6 +788,7 @@ export declare class DonorsService {
         isDisabled: boolean;
         sourceOfDonor: import("@prisma/client").$Enums.SourceOfDonor | null;
         sourceDetails: string | null;
+        pan: string | null;
         profilePicUrl: string | null;
         supportPreferences: import("@prisma/client").$Enums.SupportPreference[];
         primaryRole: import("@prisma/client").$Enums.PersonRole;
@@ -808,9 +802,14 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import("@prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        createdById: string;
+        isDeleted: boolean;
+        deletedAt: Date | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
         dobDay: number | null;
         dobMonth: number | null;
         healthScore: number;
@@ -818,6 +817,7 @@ export declare class DonorsService {
         lastHealthCheck: Date | null;
         twilioStatus: import("@prisma/client").$Enums.TwilioStatus;
         googleReviewStatus: import("@prisma/client").$Enums.GoogleReviewStatus;
+        assignedToUserId: string | null;
     })[]>;
     exportMasterDonorExcel(user: UserContext, filters?: {
         home?: string;
@@ -843,13 +843,6 @@ export declare class DonorsService {
     }>;
     assignTelecaller(user: UserContext, donorId: string, assignedToUserId: string, ipAddress?: string, userAgent?: string): Promise<{
         id: string;
-        createdAt: Date;
-        assignedToUserId: string | null;
-        updatedAt: Date;
-        pan: string | null;
-        createdById: string;
-        isDeleted: boolean;
-        deletedAt: Date | null;
         donorCode: string;
         firstName: string;
         middleName: string | null;
@@ -888,6 +881,7 @@ export declare class DonorsService {
         isDisabled: boolean;
         sourceOfDonor: import("@prisma/client").$Enums.SourceOfDonor | null;
         sourceDetails: string | null;
+        pan: string | null;
         profilePicUrl: string | null;
         supportPreferences: import("@prisma/client").$Enums.SupportPreference[];
         primaryRole: import("@prisma/client").$Enums.PersonRole;
@@ -901,9 +895,14 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import("@prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        createdById: string;
+        isDeleted: boolean;
+        deletedAt: Date | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
+        createdAt: Date;
+        updatedAt: Date;
         dobDay: number | null;
         dobMonth: number | null;
         healthScore: number;
@@ -911,5 +910,6 @@ export declare class DonorsService {
         lastHealthCheck: Date | null;
         twilioStatus: import("@prisma/client").$Enums.TwilioStatus;
         googleReviewStatus: import("@prisma/client").$Enums.GoogleReviewStatus;
+        assignedToUserId: string | null;
     }>;
 }

@@ -21,10 +21,19 @@ export interface SmartReportFilters {
 
 type GroupByField = 'gender' | 'city' | 'state' | 'country' | 'profession' | 'category' | 'occasion';
 
+export interface SmartReportDonor {
+  id: string;
+  name: string;
+  phone: string;
+  city: string;
+  amount: number;
+}
+
 export interface SmartReportRow {
   groupName: string;
   donorCount: number;
   totalAmount: number;
+  donors: SmartReportDonor[];
 }
 
 @Injectable()
@@ -68,10 +77,13 @@ export class SmartReportsService {
       where: donorWhere,
       select: {
         id: true,
-        gender: true,
+        firstName: true,
+        lastName: true,
+        primaryPhone: true,
         city: true,
         state: true,
         country: true,
+        gender: true,
         profession: true,
         donations: {
           where: donationWhere,
@@ -86,7 +98,11 @@ export class SmartReportsService {
 
     const donorsWithDonations = donors.filter(d => d.donations.length > 0);
 
-    const grouped = new Map<string, { donorIds: Set<string>; totalAmount: number; categoryCount: Map<string, number>; occasionCount: Map<string, number> }>();
+    const grouped = new Map<string, {
+      donorIds: Set<string>;
+      totalAmount: number;
+      donorData: Map<string, { name: string; phone: string; city: string; amount: number }>;
+    }>();
 
     for (const donor of donorsWithDonations) {
       let keys: string[] = [];
@@ -94,7 +110,6 @@ export class SmartReportsService {
       if (groupBy === 'gender') {
         keys = [donor.gender || 'UNKNOWN'];
       } else if (groupBy === 'city') {
-        // Normalize city: trim whitespace and lowercase for grouping key
         const rawCity = donor.city?.trim() || 'Unknown City';
         keys = [rawCity.toLowerCase()];
       } else if (groupBy === 'state') {
@@ -106,43 +121,56 @@ export class SmartReportsService {
       } else if (groupBy === 'profession') {
         keys = [donor.profession || 'OTHER'];
       } else if (groupBy === 'category') {
-        const cats = [...new Set(donor.donations.map(d => d.donationCategory || 'OTHER'))];
-        keys = cats;
+        keys = [...new Set(donor.donations.map(d => d.donationCategory || 'OTHER'))];
       } else if (groupBy === 'occasion') {
-        const occ = [...new Set(donor.donations.map(d => d.donationOccasion || 'GENERAL'))];
-        keys = occ;
+        keys = [...new Set(donor.donations.map(d => d.donationOccasion || 'GENERAL'))];
       }
+
+      const donorTotal = donor.donations.reduce((sum, don) => {
+        const amt = don.donationAmount
+          ? (typeof don.donationAmount === 'object'
+            ? (don.donationAmount as any).toNumber()
+            : Number(don.donationAmount))
+          : 0;
+        return sum + amt;
+      }, 0);
 
       for (const key of keys) {
         if (!grouped.has(key)) {
-          grouped.set(key, { donorIds: new Set(), totalAmount: 0, categoryCount: new Map(), occasionCount: new Map() });
+          grouped.set(key, { donorIds: new Set(), totalAmount: 0, donorData: new Map() });
         }
         const group = grouped.get(key)!;
-        group.donorIds.add(donor.id);
 
-        for (const donation of donor.donations) {
-          let amount = 0;
-          if (donation.donationAmount) {
-            amount = typeof donation.donationAmount === 'object'
-              ? (donation.donationAmount as any).toNumber()
-              : Number(donation.donationAmount);
-          }
-          group.totalAmount += amount;
+        if (!group.donorIds.has(donor.id)) {
+          group.donorIds.add(donor.id);
+          group.totalAmount += donorTotal;
+          group.donorData.set(donor.id, {
+            name: `${donor.firstName} ${donor.lastName || ''}`.trim(),
+            phone: donor.primaryPhone || '-',
+            city: donor.city || '-',
+            amount: donorTotal,
+          });
         }
       }
     }
 
     const result: SmartReportRow[] = [];
     for (const [groupKey, data] of grouped.entries()) {
-      // Convert normalized key back to display-friendly title case
       const displayName = groupKey
         .split(' ')
         .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(' ');
+
+      const donorsList: SmartReportDonor[] = Array.from(data.donorData.entries()).map(([id, d]) => ({
+        id,
+        ...d,
+      })).sort((a, b) => b.amount - a.amount);
+
       result.push({
         groupName: displayName,
         donorCount: data.donorIds.size,
         totalAmount: data.totalAmount,
+        donors: donorsList,
       });
     }
 

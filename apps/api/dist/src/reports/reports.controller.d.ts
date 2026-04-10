@@ -12,16 +12,16 @@ export declare class ReportsController {
         filters: any;
         groupBy: string;
     }): Promise<{
-        name: string;
         id: string;
         createdAt: Date;
+        name: string;
         filters: import("@prisma/client/runtime/library").JsonValue;
         groupBy: string;
     }>;
     getReportHistory(): Promise<{
-        name: string;
         id: string;
         createdAt: Date;
+        name: string;
         filters: import("@prisma/client/runtime/library").JsonValue;
         groupBy: string;
     }[]>;
@@ -102,7 +102,7 @@ export declare class ReportsController {
             fyTotal: number;
             donationCount: number;
             lastDonation: Date;
-            healthStatus: "AT_RISK" | "DORMANT" | "HEALTHY";
+            healthStatus: "HEALTHY" | "AT_RISK" | "DORMANT";
         }[];
         pagination: {
             page: number;

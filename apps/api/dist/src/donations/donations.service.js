@@ -538,7 +538,7 @@ let DonationsService = DonationsService_1 = class DonationsService {
         };
     }
     async exportDonations(user, filters = {}, ipAddress, userAgent) {
-        if (user.role !== client_1.Role.ADMIN) {
+        if (user.role !== client_1.Role.ADMIN && user.role !== client_1.Role.FOUNDER) {
             throw new common_1.ForbiddenException("Only administrators can export donation data");
         }
         const where = { isDeleted: false };

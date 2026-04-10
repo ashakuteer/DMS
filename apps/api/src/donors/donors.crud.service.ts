@@ -43,7 +43,7 @@ export class DonorsCrudService {
   }
 
   private shouldMaskData(user: UserContext): boolean {
-    return user.role !== Role.FOUNDER;
+    return user.role !== Role.FOUNDER && user.role !== Role.ADMIN;
   }
 
   private readonly UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -429,8 +429,8 @@ if (assignedToUserId) {
     ...donorData
   } = data;
 
-  // Sync donationFrequency from individualProfile to donor-level field
-  if (individualProfile?.donationFrequency && !donorData.donationFrequency) {
+  // Always sync donationFrequency from individualProfile to donor-level field
+  if (individualProfile?.donationFrequency) {
     donorData.donationFrequency = individualProfile.donationFrequency;
   }
 
@@ -512,8 +512,8 @@ async update(
     profession: rest.profession || professionType || null,
   };
 
-  // Sync donationFrequency from individualProfile to donor-level field
-  if (individualProfile?.donationFrequency && !donorData.donationFrequency) {
+  // Always sync donationFrequency from individualProfile to donor-level field
+  if (individualProfile?.donationFrequency) {
     donorData.donationFrequency = individualProfile.donationFrequency;
   }
 
