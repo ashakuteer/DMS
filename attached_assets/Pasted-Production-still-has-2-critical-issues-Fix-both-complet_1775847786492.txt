@@ -1,0 +1,53 @@
+Production still has 2 critical issues. Fix both completely before any more push.
+
+ISSUE 1 — report_history table still missing in production
+Production log still shows:
+this.prisma.reportHistory.findMany()
+The table public.report_history does not exist
+
+Please inspect and fix properly:
+1. Confirm the Prisma model for reportHistory exists in schema.prisma
+2. Confirm the migration file exists in the repo and is committed
+3. Confirm Railway start command is actually running prisma migrate deploy from the correct directory and correct schema
+4. If migrate deploy is not picking it up, fix the path/config
+5. Also keep getReportHistory safe so reports page does not crash even if table is missing temporarily
+
+I want you to tell me exactly:
+- migration folder name
+- schema path used in Railway start command
+- why production still says table missing
+- exact final fix
+
+ISSUE 2 — CORS is broken in production
+Console shows many CORS errors from:
+https://dms-sepia-gamma.vercel.app
+to
+https://dms-production-598e.up.railway.app
+
+Please fix backend CORS completely.
+
+Requirements:
+1. Check NestJS main.ts CORS config
+2. FRONTEND_URL env may contain one or more URLs — support comma-separated origins safely
+3. Allow:
+   - https://dms-sepia-gamma.vercel.app
+   - current Vercel production domain(s)
+   - localhost dev if already needed
+4. Ensure preflight OPTIONS requests work
+5. Allowed headers should include:
+   Content-Type, Authorization, Accept
+6. Allowed methods should include:
+   GET, POST, PUT, PATCH, DELETE, OPTIONS
+7. credentials setting should match current auth usage
+
+IMPORTANT:
+- Do not use '*' if credentials are involved
+- Return proper Access-Control-Allow-Origin for allowed origins
+- Make production-safe CORS logic
+
+AFTER FIXING:
+1. Tell me exact files changed
+2. Tell me exact Railway env value needed for FRONTEND_URL
+3. Tell me exact final start command
+4. Confirm reports page will not crash even if report_history table is temporarily absent
+5. Confirm CORS preflight will pass from Vercel to Railway
