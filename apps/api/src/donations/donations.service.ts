@@ -56,7 +56,7 @@ export class DonationsService {
   }
 
   private shouldMaskDonorData(user: UserContext): boolean {
-    return user.role !== Role.ADMIN;
+    return user.role !== Role.ADMIN && user.role !== Role.FOUNDER;
   }
 
   async findAll(user: UserContext, options: DonationQueryOptions = {}) {

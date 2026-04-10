@@ -79,6 +79,7 @@ interface PendingAction {
   actionType: ActionType;
   bucket: Bucket;
   meal: MealRecord;
+  groupedMeals?: MealRecord[];
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -151,51 +152,81 @@ function isOnOrBeforeToday(mealServiceDate: string): boolean {
 
 // ── Derivation Logic ──────────────────────────────────────────────────────────
 
+// Actions that are donor-level (one per donor+date) vs meal-level (one per meal)
+const DONOR_LEVEL_ACTIONS = new Set<ActionType>([
+  "MEAL_COMPLETION_PENDING",
+  "DONOR_VISIT_PENDING",
+  "THANK_YOU_PENDING",
+  "REVIEW_PENDING",
+  "ASK_HI_PENDING",
+  "EXTRA_ITEMS_NOT_RECORDED",
+]);
+
 function deriveActions(meals: MealRecord[]): PendingAction[] {
   const actions: PendingAction[] = [];
+  // Track donor-level deduplication keys: `${donorId}|${mealServiceDate}|${actionType}`
+  const donorDateSeen = new Map<string, PendingAction>();
+
+  function addDonorLevelAction(m: MealRecord, actionType: ActionType, bucket: Bucket) {
+    const groupKey = `${m.donor.id}|${m.mealServiceDate}|${actionType}`;
+    if (donorDateSeen.has(groupKey)) {
+      donorDateSeen.get(groupKey)!.groupedMeals!.push(m);
+      return;
+    }
+    const action: PendingAction = {
+      key: `${m.donor.id}-${m.mealServiceDate}-${actionType}`,
+      mealId: m.id,
+      actionType,
+      bucket,
+      meal: m,
+      groupedMeals: [m],
+    };
+    donorDateSeen.set(groupKey, action);
+    actions.push(action);
+  }
 
   for (const m of meals) {
     const pastOrToday = isOnOrBeforeToday(m.mealServiceDate);
     const bucket = getBucket(m.mealServiceDate);
 
-    // 1. MEAL_COMPLETION_PENDING
+    // 1. MEAL_COMPLETION_PENDING — consolidated per donor+date
     if (pastOrToday && !m.mealCompleted) {
-      actions.push({ key: `${m.id}-MEAL_COMPLETION_PENDING`, mealId: m.id, actionType: "MEAL_COMPLETION_PENDING", bucket, meal: m });
+      addDonorLevelAction(m, "MEAL_COMPLETION_PENDING", bucket);
     }
 
-    // 2. DONOR_VISIT_PENDING
-    if (pastOrToday && m.donorVisited == null && (m.mealCompleted === true || pastOrToday)) {
-      actions.push({ key: `${m.id}-DONOR_VISIT_PENDING`, mealId: m.id, actionType: "DONOR_VISIT_PENDING", bucket, meal: m });
+    // 2. DONOR_VISIT_PENDING — consolidated per donor+date
+    if (pastOrToday && m.donorVisited == null) {
+      addDonorLevelAction(m, "DONOR_VISIT_PENDING", bucket);
     }
 
-    // 3. BALANCE_PENDING — any meal with balance
+    // 3. BALANCE_PENDING — per meal (each meal has its own balance)
     if (effectiveBalance(m) > 0) {
       actions.push({ key: `${m.id}-BALANCE_PENDING`, mealId: m.id, actionType: "BALANCE_PENDING", bucket, meal: m });
     }
 
-    // 4. PROMISE_FOLLOWUP_PENDING
+    // 4. PROMISE_FOLLOWUP_PENDING — per meal
     if (m.promiseMade === true && m.promiseNotes && m.promiseNotes.trim().length > 0) {
       actions.push({ key: `${m.id}-PROMISE_FOLLOWUP_PENDING`, mealId: m.id, actionType: "PROMISE_FOLLOWUP_PENDING", bucket, meal: m });
     }
 
-    // 5. THANK_YOU_PENDING
+    // 5. THANK_YOU_PENDING — consolidated per donor+date
     if (pastOrToday && !m.thankYouSent) {
-      actions.push({ key: `${m.id}-THANK_YOU_PENDING`, mealId: m.id, actionType: "THANK_YOU_PENDING", bucket, meal: m });
+      addDonorLevelAction(m, "THANK_YOU_PENDING", bucket);
     }
 
-    // 6. REVIEW_PENDING
+    // 6. REVIEW_PENDING — consolidated per donor+date
     if (pastOrToday && !m.reviewRequested) {
-      actions.push({ key: `${m.id}-REVIEW_PENDING`, mealId: m.id, actionType: "REVIEW_PENDING", bucket, meal: m });
+      addDonorLevelAction(m, "REVIEW_PENDING", bucket);
     }
 
-    // 7. ASK_HI_PENDING
+    // 7. ASK_HI_PENDING — consolidated per donor+date
     if (pastOrToday && !m.askedToSendHi) {
-      actions.push({ key: `${m.id}-ASK_HI_PENDING`, mealId: m.id, actionType: "ASK_HI_PENDING", bucket, meal: m });
+      addDonorLevelAction(m, "ASK_HI_PENDING", bucket);
     }
 
-    // 8. EXTRA_ITEMS_NOT_RECORDED
+    // 8. EXTRA_ITEMS_NOT_RECORDED — consolidated per donor+date
     if (pastOrToday && m.extraItemsGiven == null) {
-      actions.push({ key: `${m.id}-EXTRA_ITEMS_NOT_RECORDED`, mealId: m.id, actionType: "EXTRA_ITEMS_NOT_RECORDED", bucket, meal: m });
+      addDonorLevelAction(m, "EXTRA_ITEMS_NOT_RECORDED", bucket);
     }
   }
 
@@ -242,13 +273,22 @@ function BucketSection({
           <TableBody>
             {actions.map((a) => {
               const m = a.meal;
-              const homes = m.slotHomes
-                ? [...new Set(Object.values(m.slotHomes as Record<string, string[]>).flat())]
-                : m.homes;
+              const allMeals = a.groupedMeals ?? [m];
+              // Combine all homes across grouped meals
+              const homes = [...new Set(allMeals.flatMap((gm) =>
+                gm.slotHomes
+                  ? Object.values(gm.slotHomes as Record<string, string[]>).flat()
+                  : gm.homes
+              ))];
+              // Show grouped meal count if more than one
+              const isGrouped = allMeals.length > 1;
               return (
                 <TableRow key={a.key} data-testid={`row-pending-action-${a.key}`}>
                   <TableCell className="text-xs font-medium whitespace-nowrap">
                     {format(new Date(m.mealServiceDate), "dd MMM yyyy")}
+                    {isGrouped && (
+                      <div className="text-muted-foreground text-xs">{allMeals.length} bookings</div>
+                    )}
                   </TableCell>
                   <TableCell className="text-xs">
                     <Link
@@ -277,7 +317,7 @@ function BucketSection({
                       ))}
                     </div>
                   </TableCell>
-                  <TableCell className="text-xs">{slotList(m)}</TableCell>
+                  <TableCell className="text-xs">{allMeals.map(slotList).filter(Boolean).join(" / ") || slotList(m)}</TableCell>
                   <TableCell>
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${ACTION_COLORS[a.actionType]}`}>
                       {ACTION_LABELS[a.actionType]}

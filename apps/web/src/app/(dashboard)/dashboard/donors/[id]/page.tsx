@@ -25,6 +25,7 @@ import DonorPeopleAndOccasionsTab from "./components/DonorPeopleAndOccasionsTab"
 import DonorTimelineTab from "./components/DonorTimelineTab";
 import DonorCommunicationLogTab from "./components/DonorCommunicationLogTab";
 import DonorSponsorshipsTab from "./components/DonorSponsorshipsTab";
+import DonorMealSponsorshipsTab from "./components/DonorMealSponsorshipsTab";
 import DonorQuickActions from "./components/DonorQuickActions";
 import AddDonorSponsorshipDialog from "./dialogs/AddDonorSponsorshipDialog";
 import SponsorStatusDialog from "./dialogs/SponsorStatusDialog";
@@ -161,6 +162,7 @@ export default function DonorProfilePage() {
           <TabsTrigger value="pledges">{t("donor_profile.tab_pledges")}</TabsTrigger>
           <TabsTrigger value="people-occasions">People &amp; Occasions</TabsTrigger>
           <TabsTrigger value="sponsorships">{t("donor_profile.tab_sponsorships")}</TabsTrigger>
+          <TabsTrigger value="meals-sponsorship">Meals Sponsorship</TabsTrigger>
           <TabsTrigger value="comm-log">{t("donor_profile.tab_comm_log")}</TabsTrigger>
         </TabsList>
 
@@ -200,6 +202,10 @@ export default function DonorProfilePage() {
             onAddSponsorship={sponsorships.onAddSponsorship}
             onDeleteSponsorship={sponsorships.onDeleteSponsorship}
           />
+        </TabsContent>
+
+        <TabsContent value="meals-sponsorship">
+          <DonorMealSponsorshipsTab donorId={donorId} donorName={donorName} />
         </TabsContent>
 
         <TabsContent value="comm-log">

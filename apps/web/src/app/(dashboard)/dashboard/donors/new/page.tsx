@@ -103,11 +103,11 @@ const SUPPORT_TYPES = [
 const DONOR_TAGS = [
   "Regular Donor", "Festival Donor", "Birthday Donor", "Anniversary Donor",
   "Champion Donor", "Corporate Link", "Social Connector", "Event Organizer",
-  "Education Patron", "Health Patron", "Spiritual Donor",
+  "Education Patron", "Health Patron", "Spiritual Donor", "Memorial Donor",
 ];
 
 const LANGUAGE_OPTIONS = ["English", "Hindi", "Telugu"];
-const PREFERRED_HOME_OPTIONS = ["Girls Home", "Blind Home", "Old Age Home"];
+const PREFERRED_HOME_OPTIONS = ["Girls Home", "Blind Home", "Old Age Home", "All Homes", "Any Home"];
 
 const RELIGIONS = [
   { value: "Hinduism", label: "Hinduism" },
@@ -401,6 +401,14 @@ export default function NewDonorPage() {
   const handleSubmit = async () => {
     if (!formData.firstName && !formData.primaryPhone && !formData.email) {
       toast({ title: "Validation Error", description: "Please provide at least a name, phone, or email", variant: "destructive" });
+      return;
+    }
+    if (formData.primaryPhone && !/^\d{10}$/.test(formData.primaryPhone.replace(/\s/g, ""))) {
+      toast({ title: "Validation Error", description: "Primary phone must be exactly 10 digits", variant: "destructive" });
+      return;
+    }
+    if (formData.alternatePhone && !/^\d{10}$/.test(formData.alternatePhone.replace(/\s/g, ""))) {
+      toast({ title: "Validation Error", description: "Alternate phone must be exactly 10 digits", variant: "destructive" });
       return;
     }
     setSaving(true);

@@ -94,11 +94,15 @@ export class SmartReportsService {
       if (groupBy === 'gender') {
         keys = [donor.gender || 'UNKNOWN'];
       } else if (groupBy === 'city') {
-        keys = [donor.city || 'Unknown City'];
+        // Normalize city: trim whitespace and lowercase for grouping key
+        const rawCity = donor.city?.trim() || 'Unknown City';
+        keys = [rawCity.toLowerCase()];
       } else if (groupBy === 'state') {
-        keys = [donor.state || 'Unknown State'];
+        const rawState = donor.state?.trim() || 'Unknown State';
+        keys = [rawState.toLowerCase()];
       } else if (groupBy === 'country') {
-        keys = [donor.country || 'India'];
+        const rawCountry = donor.country?.trim() || 'India';
+        keys = [rawCountry.toLowerCase()];
       } else if (groupBy === 'profession') {
         keys = [donor.profession || 'OTHER'];
       } else if (groupBy === 'category') {
@@ -129,9 +133,14 @@ export class SmartReportsService {
     }
 
     const result: SmartReportRow[] = [];
-    for (const [groupName, data] of grouped.entries()) {
+    for (const [groupKey, data] of grouped.entries()) {
+      // Convert normalized key back to display-friendly title case
+      const displayName = groupKey
+        .split(' ')
+        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
       result.push({
-        groupName,
+        groupName: displayName,
         donorCount: data.donorIds.size,
         totalAmount: data.totalAmount,
       });
@@ -258,16 +267,26 @@ export class SmartReportsService {
   }
 
   async saveReport(name: string, filters: SmartReportFilters, groupBy: string) {
-    return this.prisma.reportHistory.create({
-      data: { name, filters: filters as any, groupBy },
-    });
+    try {
+      return await this.prisma.reportHistory.create({
+        data: { name, filters: filters as any, groupBy },
+      });
+    } catch {
+      // report_history table may not be migrated yet — degrade gracefully
+      return null;
+    }
   }
 
   async getReportHistory() {
-    return this.prisma.reportHistory.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 50,
-    });
+    try {
+      return await this.prisma.reportHistory.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      });
+    } catch {
+      // report_history table may not be migrated yet — return empty array
+      return [];
+    }
   }
 
   async getAnalytics() {

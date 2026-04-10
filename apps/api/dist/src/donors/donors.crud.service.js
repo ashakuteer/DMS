@@ -359,6 +359,9 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
     async create(user, data, ipAddress, userAgent) {
         const donorCode = `AKF-DNR-${Date.now()}`;
         const { individualProfile, volunteerProfile, influencerProfile, csrProfile, ngoProfile, ...donorData } = data;
+        if (individualProfile?.donationFrequency && !donorData.donationFrequency) {
+            donorData.donationFrequency = individualProfile.donationFrequency;
+        }
         try {
             const donor = await this.prisma.donor.create({
                 data: {
@@ -412,6 +415,9 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
             ...rest,
             profession: rest.profession || professionType || null,
         };
+        if (individualProfile?.donationFrequency && !donorData.donationFrequency) {
+            donorData.donationFrequency = individualProfile.donationFrequency;
+        }
         const donor = await this.prisma.donor.update({
             where: { id },
             data: donorData,
@@ -431,7 +437,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         return donor;
     }
     async softDelete(user, id, deleteReason, ipAddress, userAgent) {
-        if (user.role !== client_1.Role.ADMIN) {
+        if (user.role !== client_1.Role.ADMIN && user.role !== client_1.Role.FOUNDER) {
             throw new common_1.ForbiddenException("Only administrators can delete donors");
         }
         await this.getActiveDonorOrThrow(id);
@@ -446,7 +452,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         });
     }
     async restore(user, id) {
-        if (user.role !== client_1.Role.ADMIN) {
+        if (user.role !== client_1.Role.ADMIN && user.role !== client_1.Role.FOUNDER) {
             throw new common_1.ForbiddenException("Only administrators can restore donors");
         }
         const donor = await this.prisma.donor.findFirst({
@@ -467,7 +473,7 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         });
     }
     async findArchived(user, search, page = 1, limit = 20) {
-        if (user.role !== client_1.Role.ADMIN) {
+        if (user.role !== client_1.Role.ADMIN && user.role !== client_1.Role.FOUNDER) {
             throw new common_1.ForbiddenException("Only administrators can view archived records");
         }
         const where = { isDeleted: true };

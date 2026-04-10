@@ -87,7 +87,7 @@ export default function ArchiveManagementPage() {
   const { toast } = useToast();
   const currentUser = authStorage.getUser();
 
-  if (!currentUser || currentUser.role !== "ADMIN") {
+  if (!currentUser || !["ADMIN", "FOUNDER"].includes(currentUser.role)) {
     return <AccessDenied />;
   }
 

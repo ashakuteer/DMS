@@ -352,6 +352,26 @@ export default function MealsPage() {
   const [donorResults, setDonorResults] = useState<any[]>([]);
   const [donorLoading, setDonorLoading] = useState(false);
   const [showDonorDropdown, setShowDonorDropdown] = useState(false);
+
+  // Auto-open form and prefill donor when arriving from donor profile tab
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const prefillDonorId = params.get("prefillDonorId");
+    const prefillDonorName = params.get("prefillDonorName");
+    if (prefillDonorId && prefillDonorName) {
+      const [firstName, ...rest] = prefillDonorName.split(" ");
+      setForm((prev) => ({
+        ...prev,
+        selectedDonor: { id: prefillDonorId, firstName, lastName: rest.join(" "), donorCode: "" },
+      }));
+      setOpen(true);
+      // Clean URL without reload
+      const url = new URL(window.location.href);
+      url.searchParams.delete("prefillDonorId");
+      url.searchParams.delete("prefillDonorName");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, []);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [postMealMeal, setPostMealMeal] = useState<PostMealMeal | null>(null);
 

@@ -61,7 +61,7 @@ let DonationsService = DonationsService_1 = class DonationsService {
         return {};
     }
     shouldMaskDonorData(user) {
-        return user.role !== client_1.Role.ADMIN;
+        return user.role !== client_1.Role.ADMIN && user.role !== client_1.Role.FOUNDER;
     }
     async findAll(user, options = {}) {
         const { page = 1, limit = 20, donorId, startDate, endDate, sortBy = "donationDate", sortOrder = "desc", search, donationType, donationHomeType, } = options;

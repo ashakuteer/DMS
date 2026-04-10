@@ -429,6 +429,11 @@ if (assignedToUserId) {
     ...donorData
   } = data;
 
+  // Sync donationFrequency from individualProfile to donor-level field
+  if (individualProfile?.donationFrequency && !donorData.donationFrequency) {
+    donorData.donationFrequency = individualProfile.donationFrequency;
+  }
+
   try {
     const donor = await this.prisma.donor.create({
       data: {
@@ -507,6 +512,11 @@ async update(
     profession: rest.profession || professionType || null,
   };
 
+  // Sync donationFrequency from individualProfile to donor-level field
+  if (individualProfile?.donationFrequency && !donorData.donationFrequency) {
+    donorData.donationFrequency = individualProfile.donationFrequency;
+  }
+
   const donor = await this.prisma.donor.update({
     where: { id },
     data: donorData,
@@ -533,7 +543,7 @@ async softDelete(
   ipAddress?: string,
   userAgent?: string,
 ) {
-  if (user.role !== Role.ADMIN) {
+  if (user.role !== Role.ADMIN && user.role !== Role.FOUNDER) {
     throw new ForbiddenException("Only administrators can delete donors");
   }
 
@@ -550,7 +560,7 @@ async softDelete(
   });
 }
   async restore(user: UserContext, id: string) {
-    if (user.role !== Role.ADMIN) {
+    if (user.role !== Role.ADMIN && user.role !== Role.FOUNDER) {
       throw new ForbiddenException("Only administrators can restore donors");
     }
 
@@ -580,7 +590,7 @@ async softDelete(
     page: number = 1,
     limit: number = 20,
   ) {
-    if (user.role !== Role.ADMIN) {
+    if (user.role !== Role.ADMIN && user.role !== Role.FOUNDER) {
       throw new ForbiddenException("Only administrators can view archived records");
     }
 
