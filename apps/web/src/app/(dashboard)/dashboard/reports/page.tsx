@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,15 +21,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileSpreadsheet, FileText, Search, ChevronLeft, ChevronRight, Lock, Calendar, ArrowUpDown, CreditCard, FileBarChart, SlidersHorizontal, Save, History, Download, BarChart3 } from "lucide-react";
+import { FileSpreadsheet, FileText, Search, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Lock, Calendar, ArrowUpDown, CreditCard, FileBarChart, SlidersHorizontal, Save, History, Download, BarChart3 } from "lucide-react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { canAccessModule } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
+
+interface SmartReportDonor {
+  id: string;
+  donorCode: string;
+  name: string;
+  phone: string;
+  city: string;
+  state: string;
+  amount: number;
+}
 
 interface SmartReportRow {
   groupName: string;
   donorCount: number;
   totalAmount: number;
+  donors: SmartReportDonor[];
 }
 
 interface SavedReport {
@@ -166,6 +177,7 @@ export default function ReportsPage() {
   const [smartLoading, setSmartLoading] = useState(false);
   const [smartSaving, setSmartSaving] = useState(false);
   const [reportName, setReportName] = useState('');
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [smartExporting, setSmartExporting] = useState<string | null>(null);
@@ -301,6 +313,7 @@ export default function ReportsPage() {
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
       setSmartData(data);
+      setExpandedGroups(new Set());
     } catch (e) {
       console.error(e);
     } finally {
@@ -889,20 +902,58 @@ export default function ReportsPage() {
                     <div className="border rounded-lg overflow-hidden">
                       <Table>
                         <TableHeader>
-                          <TableRow>
-                            <TableHead>{smartGroupBy.charAt(0).toUpperCase()+smartGroupBy.slice(1)}</TableHead>
-                            <TableHead className="text-center">Donors</TableHead>
-                            <TableHead className="text-right">Total Amount</TableHead>
+                          <TableRow className="bg-muted/40">
+                            <TableHead className="w-[220px]">{smartGroupBy.charAt(0).toUpperCase()+smartGroupBy.slice(1)}</TableHead>
+                            <TableHead className="text-center w-[80px]">Donors</TableHead>
+                            <TableHead className="text-right w-[150px]">Total Amount</TableHead>
+                            <TableHead className="w-[180px]">Donor Code</TableHead>
+                            <TableHead className="w-[160px]">Phone</TableHead>
+                            <TableHead className="w-[160px]">City / State</TableHead>
+                            <TableHead className="text-right w-[130px]">Donated</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {smartData.map((row, i) => (
-                            <TableRow key={i} data-testid={`row-smart-${i}`}>
-                              <TableCell className="font-medium">{row.groupName}</TableCell>
-                              <TableCell className="text-center">{row.donorCount}</TableCell>
-                              <TableCell className="text-right font-semibold">₹{row.totalAmount.toLocaleString('en-IN')}</TableCell>
-                            </TableRow>
-                          ))}
+                          {smartData.map((row, i) => {
+                            const isExpanded = expandedGroups.has(row.groupName);
+                            const toggle = () => setExpandedGroups(prev => {
+                              const next = new Set(prev);
+                              if (next.has(row.groupName)) next.delete(row.groupName);
+                              else next.add(row.groupName);
+                              return next;
+                            });
+                            return (
+                              <Fragment key={`group-${i}`}>
+                                <TableRow
+                                  className="cursor-pointer hover:bg-muted/50 font-medium"
+                                  onClick={toggle}
+                                  data-testid={`row-smart-${i}`}
+                                >
+                                  <TableCell className="font-semibold flex items-center gap-1.5">
+                                    {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                                    {row.groupName}
+                                  </TableCell>
+                                  <TableCell className="text-center">{row.donorCount}</TableCell>
+                                  <TableCell className="text-right font-semibold">₹{row.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                  <TableCell colSpan={4} className="text-xs text-muted-foreground">
+                                    {isExpanded ? 'Click to collapse' : `Click to see ${row.donors?.length ?? 0} donors`}
+                                  </TableCell>
+                                </TableRow>
+                                {isExpanded && (row.donors ?? []).map((d, di) => (
+                                  <TableRow key={`donor-${i}-${di}`} className="bg-muted/20 text-xs" data-testid={`row-smart-donor-${i}-${di}`}>
+                                    <TableCell className="pl-8 text-muted-foreground">{d.name}</TableCell>
+                                    <TableCell />
+                                    <TableCell />
+                                    <TableCell className="font-mono text-xs">{d.donorCode}</TableCell>
+                                    <TableCell>{d.phone}</TableCell>
+                                    <TableCell className="text-muted-foreground">
+                                      {[d.city !== '-' ? d.city : null, d.state !== '-' ? d.state : null].filter(Boolean).join(', ') || '-'}
+                                    </TableCell>
+                                    <TableCell className="text-right font-medium">₹{d.amount.toLocaleString('en-IN')}</TableCell>
+                                  </TableRow>
+                                ))}
+                              </Fragment>
+                            );
+                          })}
                         </TableBody>
                       </Table>
                     </div>

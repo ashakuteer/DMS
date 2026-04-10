@@ -23,9 +23,11 @@ type GroupByField = 'gender' | 'city' | 'state' | 'country' | 'profession' | 'ca
 
 export interface SmartReportDonor {
   id: string;
+  donorCode: string;
   name: string;
   phone: string;
   city: string;
+  state: string;
   amount: number;
 }
 
@@ -77,6 +79,7 @@ export class SmartReportsService {
       where: donorWhere,
       select: {
         id: true,
+        donorCode: true,
         firstName: true,
         lastName: true,
         primaryPhone: true,
@@ -101,7 +104,7 @@ export class SmartReportsService {
     const grouped = new Map<string, {
       donorIds: Set<string>;
       totalAmount: number;
-      donorData: Map<string, { name: string; phone: string; city: string; amount: number }>;
+      donorData: Map<string, { donorCode: string; name: string; phone: string; city: string; state: string; amount: number }>;
     }>();
 
     for (const donor of donorsWithDonations) {
@@ -145,9 +148,11 @@ export class SmartReportsService {
           group.donorIds.add(donor.id);
           group.totalAmount += donorTotal;
           group.donorData.set(donor.id, {
+            donorCode: donor.donorCode,
             name: `${donor.firstName} ${donor.lastName || ''}`.trim(),
             phone: donor.primaryPhone || '-',
-            city: donor.city || '-',
+            city: donor.city?.trim() || '-',
+            state: donor.state?.trim() || '-',
             amount: donorTotal,
           });
         }
@@ -163,7 +168,12 @@ export class SmartReportsService {
 
       const donorsList: SmartReportDonor[] = Array.from(data.donorData.entries()).map(([id, d]) => ({
         id,
-        ...d,
+        donorCode: d.donorCode,
+        name: d.name,
+        phone: d.phone,
+        city: d.city,
+        state: d.state,
+        amount: d.amount,
       })).sort((a, b) => b.amount - a.amount);
 
       result.push({

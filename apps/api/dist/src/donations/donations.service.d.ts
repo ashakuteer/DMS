@@ -39,14 +39,6 @@ export declare class DonationsService {
     private shouldMaskDonorData;
     findAll(user: UserContext, options?: DonationQueryOptions): Promise<{
         items: ({
-            campaign: {
-                id: string;
-                name: string;
-            };
-            createdBy: {
-                id: string;
-                name: string;
-            };
             donor: {
                 id: string;
                 donorCode: string;
@@ -56,18 +48,31 @@ export declare class DonationsService {
                 personalEmail: string;
                 city: string;
             };
+            campaign: {
+                name: string;
+                id: string;
+            };
             home: {
                 id: string;
                 fullName: string;
             };
+            createdBy: {
+                name: string;
+                id: string;
+            };
         } & {
             id: string;
-            donorId: string;
-            donationDate: Date;
+            createdAt: Date;
+            updatedAt: Date;
+            receiptNumber: string | null;
             donationAmount: import("@prisma/client/runtime/library").Decimal;
             currency: string;
-            donationType: import("@prisma/client").$Enums.DonationType;
+            donationDate: Date;
             donationMode: import("@prisma/client").$Enums.DonationMode | null;
+            donationType: import("@prisma/client").$Enums.DonationType;
+            kindDescription: string | null;
+            donorId: string;
+            createdById: string;
             donationPurpose: import("@prisma/client").$Enums.DonationPurpose | null;
             donationCategory: string | null;
             donationOccasion: string | null;
@@ -78,20 +83,15 @@ export declare class DonationsService {
             unit: string | null;
             itemDescription: string | null;
             kindCategory: import("@prisma/client").$Enums.KindCategory | null;
-            kindDescription: string | null;
             donationHomeType: import("@prisma/client").$Enums.DonationHomeType | null;
             homeId: string | null;
             visitedHome: boolean;
             servedFood: boolean;
-            receiptNumber: string | null;
             financialYear: string | null;
             receiptPdfUrl: string | null;
             attachmentUrl: string | null;
-            createdById: string;
             isDeleted: boolean;
             deletedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
             campaignId: string | null;
         })[];
         total: number;
@@ -100,14 +100,6 @@ export declare class DonationsService {
         totalPages: number;
     }>;
     findOne(user: UserContext, id: string): Promise<{
-        campaign: {
-            id: string;
-            name: string;
-        };
-        createdBy: {
-            id: string;
-            name: string;
-        };
         donor: {
             id: string;
             donorCode: string;
@@ -120,20 +112,25 @@ export declare class DonationsService {
             city: string;
             state: string;
         };
-        home: {
+        campaign: {
+            name: string;
             id: string;
+        };
+        home: {
+            code: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            status: import("@prisma/client").$Enums.BeneficiaryStatus;
             createdById: string;
             isDeleted: boolean;
             deletedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
             gender: import("@prisma/client").$Enums.Gender | null;
             category: import("@prisma/client").$Enums.BeneficiaryCategory | null;
             deletedBy: string | null;
             deleteReason: string | null;
             dobDay: number | null;
             dobMonth: number | null;
-            code: string;
             fullName: string;
             homeType: import("@prisma/client").$Enums.HomeType;
             dobYear: number | null;
@@ -158,16 +155,24 @@ export declare class DonationsService {
             protectPrivacy: boolean;
             photoUrl: string | null;
             photoPath: string | null;
-            status: import("@prisma/client").$Enums.BeneficiaryStatus;
+        };
+        createdBy: {
+            name: string;
+            id: string;
         };
     } & {
         id: string;
-        donorId: string;
-        donationDate: Date;
+        createdAt: Date;
+        updatedAt: Date;
+        receiptNumber: string | null;
         donationAmount: import("@prisma/client/runtime/library").Decimal;
         currency: string;
-        donationType: import("@prisma/client").$Enums.DonationType;
+        donationDate: Date;
         donationMode: import("@prisma/client").$Enums.DonationMode | null;
+        donationType: import("@prisma/client").$Enums.DonationType;
+        kindDescription: string | null;
+        donorId: string;
+        createdById: string;
         donationPurpose: import("@prisma/client").$Enums.DonationPurpose | null;
         donationCategory: string | null;
         donationOccasion: string | null;
@@ -178,20 +183,15 @@ export declare class DonationsService {
         unit: string | null;
         itemDescription: string | null;
         kindCategory: import("@prisma/client").$Enums.KindCategory | null;
-        kindDescription: string | null;
         donationHomeType: import("@prisma/client").$Enums.DonationHomeType | null;
         homeId: string | null;
         visitedHome: boolean;
         servedFood: boolean;
-        receiptNumber: string | null;
         financialYear: string | null;
         receiptPdfUrl: string | null;
         attachmentUrl: string | null;
-        createdById: string;
         isDeleted: boolean;
         deletedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
         campaignId: string | null;
     }>;
     create(user: UserContext, data: any, ipAddress?: string, userAgent?: string): Promise<{
@@ -201,12 +201,17 @@ export declare class DonationsService {
             whatsAppMessageId?: string;
         };
         id: string;
-        donorId: string;
-        donationDate: Date;
+        createdAt: Date;
+        updatedAt: Date;
+        receiptNumber: string | null;
         donationAmount: import("@prisma/client/runtime/library").Decimal;
         currency: string;
-        donationType: import("@prisma/client").$Enums.DonationType;
+        donationDate: Date;
         donationMode: import("@prisma/client").$Enums.DonationMode | null;
+        donationType: import("@prisma/client").$Enums.DonationType;
+        kindDescription: string | null;
+        donorId: string;
+        createdById: string;
         donationPurpose: import("@prisma/client").$Enums.DonationPurpose | null;
         donationCategory: string | null;
         donationOccasion: string | null;
@@ -217,31 +222,31 @@ export declare class DonationsService {
         unit: string | null;
         itemDescription: string | null;
         kindCategory: import("@prisma/client").$Enums.KindCategory | null;
-        kindDescription: string | null;
         donationHomeType: import("@prisma/client").$Enums.DonationHomeType | null;
         homeId: string | null;
         visitedHome: boolean;
         servedFood: boolean;
-        receiptNumber: string | null;
         financialYear: string | null;
         receiptPdfUrl: string | null;
         attachmentUrl: string | null;
-        createdById: string;
         isDeleted: boolean;
         deletedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
         campaignId: string | null;
     }>;
     private sendDonationReceiptEmail;
     update(user: UserContext, id: string, data: any, ipAddress?: string, userAgent?: string): Promise<{
         id: string;
-        donorId: string;
-        donationDate: Date;
+        createdAt: Date;
+        updatedAt: Date;
+        receiptNumber: string | null;
         donationAmount: import("@prisma/client/runtime/library").Decimal;
         currency: string;
-        donationType: import("@prisma/client").$Enums.DonationType;
+        donationDate: Date;
         donationMode: import("@prisma/client").$Enums.DonationMode | null;
+        donationType: import("@prisma/client").$Enums.DonationType;
+        kindDescription: string | null;
+        donorId: string;
+        createdById: string;
         donationPurpose: import("@prisma/client").$Enums.DonationPurpose | null;
         donationCategory: string | null;
         donationOccasion: string | null;
@@ -252,30 +257,30 @@ export declare class DonationsService {
         unit: string | null;
         itemDescription: string | null;
         kindCategory: import("@prisma/client").$Enums.KindCategory | null;
-        kindDescription: string | null;
         donationHomeType: import("@prisma/client").$Enums.DonationHomeType | null;
         homeId: string | null;
         visitedHome: boolean;
         servedFood: boolean;
-        receiptNumber: string | null;
         financialYear: string | null;
         receiptPdfUrl: string | null;
         attachmentUrl: string | null;
-        createdById: string;
         isDeleted: boolean;
         deletedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
         campaignId: string | null;
     }>;
     softDelete(user: UserContext, id: string, ipAddress?: string, userAgent?: string): Promise<{
         id: string;
-        donorId: string;
-        donationDate: Date;
+        createdAt: Date;
+        updatedAt: Date;
+        receiptNumber: string | null;
         donationAmount: import("@prisma/client/runtime/library").Decimal;
         currency: string;
-        donationType: import("@prisma/client").$Enums.DonationType;
+        donationDate: Date;
         donationMode: import("@prisma/client").$Enums.DonationMode | null;
+        donationType: import("@prisma/client").$Enums.DonationType;
+        kindDescription: string | null;
+        donorId: string;
+        createdById: string;
         donationPurpose: import("@prisma/client").$Enums.DonationPurpose | null;
         donationCategory: string | null;
         donationOccasion: string | null;
@@ -286,20 +291,15 @@ export declare class DonationsService {
         unit: string | null;
         itemDescription: string | null;
         kindCategory: import("@prisma/client").$Enums.KindCategory | null;
-        kindDescription: string | null;
         donationHomeType: import("@prisma/client").$Enums.DonationHomeType | null;
         homeId: string | null;
         visitedHome: boolean;
         servedFood: boolean;
-        receiptNumber: string | null;
         financialYear: string | null;
         receiptPdfUrl: string | null;
         attachmentUrl: string | null;
-        createdById: string;
         isDeleted: boolean;
         deletedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
         campaignId: string | null;
     }>;
     regenerateReceipt(user: UserContext, id: string, ipAddress?: string, userAgent?: string): Promise<{
@@ -328,10 +328,6 @@ export declare class DonationsService {
         };
     }>;
     exportDonations(user: UserContext, filters?: any, ipAddress?: string, userAgent?: string): Promise<({
-        campaign: {
-            id: string;
-            name: string;
-        };
         donor: {
             id: string;
             donorCode: string;
@@ -341,18 +337,27 @@ export declare class DonationsService {
             personalEmail: string;
             city: string;
         };
+        campaign: {
+            name: string;
+            id: string;
+        };
         home: {
             id: string;
             fullName: string;
         };
     } & {
         id: string;
-        donorId: string;
-        donationDate: Date;
+        createdAt: Date;
+        updatedAt: Date;
+        receiptNumber: string | null;
         donationAmount: import("@prisma/client/runtime/library").Decimal;
         currency: string;
-        donationType: import("@prisma/client").$Enums.DonationType;
+        donationDate: Date;
         donationMode: import("@prisma/client").$Enums.DonationMode | null;
+        donationType: import("@prisma/client").$Enums.DonationType;
+        kindDescription: string | null;
+        donorId: string;
+        createdById: string;
         donationPurpose: import("@prisma/client").$Enums.DonationPurpose | null;
         donationCategory: string | null;
         donationOccasion: string | null;
@@ -363,20 +368,15 @@ export declare class DonationsService {
         unit: string | null;
         itemDescription: string | null;
         kindCategory: import("@prisma/client").$Enums.KindCategory | null;
-        kindDescription: string | null;
         donationHomeType: import("@prisma/client").$Enums.DonationHomeType | null;
         homeId: string | null;
         visitedHome: boolean;
         servedFood: boolean;
-        receiptNumber: string | null;
         financialYear: string | null;
         receiptPdfUrl: string | null;
         attachmentUrl: string | null;
-        createdById: string;
         isDeleted: boolean;
         deletedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
         campaignId: string | null;
     })[]>;
     exportToExcel(user: UserContext, filters?: any, ipAddress?: string, userAgent?: string): Promise<Buffer>;
