@@ -1,0 +1,185 @@
+NGO Donor Hub — please implement the following production-safe changes carefully in the existing codebase. Do NOT do unrelated refactors. First inspect the current donor, meals, dashboard, reports, permissions, and archive code. Then implement these exact changes.
+
+IMPORTANT RULES
+- Keep existing architecture and UI style.
+- Make changes production-safe and backward-compatible.
+- Reuse existing forms/components where possible.
+- Do not break current donors, donations, meals, reports, or permissions.
+- After changes, verify build passes for both apps/web and apps/api.
+- If a DB/schema change is needed, create proper Prisma migration and update all affected queries.
+- Founder must have highest access.
+
+TASK 1 — ADD “MEMORIAL DONOR” TAG IN ADD/EDIT DONOR FORM
+In donor form donor tags section, add one more selectable tag:
+- Memorial Donor
+
+Requirements:
+- Add it wherever donor tags are stored/rendered.
+- Make sure it saves correctly and displays correctly in donor profile/edit form.
+- Do not convert this into a special day form. It is only a donor tag.
+
+TASK 2 — ADD “MEALS SPONSORSHIP” TAB INSIDE DONOR PROFILE
+In donor profile tabs, add a new tab:
+- Meals Sponsorship
+
+Requirements:
+- Show all meal sponsorship records for that donor.
+- Show total count of meal sponsorships by donor.
+- Add an “Add Meal Sponsorship” button inside this donor tab.
+- Reuse the existing Add Meal Sponsorship form/modal instead of creating a new one.
+
+Important business logic:
+When a meal sponsorship is created from donor profile:
+- It must still link properly to that donor.
+- Amount must reflect in Donations section as per existing donation-linking logic.
+- Occasion / people details must reflect in People & Occasions based on existing meal sponsorship occasion data.
+- Relation, date, and occasion should remain connected if current schema already supports it.
+- Do not duplicate systems. Reuse current meals sponsorship flow and connect it properly to donor profile.
+
+TASK 3 — PREFERRED HOMES: ADD “ALL HOMES” AND “ANY HOME”
+In donor form Preferred Homes options, keep existing options and add:
+- All Homes
+- Any Home
+
+Final preferred home options should include:
+- Girls Home
+- Blind Boys Home / Blind Home (use current system wording consistently)
+- Old Age Home
+- All Homes
+- Any Home
+
+Requirements:
+- Save and load correctly in create/edit/view flows.
+- Keep existing options working.
+
+TASK 4 — FOUNDER SHOULD SEE FULL PHONE NUMBER (NO XXXX MASKING)
+Fix phone masking logic:
+- Founder must always see full phone numbers.
+- Admin/staff can continue with existing masking rules/permissions if already intended.
+
+Also inspect why duplicates happened with same phone number and make donor creation/update validation safer without breaking current flow.
+
+TASK 5 — HANDLE THE CONFIRMED DUPLICATE DONORS
+The following donor IDs were identified as duplicates and need removal handling:
+- AKF-DNR-1775735208206
+- AKF-DNR-1775732529397
+- AKF-DNR-1775727024061
+- AKF-DNR-1775727006808
+- AKF-DNR-1775717270679
+- AKF-DNR-1775717249257
+- AKF-DNR-1775716895840
+
+Requirements:
+- First inspect these records and confirm they are duplicates.
+- Prefer safe archival/soft-delete flow if system supports it.
+- Do not hard delete linked financial/history data accidentally.
+- If current design supports archive-first, use that.
+- Log what was done for each ID.
+- If there are linked donations/meals/etc., keep data integrity intact.
+
+TASK 6 — DELETE BUTTON ONLY IN ARCHIVE, AND FOUNDER MUST HAVE ACCESS
+Current desired behavior:
+- Do NOT show delete button beside normal donor profile/list entries.
+- Delete action should be available from Archive section only.
+- Founder must have access to Archive and delete actions.
+- Current Archive page is showing access denied for founder — fix this permission bug.
+
+Requirements:
+- Founder should be treated as highest privilege for archive access.
+- Staff should not get delete access.
+- Admin access can remain according to existing permission model.
+- Fix both frontend guard and backend permission checks if needed.
+
+TASK 7 — DONOR FORM MINIMUM VALIDATION + PHONE MUST BE EXACTLY 10 DIGITS
+Current requirement:
+- Donor creation should still work with minimal details as already intended.
+- But if phone is entered, it must be exactly 10 digits.
+- No 7-digit or invalid short numbers.
+
+Requirements:
+- Keep current minimum-entry donor flow.
+- Do not suddenly make every optional field mandatory.
+- Validate primary phone properly.
+- If alternate phone is entered, validate it too.
+- Handle country code cleanly with current UI.
+- Show user-friendly validation error.
+
+TASK 8 — MONTHLY DONOR DASHBOARD TARGET BUG
+Fix dashboard issue where donations from donors marked as monthly donors are not reflecting correctly in the monthly donor target widget.
+
+Requirements:
+- Inspect dashboard aggregation logic.
+- Ensure donations from monthly donors count toward monthly donor target/current month stats correctly.
+- Use current month/date logic consistently.
+- Do not double-count.
+- Verify with existing monthly donor records and recent donations.
+
+TASK 9 — REPORTS BUG + MISSING report_history TABLE
+Reports page currently fails because code calls prisma.reportHistory.findMany() but table public.report_history does not exist.
+
+Requirements:
+- Inspect Prisma schema and migrations.
+- Create/apply proper Prisma model + migration for report_history if this table is intended.
+- If report history is optional, make the feature degrade gracefully so the whole reports page does not crash.
+- Fix birthday donor report and smart report flow.
+- Verify report generation works.
+- Verify report history button/page works or safely hides if unavailable.
+
+TASK 10 — NORMALIZE CITY GROUPING IN REPORTS
+Current issue:
+- Hyderabad / HYDERABAD / hyderabad are appearing as different cities in reports.
+
+Requirements:
+- Fix grouping logic so city-wise reports are normalized case-insensitively.
+- Trim whitespace before grouping.
+- For display, present a clean normalized value.
+- Do not corrupt original data silently unless intentional cleanup is done separately.
+- At minimum, report output should group same city together even if data casing differs.
+
+Optional safe enhancement:
+- If there is already a normalization utility, reuse it.
+- Avoid aggressive typo correction unless explicitly coded and safe.
+
+TASK 11 — POST-MEAL UPDATE SHOULD BE ONE FORM PER DONOR PER DAY, NOT 9 FORMS
+Current problem:
+- If one donor sponsors entire day for all homes, system creates multiple post-meal update tasks/forms.
+- Staff has to fill many duplicate post-meal forms for the same donor/date.
+
+Required behavior:
+- For same donor + same service date, there should be only ONE consolidated Post-Meal Update flow/task.
+- Group the related meal sponsorship entries under one post-meal update.
+- Staff should not have to fill 9 separate forms for breakfast/lunch/dinner across homes on same donor/date.
+
+Implementation expectations:
+- Consolidate post-meal pending actions by donor + date.
+- One donor/day should open one update form.
+- Inside that single form, show all relevant sponsored homes/slots/items clearly.
+- Save updates in a way that preserves current underlying records.
+- Do not lose per-slot/per-home traceability.
+- Reuse current post-meal update logic as much as possible, but make the UI/task workflow consolidated.
+
+WORK ORDER
+Please do the work in this order:
+1. Inspect existing code paths and tell me the exact files/modules that need changes.
+2. Fix founder archive access + delete visibility logic.
+3. Fix phone masking for founder.
+4. Fix donor phone validation.
+5. Add Memorial Donor tag.
+6. Add Preferred Homes options.
+7. Add donor profile Meals Sponsorship tab + linked add flow.
+8. Fix monthly donor dashboard aggregation.
+9. Fix reports/report_history issue.
+10. Fix city normalization in reports.
+11. Improve post-meal consolidation logic.
+12. Safely handle the listed duplicate donor IDs.
+
+DELIVERABLE FORMAT
+After implementation, give me:
+1. Summary of files changed
+2. DB/schema/migration changes
+3. Exact business logic implemented for each task
+4. Any assumptions made
+5. Any manual production steps needed
+6. Any test cases you ran
+
+DO NOT STOP halfway. First inspect, then implement carefully end-to-end.
