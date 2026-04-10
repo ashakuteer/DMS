@@ -34,6 +34,10 @@ interface SmartReportDonor {
   city: string;
   state: string;
   amount: number;
+  donationFrequency?: string;
+  donorTags?: string[];
+  preferredHomes?: string[];
+  supportPreferences?: string[];
 }
 
 interface SmartReportRow {
@@ -778,8 +782,20 @@ export default function ReportsPage() {
                       <Select value={smartGroupBy} onValueChange={setSmartGroupBy}>
                         <SelectTrigger data-testid="select-groupby"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {['gender','city','state','country','profession','category','occasion'].map(g => (
-                            <SelectItem key={g} value={g}>{g.charAt(0).toUpperCase()+g.slice(1)}</SelectItem>
+                          {[
+                            { value: 'gender', label: 'Gender' },
+                            { value: 'city', label: 'City' },
+                            { value: 'state', label: 'State' },
+                            { value: 'country', label: 'Country' },
+                            { value: 'profession', label: 'Profession' },
+                            { value: 'category', label: 'Donation Category' },
+                            { value: 'occasion', label: 'Occasion' },
+                            { value: 'donationFrequency', label: 'Donation Frequency' },
+                            { value: 'donorTag', label: 'Donor Tag' },
+                            { value: 'preferredHome', label: 'Preferred Home' },
+                            { value: 'supportType', label: 'Support Type' },
+                          ].map(g => (
+                            <SelectItem key={g.value} value={g.value}>{g.label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -858,6 +874,66 @@ export default function ReportsPage() {
                       <label className="text-xs text-muted-foreground mb-1 block">Max Amount (₹)</label>
                       <Input type="number" placeholder="∞" value={smartFilters.maxAmount || ''} onChange={e => setFilter('maxAmount', e.target.value)} data-testid="input-maxamount" className="h-9" />
                     </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Donation Frequency</label>
+                      <Select value={smartFilters.donationFrequency || ''} onValueChange={v => setFilter('donationFrequency', v === 'ALL' ? '' : v)}>
+                        <SelectTrigger data-testid="select-donation-frequency"><SelectValue placeholder="All" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All</SelectItem>
+                          {[
+                            { value: 'ONE_TIME', label: 'One Time' },
+                            { value: 'WEEKLY', label: 'Weekly' },
+                            { value: 'BI_WEEKLY', label: 'Bi-Weekly' },
+                            { value: 'MONTHLY', label: 'Monthly' },
+                            { value: 'BI_MONTHLY', label: 'Bi-Monthly' },
+                            { value: 'QUARTERLY', label: 'Quarterly' },
+                            { value: 'HALF_YEARLY', label: 'Half-Yearly' },
+                            { value: 'YEARLY', label: 'Yearly' },
+                            { value: 'OCCASIONAL', label: 'Occasional' },
+                            { value: 'FESTIVAL_BASED', label: 'Festival Based' },
+                          ].map(f => <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Support Type</label>
+                      <Select value={smartFilters.supportType || ''} onValueChange={v => setFilter('supportType', v === 'ALL' ? '' : v)}>
+                        <SelectTrigger data-testid="select-support-type"><SelectValue placeholder="All" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All</SelectItem>
+                          {[
+                            { value: 'GROCERIES', label: 'Groceries' },
+                            { value: 'EDUCATION', label: 'Education' },
+                            { value: 'MEDICINES', label: 'Medicines' },
+                            { value: 'TOILETRIES', label: 'Toiletries' },
+                            { value: 'SPONSORSHIP', label: 'Sponsorship' },
+                            { value: 'GENERAL', label: 'General' },
+                            { value: 'SNACKS_SWEETS', label: 'Snacks / Sweets' },
+                            { value: 'IN_KIND', label: 'In Kind' },
+                            { value: 'CASH', label: 'Cash' },
+                            { value: 'MEALS', label: 'Meals' },
+                          ].map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Preferred Home</label>
+                      <Select value={smartFilters.preferredHome || ''} onValueChange={v => setFilter('preferredHome', v === 'ALL' ? '' : v)}>
+                        <SelectTrigger data-testid="select-preferred-home"><SelectValue placeholder="All" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ALL">All</SelectItem>
+                          <SelectItem value="girls">Girls Home</SelectItem>
+                          <SelectItem value="blind">Blind Boys Home</SelectItem>
+                          <SelectItem value="old age">Old Age Home</SelectItem>
+                          <SelectItem value="all homes">All Homes</SelectItem>
+                          <SelectItem value="any home">Any Home</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Donor Tag</label>
+                      <Input placeholder="e.g. Festival Donor" value={smartFilters.donorTag || ''} onChange={e => setFilter('donorTag', e.target.value)} data-testid="input-donor-tag" className="h-9" />
+                    </div>
                   </div>
                   <div className="flex gap-2 mt-3">
                     <Button onClick={fetchSmartReport} disabled={smartLoading} data-testid="button-run-report">
@@ -899,17 +975,25 @@ export default function ReportsPage() {
                         </Button>
                       </div>
                     </div>
-                    <div className="border rounded-lg overflow-hidden">
+                    <div className="border rounded-lg overflow-x-auto">
                       <Table>
                         <TableHeader>
                           <TableRow className="bg-muted/40">
-                            <TableHead className="w-[220px]">{smartGroupBy.charAt(0).toUpperCase()+smartGroupBy.slice(1)}</TableHead>
-                            <TableHead className="text-center w-[80px]">Donors</TableHead>
-                            <TableHead className="text-right w-[150px]">Total Amount</TableHead>
-                            <TableHead className="w-[180px]">Donor Code</TableHead>
-                            <TableHead className="w-[160px]">Phone</TableHead>
-                            <TableHead className="w-[160px]">City / State</TableHead>
-                            <TableHead className="text-right w-[130px]">Donated</TableHead>
+                            <TableHead className="w-[200px]">
+                              {({
+                                gender: 'Gender', city: 'City', state: 'State', country: 'Country',
+                                profession: 'Profession', category: 'Donation Category', occasion: 'Occasion',
+                                donationFrequency: 'Donation Frequency', donorTag: 'Donor Tag',
+                                preferredHome: 'Preferred Home', supportType: 'Support Type',
+                              } as Record<string, string>)[smartGroupBy] ?? smartGroupBy}
+                            </TableHead>
+                            <TableHead className="text-center w-[70px]">Donors</TableHead>
+                            <TableHead className="text-right w-[140px]">Total Amount</TableHead>
+                            <TableHead className="w-[150px]">Code / Name</TableHead>
+                            <TableHead className="w-[140px]">Phone</TableHead>
+                            <TableHead className="w-[140px]">City / State</TableHead>
+                            <TableHead className="w-[120px]">Frequency</TableHead>
+                            <TableHead className="text-right w-[110px]">Donated</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -928,27 +1012,49 @@ export default function ReportsPage() {
                                   onClick={toggle}
                                   data-testid={`row-smart-${i}`}
                                 >
-                                  <TableCell className="font-semibold flex items-center gap-1.5">
-                                    {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-                                    {row.groupName}
+                                  <TableCell className="font-semibold">
+                                    <span className="flex items-center gap-1.5">
+                                      {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                                      {row.groupName}
+                                    </span>
                                   </TableCell>
                                   <TableCell className="text-center">{row.donorCount}</TableCell>
                                   <TableCell className="text-right font-semibold">₹{row.totalAmount.toLocaleString('en-IN')}</TableCell>
-                                  <TableCell colSpan={4} className="text-xs text-muted-foreground">
-                                    {isExpanded ? 'Click to collapse' : `Click to see ${row.donors?.length ?? 0} donors`}
+                                  <TableCell colSpan={5} className="text-xs text-muted-foreground italic">
+                                    {isExpanded ? 'Click to collapse' : `Click to expand ${row.donors?.length ?? 0} donors`}
                                   </TableCell>
                                 </TableRow>
                                 {isExpanded && (row.donors ?? []).map((d, di) => (
                                   <TableRow key={`donor-${i}-${di}`} className="bg-muted/20 text-xs" data-testid={`row-smart-donor-${i}-${di}`}>
-                                    <TableCell className="pl-8 text-muted-foreground">{d.name}</TableCell>
+                                    <TableCell className="pl-8">
+                                      <div className="text-muted-foreground">{d.name}</div>
+                                      {(d.donorTags ?? []).length > 0 && (
+                                        <div className="text-[10px] text-muted-foreground/70 mt-0.5">{d.donorTags!.join(', ')}</div>
+                                      )}
+                                    </TableCell>
                                     <TableCell />
                                     <TableCell />
-                                    <TableCell className="font-mono text-xs">{d.donorCode}</TableCell>
+                                    <TableCell>
+                                      <div className="font-mono">{d.donorCode}</div>
+                                      {(d.supportPreferences ?? []).length > 0 && (
+                                        <div className="text-[10px] text-muted-foreground mt-0.5">{d.supportPreferences!.map(s => s.replace(/_/g, ' ')).join(', ')}</div>
+                                      )}
+                                    </TableCell>
                                     <TableCell>{d.phone}</TableCell>
                                     <TableCell className="text-muted-foreground">
-                                      {[d.city !== '-' ? d.city : null, d.state !== '-' ? d.state : null].filter(Boolean).join(', ') || '-'}
+                                      <div>{[d.city !== '-' ? d.city : null, d.state !== '-' ? d.state : null].filter(Boolean).join(', ') || '-'}</div>
+                                      {(d.preferredHomes ?? []).length > 0 && (
+                                        <div className="text-[10px] text-muted-foreground/70 mt-0.5 max-w-[130px] truncate" title={(d.preferredHomes ?? []).join(', ')}>
+                                          {(d.preferredHomes ?? []).map(h => h.replace(/Asha Kuteer /i, '').replace(/ – .*/i, '')).join(', ')}
+                                        </div>
+                                      )}
                                     </TableCell>
-                                    <TableCell className="text-right font-medium">₹{d.amount.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell className="text-muted-foreground">
+                                      {d.donationFrequency ? d.donationFrequency.replace(/_/g, ' ') : '-'}
+                                    </TableCell>
+                                    <TableCell className="text-right font-medium">
+                                      {d.amount > 0 ? `₹${d.amount.toLocaleString('en-IN')}` : '-'}
+                                    </TableCell>
                                   </TableRow>
                                 ))}
                               </Fragment>

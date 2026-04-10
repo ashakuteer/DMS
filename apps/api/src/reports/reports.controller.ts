@@ -33,6 +33,10 @@ export class ReportsController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('visited') visited?: string,
+    @Query('donationFrequency') donationFrequency?: string,
+    @Query('donorTag') donorTag?: string,
+    @Query('preferredHome') preferredHome?: string,
+    @Query('supportType') supportType?: string,
   ) {
     const filters: any = {};
     if (gender) filters.gender = gender;
@@ -48,6 +52,10 @@ export class ReportsController {
     if (dateFrom) filters.dateFrom = dateFrom;
     if (dateTo) filters.dateTo = dateTo;
     if (visited !== undefined) filters.visited = visited === 'true';
+    if (donationFrequency) filters.donationFrequency = donationFrequency;
+    if (donorTag) filters.donorTag = donorTag;
+    if (preferredHome) filters.preferredHome = preferredHome;
+    if (supportType) filters.supportType = supportType;
 
     return this.smartReportsService.getSmartReport(filters, groupBy as any);
   }
@@ -70,6 +78,10 @@ export class ReportsController {
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
     @Query('visited') visited?: string,
+    @Query('donationFrequency') donationFrequency?: string,
+    @Query('donorTag') donorTag?: string,
+    @Query('preferredHome') preferredHome?: string,
+    @Query('supportType') supportType?: string,
     @Res() res?: Response,
   ) {
     const filters: any = {};
@@ -86,6 +98,10 @@ export class ReportsController {
     if (dateFrom) filters.dateFrom = dateFrom;
     if (dateTo) filters.dateTo = dateTo;
     if (visited !== undefined) filters.visited = visited === 'true';
+    if (donationFrequency) filters.donationFrequency = donationFrequency;
+    if (donorTag) filters.donorTag = donorTag;
+    if (preferredHome) filters.preferredHome = preferredHome;
+    if (supportType) filters.supportType = supportType;
 
     if (format === 'pdf') {
       const buffer = await this.smartReportsService.exportPdf(filters, groupBy as any);

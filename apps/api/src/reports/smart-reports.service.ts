@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
@@ -17,9 +17,18 @@ export interface SmartReportFilters {
   dateFrom?: string;
   dateTo?: string;
   visited?: boolean;
+  donationFrequency?: string;
+  donorTag?: string;
+  preferredHome?: string;
+  supportType?: string;
 }
 
-type GroupByField = 'gender' | 'city' | 'state' | 'country' | 'profession' | 'category' | 'occasion';
+type GroupByField =
+  | 'gender' | 'city' | 'state' | 'country' | 'profession'
+  | 'category' | 'occasion'
+  | 'donationFrequency' | 'donorTag' | 'preferredHome' | 'supportType';
+
+const PROFILE_GROUP_BYS: string[] = ['donationFrequency', 'donorTag', 'preferredHome', 'supportType'];
 
 export interface SmartReportDonor {
   id: string;
@@ -29,6 +38,10 @@ export interface SmartReportDonor {
   city: string;
   state: string;
   amount: number;
+  donationFrequency?: string;
+  donorTags?: string[];
+  preferredHomes?: string[];
+  supportPreferences?: string[];
 }
 
 export interface SmartReportRow {
@@ -42,6 +55,19 @@ export interface SmartReportRow {
 export class SmartReportsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private toNum(v: any): number {
+    if (!v) return 0;
+    return typeof v === 'object' && typeof v.toNumber === 'function' ? v.toNumber() : Number(v);
+  }
+
+  private titleCase(s: string): string {
+    return s
+      .replace(/_/g, ' ')
+      .split(' ')
+      .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(' ');
+  }
+
   private buildDonorWhere(filters: SmartReportFilters) {
     const where: any = { deletedAt: null };
     if (filters.gender) where.gender = filters.gender;
@@ -50,6 +76,8 @@ export class SmartReportsService {
     if (filters.country) where.country = { contains: filters.country, mode: 'insensitive' };
     if (filters.profession) where.profession = filters.profession;
     if (filters.visited !== undefined) where.visited = filters.visited;
+    if (filters.donationFrequency) where.donationFrequency = filters.donationFrequency;
+    if (filters.supportType) where.supportPreferences = { has: filters.supportType };
     return where;
   }
 
@@ -74,6 +102,7 @@ export class SmartReportsService {
   async getSmartReport(filters: SmartReportFilters, groupBy: GroupByField): Promise<SmartReportRow[]> {
     const donorWhere = this.buildDonorWhere(filters);
     const donationWhere = this.buildDonationWhere(filters);
+    const isProfileGroupBy = PROFILE_GROUP_BYS.includes(groupBy);
 
     const donors = await this.prisma.donor.findMany({
       where: donorWhere,
@@ -88,6 +117,10 @@ export class SmartReportsService {
         country: true,
         gender: true,
         profession: true,
+        donationFrequency: true,
+        donorTags: true,
+        preferredHomes: true,
+        supportPreferences: true,
         donations: {
           where: donationWhere,
           select: {
@@ -97,63 +130,88 @@ export class SmartReportsService {
           },
         },
       },
+      take: 20000,
     });
 
-    const donorsWithDonations = donors.filter(d => d.donations.length > 0);
+    let eligibleDonors = donors;
+
+    if (!isProfileGroupBy) {
+      eligibleDonors = donors.filter(d => d.donations.length > 0);
+    }
+
+    if (filters.donorTag) {
+      const tag = filters.donorTag.toLowerCase();
+      eligibleDonors = eligibleDonors.filter(d =>
+        d.donorTags.some(t => t.toLowerCase().includes(tag)),
+      );
+    }
+    if (filters.preferredHome) {
+      const home = filters.preferredHome.toLowerCase();
+      eligibleDonors = eligibleDonors.filter(d =>
+        d.preferredHomes.some(h => h.toLowerCase().includes(home)),
+      );
+    }
 
     const grouped = new Map<string, {
       donorIds: Set<string>;
       totalAmount: number;
-      donorData: Map<string, { donorCode: string; name: string; phone: string; city: string; state: string; amount: number }>;
+      donorData: Map<string, SmartReportDonor>;
     }>();
 
-    for (const donor of donorsWithDonations) {
+    for (const donor of eligibleDonors) {
+      const donorTotal = donor.donations.reduce(
+        (sum, don) => sum + this.toNum(don.donationAmount),
+        0,
+      );
+
       let keys: string[] = [];
 
       if (groupBy === 'gender') {
         keys = [donor.gender || 'UNKNOWN'];
       } else if (groupBy === 'city') {
-        const rawCity = donor.city?.trim() || 'Unknown City';
-        keys = [rawCity.toLowerCase()];
+        keys = [(donor.city?.trim() || 'Unknown City').toLowerCase()];
       } else if (groupBy === 'state') {
-        const rawState = donor.state?.trim() || 'Unknown State';
-        keys = [rawState.toLowerCase()];
+        keys = [(donor.state?.trim() || 'Unknown State').toLowerCase()];
       } else if (groupBy === 'country') {
-        const rawCountry = donor.country?.trim() || 'India';
-        keys = [rawCountry.toLowerCase()];
+        keys = [(donor.country?.trim() || 'India').toLowerCase()];
       } else if (groupBy === 'profession') {
         keys = [donor.profession || 'OTHER'];
       } else if (groupBy === 'category') {
         keys = [...new Set(donor.donations.map(d => d.donationCategory || 'OTHER'))];
       } else if (groupBy === 'occasion') {
         keys = [...new Set(donor.donations.map(d => d.donationOccasion || 'GENERAL'))];
+      } else if (groupBy === 'donationFrequency') {
+        keys = [donor.donationFrequency || 'UNSPECIFIED'];
+      } else if (groupBy === 'donorTag') {
+        keys = donor.donorTags.length > 0 ? [...new Set(donor.donorTags)] : ['No Tag'];
+      } else if (groupBy === 'preferredHome') {
+        keys = donor.preferredHomes.length > 0 ? [...new Set(donor.preferredHomes)] : ['No Preference'];
+      } else if (groupBy === 'supportType') {
+        keys = donor.supportPreferences.length > 0
+          ? [...new Set(donor.supportPreferences.map(String))]
+          : ['UNSPECIFIED'];
       }
-
-      const donorTotal = donor.donations.reduce((sum, don) => {
-        const amt = don.donationAmount
-          ? (typeof don.donationAmount === 'object'
-            ? (don.donationAmount as any).toNumber()
-            : Number(don.donationAmount))
-          : 0;
-        return sum + amt;
-      }, 0);
 
       for (const key of keys) {
         if (!grouped.has(key)) {
           grouped.set(key, { donorIds: new Set(), totalAmount: 0, donorData: new Map() });
         }
         const group = grouped.get(key)!;
-
         if (!group.donorIds.has(donor.id)) {
           group.donorIds.add(donor.id);
           group.totalAmount += donorTotal;
           group.donorData.set(donor.id, {
+            id: donor.id,
             donorCode: donor.donorCode,
             name: `${donor.firstName} ${donor.lastName || ''}`.trim(),
             phone: donor.primaryPhone || '-',
             city: donor.city?.trim() || '-',
             state: donor.state?.trim() || '-',
             amount: donorTotal,
+            donationFrequency: donor.donationFrequency || undefined,
+            donorTags: donor.donorTags,
+            preferredHomes: donor.preferredHomes,
+            supportPreferences: donor.supportPreferences.map(String),
           });
         }
       }
@@ -161,99 +219,91 @@ export class SmartReportsService {
 
     const result: SmartReportRow[] = [];
     for (const [groupKey, data] of grouped.entries()) {
-      const displayName = groupKey
-        .split(' ')
-        .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-
-      const donorsList: SmartReportDonor[] = Array.from(data.donorData.entries()).map(([id, d]) => ({
-        id,
-        donorCode: d.donorCode,
-        name: d.name,
-        phone: d.phone,
-        city: d.city,
-        state: d.state,
-        amount: d.amount,
-      })).sort((a, b) => b.amount - a.amount);
-
       result.push({
-        groupName: displayName,
+        groupName: this.titleCase(groupKey),
         donorCount: data.donorIds.size,
         totalAmount: data.totalAmount,
-        donors: donorsList,
+        donors: Array.from(data.donorData.values()).sort((a, b) => b.amount - a.amount),
       });
     }
 
     return result.sort((a, b) => b.totalAmount - a.totalAmount);
   }
 
-  async getDonorList(filters: SmartReportFilters) {
-    const donorWhere = this.buildDonorWhere(filters);
-    const donationWhere = this.buildDonationWhere(filters);
-
-    const donors = await this.prisma.donor.findMany({
-      where: donorWhere,
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        primaryPhone: true,
-        city: true,
-        state: true,
-        donations: {
-          where: donationWhere,
-          select: { donationAmount: true },
-        },
-      },
-      take: 10000,
-    });
-
-    return donors
-      .filter(d => d.donations.length > 0)
-      .map(d => ({
-        name: `${d.firstName} ${d.lastName || ''}`.trim(),
-        phone: d.primaryPhone || '-',
-        city: d.city || '-',
-        amount: d.donations.reduce((sum, donation) => {
-          const amt = typeof donation.donationAmount === 'object'
-            ? (donation.donationAmount as any).toNumber()
-            : Number(donation.donationAmount || 0);
-          return sum + amt;
-        }, 0),
-      }))
-      .sort((a, b) => b.amount - a.amount);
-  }
-
   async exportExcel(filters: SmartReportFilters, groupBy: GroupByField): Promise<Buffer> {
-    const [summary, donorList] = await Promise.all([
-      this.getSmartReport(filters, groupBy),
-      this.getDonorList(filters),
-    ]);
-
+    const summary = await this.getSmartReport(filters, groupBy);
     const workbook = new ExcelJS.Workbook();
+    const GREEN = 'FF4A7C59';
+    const WHITE = 'FFFFFFFF';
+    const LIGHT_GREEN = 'FFE8F5E9';
+    const LIGHT_GRAY = 'FFF5F5F5';
+
+    const groupLabel = groupBy.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
     const summarySheet = workbook.addWorksheet('Summary');
     summarySheet.columns = [
-      { header: groupBy.charAt(0).toUpperCase() + groupBy.slice(1), key: 'groupName', width: 25 },
+      { header: groupLabel, key: 'groupName', width: 30 },
       { header: 'Donor Count', key: 'donorCount', width: 15 },
-      { header: 'Total Amount (₹)', key: 'totalAmount', width: 20 },
+      { header: 'Total Amount (Rs.)', key: 'totalAmount', width: 22 },
     ];
-    summarySheet.getRow(1).font = { bold: true };
-    summarySheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4A7C59' } };
-    summarySheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    summary.forEach(row => summarySheet.addRow(row));
+    const sh1 = summarySheet.getRow(1);
+    sh1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GREEN } };
+    sh1.font = { bold: true, color: { argb: WHITE } };
+    sh1.commit();
+    for (const row of summary) {
+      summarySheet.addRow({ groupName: row.groupName, donorCount: row.donorCount, totalAmount: row.totalAmount });
+    }
 
-    const donorSheet = workbook.addWorksheet('Donor List');
-    donorSheet.columns = [
-      { header: 'Name', key: 'name', width: 28 },
+    const detailSheet = workbook.addWorksheet('Donor Details');
+    detailSheet.columns = [
+      { header: groupLabel, key: 'group', width: 28 },
+      { header: 'Donor Code', key: 'donorCode', width: 16 },
+      { header: 'Donor Name', key: 'name', width: 28 },
       { header: 'Phone', key: 'phone', width: 18 },
       { header: 'City', key: 'city', width: 18 },
-      { header: 'Total Amount (₹)', key: 'amount', width: 20 },
+      { header: 'State', key: 'state', width: 18 },
+      { header: 'Donation Frequency', key: 'donationFrequency', width: 22 },
+      { header: 'Donor Tags', key: 'donorTags', width: 28 },
+      { header: 'Preferred Homes', key: 'preferredHomes', width: 35 },
+      { header: 'Support Types', key: 'supportPreferences', width: 30 },
+      { header: 'Amount (Rs.)', key: 'amount', width: 18 },
     ];
-    donorSheet.getRow(1).font = { bold: true };
-    donorSheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4A7C59' } };
-    donorSheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    donorList.forEach(row => donorSheet.addRow(row));
+    const dh1 = detailSheet.getRow(1);
+    dh1.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GREEN } };
+    dh1.font = { bold: true, color: { argb: WHITE } };
+    dh1.commit();
+
+    let rowIndex = 2;
+    for (const group of summary) {
+      const headerRow = detailSheet.getRow(rowIndex++);
+      headerRow.getCell(1).value = `>> ${group.groupName}`;
+      headerRow.getCell(2).value = `${group.donorCount} donors`;
+      headerRow.getCell(11).value = group.totalAmount;
+      headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LIGHT_GREEN } };
+      headerRow.font = { bold: true };
+      headerRow.commit();
+
+      for (const [di, donor] of group.donors.entries()) {
+        const row = detailSheet.getRow(rowIndex++);
+        row.getCell(1).value = group.groupName;
+        row.getCell(2).value = donor.donorCode;
+        row.getCell(3).value = donor.name;
+        row.getCell(4).value = donor.phone;
+        row.getCell(5).value = donor.city;
+        row.getCell(6).value = donor.state;
+        row.getCell(7).value = donor.donationFrequency?.replace(/_/g, ' ') || '-';
+        row.getCell(8).value = (donor.donorTags ?? []).join(', ') || '-';
+        row.getCell(9).value = (donor.preferredHomes ?? []).join(' | ') || '-';
+        row.getCell(10).value = (donor.supportPreferences ?? []).map((s: string) => s.replace(/_/g, ' ')).join(', ') || '-';
+        row.getCell(11).value = donor.amount;
+        if (di % 2 === 1) {
+          row.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LIGHT_GRAY } };
+        }
+        row.commit();
+      }
+
+      detailSheet.getRow(rowIndex++);
+    }
 
     const buffer = await workbook.xlsx.writeBuffer();
     return Buffer.from(buffer);
@@ -263,42 +313,118 @@ export class SmartReportsService {
     const summary = await this.getSmartReport(filters, groupBy);
 
     return new Promise((resolve) => {
-      const doc = new PDFDocument({ margin: 40, size: 'A4' });
+      const doc = new PDFDocument({ margin: 36, size: 'A4' });
       const chunks: Buffer[] = [];
       doc.on('data', (c: Buffer) => chunks.push(c));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
 
-      doc.fontSize(16).font('Helvetica-Bold').text('Smart Report', { align: 'center' });
-      doc.fontSize(12).font('Helvetica').text(`Grouped by: ${groupBy}`, { align: 'center' });
-      doc.fontSize(9).text(`Generated: ${new Date().toLocaleDateString('en-IN')}`, { align: 'center' });
-      doc.moveDown();
+      const W = 523;
+      const GREEN = '#4A7C59';
+      const codeColW = 65;
+      const nameColW = 115;
+      const phoneColW = 85;
+      const cityColW = 75;
+      const freqColW = 75;
+      const amtColW = 70;
+      const totalRowW = codeColW + nameColW + phoneColW + cityColW + freqColW + amtColW;
 
-      const tableTop = doc.y;
-      const colWidths = [200, 120, 160];
-      const headers = [groupBy.charAt(0).toUpperCase() + groupBy.slice(1), 'Donor Count', 'Total Amount (₹)'];
+      const groupLabel = groupBy.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
-      let x = 40;
-      doc.font('Helvetica-Bold').fontSize(9);
-      doc.rect(40, tableTop - 3, 480, 16).fill('#4A7C59');
-      doc.fill('#FFFFFF');
-      headers.forEach((h, i) => {
-        doc.text(h, x + 2, tableTop, { width: colWidths[i] - 4 });
-        x += colWidths[i];
-      });
+      doc.fontSize(15).font('Helvetica-Bold').fillColor('#000000')
+        .text('Asha Kuteer Foundation – Smart Report', { align: 'center' });
+      doc.fontSize(10).font('Helvetica')
+        .text(`Grouped by: ${groupLabel}`, { align: 'center' });
+      doc.fontSize(8)
+        .text(`Generated: ${new Date().toLocaleDateString('en-IN')} | ${summary.length} groups | ${summary.reduce((s, r) => s + r.donorCount, 0)} donors`, { align: 'center' });
+      doc.moveDown(0.8);
 
-      let y = tableTop + 18;
-      doc.fill('#000000').font('Helvetica').fontSize(9);
+      let y = doc.y;
 
-      summary.forEach((row, idx) => {
-        if (y > 750) { doc.addPage(); y = 50; }
-        if (idx % 2 === 0) { doc.rect(40, y - 2, 480, 14).fill('#F5F5F5'); doc.fill('#000000'); }
-        x = 40;
-        [row.groupName, row.donorCount.toString(), `₹${row.totalAmount.toLocaleString('en-IN')}`].forEach((cell, i) => {
-          doc.text(cell, x + 2, y, { width: colWidths[i] - 4 });
-          x += colWidths[i];
-        });
+      doc.rect(36, y, W, 14).fill(GREEN);
+      doc.fontSize(8).font('Helvetica-Bold').fillColor('#FFFFFF');
+      let cx = 38;
+      doc.text(groupLabel, cx, y + 3, { width: 130, lineBreak: false }); cx += 130;
+      doc.text('Donors', cx, y + 3, { width: 70, align: 'center', lineBreak: false }); cx += 70;
+      doc.text('Total Amount (Rs.)', cx, y + 3, { width: 130, align: 'right', lineBreak: false });
+      y += 18;
+
+      doc.fillColor('#000000').font('Helvetica').fontSize(8);
+      for (const [i, row] of summary.entries()) {
+        if (y > 780) { doc.addPage(); y = 36; }
+        if (i % 2 === 0) { doc.rect(36, y - 1, W, 13).fill('#F0F7F3'); doc.fillColor('#000000'); }
+        cx = 38;
+        doc.text(row.groupName, cx, y, { width: 130, lineBreak: false }); cx += 130;
+        doc.text(row.donorCount.toString(), cx, y, { width: 70, align: 'center', lineBreak: false }); cx += 70;
+        doc.text(`Rs.${row.totalAmount.toLocaleString('en-IN')}`, cx, y, { width: 130, align: 'right', lineBreak: false });
+        y += 13;
+      }
+
+      y += 20;
+
+      for (const group of summary) {
+        if (y > 700) { doc.addPage(); y = 36; }
+
+        doc.rect(36, y, W, 16).fill(GREEN);
+        doc.fontSize(9).font('Helvetica-Bold').fillColor('#FFFFFF')
+          .text(`${group.groupName}  —  ${group.donorCount} donors  |  Rs.${group.totalAmount.toLocaleString('en-IN')}`,
+            38, y + 3, { width: W - 4, lineBreak: false });
+        y += 20;
+
+        doc.rect(36, y, totalRowW, 12).fill('#E8F5E9');
+        doc.fontSize(7).font('Helvetica-Bold').fillColor('#000000');
+        cx = 38;
+        doc.text('Code', cx, y + 2, { width: codeColW, lineBreak: false }); cx += codeColW;
+        doc.text('Name', cx, y + 2, { width: nameColW, lineBreak: false }); cx += nameColW;
+        doc.text('Phone', cx, y + 2, { width: phoneColW, lineBreak: false }); cx += phoneColW;
+        doc.text('City / State', cx, y + 2, { width: cityColW, lineBreak: false }); cx += cityColW;
+        doc.text('Frequency', cx, y + 2, { width: freqColW, lineBreak: false }); cx += freqColW;
+        doc.text('Amount (Rs.)', cx, y + 2, { width: amtColW, align: 'right', lineBreak: false });
         y += 14;
-      });
+
+        doc.font('Helvetica').fontSize(7).fillColor('#000000');
+        for (const [di, donor] of group.donors.entries()) {
+          if (y > 780) { doc.addPage(); y = 36; }
+          if (di % 2 === 1) { doc.rect(36, y - 1, totalRowW, 12).fill('#FAFAFA'); doc.fillColor('#000000'); }
+          cx = 38;
+          doc.text(donor.donorCode, cx, y, { width: codeColW, lineBreak: false }); cx += codeColW;
+          doc.text(donor.name, cx, y, { width: nameColW, lineBreak: false }); cx += nameColW;
+          doc.text(donor.phone, cx, y, { width: phoneColW, lineBreak: false }); cx += phoneColW;
+          const loc = [donor.city !== '-' ? donor.city : '', donor.state !== '-' ? donor.state : ''].filter(Boolean).join(', ') || '-';
+          doc.text(loc, cx, y, { width: cityColW, lineBreak: false }); cx += cityColW;
+          doc.text((donor.donationFrequency || '-').replace(/_/g, ' '), cx, y, { width: freqColW, lineBreak: false }); cx += freqColW;
+          doc.text(donor.amount > 0 ? `Rs.${donor.amount.toLocaleString('en-IN')}` : '-',
+            cx, y, { width: amtColW, align: 'right', lineBreak: false });
+          y += 12;
+        }
+
+        const hasTags = group.donors.some(d => (d.donorTags ?? []).length > 0);
+        const hasHomes = group.donors.some(d => (d.preferredHomes ?? []).length > 0);
+        const hasSupport = group.donors.some(d => (d.supportPreferences ?? []).length > 0);
+
+        if (hasTags || hasHomes || hasSupport) {
+          y += 4;
+          doc.fontSize(6).fillColor('#555555');
+          for (const donor of group.donors) {
+            const extras: string[] = [];
+            if ((donor.donorTags ?? []).length > 0) extras.push(`Tags: ${donor.donorTags!.join(', ')}`);
+            if ((donor.preferredHomes ?? []).length > 0) extras.push(`Homes: ${donor.preferredHomes!.join(' | ')}`);
+            if ((donor.supportPreferences ?? []).length > 0) {
+              extras.push(`Support: ${donor.supportPreferences!.map((s: string) => s.replace(/_/g, ' ')).join(', ')}`);
+            }
+            if (extras.length > 0) {
+              if (y > 780) { doc.addPage(); y = 36; }
+              doc.text(`  ${donor.donorCode}: ${extras.join(' | ')}`, 38, y, { width: W - 4, lineBreak: false });
+              y += 10;
+            }
+          }
+          doc.fillColor('#000000').fontSize(7);
+        }
+
+        y += 6;
+        doc.moveTo(36, y).lineTo(36 + W, y).strokeColor('#DDDDDD').lineWidth(0.5).stroke();
+        y += 10;
+        doc.y = y;
+      }
 
       doc.end();
     });
@@ -310,19 +436,14 @@ export class SmartReportsService {
         data: { name, filters: filters as any, groupBy },
       });
     } catch {
-      // report_history table may not be migrated yet — degrade gracefully
       return null;
     }
   }
 
   async getReportHistory() {
     try {
-      return await this.prisma.reportHistory.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 50,
-      });
+      return await this.prisma.reportHistory.findMany({ orderBy: { createdAt: 'desc' }, take: 50 });
     } catch {
-      // report_history table may not be migrated yet — return empty array
       return [];
     }
   }
@@ -331,12 +452,7 @@ export class SmartReportsService {
     const now = new Date();
     const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
 
-    const [
-      allDonations,
-      donorWithProfession,
-      repeatDonors,
-      topDonorsRaw,
-    ] = await Promise.all([
+    const [allDonations, donorWithProfession, repeatDonors, topDonorsRaw] = await Promise.all([
       this.prisma.donation.findMany({
         where: { deletedAt: null, donationDate: { gte: twelveMonthsAgo } },
         select: {
@@ -374,9 +490,8 @@ export class SmartReportsService {
       }),
     ]);
 
-    const toNum = (v: any) => typeof v === 'object' ? v.toNumber() : Number(v || 0);
+    const toNum = (v: any) => typeof v === 'object' && typeof v?.toNumber === 'function' ? v.toNumber() : Number(v || 0);
 
-    // 1. Monthly donations (last 12 months)
     const monthlyMap = new Map<string, { amount: number; count: number }>();
     for (let i = 11; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -391,22 +506,15 @@ export class SmartReportsService {
         e.count += 1;
       }
     }
-    const monthlyDonations = Array.from(monthlyMap.entries()).map(([month, v]) => ({
-      month,
-      amount: v.amount,
-      count: v.count,
-    }));
+    const monthlyDonations = Array.from(monthlyMap.entries()).map(([month, v]) => ({ month, amount: v.amount, count: v.count }));
 
-    // 2. Profession stats
     const profMap = new Map<string, number>();
     for (const d of donorWithProfession) {
       const key = d.profession || 'OTHER';
       profMap.set(key, (profMap.get(key) || 0) + 1);
     }
-    const professionStats = Array.from(profMap.entries()).map(([profession, count]) => ({ profession, count }))
-      .sort((a, b) => b.count - a.count);
+    const professionStats = Array.from(profMap.entries()).map(([profession, count]) => ({ profession, count })).sort((a, b) => b.count - a.count);
 
-    // 3. Category stats
     const catMap = new Map<string, { amount: number; count: number }>();
     for (const d of allDonations) {
       const key = d.donationCategory || 'OTHER';
@@ -415,10 +523,8 @@ export class SmartReportsService {
       e.amount += toNum(d.donationAmount);
       e.count += 1;
     }
-    const categoryStats = Array.from(catMap.entries()).map(([category, v]) => ({ category, ...v }))
-      .sort((a, b) => b.amount - a.amount);
+    const categoryStats = Array.from(catMap.entries()).map(([category, v]) => ({ category, ...v })).sort((a, b) => b.amount - a.amount);
 
-    // 4. Occasion stats
     const occMap = new Map<string, { amount: number; count: number }>();
     for (const d of allDonations) {
       const key = d.donationOccasion || 'GENERAL';
@@ -427,10 +533,8 @@ export class SmartReportsService {
       e.amount += toNum(d.donationAmount);
       e.count += 1;
     }
-    const occasionStats = Array.from(occMap.entries()).map(([occasion, v]) => ({ occasion, ...v }))
-      .sort((a, b) => b.amount - a.amount);
+    const occasionStats = Array.from(occMap.entries()).map(([occasion, v]) => ({ occasion, ...v })).sort((a, b) => b.amount - a.amount);
 
-    // 5. Geo stats
     let hyderabad = 0, telanganaOther = 0, otherStates = 0, international = 0;
     const donorSet = new Map<string, { city: string; state: string; country: string }>();
     for (const d of allDonations) {
@@ -442,27 +546,19 @@ export class SmartReportsService {
       const country = v.country?.toLowerCase() || 'india';
       const city = v.city?.toLowerCase() || '';
       const state = v.state?.toLowerCase() || '';
-      if (country !== 'india') {
-        international++;
-      } else if (city.includes('hyderabad') || city.includes('secunderabad')) {
-        hyderabad++;
-      } else if (state.includes('telangana')) {
-        telanganaOther++;
-      } else {
-        otherStates++;
-      }
+      if (country !== 'india') international++;
+      else if (city.includes('hyderabad') || city.includes('secunderabad')) hyderabad++;
+      else if (state.includes('telangana')) telanganaOther++;
+      else otherStates++;
     }
     const geoStats = { hyderabad, telanganaOther, otherStates, international };
 
-    // 6. Repeat vs one-time
     let repeat = 0, oneTime = 0;
     for (const d of repeatDonors) {
-      if (d.donations.length > 1) repeat++;
-      else oneTime++;
+      if (d.donations.length > 1) repeat++; else oneTime++;
     }
     const repeatVsOneTime = { repeat, oneTime };
 
-    // 7. Top donors
     const topDonors = topDonorsRaw
       .map(d => ({
         id: d.id,
@@ -475,25 +571,13 @@ export class SmartReportsService {
       .sort((a, b) => b.totalAmount - a.totalAmount)
       .slice(0, 10);
 
-    // 8. Donation trend (all time monthly)
     const trendMap = new Map<string, number>();
     for (const d of allDonations) {
       const key = `${d.donationDate.getFullYear()}-${String(d.donationDate.getMonth() + 1).padStart(2, '0')}`;
       trendMap.set(key, (trendMap.get(key) || 0) + toNum(d.donationAmount));
     }
-    const donationTrend = Array.from(trendMap.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([month, amount]) => ({ month, amount }));
+    const donationTrend = Array.from(trendMap.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([month, amount]) => ({ month, amount }));
 
-    return {
-      monthlyDonations,
-      professionStats,
-      categoryStats,
-      occasionStats,
-      geoStats,
-      repeatVsOneTime,
-      topDonors,
-      donationTrend,
-    };
+    return { monthlyDonations, professionStats, categoryStats, occasionStats, geoStats, repeatVsOneTime, topDonors, donationTrend };
   }
 }

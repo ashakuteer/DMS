@@ -5,8 +5,8 @@ export declare class ReportsController {
     private readonly reportsService;
     private readonly smartReportsService;
     constructor(reportsService: ReportsService, smartReportsService: SmartReportsService);
-    getSmartReport(groupBy?: string, gender?: string, city?: string, state?: string, country?: string, profession?: string, category?: string, occasion?: string, donationType?: string, minAmount?: string, maxAmount?: string, dateFrom?: string, dateTo?: string, visited?: string): Promise<import("./smart-reports.service").SmartReportRow[]>;
-    exportSmartReport(format?: string, groupBy?: string, gender?: string, city?: string, state?: string, country?: string, profession?: string, category?: string, occasion?: string, donationType?: string, minAmount?: string, maxAmount?: string, dateFrom?: string, dateTo?: string, visited?: string, res?: Response): Promise<void>;
+    getSmartReport(groupBy?: string, gender?: string, city?: string, state?: string, country?: string, profession?: string, category?: string, occasion?: string, donationType?: string, minAmount?: string, maxAmount?: string, dateFrom?: string, dateTo?: string, visited?: string, donationFrequency?: string, donorTag?: string, preferredHome?: string, supportType?: string): Promise<import("./smart-reports.service").SmartReportRow[]>;
+    exportSmartReport(format?: string, groupBy?: string, gender?: string, city?: string, state?: string, country?: string, profession?: string, category?: string, occasion?: string, donationType?: string, minAmount?: string, maxAmount?: string, dateFrom?: string, dateTo?: string, visited?: string, donationFrequency?: string, donorTag?: string, preferredHome?: string, supportType?: string, res?: Response): Promise<void>;
     saveReport(body: {
         name: string;
         filters: any;

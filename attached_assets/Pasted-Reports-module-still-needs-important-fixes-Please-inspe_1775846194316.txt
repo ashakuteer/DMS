@@ -1,0 +1,148 @@
+Reports module still needs important fixes. Please inspect the full smart reports flow end-to-end and fix it properly.
+
+CURRENT PROBLEMS
+1. On-screen smart report now shows donor details for some groupings, but downloaded PDF/Excel still shows only summary totals.
+2. Group By = City works, but Group By = State is failing / not returning correctly.
+3. Need to verify ALL Group By options and ALL filters are actually working.
+4. Need reports for donor profile fields also:
+   - Donation Frequency
+   - Donor Tags
+   - Preferred Homes / Home based
+   - Support Type
+5. Example expectations:
+   - How many donors support Groceries
+   - How many donors are Monthly donors
+   - How many donors are Festival Donors
+   - and for each such report, show donor list with donor code, donor name, phone, city/state, and amount where applicable
+
+PLEASE DO THIS IN ORDER
+
+STEP 1 — AUDIT ALL SMART REPORT OPTIONS
+Check every Group By option and confirm whether each works correctly:
+- Gender
+- City
+- State
+- Country
+- Profession
+- Category
+- Occasion
+
+Check every filter and confirm whether each works correctly:
+- Gender
+- Profession
+- Category
+- Occasion
+- Schedule Type
+- City
+- State
+- Min Amount
+- Max Amount
+- Date From
+- Date To
+
+Then extend report support to these donor fields too:
+- Donation Frequency
+- Donor Tags
+- Preferred Homes
+- Support Type
+
+If any of these are missing from backend query logic or frontend filters, add them.
+
+STEP 2 — FIX STATE GROUPING
+City grouping works, but State is failing.
+Please inspect:
+- backend normalization logic
+- frontend request payload
+- grouping keys
+- null/empty state handling
+- title-casing / normalization bugs
+Fix State grouping so it works exactly like City.
+
+STEP 3 — MAKE DOWNLOADS DETAILED, NOT SUMMARY ONLY
+Current PDF/Excel download should not contain only grouped summary.
+It must include BOTH:
+1. grouped summary row(s)
+2. donor-level detail rows under each group
+
+Required donor detail columns in download:
+- Donor Code
+- Donor Name
+- Phone
+- City
+- State
+- Donation Frequency (if available)
+- Donor Tags (if available)
+- Preferred Homes (if available)
+- Support Type (if available)
+- Donated Amount / relevant amount
+
+For PDF:
+- make it readable and grouped properly
+- each group heading should show count + total
+- donor rows should appear under that group
+
+For Excel:
+- include grouped structure clearly
+- either one sheet with grouped sections OR separate sheets, whichever is cleaner
+- but donor details must be included
+
+STEP 4 — ADD REPORTING FOR THESE FIELDS
+Add support so I can generate grouped/detailed reports for:
+1. Donation Frequency
+   Example: Monthly donors
+2. Donor Tags
+   Example: Festival Donor, Memorial Donor, Birthday Donor
+3. Preferred Homes
+   Example: Girls Home, Blind Home, Old Age Home, All Homes, Any Home
+4. Support Type
+   Example: Groceries, Education, Medicines, Toiletries, Sponsorship, General, Snacks/Sweets, In-Kind, Cash, Meals
+
+Expected behavior:
+- If I filter Support Type = Groceries, report should show all donors who support groceries
+- If I filter Donation Frequency = Monthly, report should show all monthly donors
+- If I filter Donor Tag = Festival Donor, report should show all festival donors
+- If I filter Preferred Home = Girls Home, report should show all donors preferring Girls Home
+
+Each of these should show donor-level details, not just total count.
+
+STEP 5 — VERIFY DATA SOURCE / SCHEMA
+Inspect how these fields are stored:
+- donationFrequency
+- donorTags
+- preferredHomes
+- supportType
+Confirm whether they are stored on donor table, individualProfile, arrays, JSON, or relations.
+Then update report queries correctly based on the real schema.
+Do not assume.
+If arrays/JSON are used, filter/group properly.
+
+STEP 6 — FRONTEND FILTER UI
+If needed, add the missing filter dropdowns for:
+- Donation Frequency
+- Donor Tags
+- Preferred Homes
+- Support Type
+
+Make sure current filters and group-by UI stay clean and production-ready.
+
+STEP 7 — TEST ALL REPORTS
+Please test and confirm these cases:
+1. Group By = City
+2. Group By = State
+3. Group By = Gender
+4. Group By = Occasion
+5. Filter Donation Frequency = Monthly
+6. Filter Donor Tag = Festival Donor
+7. Filter Preferred Home = Girls Home
+8. Filter Support Type = Groceries
+9. PDF download includes donor details
+10. Excel download includes donor details
+
+DELIVER BACK TO ME
+1. Exact files changed
+2. Exact backend fields used for each report/filter
+3. Which options were broken and how you fixed them
+4. Whether PDF and Excel now include donor-level details
+5. Any schema limitations found
+6. Manual test results for all report options
+7. Confirm clearly: “All smart report columns/options checked and fixed”

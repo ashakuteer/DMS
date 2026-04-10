@@ -25,7 +25,7 @@ let ReportsController = class ReportsController {
         this.reportsService = reportsService;
         this.smartReportsService = smartReportsService;
     }
-    async getSmartReport(groupBy = 'gender', gender, city, state, country, profession, category, occasion, donationType, minAmount, maxAmount, dateFrom, dateTo, visited) {
+    async getSmartReport(groupBy = 'gender', gender, city, state, country, profession, category, occasion, donationType, minAmount, maxAmount, dateFrom, dateTo, visited, donationFrequency, donorTag, preferredHome, supportType) {
         const filters = {};
         if (gender)
             filters.gender = gender;
@@ -53,9 +53,17 @@ let ReportsController = class ReportsController {
             filters.dateTo = dateTo;
         if (visited !== undefined)
             filters.visited = visited === 'true';
+        if (donationFrequency)
+            filters.donationFrequency = donationFrequency;
+        if (donorTag)
+            filters.donorTag = donorTag;
+        if (preferredHome)
+            filters.preferredHome = preferredHome;
+        if (supportType)
+            filters.supportType = supportType;
         return this.smartReportsService.getSmartReport(filters, groupBy);
     }
-    async exportSmartReport(format = 'excel', groupBy = 'gender', gender, city, state, country, profession, category, occasion, donationType, minAmount, maxAmount, dateFrom, dateTo, visited, res) {
+    async exportSmartReport(format = 'excel', groupBy = 'gender', gender, city, state, country, profession, category, occasion, donationType, minAmount, maxAmount, dateFrom, dateTo, visited, donationFrequency, donorTag, preferredHome, supportType, res) {
         const filters = {};
         if (gender)
             filters.gender = gender;
@@ -83,6 +91,14 @@ let ReportsController = class ReportsController {
             filters.dateTo = dateTo;
         if (visited !== undefined)
             filters.visited = visited === 'true';
+        if (donationFrequency)
+            filters.donationFrequency = donationFrequency;
+        if (donorTag)
+            filters.donorTag = donorTag;
+        if (preferredHome)
+            filters.preferredHome = preferredHome;
+        if (supportType)
+            filters.supportType = supportType;
         if (format === 'pdf') {
             const buffer = await this.smartReportsService.exportPdf(filters, groupBy);
             res.setHeader('Content-Type', 'application/pdf');
@@ -227,8 +243,12 @@ __decorate([
     __param(11, (0, common_1.Query)('dateFrom')),
     __param(12, (0, common_1.Query)('dateTo')),
     __param(13, (0, common_1.Query)('visited')),
+    __param(14, (0, common_1.Query)('donationFrequency')),
+    __param(15, (0, common_1.Query)('donorTag')),
+    __param(16, (0, common_1.Query)('preferredHome')),
+    __param(17, (0, common_1.Query)('supportType')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String, String, String, String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], ReportsController.prototype, "getSmartReport", null);
 __decorate([
@@ -249,9 +269,13 @@ __decorate([
     __param(12, (0, common_1.Query)('dateFrom')),
     __param(13, (0, common_1.Query)('dateTo')),
     __param(14, (0, common_1.Query)('visited')),
-    __param(15, (0, common_1.Res)()),
+    __param(15, (0, common_1.Query)('donationFrequency')),
+    __param(16, (0, common_1.Query)('donorTag')),
+    __param(17, (0, common_1.Query)('preferredHome')),
+    __param(18, (0, common_1.Query)('supportType')),
+    __param(19, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, Object]),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, String, Object]),
     __metadata("design:returntype", Promise)
 ], ReportsController.prototype, "exportSmartReport", null);
 __decorate([
