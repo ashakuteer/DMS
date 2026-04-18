@@ -1,0 +1,74 @@
+Please make two important role/UX fixes for the meals mobile operational app.
+
+==================================================
+ISSUE 1: SHOW ACTUAL MENU / FOOD DETAILS ON MEAL CARDS
+==================================================
+Right now the meal cards mainly show Veg / Non-Veg, but that is not enough for home operations.
+
+Home staff need to clearly see what to prepare.
+
+On each meal card, please display meal details clearly, including:
+- Veg / Non-Veg
+- special/custom item
+- meal notes
+- menu details such as white rice, curry, papad, halwa, payasam, etc. wherever available in existing data
+
+Requirements:
+1. Inspect which existing fields already store food/menu details in meal sponsorship records
+2. Show them clearly on the Today / Tomorrow / Pending mobile cards
+3. Keep the UI readable on mobile
+4. Use labels like:
+   - Food Type
+   - Menu
+   - Special Item
+   - Notes
+5. Do not show blank sections if data is missing
+6. Do not change database schema unless absolutely necessary
+
+Goal:
+Home in-charge should immediately understand what food/menu is expected for each meal.
+
+==================================================
+ISSUE 2: REMOVE DASHBOARD / DONOR METRICS ACCESS FOR HOME_INCHARGE AND OFFICE_INCHARGE
+==================================================
+Requirement:
+HOME_INCHARGE and OFFICE_INCHARGE should NOT have access to the general admin dashboard and donor metrics areas.
+
+They should not see:
+- dashboard metrics
+- donor analytics
+- donor/admin summary views
+- unrelated admin modules
+
+They should only see the operational meal-related experience.
+
+Please implement safe role-based restriction so that:
+- HOME_INCHARGE lands only in the meals mobile operational flow
+- OFFICE_INCHARGE also does NOT access donor/admin dashboard metrics
+- both roles should see only the relevant meal/operations screens
+
+You may choose one of these safe approaches:
+A. redirect both roles away from /dashboard to the meals operational page
+B. restrict sidebar/menu items and block direct access to dashboard/admin pages
+Prefer backend-safe + frontend-safe behavior together.
+
+Please make sure:
+- FOUNDER / ADMIN / STAFF behavior is not broken
+- only HOME_INCHARGE and OFFICE_INCHARGE are restricted appropriately
+- existing meal booking and meal management flows still work
+
+==================================================
+OUTPUT REQUIRED
+==================================================
+After implementing, tell me clearly:
+1. Which meal fields are now shown on cards
+2. Exact files changed
+3. Which routes are now blocked/restricted for HOME_INCHARGE
+4. Which routes are now blocked/restricted for OFFICE_INCHARGE
+5. How redirect behavior now works after login
+6. What I should test on phone after deploy
+
+Important:
+- keep it practical for real daily home use
+- no unnecessary refactors
+- do not break existing meal workflow

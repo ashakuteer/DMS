@@ -102,7 +102,13 @@ export default function LoginPage() {
     try {
       const data = await verifyOtp(phone.trim(), code);
       toast({ title: "Welcome!", description: "Login successful." });
-      router.push(data.user.role === "HOME_INCHARGE" ? "/dashboard/meals/today-mobile" : "/dashboard");
+      router.push(
+        data.user.role === "HOME_INCHARGE"
+          ? "/dashboard/meals/today-mobile"
+          : data.user.role === "OFFICE_INCHARGE"
+          ? "/dashboard/meals"
+          : "/dashboard",
+      );
     } catch (err: any) {
       toast({ variant: "destructive", title: "Verification Failed", description: err.message });
       setOtp(["", "", "", "", "", ""]);
@@ -162,7 +168,13 @@ export default function LoginPage() {
     try {
       const data = await login(adminEmail, adminPassword);
       toast({ title: "Welcome!", description: "Login successful." });
-      router.push(data.user.role === "HOME_INCHARGE" ? "/dashboard/meals/today-mobile" : "/dashboard");
+      router.push(
+        data.user.role === "HOME_INCHARGE"
+          ? "/dashboard/meals/today-mobile"
+          : data.user.role === "OFFICE_INCHARGE"
+          ? "/dashboard/meals"
+          : "/dashboard",
+      );
     } catch (err: any) {
       toast({ variant: "destructive", title: "Login Failed", description: err.message });
     } finally {

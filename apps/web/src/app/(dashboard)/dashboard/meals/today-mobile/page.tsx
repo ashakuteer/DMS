@@ -510,18 +510,40 @@ function MealCard({
         )}
       </div>
 
-      {/* Special menu / notes */}
-      {(meal.specialMenuItem || meal.mealNotes) && (
-        <div className="text-sm bg-muted/40 rounded-md px-3 py-2 space-y-1">
+      {/* Food details: Menu / Special Item / Notes */}
+      {(meal.selectedMenuItems?.length || meal.specialMenuItem || meal.mealNotes) && (
+        <div className="text-sm bg-muted/40 rounded-md px-3 py-2 space-y-2">
+          {meal.selectedMenuItems && meal.selectedMenuItems.length > 0 && (
+            <div data-testid="text-menu-items">
+              <div className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground mb-1">
+                Menu
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {meal.selectedMenuItems.map((item, i) => (
+                  <span
+                    key={`${meal.id}-menu-${i}`}
+                    className="inline-block px-2 py-0.5 rounded-md bg-background border text-xs"
+                  >
+                    {item}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           {meal.specialMenuItem && (
             <div data-testid="text-special-item">
-              <span className="font-medium">Special: </span>
-              {meal.specialMenuItem}
+              <div className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground mb-0.5">
+                Special Item
+              </div>
+              <div>{meal.specialMenuItem}</div>
             </div>
           )}
           {meal.mealNotes && (
-            <div className="text-muted-foreground" data-testid="text-meal-notes">
-              {meal.mealNotes}
+            <div data-testid="text-meal-notes">
+              <div className="text-[11px] uppercase tracking-wide font-semibold text-muted-foreground mb-0.5">
+                Notes
+              </div>
+              <div className="text-muted-foreground">{meal.mealNotes}</div>
             </div>
           )}
         </div>

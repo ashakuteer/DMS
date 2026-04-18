@@ -47,10 +47,10 @@ export default function DashboardLayout({
       }
     }
 
-    // OFFICE_INCHARGE: only allow Dashboard and Meals — redirect everything else
+    // OFFICE_INCHARGE: meals-only — block dashboard metrics, donor analytics,
+    // and every other admin module. Allow only the meals area.
     if (
       user.role === 'OFFICE_INCHARGE' &&
-      pathname !== '/dashboard' &&
       !pathname.startsWith('/dashboard/meals')
     ) {
       router.replace('/dashboard/meals');
