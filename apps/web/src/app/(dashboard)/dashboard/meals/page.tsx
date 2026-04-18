@@ -803,9 +803,18 @@ export default function MealsPage() {
             )}
           </div>
           {canCreate && (
-            <Button data-testid="button-add-meal" onClick={() => { setOpen(true); setForm(defaultForm()); }}>
-              <Plus className="h-4 w-4 mr-2" /> Add Meal Sponsorship
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                data-testid="button-mobile-new-meal"
+                onClick={() => { window.location.href = "/dashboard/meals/mobile-new"; }}
+              >
+                Mobile View
+              </Button>
+              <Button data-testid="button-add-meal" onClick={() => { setOpen(true); setForm(defaultForm()); }}>
+                <Plus className="h-4 w-4 mr-2" /> Add Meal Sponsorship
+              </Button>
+            </div>
           )}
         </div>
       </div>

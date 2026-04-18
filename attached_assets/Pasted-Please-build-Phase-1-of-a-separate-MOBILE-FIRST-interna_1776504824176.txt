@@ -1,0 +1,201 @@
+Please build Phase 1 of a separate MOBILE-FIRST internal Meal Booking page inside the existing DMS, using the SAME backend/database/services as the current Meal Sponsorship module.
+
+IMPORTANT:
+- Do NOT build a separate software
+- Do NOT create separate meal tables
+- Do NOT duplicate business logic
+- Reuse the existing meal sponsorship backend create/update flow as much as possible
+- Keep production-safe and minimal
+- This is for home in-charges using mobile phones
+
+==================================================
+GOAL
+==================================================
+Create a mobile-friendly internal Quick Meal Booking flow inside the current DMS that is easy to use on phone, without zooming.
+
+This should connect to the same:
+- donor records
+- meal sponsorship records
+- linked donation logic
+- People & Occasions sync
+- WhatsApp send flow
+- reports/dashboard visibility
+
+==================================================
+PHASE 1 SCOPE
+==================================================
+Build ONLY these for now:
+
+1. Mobile-first "New Meal Booking" page
+2. Optional donor prefill support
+3. Reuse existing meal create backend
+4. Keep same People & Occasions + WhatsApp behavior through backend
+5. Make it easy for home in-charges on phone
+
+Do NOT build full admin analytics or all extra screens in this phase.
+
+==================================================
+ROUTE / PAGE
+==================================================
+Create a separate mobile-first page in frontend, something like one of these:
+- /dashboard/mobile-meals/new
+or
+- /dashboard/meals/mobile-new
+
+Choose the cleanest path that fits the existing routing structure.
+
+This page should:
+- be a full page, NOT a popup modal
+- be mobile-first
+- use one-column layout
+- have large touch-friendly fields/buttons
+- have sticky bottom action button for Save / Next
+- avoid horizontal scrolling completely
+
+==================================================
+USER EXPERIENCE
+==================================================
+This page is meant for mobile phones.
+
+Use a STEP-BY-STEP / WIZARD style UI with 4 simple sections:
+
+Step 1: Donor
+- donor search by name / phone / donor code
+- if donor is prefilled from another page, show it already selected
+
+Step 2: Meal Details
+- meal service date
+- meal slot(s)
+- sponsorship type
+- food type
+- home
+- homes per slot
+- optional menu/special item
+- meal notes
+
+Step 3: Payment Details
+- booking status
+- donor visit expected
+- donation received date
+- total amount
+- amount received
+- balance amount
+- payment mode
+- transaction reference / notes if already supported
+
+Step 4: Occasion
+- occasion type
+- person name
+- relationship
+- special occasion notes if already supported
+
+Final step:
+- review summary
+- save booking
+
+==================================================
+SMART DEFAULTS
+==================================================
+Please add mobile-friendly defaults:
+
+1. Default meal service date = today
+2. Default donation received date = today
+3. Default booking status = confirmed
+4. If logged-in user belongs to a specific home-in-charge role and home can be inferred, auto-select that home
+5. Auto-fill donor if prefillDonorId / prefillDonorName comes in query params
+6. Auto-fill entered-by / telecaller if current system already tracks from logged-in user
+
+==================================================
+ROLE / ACCESS
+==================================================
+This is still inside the same DMS auth system.
+
+For now:
+- reuse existing authenticated access
+- do NOT create a new auth system
+- keep existing permission checks if already present
+- if needed, make page visible only to appropriate logged-in users
+
+==================================================
+BACKEND RULE
+==================================================
+Do NOT create a new separate backend create flow if avoidable.
+
+Instead:
+- reuse the existing meal sponsorship create endpoint/service
+- ensure the mobile page submits data in the shape expected by the existing backend
+- preserve existing behavior:
+  - linked donation logic
+  - People & Occasions sync
+  - WhatsApp sending after save
+
+If a very small adapter/helper is needed on frontend, that is okay.
+If a tiny DTO adjustment is needed without breaking current desktop flow, that is okay.
+But avoid duplicating meal creation logic.
+
+==================================================
+UI REQUIREMENTS
+==================================================
+1. Mobile-first responsive design
+2. Large labels and large controls
+3. Single-column layout
+4. Full page, not modal
+5. Sticky bottom Next / Save button
+6. Clear step indicator at top
+7. Validation messages should be simple and visible
+8. Keep Telugu/English labels where already used, but maintain readability
+9. Make it still usable on desktop, but optimize for phone first
+
+==================================================
+DESKTOP / EXISTING FLOW SAFETY
+==================================================
+Do NOT break:
+- current desktop Meal Sponsorship page
+- current donor profile meal sponsorship flow
+- current Add Donation -> Meal Sponsorship redirect
+- current resend WhatsApp buttons
+- current People & Occasions sync
+- current reporting
+
+This mobile page should be an additional entry point only.
+
+==================================================
+PREFILL SUPPORT
+==================================================
+Support query params like:
+- prefillDonorId
+- prefillDonorName
+
+If present:
+- donor should already be selected on the mobile page
+- user should be able to continue without searching again
+
+This is important so later we can link into this page from donor profile too if needed.
+
+==================================================
+DELIVERABLES
+==================================================
+Please implement:
+1. New mobile-first meal booking page
+2. Step-based form UI
+3. Submission through existing backend meal create flow
+4. Donor prefill support
+5. Responsive styling for phone use
+
+==================================================
+OUTPUT REQUIRED
+==================================================
+After implementation, tell me clearly:
+1. Exact route/path created
+2. Files changed
+3. Whether any backend file changed
+4. Whether any API contract changed
+5. Whether any DB migration is needed
+6. Exactly which existing backend flow is reused
+7. What I should test on mobile after deploy
+8. Any limitations left for Phase 2
+
+Important:
+- First inspect current meals form + backend flow
+- Then build the smallest clean Phase 1 version
+- Keep it linked to the present DMS
