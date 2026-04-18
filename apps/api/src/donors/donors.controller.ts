@@ -52,7 +52,7 @@ export class DonorsController {
   }
 
   @Get()
-  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.OFFICE_INCHARGE, Role.HOME_INCHARGE)
   async findAll(
     @CurrentUser() user: UserContext,
     @Query("page") page?: string,

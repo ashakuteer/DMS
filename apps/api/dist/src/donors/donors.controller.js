@@ -189,7 +189,7 @@ let DonorsController = class DonorsController {
 exports.DonorsController = DonorsController;
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF, client_1.Role.OFFICE_INCHARGE, client_1.Role.HOME_INCHARGE),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
     __param(1, (0, common_1.Query)("page")),
     __param(2, (0, common_1.Query)("limit")),

@@ -615,7 +615,7 @@ function Step1Donor({
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {d.donorCode || ""}
-                      {d.phone ? ` • ${d.phone}` : ""}
+                      {(d as any).primaryPhone ? ` • ${(d as any).primaryPhone}` : ""}
                     </div>
                   </button>
                 ))}
