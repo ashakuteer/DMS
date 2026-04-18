@@ -432,12 +432,11 @@ export default function MobileNewMealBookingPage() {
       <div className="px-4 py-5 space-y-5 max-w-xl mx-auto">
         {isHomeInchargeBlocked && (
           <div
-            className="rounded-lg border border-amber-300 bg-amber-50 dark:bg-amber-950 dark:border-amber-700 p-3 text-sm text-amber-900 dark:text-amber-100"
-            data-testid="banner-home-incharge-readonly"
+            className="rounded-lg border border-blue-300 bg-blue-50 dark:bg-blue-950 dark:border-blue-700 p-3 text-sm text-blue-900 dark:text-blue-100"
+            data-testid="banner-home-incharge-locked"
           >
-            Your role (Home In-charge) cannot create meal sponsorships in this version. Please ask
-            an Office In-charge or Admin to confirm the booking, or use the Pending Actions tab to
-            update an existing meal.
+            You are signed in as Home In-charge. Bookings created here are locked to your assigned
+            home and cannot be changed.
           </div>
         )}
         {step === 1 && (
@@ -457,7 +456,12 @@ export default function MobileNewMealBookingPage() {
           />
         )}
         {step === 2 && (
-          <Step2Meal form={form} setField={setField} toggleSlotHome={toggleSlotHome} />
+          <Step2Meal
+            form={form}
+            setField={setField}
+            toggleSlotHome={toggleSlotHome}
+            lockedHome={isHomeInchargeBlocked ? (authStorage.getUser()?.assignedHome ?? null) : null}
+          />
         )}
         {step === 3 && (
           <Step3Payment
@@ -637,10 +641,12 @@ function Step2Meal({
   form,
   setField,
   toggleSlotHome,
+  lockedHome,
 }: {
   form: FormState;
   setField: <K extends keyof FormState>(k: K, v: FormState[K]) => void;
   toggleSlotHome: (slot: string, home: string) => void;
+  lockedHome: string | null;
 }) {
   return (
     <section className="space-y-5">
@@ -697,7 +703,18 @@ function Step2Meal({
                 />
                 <span className="text-base font-medium">{SLOT_LABELS[slot]}</span>
               </label>
-              {enabled && (
+              {enabled && lockedHome && (
+                <div
+                  className="mt-3 px-3 py-2 rounded border bg-muted/40 text-sm flex items-center justify-between"
+                  data-testid={`locked-home-${slot}`}
+                >
+                  <span>
+                    Home: <span className="font-medium">{HOME_LABELS[lockedHome] ?? lockedHome}</span>
+                  </span>
+                  <span className="text-xs text-muted-foreground">Locked</span>
+                </div>
+              )}
+              {enabled && !lockedHome && (
                 <div className="mt-3 grid grid-cols-1 gap-2">
                   {HOME_VALUES.map((h) => {
                     const checked = (form.slotHomes[slot] ?? []).includes(h);

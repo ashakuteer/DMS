@@ -38,7 +38,36 @@ export class MealsController {
   @Post()
   create(@Body() dto: CreateMealSponsorshipDto, @Request() req: any) {
     if (req.user.role === Role.HOME_INCHARGE) {
-      throw new ForbiddenException("Home Incharges cannot create meal sponsorships");
+      const assigned = req.user.assignedHome as string | null | undefined;
+      if (!assigned) {
+        throw new ForbiddenException("No assigned home configured for this account");
+      }
+      // Enforce: every slotHomes entry and the legacy `homes` array must
+      // contain ONLY the in-charge's assigned home. This is the backend
+      // guarantee — the mobile UI also locks the field.
+      const slotHomes = (dto as any).slotHomes as Record<string, string[]> | undefined | null;
+      if (slotHomes && typeof slotHomes === "object") {
+        for (const slot of Object.keys(slotHomes)) {
+          const homes = slotHomes[slot] ?? [];
+          for (const h of homes) {
+            if (h !== assigned) {
+              throw new ForbiddenException(
+                `Home In-charge can only create meals for ${assigned}`,
+              );
+            }
+          }
+        }
+      }
+      const legacyHomes = (dto as any).homes as string[] | undefined | null;
+      if (Array.isArray(legacyHomes)) {
+        for (const h of legacyHomes) {
+          if (h !== assigned) {
+            throw new ForbiddenException(
+              `Home In-charge can only create meals for ${assigned}`,
+            );
+          }
+        }
+      }
     }
     return this.mealsService.create(dto, req.user.id);
   }
