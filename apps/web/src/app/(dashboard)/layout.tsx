@@ -18,6 +18,7 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [isLoading, setIsLoading] = useState(true);
   const [collapsed, setCollapsed] = useState(false);
+  const [isHomeIncharge, setIsHomeIncharge] = useState(false);
 
   useEffect(() => {
     const user = authStorage.getUser();
@@ -28,10 +29,22 @@ export default function DashboardLayout({
       return;
     }
 
-    // HOME_INCHARGE: force-redirect to meals if they land anywhere else
-    if (user.role === 'HOME_INCHARGE' && !pathname.startsWith('/dashboard/meals')) {
-      router.replace('/dashboard/meals');
-      return;
+    // HOME_INCHARGE: their entire experience is the mobile operations shell.
+    // Redirect them to the mobile "Today's Meals" page if they land anywhere
+    // outside the mobile meals routes.
+    if (user.role === 'HOME_INCHARGE') {
+      setIsHomeIncharge(true);
+      const allowedPrefixes = [
+        '/dashboard/meals/today-mobile',
+        '/dashboard/meals/mobile-new',
+      ];
+      const isAllowed =
+        allowedPrefixes.some((p) => pathname.startsWith(p)) ||
+        /^\/dashboard\/meals\/[^/]+$/.test(pathname); // detail page
+      if (!isAllowed) {
+        router.replace('/dashboard/meals/today-mobile');
+        return;
+      }
     }
 
     // OFFICE_INCHARGE: only allow Dashboard and Meals — redirect everything else
@@ -55,6 +68,19 @@ export default function DashboardLayout({
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
       </div>
+    );
+  }
+
+  // ── HOME_INCHARGE: minimal mobile shell — no sidebar, no header chrome ────
+  if (isHomeIncharge) {
+    return (
+      <PermissionProvider>
+        <TooltipProvider>
+          <div className="min-h-screen bg-background">
+            <main className="min-h-screen">{children}</main>
+          </div>
+        </TooltipProvider>
+      </PermissionProvider>
     );
   }
 

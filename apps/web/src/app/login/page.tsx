@@ -100,9 +100,9 @@ export default function LoginPage() {
     }
     setIsLoading(true);
     try {
-      await verifyOtp(phone.trim(), code);
+      const data = await verifyOtp(phone.trim(), code);
       toast({ title: "Welcome!", description: "Login successful." });
-      router.push("/dashboard");
+      router.push(data.user.role === "HOME_INCHARGE" ? "/dashboard/meals/today-mobile" : "/dashboard");
     } catch (err: any) {
       toast({ variant: "destructive", title: "Verification Failed", description: err.message });
       setOtp(["", "", "", "", "", ""]);
@@ -160,9 +160,9 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await login(adminEmail, adminPassword);
+      const data = await login(adminEmail, adminPassword);
       toast({ title: "Welcome!", description: "Login successful." });
-      router.push("/dashboard");
+      router.push(data.user.role === "HOME_INCHARGE" ? "/dashboard/meals/today-mobile" : "/dashboard");
     } catch (err: any) {
       toast({ variant: "destructive", title: "Login Failed", description: err.message });
     } finally {

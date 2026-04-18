@@ -1,0 +1,242 @@
+Please redesign the HOME_INCHARGE mobile experience completely.
+
+This is NOT mainly a donor-entry app.
+Home in-charges rarely add donor details.
+Their daily need is to SEE today’s meals and prepare accordingly.
+
+So do NOT focus on donor creation or heavy booking forms.
+Instead build a simple mobile-first operational experience for HOME_INCHARGE inside the existing DMS.
+
+==================================================
+GOAL
+==================================================
+For HOME_INCHARGE users on phone, the app should feel like a simple daily meals operations app.
+
+They need to know:
+- What is today’s breakfast?
+- What is today’s lunch?
+- Veg or non-veg?
+- Any special menu item?
+- Any donor visit expected?
+- Which meals are sponsored?
+- Which are pending?
+- What needs post-meal update?
+
+This must be inside the same DMS and use the same data, but the UI/flow should be separate from the full desktop DMS.
+
+==================================================
+IMPORTANT PRODUCT CHANGE
+==================================================
+Do NOT make the main HOME_INCHARGE mobile landing page a dashboard or donor-entry wizard.
+
+Instead, for HOME_INCHARGE role:
+- default mobile experience should land on a clean "Today’s Meals" page
+- no clumsy desktop sidebar layout
+- no big admin dashboard
+- no donor analytics/reports/campaigns
+- show only the screens relevant to home daily meal operations
+
+==================================================
+PHASE 2 SCOPE
+==================================================
+Build a mobile-first HOME_INCHARGE operations flow with these screens:
+
+1. Today’s Meals (main default screen)
+2. Tomorrow / Upcoming Meals
+3. Pending Post-Meal Updates
+4. Optional small Add Booking entry point (secondary, not primary)
+
+Do NOT build a giant new system.
+Reuse the same backend data and existing meal sponsorship records.
+
+==================================================
+SCREEN 1: TODAY’S MEALS (MAIN SCREEN)
+==================================================
+Create a clean mobile page, something like:
+- /mobile/home
+or
+- /dashboard/mobile/home
+or
+- /dashboard/meals/today-mobile
+
+Choose the cleanest route, but it must be mobile-first.
+
+This should be the most important screen.
+
+Requirements:
+- group meals by slot:
+  - Breakfast
+  - Lunch
+  - Snacks
+  - Dinner
+- show only the logged-in HOME_INCHARGE user's assigned home by default
+- show today’s records automatically
+- use CARD layout, not tables
+
+Each meal card should show:
+- donor name
+- meal slot
+- meal date
+- food type (Veg / Non-Veg)
+- special/custom item if present
+- meal notes if present
+- donor visit expected (Yes/No)
+- occasion if present
+- payment / booking status if useful
+- current post-meal status if present
+
+Visual hints:
+- clear Veg / Non-Veg badge
+- donor visit badge
+- pending / completed badge
+- large readable typography
+- one-column layout
+- no horizontal scrolling
+
+Each card should have simple actions:
+- Mark Prepared
+- Mark Served
+- Mark Donor Visited
+- Upload / Add Photo (if already supported or can be linked later)
+- View Details
+
+If some actions already exist in backend, reuse them.
+If not, create only minimal safe support needed for status updates.
+
+==================================================
+SCREEN 2: TOMORROW / UPCOMING MEALS
+==================================================
+Create a simple upcoming screen for preparation planning.
+
+Requirements:
+- default to tomorrow
+- same card layout
+- grouped by slot
+- same home restriction
+- helps home in-charge prepare next day
+
+This can be:
+- a tab on the same page
+or
+- a second page
+Choose the cleaner mobile UX.
+
+==================================================
+SCREEN 3: PENDING POST-MEAL UPDATES
+==================================================
+Create a simple screen/list showing meals that still need updates, such as:
+- not marked served
+- donor visit not updated
+- photo not uploaded
+- post-meal update pending
+
+This is for operational follow-up.
+
+Again:
+- mobile card layout
+- assignedHome only
+- easy action buttons
+
+==================================================
+ROLE-BASED EXPERIENCE
+==================================================
+For HOME_INCHARGE:
+- mobile landing experience should prioritize these meal operations screens
+- hide or de-emphasize full desktop admin sections on phone
+- no large sidebar-driven desktop experience
+
+For ADMIN / FOUNDER / OFFICE_INCHARGE / STAFF:
+- do NOT break existing full DMS
+- their current desktop flows should remain unchanged
+
+If needed:
+- detect HOME_INCHARGE role and mobile viewport
+- redirect them after login to the new mobile operational page
+OR
+- provide a clear simplified HOME_INCHARGE mobile shell/layout
+
+Choose the safer implementation with minimal regression risk.
+
+==================================================
+DATA / BACKEND RULES
+==================================================
+Do NOT create separate meal tables.
+Do NOT duplicate backend business logic.
+
+Reuse existing:
+- meal sponsorship records
+- donor linkage
+- People & Occasions data
+- WhatsApp logic
+- post-meal update logic where already available
+
+Any new API should be minimal and only if necessary for:
+- today's meals by assigned home
+- tomorrow meals by assigned home
+- pending post-meal items by assigned home
+- simple status updates
+
+If existing APIs can already do this, reuse them.
+
+==================================================
+UI / UX RULES
+==================================================
+- mobile-first
+- no desktop sidebar clutter
+- no tiny text
+- no zoom required
+- no table-heavy UI
+- card-based layout
+- large touch targets
+- sticky bottom navigation if helpful
+- simple top tabs like:
+  - Today
+  - Tomorrow
+  - Pending
+- keep it fast and operational, not administrative
+
+==================================================
+SECONDARY ENTRY: ADD BOOKING
+==================================================
+Home in-charge rarely needs to add a booking.
+So do NOT make this primary.
+
+But you may include a smaller secondary entry:
+- "+ Add Booking"
+
+This can link to the mobile meal wizard already built:
+- /dashboard/meals/mobile-new
+
+Only keep it as a secondary action.
+
+==================================================
+ASSIGNED HOME RESTRICTION
+==================================================
+Very important:
+HOME_INCHARGE must only see their assignedHome meals.
+
+Enforce in backend, not only frontend.
+
+If there is already HOME_INCHARGE scoping in meals services, reuse it.
+If additional filtering endpoints are created, enforce assignedHome there too.
+
+==================================================
+OUTPUT REQUIRED
+==================================================
+After implementation, tell me clearly:
+1. Exact route(s) created
+2. Exact files changed
+3. Whether any backend files changed
+4. Whether any new API endpoints were added
+5. Whether any DB migration is needed
+6. How HOME_INCHARGE mobile landing now works
+7. How today/tomorrow/pending data is fetched
+8. How assignedHome restriction is enforced
+9. What actions are available on each meal card
+10. What I should test on phone after deploy
+
+Important:
+- First inspect the existing meals and post-meal flows
+- Then build the smallest clean operational mobile experience
+- Keep existing DMS safe
+- Optimize for real daily use by home in-charges

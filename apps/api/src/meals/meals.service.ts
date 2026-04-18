@@ -521,10 +521,13 @@ export class MealsService {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
 
-    const homeFilter: any =
-      user?.role === Role.HOME_INCHARGE && user.assignedHome
-        ? { homes: { has: user.assignedHome as unknown as DonationHomeType } }
-        : {};
+    let homeFilter: any = {};
+    if (user?.role === Role.HOME_INCHARGE) {
+      if (!user.assignedHome) {
+        throw new ForbiddenException("No assigned home configured for this account");
+      }
+      homeFilter = { homes: { has: user.assignedHome as unknown as DonationHomeType } };
+    }
 
     const meals = await this.prisma.mealSponsorship.findMany({
       where: {
@@ -545,7 +548,7 @@ export class MealsService {
     return { items: meals };
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, user?: MealUserContext) {
     const meal = await this.prisma.mealSponsorship.findUnique({
       where: { id },
       include: {
@@ -556,20 +559,22 @@ export class MealsService {
       },
     });
     if (!meal) throw new NotFoundException("Meal sponsorship not found");
+
+    // HOME_INCHARGE: prevent IDOR — they may only read meals for their assigned home.
+    if (user?.role === Role.HOME_INCHARGE) {
+      if (!user.assignedHome) {
+        throw new ForbiddenException("No assigned home configured for this account");
+      }
+      const mealHomes = (meal as any).homes as string[];
+      if (!mealHomes.includes(user.assignedHome)) {
+        throw new ForbiddenException("You can only view meals for your assigned home");
+      }
+    }
     return meal;
   }
 
   async updatePostMeal(id: string, dto: PostMealUpdateDto, updatedById: string, user?: MealUserContext) {
-    const meal = await this.findOne(id);
-
-    // HOME_INCHARGE: verify the meal belongs to their home
-    if (user?.role === Role.HOME_INCHARGE) {
-      if (!user.assignedHome) throw new ForbiddenException("No assigned home configured for this account");
-      const mealHomes = (meal as any).homes as string[];
-      if (!mealHomes.includes(user.assignedHome)) {
-        throw new ForbiddenException("You can only update post-meal details for your assigned home");
-      }
-    }
+    const meal = await this.findOne(id, user);
 
     // Validate effective received does not exceed totalAmount
     if (dto.postMealAmountReceived !== undefined && meal.totalAmount) {

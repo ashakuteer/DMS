@@ -92,8 +92,8 @@ export class MealsController {
   }
 
   @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.mealsService.findOne(id);
+  findOne(@Param("id") id: string, @Request() req: any) {
+    return this.mealsService.findOne(id, req.user);
   }
 
   @Patch(":id")
