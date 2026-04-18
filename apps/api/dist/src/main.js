@@ -38,48 +38,15 @@ BigInt.prototype.toJSON = function () {
 };
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
-    const allowedOrigins = [
-        'https://dms-sepia-gamma.vercel.app',
-        'http://localhost:3000',
-        'http://localhost:5000',
-    ];
-    if (process.env.FRONTEND_URL) {
-        const envUrls = process.env.FRONTEND_URL
-            .split(',')
-            .map(u => u.trim())
-            .filter(Boolean);
-        for (const url of envUrls) {
-            if (!allowedOrigins.includes(url)) {
-                allowedOrigins.push(url);
-            }
-        }
-    }
-    if (process.env.REPLIT_DEV_DOMAIN) {
-        allowedOrigins.push(`https://${process.env.REPLIT_DEV_DOMAIN}`);
-    }
-    if (process.env.REPL_SLUG && process.env.REPL_OWNER) {
-        allowedOrigins.push(`https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co`);
-    }
-    console.log('[CORS] Allowed origins:', allowedOrigins);
     app.enableCors({
-        origin: (origin, callback) => {
-            if (!origin)
-                return callback(null, true);
-            if (allowedOrigins.includes(origin) ||
-                /\.replit\.dev$/.test(origin) ||
-                /\.repl\.co$/.test(origin) ||
-                /\.replit\.app$/.test(origin) ||
-                /\.vercel\.app$/.test(origin)) {
-                return callback(null, true);
-            }
-            console.warn(`[CORS] Blocked origin: ${origin}`);
-            return callback(null, false);
-        },
+        origin: [
+            "https://dms-sepia-gamma.vercel.app",
+            "http://localhost:3000",
+            "http://localhost:5000",
+        ],
         credentials: true,
-        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
-        preflightContinue: false,
-        optionsSuccessStatus: 204,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
     });
     app.setGlobalPrefix("api");
     app.use("/uploads", express.static((0, path_1.join)(process.cwd(), "uploads")));
@@ -93,7 +60,6 @@ async function bootstrap() {
         3001;
     await app.listen(port, "0.0.0.0");
     console.log(`API server running on http://0.0.0.0:${port}`);
-    console.log(`[CORS] ${allowedOrigins.length} origins configured`);
 }
 process.on("uncaughtException", (err) => {
     console.error("[UNCAUGHT EXCEPTION]", err);
