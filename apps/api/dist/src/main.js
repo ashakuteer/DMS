@@ -73,7 +73,7 @@ async function bootstrap() {
                 return callback(null, true);
             }
             console.warn(`[CORS] Blocked origin: ${origin}`);
-            return callback(new Error(`CORS policy: origin ${origin} is not allowed`), false);
+            return callback(null, false);
         },
         credentials: true,
         methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],

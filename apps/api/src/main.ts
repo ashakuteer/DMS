@@ -62,8 +62,12 @@ async function bootstrap() {
       }
 
       console.warn(`[CORS] Blocked origin: ${origin}`);
-      // Pass an Error so Express sets a proper 403, not a silent drop
-      return callback(new Error(`CORS policy: origin ${origin} is not allowed`), false);
+      // Return false (not an Error) — throwing in the cors middleware causes
+      // a 500 with no CORS headers, which the browser then misreports as a
+      // generic CORS failure. Returning false sends a clean response without
+      // the Access-Control-Allow-Origin header, which the browser blocks
+      // correctly and the network tab shows clearly.
+      return callback(null, false);
     },
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],

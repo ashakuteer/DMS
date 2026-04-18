@@ -1,0 +1,197 @@
+Please inspect and fix these donor-profile production issues carefully. Do NOT make random refactors and do NOT change unrelated modules.
+
+Important:
+We already have separate prompts for:
+1. production enum mismatch for MEALS
+2. duplicate mobile validation
+
+Do NOT work on those here unless they directly block these issues.
+
+==================================================
+GOAL
+==================================================
+Make these four areas work together correctly and safely:
+- Donations
+- Meal Sponsorship
+- People & Occasions
+- WhatsApp send / resend
+Also fix the current frontend-backend CORS issue that is blocking API calls from Vercel to Railway.
+
+==================================================
+ISSUE 0: CORS IS BLOCKING FRONTEND CALLS
+==================================================
+Browser console shows CORS errors like:
+- blocked by CORS policy
+- No 'Access-Control-Allow-Origin' header is present
+- preflight request doesn't pass access control check
+
+Affected examples:
+- /api/role-permissions/my
+- /api/templates
+- /api/donors
+
+Frontend origin:
+https://dms-sepia-gamma.vercel.app
+
+Backend:
+Railway backend URL
+
+Please inspect:
+- apps/api/src/main.ts
+- app.enableCors / app.setGlobalPrefix
+- FRONTEND_URL env parsing
+- allowed origins array
+- whether multiple origins are supported
+- whether Vercel preview / current domain is allowed
+- whether OPTIONS preflight is handled correctly
+- whether credentials are configured correctly
+
+Fix requirement:
+- Railway backend must allow the current Vercel frontend origin
+- CORS must be production-safe
+- Do not open it too broadly unless necessary
+- Support current working frontend domain(s) correctly
+
+After fixing, clearly tell me:
+- exact backend CORS change
+- exact env vars needed on Railway
+- whether I need to redeploy backend only or frontend too
+
+==================================================
+ISSUE 1: ADD DONATION SHOULD SUPPORT MEAL SPONSORSHIP
+==================================================
+In donor profile, staff can click:
+- Add Donation
+- Add Meal Sponsorship
+
+Requirement:
+Inside Add Donation, add a meal-related option such as:
+- Meals Sponsorship
+or
+- Meals Donation
+
+When staff selects that meal-related option, it should NOT continue in the normal simple donation form.
+It should open / redirect into the FULL Meal Sponsorship form for the same donor.
+
+Normal donation types should continue using the existing donation form unchanged.
+
+Expected behavior:
+- Normal donation -> normal donation flow
+- Meal-related donation -> full Meal Sponsorship flow
+
+Please inspect:
+- donor profile donation action buttons
+- donation modal / form component
+- meal sponsorship modal / form component
+- routing / state handling / dialog open logic
+- how donor context is passed into both flows
+
+==================================================
+ISSUE 2: DONATION + MEAL SPONSORSHIP MUST CONNECT TO PEOPLE & OCCASIONS
+==================================================
+Current expected behavior already exists in Meal Sponsorship:
+If occasion, person, and relationship are entered there, it automatically reflects in People & Occasions.
+
+Keep that behavior.
+
+Now ensure the SAME final behavior also happens when staff starts from:
+Donor Profile -> Add Donation -> selects Meals Sponsorship / Meals Donation -> completes Meal Sponsorship form
+
+Meaning:
+No matter where staff starts from, if the final saved flow is meal sponsorship and includes:
+- occasion
+- person
+- relationship
+
+then it must correctly create/update the linked People & Occasions data.
+
+Please inspect:
+- meal sponsorship create/update flow
+- people & occasions sync logic
+- donor person / occasion creation helpers
+- whether this linkage is handled in backend service, frontend composition, or both
+
+==================================================
+ISSUE 3: WHATSAPP MUST SEND WHEN MEAL SPONSORSHIP IS SAVED
+==================================================
+When Meal Sponsorship details are added and saved, donor should receive the correct WhatsApp communication.
+
+Right now it is not sending.
+
+Please inspect:
+- meal sponsorship create service
+- any donation creation side-effects from meal sponsorship
+- communication service / Twilio WhatsApp service
+- job / queue / direct send logic
+- template selection
+- whether donor phone, message payload, or trigger condition is missing
+
+Expected result:
+Saving a Meal Sponsorship with the required payment/donation details should trigger the correct WhatsApp message to the donor.
+
+==================================================
+ISSUE 4: RESEND WHATSAPP BUTTON SHOULD WORK FROM BOTH PLACES
+==================================================
+Resend WhatsApp is not working properly.
+
+It should work from:
+- Donations section
+- Meal Sponsorship section
+
+Please inspect:
+- frontend click handlers for resend/send WhatsApp
+- API endpoints called from both sections
+- backend controller/service methods
+- whether one side is wired and the other side is broken
+- payload differences between donation and meal sponsorship communication
+- whether CORS failure is one of the reasons these buttons appear broken
+
+Expected result:
+From both Donations and Meal Sponsorship lists, clicking resend WhatsApp should successfully trigger the correct WhatsApp message for that record.
+
+==================================================
+IMPLEMENTATION RULES
+==================================================
+1. Meal Sponsorship should remain the source of truth for meal bookings.
+2. Do NOT create fake partial meal-donation records in normal donation flow.
+3. Reuse the existing full Meal Sponsorship form instead of duplicating logic.
+4. Keep donor context prefilled when opening Meal Sponsorship from Add Donation.
+5. Do NOT break existing normal donation flow.
+6. Do NOT break existing People & Occasions auto-link logic.
+7. Do NOT change unrelated modules.
+8. Keep changes production-safe and minimal.
+
+==================================================
+PLEASE CHECK THESE AREAS
+==================================================
+- apps/api/src/main.ts
+- backend CORS config and env parsing
+- donor profile page actions/buttons
+- donation modal/form component
+- meal sponsorship modal/form component
+- donation service/controller
+- meal sponsorship service/controller
+- people & occasions integration logic
+- WhatsApp communication service / Twilio integration
+- resend WhatsApp handlers in both lists
+- any shared communication helper used by donations and meal sponsorships
+
+==================================================
+OUTPUT REQUIRED
+==================================================
+After making the fix, tell me clearly:
+1. Root cause of each issue
+2. Files changed
+3. Whether any backend API contract changed
+4. Whether any frontend UI behavior changed
+5. Whether any database migration is needed
+6. Exact backend CORS fix
+7. Exact Railway env vars needed
+8. Exactly how Add Donation now behaves for normal donation vs meal sponsorship
+9. Exactly how People & Occasions sync now works
+10. Exactly how WhatsApp send/resend now works from both Donations and Meal Sponsorship
+
+Important:
+- First inspect and understand the current flow before changing code
+- Then implement the minimum clean fix
+- Keep all existing production behavior safe
