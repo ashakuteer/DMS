@@ -92,6 +92,9 @@ let DonationsController = class DonationsController {
     async resendReceipt(user, id, body) {
         return this.donationsService.resendReceipt(user, id, body?.emailType);
     }
+    async resendWhatsApp(user, id) {
+        return this.donationsService.resendWhatsApp(user, id);
+    }
 };
 exports.DonationsController = DonationsController;
 __decorate([
@@ -216,6 +219,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, Object]),
     __metadata("design:returntype", Promise)
 ], DonationsController.prototype, "resendReceipt", null);
+__decorate([
+    (0, common_1.Post)(":id/resend-whatsapp"),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    __param(0, (0, current_user_decorator_1.CurrentUser)()),
+    __param(1, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], DonationsController.prototype, "resendWhatsApp", null);
 exports.DonationsController = DonationsController = __decorate([
     (0, common_1.Controller)("donations"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

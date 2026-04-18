@@ -476,6 +476,42 @@ let DonationsService = DonationsService_1 = class DonationsService {
             recipientEmail: donorEmail,
         };
     }
+    async resendWhatsApp(user, id) {
+        const donation = await this.prisma.donation.findFirst({
+            where: { id, isDeleted: false },
+            include: {
+                donor: {
+                    select: { id: true, primaryPhone: true, whatsappPhone: true },
+                },
+            },
+        });
+        if (!donation)
+            throw new common_1.NotFoundException("Donation not found");
+        if (!donation.donor.whatsappPhone && !donation.donor.primaryPhone) {
+            throw new common_1.BadRequestException("Donor does not have a phone number on file");
+        }
+        const result = await this.notificationService.sendDonationWhatsApp({
+            donationId: donation.id,
+            donorId: donation.donorId,
+            receiptNumber: donation.receiptNumber || "N/A",
+            donationAmount: Number(donation.donationAmount),
+            currency: donation.currency,
+            donationType: donation.donationType || "General",
+            donationMode: donation.donationMode || undefined,
+            donationDate: donation.donationDate,
+            userId: user.id,
+        }, { force: true });
+        const success = result.status !== "failed" && result.status !== "not_configured";
+        this.logger.log(`WhatsApp resend for donation ${donation.id} by user ${user.id}: status=${result.status}`);
+        return {
+            success,
+            message: success
+                ? `WhatsApp message has been sent for receipt ${donation.receiptNumber || donation.id}`
+                : `Failed to send WhatsApp: ${result.status}`,
+            status: result.status,
+            messageId: result.messageId,
+        };
+    }
     async getStatsByHome(user) {
         const accessFilter = this.getDonorAccessFilter(user);
         const donations = await this.prisma.donation.findMany({

@@ -199,4 +199,13 @@ export class DonationsController {
   ) {
     return this.donationsService.resendReceipt(user, id, body?.emailType);
   }
+
+  @Post(":id/resend-whatsapp")
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  async resendWhatsApp(
+    @CurrentUser() user: UserContext,
+    @Param("id") id: string,
+  ) {
+    return this.donationsService.resendWhatsApp(user, id);
+  }
 }

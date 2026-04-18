@@ -144,11 +144,13 @@ let NotificationService = NotificationService_1 = class NotificationService {
             return { status: 'failed' };
         }
     }
-    async sendDonationWhatsApp(params) {
-        const already = await this.hasDonationNotificationBeenSent(params.donationId, 'WHATSAPP');
-        if (already) {
-            this.logger.log(`Donation WhatsApp already sent for donationId=${params.donationId}, skipping`);
-            return { status: 'already_sent', skipped: true };
+    async sendDonationWhatsApp(params, options) {
+        if (!options?.force) {
+            const already = await this.hasDonationNotificationBeenSent(params.donationId, 'WHATSAPP');
+            if (already) {
+                this.logger.log(`Donation WhatsApp already sent for donationId=${params.donationId}, skipping`);
+                return { status: 'already_sent', skipped: true };
+            }
         }
         const donor = await this.prisma.donor.findUnique({
             where: { id: params.donorId },

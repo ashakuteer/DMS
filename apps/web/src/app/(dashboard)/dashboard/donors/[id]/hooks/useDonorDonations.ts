@@ -1,9 +1,11 @@
 import { useState, useCallback, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { authStorage } from "@/lib/auth";
 import { apiClient } from "@/lib/api-client";
 import { hasPermission } from "@/lib/permissions";
 import { useToast } from "@/hooks/use-toast";
 import type { Donation, Donor, DonationFormData } from "../types";
+import { MEAL_SPONSORSHIP_SENTINEL } from "../dialogs/DonationDialog";
 
 const EMPTY_DONATION_FORM: DonationFormData = {
   donationAmount: "",
@@ -19,9 +21,11 @@ const IN_KIND_TYPES = new Set(["GROCERY", "MEDICINES", "PREPARED_FOOD", "USED_IT
 
 export function useDonorDonations(donorId: string, donor?: Donor | null) {
   const { toast } = useToast();
+  const router = useRouter();
   const [donations, setDonations] = useState<Donation[]>([]);
   const [donationsLoading, setDonationsLoading] = useState(false);
   const [resendingReceiptId, setResendingReceiptId] = useState<string | null>(null);
+  const [sendingWhatsAppId, setSendingWhatsAppId] = useState<string | null>(null);
   const [deletingDonationId, setDeletingDonationId] = useState<string | null>(null);
 
   const [showDonationDialog, setShowDonationDialog] = useState(false);
@@ -130,8 +134,22 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     }
   }, [toast]);
 
+  const onOpenMealSponsorship = useCallback(() => {
+    setShowDonationDialog(false);
+    const params = new URLSearchParams({
+      prefillDonorId: donorId,
+      prefillDonorName: donorName,
+    });
+    router.push(`/dashboard/meals?${params.toString()}`);
+  }, [donorId, donorName, router]);
+
   const handleDonationSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    // Safety guard — meal sponsorship choice should never reach the normal donation create endpoint.
+    if (donationForm.donationType === MEAL_SPONSORSHIP_SENTINEL) {
+      onOpenMealSponsorship();
+      return;
+    }
     setSubmittingDonation(true);
     try {
       const isKind = IN_KIND_TYPES.has(donationForm.donationType);
@@ -178,7 +196,31 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     }
   }, [donorId, donationForm, editingDonationId, fetchDonations, toast]);
 
-  const onSendWhatsApp = useCallback((_donation: Donation) => {}, []);
+  const onSendWhatsApp = useCallback(async (donation: Donation) => {
+    if (sendingWhatsAppId) return;
+    setSendingWhatsAppId(donation.id);
+    try {
+      const result = await apiClient<{ success: boolean; message?: string; status?: string }>(
+        `/api/donations/${donation.id}/resend-whatsapp`,
+        { method: "POST" },
+      );
+      toast({
+        title: result?.success ? "WhatsApp Sent" : "WhatsApp Send Failed",
+        description: result?.message || (result?.success ? "Message has been sent." : "Could not send WhatsApp."),
+        variant: result?.success ? "default" : "destructive",
+      });
+    } catch (err: any) {
+      console.error("Failed to send donation WhatsApp:", err?.message);
+      toast({
+        title: "Failed to Send WhatsApp",
+        description: err?.message || "An error occurred while sending the WhatsApp message.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingWhatsAppId(null);
+    }
+  }, [sendingWhatsAppId, toast]);
+
   const onSendEmail = useCallback((_donation: Donation) => {}, []);
 
   return {
@@ -192,6 +234,7 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     hasEmail,
     donorName,
     resendingReceiptId,
+    sendingWhatsAppId,
     deletingDonationId,
     fetchDonations,
     onAddDonation,
@@ -200,6 +243,7 @@ export function useDonorDonations(donorId: string, donor?: Donor | null) {
     onSendWhatsApp,
     onSendEmail,
     onResendReceipt,
+    onOpenMealSponsorship,
     showDonationDialog,
     setShowDonationDialog,
     editingDonation,

@@ -313,6 +313,12 @@ export declare class DonationsService {
         receiptNumber: string;
         recipientEmail: string;
     }>;
+    resendWhatsApp(user: UserContext, id: string): Promise<{
+        success: boolean;
+        message: string;
+        status: string;
+        messageId: string;
+    }>;
     getStatsByHome(user: UserContext): Promise<{
         byHome: {
             cashTotal: number;

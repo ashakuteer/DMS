@@ -30,7 +30,9 @@ export declare class NotificationService {
         status: string;
         skipped?: boolean;
     }>;
-    sendDonationWhatsApp(params: DonationNotificationParams): Promise<{
+    sendDonationWhatsApp(params: DonationNotificationParams, options?: {
+        force?: boolean;
+    }): Promise<{
         status: string;
         messageId?: string;
         skipped?: boolean;

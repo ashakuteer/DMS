@@ -4,11 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { fetchWithAuth } from "@/lib/auth";
+import { apiClient } from "@/lib/api-client";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Utensils, Plus, Calendar, Home, CheckCircle, Clock } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Utensils, Plus, Calendar, Home, CheckCircle, Clock, Loader2 } from "lucide-react";
+import { SiWhatsapp } from "react-icons/si";
 import { format } from "date-fns";
 
 interface MealEntry {
@@ -55,7 +59,33 @@ const HOME_DISPLAY: Record<string, string> = {
 
 export default function DonorMealSponsorshipsTab({ donorId, donorName }: Props) {
   const router = useRouter();
+  const { toast } = useToast();
   const [page, setPage] = useState(1);
+  const [sendingId, setSendingId] = useState<string | null>(null);
+
+  const handleResendWhatsApp = async (mealId: string) => {
+    if (sendingId) return;
+    setSendingId(mealId);
+    try {
+      const result = await apiClient<{ success: boolean; message?: string; status?: string }>(
+        `/api/meals/${mealId}/resend-whatsapp`,
+        { method: "POST" },
+      );
+      toast({
+        title: result?.success ? "WhatsApp Sent" : "WhatsApp Send Failed",
+        description: result?.message || (result?.success ? "Message has been sent." : "Could not send WhatsApp."),
+        variant: result?.success ? "default" : "destructive",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Failed to Send WhatsApp",
+        description: err?.message || "An error occurred while sending the WhatsApp message.",
+        variant: "destructive",
+      });
+    } finally {
+      setSendingId(null);
+    }
+  };
 
   const { data, isLoading } = useQuery<{ items: MealEntry[]; total: number; totalPages: number }>({
     queryKey: ["/api/meals", { donorId, page }],
@@ -161,13 +191,36 @@ export default function DonorMealSponsorshipsTab({ donorId, donorName }: Props) 
                     )}
                   </div>
 
-                  <div className="text-right shrink-0 ml-4">
-                    <p className="text-sm font-semibold">
-                      ₹{Number(meal.totalAmount ?? meal.amount).toLocaleString("en-IN")}
-                    </p>
-                    {meal.paymentStatus && (
-                      <p className="text-xs text-muted-foreground mt-0.5">{meal.paymentStatus}</p>
-                    )}
+                  <div className="flex items-start gap-2 shrink-0 ml-4">
+                    <div className="text-right">
+                      <p className="text-sm font-semibold">
+                        ₹{Number(meal.totalAmount ?? meal.amount).toLocaleString("en-IN")}
+                      </p>
+                      {meal.paymentStatus && (
+                        <p className="text-xs text-muted-foreground mt-0.5">{meal.paymentStatus}</p>
+                      )}
+                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950"
+                            onClick={() => handleResendWhatsApp(meal.id)}
+                            disabled={sendingId === meal.id}
+                            data-testid={`button-whatsapp-meal-${meal.id}`}
+                          >
+                            {sendingId === meal.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <SiWhatsapp className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>Send / resend WhatsApp for this meal sponsorship</TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               ))}

@@ -20,7 +20,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Utensils } from "lucide-react";
 import type { DonationFormData, DonationEmailType } from "../types";
+
+export const MEAL_SPONSORSHIP_SENTINEL = "__MEAL_SPONSORSHIP__";
 
 interface DonationDialogProps {
   open: boolean;
@@ -31,6 +34,7 @@ interface DonationDialogProps {
   setDonationForm: (form: DonationFormData) => void;
   submittingDonation: boolean;
   onSubmit: (e: React.FormEvent) => void;
+  onOpenMealSponsorship?: () => void;
 }
 
 const IN_KIND_TYPES = new Set(["GROCERY", "MEDICINES", "PREPARED_FOOD", "USED_ITEMS", "KIND"]);
@@ -48,9 +52,11 @@ export default function DonationDialog({
   setDonationForm,
   submittingDonation,
   onSubmit,
+  onOpenMealSponsorship,
 }: DonationDialogProps) {
   const { t } = useTranslation();
   const kindDonation = isInKind(donationForm.donationType);
+  const isMealSponsorshipChoice = donationForm.donationType === MEAL_SPONSORSHIP_SENTINEL;
 
   const CATEGORY_OPTIONS = [
     {
@@ -67,6 +73,14 @@ export default function DonationDialog({
         { value: "KIND", label: t("donor_profile.in_kind_other") },
       ],
     },
+    ...(onOpenMealSponsorship && !editingDonation
+      ? [
+          {
+            group: "Meals",
+            items: [{ value: MEAL_SPONSORSHIP_SENTINEL, label: "Meals Sponsorship" }],
+          },
+        ]
+      : []),
   ];
 
   const RECEIPT_TYPE_OPTIONS: { value: DonationEmailType; label: string; description: string }[] = [
@@ -130,7 +144,7 @@ export default function DonationDialog({
                 </SelectContent>
               </Select>
 
-              {donationForm.donationType && (
+              {donationForm.donationType && !isMealSponsorshipChoice && (
                 <div
                   className={[
                     "inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium",
@@ -152,6 +166,31 @@ export default function DonationDialog({
               )}
             </div>
 
+            {isMealSponsorshipChoice ? (
+              <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-700 p-4 space-y-3">
+                <div className="flex items-start gap-2 text-amber-900 dark:text-amber-200">
+                  <Utensils className="h-5 w-5 mt-0.5 shrink-0" />
+                  <div className="text-sm">
+                    <p className="font-semibold mb-1">Meals Sponsorship uses a dedicated form</p>
+                    <p className="opacity-90">
+                      To book meals you'll pick the meal date, slots (breakfast/lunch/snacks/dinner),
+                      home(s), payment status, and (optionally) an occasion that links to People &amp;
+                      Occasions automatically.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  className="w-full"
+                  onClick={() => onOpenMealSponsorship?.()}
+                  data-testid="button-open-meal-sponsorship"
+                >
+                  <Utensils className="h-4 w-4 mr-2" />
+                  Open Meal Sponsorship Form
+                </Button>
+              </div>
+            ) : (
+            <>
             <div className="space-y-2">
               <Label htmlFor="designatedHome">{t("donor_profile.designated_home")}</Label>
               <Select
@@ -306,6 +345,8 @@ export default function DonationDialog({
                 {t("donor_profile.in_kind_auto_ack")}
               </div>
             )}
+            </>
+            )}
           </div>
 
           <DialogFooter>
@@ -317,17 +358,19 @@ export default function DonationDialog({
             >
               {t("common.cancel")}
             </Button>
-            <Button
-              type="submit"
-              disabled={submittingDonation}
-              data-testid="button-submit-donation"
-            >
-              {submittingDonation
-                ? t("common.saving")
-                : editingDonation
-                  ? t("donor_profile.update_donation")
-                  : t("donor_profile.save_donation")}
-            </Button>
+            {!isMealSponsorshipChoice && (
+              <Button
+                type="submit"
+                disabled={submittingDonation}
+                data-testid="button-submit-donation"
+              >
+                {submittingDonation
+                  ? t("common.saving")
+                  : editingDonation
+                    ? t("donor_profile.update_donation")
+                    : t("donor_profile.save_donation")}
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

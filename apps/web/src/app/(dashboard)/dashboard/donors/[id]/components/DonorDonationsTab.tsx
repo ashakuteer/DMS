@@ -26,6 +26,7 @@ interface DonorDonationsTabProps {
   templates?: Template[];
   donorName: string;
   resendingReceiptId: string | null;
+  sendingWhatsAppId?: string | null;
   deletingDonationId: string | null;
   onAddDonation: () => void;
   onEditDonation: (donation: Donation) => void;
@@ -33,6 +34,7 @@ interface DonorDonationsTabProps {
   onSendWhatsApp: (donation: Donation) => void;
   onSendEmail: (donation: Donation) => void;
   onResendReceipt: (donationId: string) => void;
+  onOpenMealSponsorship?: () => void;
   showDonationDialog: boolean;
   setShowDonationDialog: (open: boolean) => void;
   editingDonation: boolean;
@@ -53,6 +55,7 @@ export default function DonorDonationsTab({
   templates = [],
   donorName,
   resendingReceiptId,
+  sendingWhatsAppId = null,
   deletingDonationId,
   onAddDonation,
   onEditDonation,
@@ -60,6 +63,7 @@ export default function DonorDonationsTab({
   onSendWhatsApp,
   onSendEmail,
   onResendReceipt,
+  onOpenMealSponsorship,
   showDonationDialog,
   setShowDonationDialog,
   editingDonation,
@@ -157,10 +161,14 @@ export default function DonorDonationsTab({
                                 size="icon"
                                 className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950"
                                 onClick={() => onSendWhatsApp(donation)}
-                                disabled={!hasWhatsAppNumber}
+                                disabled={!hasWhatsAppNumber || sendingWhatsAppId === donation.id}
                                 data-testid={`button-whatsapp-donation-${donation.id}`}
                               >
-                                <SiWhatsapp className="h-4 w-4" />
+                                {sendingWhatsAppId === donation.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <SiWhatsapp className="h-4 w-4" />
+                                )}
                               </Button>
                             </span>
                           </TooltipTrigger>
@@ -282,6 +290,7 @@ export default function DonorDonationsTab({
         setDonationForm={setDonationForm}
         submittingDonation={submittingDonation}
         onSubmit={handleDonationSubmit}
+        onOpenMealSponsorship={onOpenMealSponsorship}
       />
     </>
   );

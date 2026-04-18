@@ -7,6 +7,7 @@ import {
   MealSponsorshipQueryDto,
   PostMealUpdateDto,
 } from "./meals.dto";
+import { NotificationService } from "../notifications/notification.service";
 
 interface MealUserContext {
   id: string;
@@ -18,7 +19,10 @@ interface MealUserContext {
 export class MealsService {
   private readonly logger = new Logger(MealsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService,
+  ) {}
 
   private buildMealSlotDescription(
     breakfast: boolean,
@@ -294,7 +298,76 @@ export class MealsService {
       });
     }
 
+    // Non-blocking WhatsApp send (uses linked donation row created above).
+    // Failures must NOT break meal save — log and continue.
+    if (result.donation?.id) {
+      this.notificationService
+        .sendDonationWhatsApp({
+          donationId: result.donation.id,
+          donorId: result.donorId,
+          receiptNumber: (result as any).donation?.receiptNumber || "",
+          donationAmount: Number(result.donation.donationAmount ?? totalAmount),
+          currency: "INR",
+          donationType: "Meal Sponsorship",
+          donationDate: donationReceivedDate,
+          userId: createdById,
+        })
+        .then((r) => {
+          this.logger.log(
+            `Meal sponsorship WhatsApp for meal=${result.id} donation=${result.donation?.id}: status=${r.status}`,
+          );
+        })
+        .catch((err) => {
+          this.logger.warn(
+            `Meal sponsorship WhatsApp send failed (non-blocking) for meal=${result.id}: ${err?.message ?? err}`,
+          );
+        });
+    }
+
     return result;
+  }
+
+  async resendWhatsApp(id: string, userId: string) {
+    const meal = await this.prisma.mealSponsorship.findUnique({
+      where: { id },
+      include: {
+        donation: { select: { id: true, donationAmount: true, receiptNumber: true, donationDate: true, currency: true } },
+        donor: { select: { id: true, primaryPhone: true, whatsappPhone: true } },
+      },
+    });
+    if (!meal) throw new NotFoundException("Meal sponsorship not found");
+    if (!meal.donation) {
+      throw new BadRequestException("This meal sponsorship has no linked donation; cannot send WhatsApp.");
+    }
+    if (!meal.donor.whatsappPhone && !meal.donor.primaryPhone) {
+      throw new BadRequestException("Donor does not have a phone number on file");
+    }
+
+    const result = await this.notificationService.sendDonationWhatsApp(
+      {
+        donationId: meal.donation.id,
+        donorId: meal.donorId,
+        receiptNumber: meal.donation.receiptNumber || "N/A",
+        donationAmount: Number(meal.donation.donationAmount ?? meal.totalAmount ?? meal.amount),
+        currency: meal.donation.currency || "INR",
+        donationType: "Meal Sponsorship",
+        donationDate: meal.donation.donationDate,
+        userId,
+      },
+      { force: true },
+    );
+
+    const success = result.status !== "failed" && result.status !== "not_configured";
+    this.logger.log(`WhatsApp resend for meal ${meal.id} by user ${userId}: status=${result.status}`);
+
+    return {
+      success,
+      message: success
+        ? `WhatsApp message has been sent for meal sponsorship`
+        : `Failed to send WhatsApp: ${result.status}`,
+      status: result.status,
+      messageId: result.messageId,
+    };
   }
 
   // ─── Occasion sync helpers ────────────────────────────────────────────────

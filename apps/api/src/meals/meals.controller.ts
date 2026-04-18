@@ -88,6 +88,12 @@ export class MealsController {
     return this.mealsService.updatePostMeal(id, dto, req.user.id, req.user);
   }
 
+  @Post(":id/resend-whatsapp")
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF, Role.OFFICE_INCHARGE)
+  resendWhatsApp(@Param("id") id: string, @Request() req: any) {
+    return this.mealsService.resendWhatsApp(id, req.user.id);
+  }
+
   @Delete(":id")
   @Roles(Role.FOUNDER, Role.ADMIN)
   remove(@Param("id") id: string) {

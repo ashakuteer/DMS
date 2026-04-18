@@ -350,4 +350,10 @@ export declare class DonationsController {
         receiptNumber: string;
         recipientEmail: string;
     }>;
+    resendWhatsApp(user: UserContext, id: string): Promise<{
+        success: boolean;
+        message: string;
+        status: string;
+        messageId: string;
+    }>;
 }
