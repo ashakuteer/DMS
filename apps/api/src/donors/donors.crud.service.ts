@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ForbiddenException,
   InternalServerErrorException,
+  BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@prisma/client";
 import { UserContext, DonorQueryOptions } from "./donors.types";
 import { maskDonorData } from "../common/utils/masking.util";
+import { normalizePhone } from "../common/utils/phone.util";
 import { DonorsEngagementService } from "./donors.engagement.service";
 
 @Injectable()
@@ -434,6 +436,36 @@ if (assignedToUserId) {
     donorData.donationFrequency = individualProfile.donationFrequency;
   }
 
+  // Normalize and enforce uniqueness on the primary mobile number
+  const normalizedPrimary = normalizePhone(donorData.primaryPhone);
+  if (donorData.primaryPhone) {
+    if (!normalizedPrimary) {
+      throw new BadRequestException(
+        "Primary phone must be a valid 10-digit mobile number",
+      );
+    }
+    const existing = await this.prisma.donor.findFirst({
+      where: { isDeleted: false, primaryPhone: normalizedPrimary },
+      select: { id: true, donorCode: true, firstName: true, lastName: true },
+    });
+    if (existing) {
+      throw new BadRequestException(
+        `A donor with this mobile number already exists (${existing.donorCode})`,
+      );
+    }
+    donorData.primaryPhone = normalizedPrimary;
+  }
+
+  // Normalize WhatsApp / alternate phones too (no uniqueness, just consistency)
+  const normalizedWhatsapp = normalizePhone(donorData.whatsappPhone);
+  if (donorData.whatsappPhone && normalizedWhatsapp) {
+    donorData.whatsappPhone = normalizedWhatsapp;
+  }
+  const normalizedAlternate = normalizePhone(donorData.alternatePhone);
+  if (donorData.alternatePhone && normalizedAlternate) {
+    donorData.alternatePhone = normalizedAlternate;
+  }
+
   try {
     const donor = await this.prisma.donor.create({
       data: {
@@ -515,6 +547,41 @@ async update(
   // Always sync donationFrequency from individualProfile to donor-level field
   if (individualProfile?.donationFrequency) {
     donorData.donationFrequency = individualProfile.donationFrequency;
+  }
+
+  // Normalize and enforce uniqueness on the primary mobile number (excluding self)
+  if (Object.prototype.hasOwnProperty.call(donorData, "primaryPhone")) {
+    if (donorData.primaryPhone) {
+      const normalizedPrimary = normalizePhone(donorData.primaryPhone);
+      if (!normalizedPrimary) {
+        throw new BadRequestException(
+          "Primary phone must be a valid 10-digit mobile number",
+        );
+      }
+      const existing = await this.prisma.donor.findFirst({
+        where: {
+          isDeleted: false,
+          primaryPhone: normalizedPrimary,
+          NOT: { id },
+        },
+        select: { id: true, donorCode: true },
+      });
+      if (existing) {
+        throw new BadRequestException(
+          `A donor with this mobile number already exists (${existing.donorCode})`,
+        );
+      }
+      donorData.primaryPhone = normalizedPrimary;
+    }
+  }
+
+  if (donorData.whatsappPhone) {
+    const n = normalizePhone(donorData.whatsappPhone);
+    if (n) donorData.whatsappPhone = n;
+  }
+  if (donorData.alternatePhone) {
+    const n = normalizePhone(donorData.alternatePhone);
+    if (n) donorData.alternatePhone = n;
   }
 
   const donor = await this.prisma.donor.update({

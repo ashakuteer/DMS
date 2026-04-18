@@ -15,6 +15,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const masking_util_1 = require("../common/utils/masking.util");
+const phone_util_1 = require("../common/utils/phone.util");
 const donors_engagement_service_1 = require("./donors.engagement.service");
 let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
     constructor(prisma, engagementService) {
@@ -362,6 +363,28 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         if (individualProfile?.donationFrequency) {
             donorData.donationFrequency = individualProfile.donationFrequency;
         }
+        const normalizedPrimary = (0, phone_util_1.normalizePhone)(donorData.primaryPhone);
+        if (donorData.primaryPhone) {
+            if (!normalizedPrimary) {
+                throw new common_1.BadRequestException("Primary phone must be a valid 10-digit mobile number");
+            }
+            const existing = await this.prisma.donor.findFirst({
+                where: { isDeleted: false, primaryPhone: normalizedPrimary },
+                select: { id: true, donorCode: true, firstName: true, lastName: true },
+            });
+            if (existing) {
+                throw new common_1.BadRequestException(`A donor with this mobile number already exists (${existing.donorCode})`);
+            }
+            donorData.primaryPhone = normalizedPrimary;
+        }
+        const normalizedWhatsapp = (0, phone_util_1.normalizePhone)(donorData.whatsappPhone);
+        if (donorData.whatsappPhone && normalizedWhatsapp) {
+            donorData.whatsappPhone = normalizedWhatsapp;
+        }
+        const normalizedAlternate = (0, phone_util_1.normalizePhone)(donorData.alternatePhone);
+        if (donorData.alternatePhone && normalizedAlternate) {
+            donorData.alternatePhone = normalizedAlternate;
+        }
         try {
             const donor = await this.prisma.donor.create({
                 data: {
@@ -417,6 +440,36 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         };
         if (individualProfile?.donationFrequency) {
             donorData.donationFrequency = individualProfile.donationFrequency;
+        }
+        if (Object.prototype.hasOwnProperty.call(donorData, "primaryPhone")) {
+            if (donorData.primaryPhone) {
+                const normalizedPrimary = (0, phone_util_1.normalizePhone)(donorData.primaryPhone);
+                if (!normalizedPrimary) {
+                    throw new common_1.BadRequestException("Primary phone must be a valid 10-digit mobile number");
+                }
+                const existing = await this.prisma.donor.findFirst({
+                    where: {
+                        isDeleted: false,
+                        primaryPhone: normalizedPrimary,
+                        NOT: { id },
+                    },
+                    select: { id: true, donorCode: true },
+                });
+                if (existing) {
+                    throw new common_1.BadRequestException(`A donor with this mobile number already exists (${existing.donorCode})`);
+                }
+                donorData.primaryPhone = normalizedPrimary;
+            }
+        }
+        if (donorData.whatsappPhone) {
+            const n = (0, phone_util_1.normalizePhone)(donorData.whatsappPhone);
+            if (n)
+                donorData.whatsappPhone = n;
+        }
+        if (donorData.alternatePhone) {
+            const n = (0, phone_util_1.normalizePhone)(donorData.alternatePhone);
+            if (n)
+                donorData.alternatePhone = n;
         }
         const donor = await this.prisma.donor.update({
             where: { id },
