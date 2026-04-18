@@ -3,12 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  // directUrl bypasses pgBouncer for migrations (advisory locks need a direct session).
-  // Set DIRECT_URL in Railway to your Supabase direct connection (port 5432).
-  // When DIRECT_URL is set, `prisma migrate deploy` will work correctly.
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {

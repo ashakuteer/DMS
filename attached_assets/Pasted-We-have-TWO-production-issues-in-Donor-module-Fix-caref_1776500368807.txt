@@ -1,0 +1,94 @@
+We have TWO production issues in Donor module. Fix carefully without breaking anything.
+
+-----------------------------------
+ISSUE 1: Donor Creation Fails
+-----------------------------------
+Error:
+invalid input value for enum "SupportPreference": "MEALS"
+
+Meaning:
+Application sends "MEALS" but production DB enum does not include it.
+
+Steps:
+1. Check prisma/schema.prisma for enum SupportPreference
+2. Confirm MEALS exists in schema
+3. If yes → production DB is outdated
+
+Fix:
+- Generate proper Prisma migration OR
+- Provide SQL:
+
+ALTER TYPE "SupportPreference" ADD VALUE IF NOT EXISTS 'MEALS';
+
+Do NOT use destructive db push.
+
+-----------------------------------
+ISSUE 2: Duplicate Mobile Numbers Allowed
+-----------------------------------
+Currently same mobile number can be added multiple times.
+
+We need STRICT duplicate prevention.
+
+Steps:
+
+1. Identify where mobile is stored:
+   - donors table OR individualDonorProfile OR both
+
+2. Normalize mobile before saving:
+   - remove spaces
+   - remove +91 or leading 0
+   - keep only 10 digit number
+
+Example:
++91 6300852812 → 6300852812
+06300852812 → 6300852812
+
+3. In donors.crud.service.ts (create method):
+   BEFORE creating donor:
+   - check if mobile already exists
+   - search using normalized value
+
+Example:
+existing = await prisma.donor.findFirst({
+  where: { mobile: normalizedMobile }
+})
+
+if exists:
+  throw new BadRequestException("Donor with this mobile already exists")
+
+4. Add SAME check for:
+   - update donor also
+
+5. Add DATABASE LEVEL protection:
+   - Add UNIQUE constraint on normalized mobile column
+
+If mobile is in donors table:
+CREATE UNIQUE INDEX IF NOT EXISTS donors_mobile_unique ON donors(mobile);
+
+If mobile is in profile table:
+CREATE UNIQUE INDEX IF NOT EXISTS individual_mobile_unique ON individual_donor_profile(mobile);
+
+6. If duplicates already exist:
+   - DO NOT fail migration
+   - Instead:
+     - log duplicates
+     - skip constraint OR clean duplicates safely
+
+7. Ensure frontend shows proper error message instead of silent failure
+
+-----------------------------------
+OUTPUT REQUIRED
+-----------------------------------
+After fixing, tell:
+1. Root cause for enum issue
+2. Root cause for duplicate issue
+3. Files changed
+4. Whether I need to run SQL manually
+5. Whether existing duplicate data needs cleanup
+6. What to deploy
+
+IMPORTANT:
+- Do not break existing donor creation
+- Do not remove any fields
+- Do not use destructive operations
+- Keep production safe

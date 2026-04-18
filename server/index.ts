@@ -1,9 +1,15 @@
 import { spawn, ChildProcess, execSync } from "child_process";
 import path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.join(__dirname, "..");
+
+if (!process.env.HOME || !fs.existsSync(process.env.HOME)) {
+  process.env.HOME = "/tmp";
+  fs.mkdirSync("/tmp/.config", { recursive: true });
+}
 
 console.log("Starting NGO Donor Management System...");
 console.log("API will run on port 3001");
@@ -33,7 +39,17 @@ killByName("nest start");
 killPort(3001);
 killPort(5000);
 
-const pnpmBin = execSync("which pnpm", { encoding: "utf8" }).trim();
+let pnpmBin: string;
+try {
+  pnpmBin = execSync("which pnpm", { encoding: "utf8", env: process.env }).trim();
+} catch {
+  pnpmBin = "/nix/store/61lr9izijvg30pcribjdxgjxvh3bysp4-pnpm-10.26.1/bin/pnpm";
+}
+
+const sharedEnv = {
+  ...process.env,
+  HOME: process.env.HOME || "/tmp",
+};
 
 function startWeb() {
   console.log("Starting Next.js frontend on port 5000...");
@@ -41,7 +57,7 @@ function startWeb() {
     cwd: rootDir,
     stdio: "inherit",
     env: {
-      ...process.env,
+      ...sharedEnv,
       PORT: "5000",
       NEXT_TELEMETRY_DISABLED: "1",
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
@@ -58,7 +74,7 @@ function startAPI() {
     cwd: rootDir,
     stdio: "inherit",
     env: {
-      ...process.env,
+      ...sharedEnv,
       PORT: "3001",
       API_PORT: "3001",
       DATABASE_URL: process.env.DATABASE_URL || "",
