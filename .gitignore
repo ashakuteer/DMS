@@ -81,3 +81,13 @@ memory/test_credentials.md
 # Mobile development
 android-sdk/dms_repo/apps/web/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
 dms_repo/apps/web/node_modules/@next/swc-linux-arm64-gnu/next-swc.linux-arm64-gnu.node
+-e 
+# Environment and credential files
+.env
+.env.*
+*.env
+credentials.json
+*.pem
+*.key
+.credentials
+dms_repo/apps/web/node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
