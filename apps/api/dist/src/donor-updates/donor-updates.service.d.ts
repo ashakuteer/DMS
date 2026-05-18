@@ -102,9 +102,9 @@ export declare class DonorUpdatesService {
             error: string | null;
             id: string;
             createdAt: Date;
-            donorId: string;
             channel: import(".prisma/client").$Enums.SponsorDispatchChannel;
             status: import(".prisma/client").$Enums.SponsorDispatchStatus;
+            donorId: string;
             sentAt: Date | null;
             updateId: string;
         })[];
@@ -142,9 +142,9 @@ export declare class DonorUpdatesService {
                 error: string | null;
                 id: string;
                 createdAt: Date;
-                donorId: string;
                 channel: import(".prisma/client").$Enums.SponsorDispatchChannel;
                 status: import(".prisma/client").$Enums.SponsorDispatchStatus;
+                donorId: string;
                 sentAt: Date | null;
                 updateId: string;
             })[];

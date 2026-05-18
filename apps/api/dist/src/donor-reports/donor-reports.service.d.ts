@@ -47,10 +47,10 @@ export declare class DonorReportsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        donorId: string | null;
-        templateId: string | null;
         type: import(".prisma/client").$Enums.DonorReportType;
         status: import(".prisma/client").$Enums.DonorReportStatus;
+        donorId: string | null;
+        templateId: string | null;
         campaignId: string | null;
         title: string;
         periodStart: Date;
@@ -85,10 +85,10 @@ export declare class DonorReportsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            donorId: string | null;
-            templateId: string | null;
             type: import(".prisma/client").$Enums.DonorReportType;
             status: import(".prisma/client").$Enums.DonorReportStatus;
+            donorId: string | null;
+            templateId: string | null;
             campaignId: string | null;
             title: string;
             periodStart: Date;
@@ -127,10 +127,10 @@ export declare class DonorReportsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        donorId: string | null;
-        templateId: string | null;
         type: import(".prisma/client").$Enums.DonorReportType;
         status: import(".prisma/client").$Enums.DonorReportStatus;
+        donorId: string | null;
+        templateId: string | null;
         campaignId: string | null;
         title: string;
         periodStart: Date;

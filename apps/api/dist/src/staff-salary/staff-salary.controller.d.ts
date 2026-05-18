@@ -18,10 +18,10 @@ export declare class StaffSalaryController {
         lastPayment: {
             id: string;
             createdAt: Date;
-            year: number;
             notes: string | null;
             month: number;
             paymentMode: string;
+            year: number;
             staffId: string;
             baseSalary: import("@prisma/client/runtime/library").Decimal;
             allowances: import("@prisma/client/runtime/library").Decimal;
@@ -63,10 +63,10 @@ export declare class StaffSalaryController {
     getPayments(staffId: string, year?: string): Promise<{
         id: string;
         createdAt: Date;
-        year: number;
         notes: string | null;
         month: number;
         paymentMode: string;
+        year: number;
         staffId: string;
         baseSalary: import("@prisma/client/runtime/library").Decimal;
         allowances: import("@prisma/client/runtime/library").Decimal;
@@ -88,10 +88,10 @@ export declare class StaffSalaryController {
     }): Promise<{
         id: string;
         createdAt: Date;
-        year: number;
         notes: string | null;
         month: number;
         paymentMode: string;
+        year: number;
         staffId: string;
         baseSalary: import("@prisma/client/runtime/library").Decimal;
         allowances: import("@prisma/client/runtime/library").Decimal;
@@ -103,10 +103,10 @@ export declare class StaffSalaryController {
     deletePayment(paymentId: string): Promise<{
         id: string;
         createdAt: Date;
-        year: number;
         notes: string | null;
         month: number;
         paymentMode: string;
+        year: number;
         staffId: string;
         baseSalary: import("@prisma/client/runtime/library").Decimal;
         allowances: import("@prisma/client/runtime/library").Decimal;

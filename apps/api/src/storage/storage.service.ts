@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import ws from 'ws';
 
 @Injectable()
 export class StorageService {
@@ -16,10 +17,13 @@ export class StorageService {
       process.env.SUPABASE_ANON_KEY;
     if (supabaseUrl && supabaseKey) {
       this.supabase = createClient(supabaseUrl, supabaseKey, {
-        realtime: { params: { eventsPerSecond: 0 } } as any,
+        realtime: {
+          transport: ws,
+        } as any,
         auth: {
           persistSession: false,
           autoRefreshToken: false,
+          detectSessionInUrl: false,
         },
       });
       console.log('[StorageService] Initialized with', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'service role key' : 'anon key');

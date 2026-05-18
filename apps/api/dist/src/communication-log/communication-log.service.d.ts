@@ -23,10 +23,6 @@ export declare class CommunicationLogService {
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         createdAt: Date;
         subject: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
@@ -35,6 +31,10 @@ export declare class CommunicationLogService {
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
         sentById: string | null;
     }>;
     findByDonorId(donorId: string): Promise<({
@@ -58,10 +58,6 @@ export declare class CommunicationLogService {
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         createdAt: Date;
         subject: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
@@ -70,6 +66,10 @@ export declare class CommunicationLogService {
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
         sentById: string | null;
     })[]>;
     findByDonationId(donationId: string): Promise<({
@@ -88,10 +88,6 @@ export declare class CommunicationLogService {
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         createdAt: Date;
         subject: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
@@ -100,6 +96,10 @@ export declare class CommunicationLogService {
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
         sentById: string | null;
     })[]>;
     delete(id: string): Promise<{
@@ -107,10 +107,6 @@ export declare class CommunicationLogService {
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         createdAt: Date;
         subject: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
@@ -119,6 +115,10 @@ export declare class CommunicationLogService {
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
         sentById: string | null;
     }>;
     logEmail(params: {
@@ -137,10 +137,6 @@ export declare class CommunicationLogService {
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         createdAt: Date;
         subject: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
@@ -149,6 +145,10 @@ export declare class CommunicationLogService {
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
         sentById: string | null;
     }>;
     logWhatsApp(params: {
@@ -164,10 +164,6 @@ export declare class CommunicationLogService {
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         createdAt: Date;
         subject: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
@@ -176,6 +172,10 @@ export declare class CommunicationLogService {
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
         sentById: string | null;
     }>;
     logPostDonationAction(params: {
@@ -189,10 +189,6 @@ export declare class CommunicationLogService {
         metadata: import("@prisma/client/runtime/library").JsonValue | null;
         createdAt: Date;
         subject: string | null;
-        donorId: string;
-        donationId: string | null;
-        templateId: string | null;
-        taskId: string | null;
         channel: import(".prisma/client").$Enums.CommunicationChannel;
         type: import(".prisma/client").$Enums.CommunicationType;
         status: import(".prisma/client").$Enums.CommunicationStatus;
@@ -201,6 +197,10 @@ export declare class CommunicationLogService {
         recipient: string | null;
         messagePreview: string | null;
         errorMessage: string | null;
+        donorId: string;
+        donationId: string | null;
+        templateId: string | null;
+        taskId: string | null;
         sentById: string | null;
     }>;
     private inferEmailType;
