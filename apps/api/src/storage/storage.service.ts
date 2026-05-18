@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import ws from 'ws';
 
 @Injectable()
 export class StorageService {
@@ -18,8 +17,10 @@ export class StorageService {
     if (supabaseUrl && supabaseKey) {
       this.supabase = createClient(supabaseUrl, supabaseKey, {
         realtime: {
-          transport: ws,
-        } as any,
+          params: {
+            eventsPerSecond: 0,
+          },
+        },
         auth: {
           persistSession: false,
           autoRefreshToken: false,
