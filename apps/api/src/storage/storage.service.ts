@@ -15,7 +15,13 @@ export class StorageService {
       process.env.SUPABASE_KEY ||
       process.env.SUPABASE_ANON_KEY;
     if (supabaseUrl && supabaseKey) {
-      this.supabase = createClient(supabaseUrl, supabaseKey);
+      this.supabase = createClient(supabaseUrl, supabaseKey, {
+        realtime: { params: { eventsPerSecond: 0 } } as any,
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      });
       console.log('[StorageService] Initialized with', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'service role key' : 'anon key');
     } else {
       console.warn('[StorageService] Supabase not configured — file uploads will be unavailable.');
