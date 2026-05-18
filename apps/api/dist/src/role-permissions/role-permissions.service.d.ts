@@ -31,7 +31,7 @@ export declare class RolePermissionsService implements OnModuleInit {
     getMyPermissions(role: Role): Promise<Record<string, string[]>>;
     private getMyPermissionsFromCache;
     updateRolePermission(role: Role, module: string, action: string, allowed: boolean, updatedByUserId: string, ipAddress?: string, userAgent?: string): Promise<{
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
         action: string;
         createdAt: Date;
@@ -48,7 +48,7 @@ export declare class RolePermissionsService implements OnModuleInit {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        roles: import("@prisma/client").$Enums.Role[];
+        roles: import(".prisma/client").$Enums.Role[];
         module: string;
         fieldName: string;
     }[]>;
@@ -57,7 +57,7 @@ export declare class RolePermissionsService implements OnModuleInit {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        roles: import("@prisma/client").$Enums.Role[];
+        roles: import(".prisma/client").$Enums.Role[];
         module: string;
         fieldName: string;
     }>;

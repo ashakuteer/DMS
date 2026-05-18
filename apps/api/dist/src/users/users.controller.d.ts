@@ -13,14 +13,14 @@ export declare class UsersController {
     listStaff(): Promise<{
         email: string;
         name: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
     }[]>;
     listAllStaff(): Promise<{
         email: string;
         name: string;
         phone: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
         createdAt: Date;
         isActive: boolean;
@@ -29,10 +29,10 @@ export declare class UsersController {
         email: string;
         name: string;
         phone: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
         createdAt: Date;
-        assignedHome: import("@prisma/client").$Enums.HomeAssignment;
+        assignedHome: import(".prisma/client").$Enums.HomeAssignment;
         isActive: boolean;
     }>;
     findAll(page?: string, limit?: string): Promise<{
@@ -40,10 +40,10 @@ export declare class UsersController {
             email: string;
             name: string;
             phone: string;
-            role: import("@prisma/client").$Enums.Role;
+            role: import(".prisma/client").$Enums.Role;
             id: string;
             createdAt: Date;
-            assignedHome: import("@prisma/client").$Enums.HomeAssignment;
+            assignedHome: import(".prisma/client").$Enums.HomeAssignment;
             isActive: boolean;
             updatedAt: Date;
         }[];
@@ -56,7 +56,7 @@ export declare class UsersController {
         email: string;
         name: string;
         phone: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
         createdAt: Date;
         isActive: boolean;
@@ -66,7 +66,7 @@ export declare class UsersController {
         email: string;
         name: string;
         phone: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
         isActive: boolean;
     }>;
@@ -78,9 +78,9 @@ export declare class UsersController {
         email: string;
         name: string;
         phone: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
-        assignedHome: import("@prisma/client").$Enums.HomeAssignment;
+        assignedHome: import(".prisma/client").$Enums.HomeAssignment;
         isActive: boolean;
         updatedAt: Date;
     }>;
@@ -88,7 +88,7 @@ export declare class UsersController {
         email: string;
         name: string;
         phone: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
         isActive: boolean;
     }>;
@@ -102,7 +102,7 @@ export declare class UsersController {
     deleteUser(id: string): Promise<{
         email: string;
         name: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
         isActive: boolean;
     }>;

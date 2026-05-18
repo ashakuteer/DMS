@@ -35,7 +35,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "mkdir -p /home/runner/.config && HOME=/home/runner npm run dev"
+args = "NODE_ENV=development npx tsx server/index.ts"
 waitForPort = 5000
 
 [userenv]
@@ -54,6 +54,7 @@ APP_URL = "https://51898bee-34e7-4f08-9d00-f107417de13e-00-3xs729fukxh3.spock.re
 
 [agent]
 expertMode = true
+stack = "FULLSTACK_JS"
 
 [[ports]]
 localPort = 3001

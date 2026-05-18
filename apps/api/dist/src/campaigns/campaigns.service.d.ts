@@ -34,8 +34,8 @@ export declare class CampaignsService {
         endDate: Date;
         goalAmount: number;
         currency: string;
-        status: import("@prisma/client").$Enums.CampaignStatus;
-        homeTypes: import("@prisma/client").$Enums.HomeType[];
+        status: import(".prisma/client").$Enums.CampaignStatus;
+        homeTypes: import(".prisma/client").$Enums.HomeType[];
         createdBy: {
             name: string;
             id: string;
@@ -59,9 +59,9 @@ export declare class CampaignsService {
             beneficiary: {
                 code: string;
                 id: string;
-                status: import("@prisma/client").$Enums.BeneficiaryStatus;
+                status: import(".prisma/client").$Enums.BeneficiaryStatus;
                 fullName: string;
-                homeType: import("@prisma/client").$Enums.HomeType;
+                homeType: import(".prisma/client").$Enums.HomeType;
                 protectPrivacy: boolean;
                 photoUrl: string;
             };
@@ -87,12 +87,12 @@ export declare class CampaignsService {
             donationAmount: import("@prisma/client/runtime/library").Decimal;
             currency: string;
             donationDate: Date;
-            donationMode: import("@prisma/client").$Enums.DonationMode | null;
-            donationType: import("@prisma/client").$Enums.DonationType;
+            donationMode: import(".prisma/client").$Enums.DonationMode | null;
+            donationType: import(".prisma/client").$Enums.DonationType;
             kindDescription: string | null;
             donorId: string;
             createdById: string;
-            donationPurpose: import("@prisma/client").$Enums.DonationPurpose | null;
+            donationPurpose: import(".prisma/client").$Enums.DonationPurpose | null;
             donationCategory: string | null;
             donationOccasion: string | null;
             scheduleType: string | null;
@@ -101,8 +101,8 @@ export declare class CampaignsService {
             quantity: import("@prisma/client/runtime/library").Decimal | null;
             unit: string | null;
             itemDescription: string | null;
-            kindCategory: import("@prisma/client").$Enums.KindCategory | null;
-            donationHomeType: import("@prisma/client").$Enums.DonationHomeType | null;
+            kindCategory: import(".prisma/client").$Enums.KindCategory | null;
+            donationHomeType: import(".prisma/client").$Enums.DonationHomeType | null;
             homeId: string | null;
             visitedHome: boolean;
             servedFood: boolean;
@@ -141,12 +141,12 @@ export declare class CampaignsService {
         currency: string;
         startDate: Date | null;
         endDate: Date | null;
-        status: import("@prisma/client").$Enums.CampaignStatus;
+        status: import(".prisma/client").$Enums.CampaignStatus;
         description: string | null;
         createdById: string;
         isDeleted: boolean;
         deletedAt: Date | null;
-        homeTypes: import("@prisma/client").$Enums.HomeType[];
+        homeTypes: import(".prisma/client").$Enums.HomeType[];
     }>;
     create(dto: CreateCampaignDto, user: UserContext): Promise<{
         createdBy: {
@@ -161,13 +161,13 @@ export declare class CampaignsService {
         currency: string;
         startDate: Date | null;
         endDate: Date | null;
-        status: import("@prisma/client").$Enums.CampaignStatus;
+        status: import(".prisma/client").$Enums.CampaignStatus;
         description: string | null;
         createdById: string;
         isDeleted: boolean;
         deletedAt: Date | null;
         goalAmount: import("@prisma/client/runtime/library").Decimal | null;
-        homeTypes: import("@prisma/client").$Enums.HomeType[];
+        homeTypes: import(".prisma/client").$Enums.HomeType[];
     }>;
     update(id: string, dto: UpdateCampaignDto): Promise<{
         createdBy: {
@@ -182,13 +182,13 @@ export declare class CampaignsService {
         currency: string;
         startDate: Date | null;
         endDate: Date | null;
-        status: import("@prisma/client").$Enums.CampaignStatus;
+        status: import(".prisma/client").$Enums.CampaignStatus;
         description: string | null;
         createdById: string;
         isDeleted: boolean;
         deletedAt: Date | null;
         goalAmount: import("@prisma/client/runtime/library").Decimal | null;
-        homeTypes: import("@prisma/client").$Enums.HomeType[];
+        homeTypes: import(".prisma/client").$Enums.HomeType[];
     }>;
     remove(id: string): Promise<{
         name: string;
@@ -198,13 +198,13 @@ export declare class CampaignsService {
         currency: string;
         startDate: Date | null;
         endDate: Date | null;
-        status: import("@prisma/client").$Enums.CampaignStatus;
+        status: import(".prisma/client").$Enums.CampaignStatus;
         description: string | null;
         createdById: string;
         isDeleted: boolean;
         deletedAt: Date | null;
         goalAmount: import("@prisma/client/runtime/library").Decimal | null;
-        homeTypes: import("@prisma/client").$Enums.HomeType[];
+        homeTypes: import(".prisma/client").$Enums.HomeType[];
     }>;
     addBeneficiaries(campaignId: string, beneficiaryIds: string[], notes?: string): Promise<any[]>;
     removeBeneficiary(campaignId: string, beneficiaryId: string): Promise<{
@@ -218,9 +218,9 @@ export declare class CampaignsService {
         beneficiary: {
             code: string;
             id: string;
-            status: import("@prisma/client").$Enums.BeneficiaryStatus;
+            status: import(".prisma/client").$Enums.BeneficiaryStatus;
             fullName: string;
-            homeType: import("@prisma/client").$Enums.HomeType;
+            homeType: import(".prisma/client").$Enums.HomeType;
             protectPrivacy: boolean;
             photoUrl: string;
         };
@@ -349,8 +349,8 @@ export declare class CampaignsService {
         id: string;
         createdAt: Date;
         donorId: string;
-        channel: import("@prisma/client").$Enums.SponsorDispatchChannel;
-        status: import("@prisma/client").$Enums.SponsorDispatchStatus;
+        channel: import(".prisma/client").$Enums.SponsorDispatchChannel;
+        status: import(".prisma/client").$Enums.SponsorDispatchStatus;
         sentAt: Date | null;
         campaignUpdateId: string;
     })[]>;

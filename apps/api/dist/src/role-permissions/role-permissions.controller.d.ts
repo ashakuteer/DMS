@@ -12,7 +12,7 @@ export declare class RolePermissionsController {
     private getClientInfo;
     getMyPermissions(user: UserContext): Promise<Record<string, string[]>>;
     getPermissionMatrix(): Promise<import("./role-permissions.service").PermissionMatrix>;
-    getAllRoles(): Promise<import("@prisma/client").$Enums.Role[]>;
+    getAllRoles(): Promise<import(".prisma/client").$Enums.Role[]>;
     getAllModules(): Promise<{
         name: string;
         actions: string[];
@@ -31,7 +31,7 @@ export declare class RolePermissionsController {
         action: string;
         allowed: boolean;
     }, user: UserContext, req: Request): Promise<{
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
         action: string;
         createdAt: Date;
@@ -43,7 +43,7 @@ export declare class RolePermissionsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        roles: import("@prisma/client").$Enums.Role[];
+        roles: import(".prisma/client").$Enums.Role[];
         module: string;
         fieldName: string;
     }[]>;
@@ -55,7 +55,7 @@ export declare class RolePermissionsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        roles: import("@prisma/client").$Enums.Role[];
+        roles: import(".prisma/client").$Enums.Role[];
         module: string;
         fieldName: string;
     }>;

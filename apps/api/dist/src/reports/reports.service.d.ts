@@ -29,8 +29,8 @@ export declare class ReportsService {
             donationDate: Date;
             donorName: string;
             donorCode: string;
-            donationType: import("@prisma/client").$Enums.DonationType;
-            donationMode: import("@prisma/client").$Enums.DonationMode;
+            donationType: import(".prisma/client").$Enums.DonationType;
+            donationMode: import(".prisma/client").$Enums.DonationMode;
             amount: import("@prisma/client/runtime/library").Decimal;
             receiptNumber: string;
             remarks: string;
@@ -51,7 +51,7 @@ export declare class ReportsService {
             id: string;
             donorName: string;
             donorCode: string;
-            category: import("@prisma/client").$Enums.DonorCategory;
+            category: import(".prisma/client").$Enums.DonorCategory;
             fyTotal: number;
             fyCount: number;
             lifetimeTotal: number;
@@ -95,9 +95,9 @@ export declare class ReportsService {
             donorName: string;
             donorCode: string;
             amount: import("@prisma/client/runtime/library").Decimal;
-            paymentMode: import("@prisma/client").$Enums.DonationMode;
+            paymentMode: import(".prisma/client").$Enums.DonationMode;
             financialYear: string;
-            donationCategory: import("@prisma/client").$Enums.DonationType;
+            donationCategory: import(".prisma/client").$Enums.DonationType;
             generatedBy: string;
         }[];
         pagination: {
@@ -121,8 +121,8 @@ export declare class ReportsService {
             donorName: string;
             donorCode: string;
             amount: import("@prisma/client/runtime/library").Decimal;
-            donationMode: import("@prisma/client").$Enums.DonationMode;
-            donationType: import("@prisma/client").$Enums.DonationType;
+            donationMode: import(".prisma/client").$Enums.DonationMode;
+            donationType: import(".prisma/client").$Enums.DonationType;
         }[];
         pagination: {
             page: number;

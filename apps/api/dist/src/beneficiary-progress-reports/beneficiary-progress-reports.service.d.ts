@@ -35,7 +35,7 @@ export declare class BeneficiaryProgressReportsService {
             beneficiary: {
                 code: string;
                 fullName: string;
-                homeType: import("@prisma/client").$Enums.HomeType;
+                homeType: import(".prisma/client").$Enums.HomeType;
             };
             generatedBy: {
                 name: string;
@@ -44,7 +44,7 @@ export declare class BeneficiaryProgressReportsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: import("@prisma/client").$Enums.ProgressReportStatus;
+            status: import(".prisma/client").$Enums.ProgressReportStatus;
             title: string;
             beneficiaryId: string;
             periodStart: Date;
@@ -66,7 +66,7 @@ export declare class BeneficiaryProgressReportsService {
         beneficiary: {
             code: string;
             fullName: string;
-            homeType: import("@prisma/client").$Enums.HomeType;
+            homeType: import(".prisma/client").$Enums.HomeType;
             photoUrl: string;
         };
         generatedBy: {
@@ -76,7 +76,7 @@ export declare class BeneficiaryProgressReportsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.ProgressReportStatus;
+        status: import(".prisma/client").$Enums.ProgressReportStatus;
         title: string;
         beneficiaryId: string;
         periodStart: Date;
@@ -109,7 +109,7 @@ export declare class BeneficiaryProgressReportsService {
         code: string;
         id: string;
         fullName: string;
-        homeType: import("@prisma/client").$Enums.HomeType;
+        homeType: import(".prisma/client").$Enums.HomeType;
     }[]>;
     private buildShareEmail;
     private formatDateRange;

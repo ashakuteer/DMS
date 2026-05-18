@@ -13,7 +13,7 @@ export declare class DonorRelationsController {
         updatedAt: Date;
         donorId: string;
         notes: string | null;
-        relationType: import("@prisma/client").$Enums.FamilyRelationType;
+        relationType: import(".prisma/client").$Enums.FamilyRelationType;
         birthMonth: number | null;
         birthDay: number | null;
     }[]>;
@@ -26,7 +26,7 @@ export declare class DonorRelationsController {
         updatedAt: Date;
         donorId: string;
         notes: string | null;
-        relationType: import("@prisma/client").$Enums.FamilyRelationType;
+        relationType: import(".prisma/client").$Enums.FamilyRelationType;
         birthMonth: number | null;
         birthDay: number | null;
     }>;
@@ -39,7 +39,7 @@ export declare class DonorRelationsController {
         updatedAt: Date;
         donorId: string;
         notes: string | null;
-        relationType: import("@prisma/client").$Enums.FamilyRelationType;
+        relationType: import(".prisma/client").$Enums.FamilyRelationType;
         birthMonth: number | null;
         birthDay: number | null;
     }>;
@@ -50,12 +50,12 @@ export declare class DonorRelationsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        day: number;
         donorId: string;
-        type: import("@prisma/client").$Enums.OccasionType;
+        type: import(".prisma/client").$Enums.OccasionType;
         notes: string | null;
         relatedPersonName: string | null;
         month: number;
-        day: number;
     }[]>;
     getUpcomingSpecialOccasions(user: UserContext, donorId: string, days?: string): Promise<{
         nextOccurrence: string;
@@ -63,34 +63,34 @@ export declare class DonorRelationsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        day: number;
         donorId: string;
-        type: import("@prisma/client").$Enums.OccasionType;
+        type: import(".prisma/client").$Enums.OccasionType;
         notes: string | null;
         relatedPersonName: string | null;
         month: number;
-        day: number;
     }[]>;
     createSpecialOccasion(user: UserContext, donorId: string, data: any, req: Request): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        day: number;
         donorId: string;
-        type: import("@prisma/client").$Enums.OccasionType;
+        type: import(".prisma/client").$Enums.OccasionType;
         notes: string | null;
         relatedPersonName: string | null;
         month: number;
-        day: number;
     }>;
     updateSpecialOccasion(user: UserContext, id: string, data: any, req: Request): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        day: number;
         donorId: string;
-        type: import("@prisma/client").$Enums.OccasionType;
+        type: import(".prisma/client").$Enums.OccasionType;
         notes: string | null;
         relatedPersonName: string | null;
         month: number;
-        day: number;
     }>;
     deleteSpecialOccasion(user: UserContext, id: string, req: Request): Promise<{
         success: boolean;

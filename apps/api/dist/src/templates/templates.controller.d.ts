@@ -17,7 +17,7 @@ export declare class TemplatesController {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        type: import("@prisma/client").$Enums.TemplateType;
+        type: import(".prisma/client").$Enums.TemplateType;
         description: string | null;
         whatsappMessage: string;
         emailSubject: string;
@@ -40,7 +40,7 @@ export declare class TemplatesController {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        type: import("@prisma/client").$Enums.TemplateType;
+        type: import(".prisma/client").$Enums.TemplateType;
         description: string | null;
         whatsappMessage: string;
         emailSubject: string;
@@ -54,7 +54,7 @@ export declare class TemplatesController {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        type: import("@prisma/client").$Enums.TemplateType;
+        type: import(".prisma/client").$Enums.TemplateType;
         description: string | null;
         whatsappMessage: string;
         emailSubject: string;
@@ -68,7 +68,7 @@ export declare class TemplatesController {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        type: import("@prisma/client").$Enums.TemplateType;
+        type: import(".prisma/client").$Enums.TemplateType;
         description: string | null;
         whatsappMessage: string;
         emailSubject: string;

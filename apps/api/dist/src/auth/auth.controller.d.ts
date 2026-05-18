@@ -10,7 +10,7 @@ export declare class AuthController {
             email: string;
             name: string;
             phone: string;
-            role: import("@prisma/client").$Enums.Role;
+            role: import(".prisma/client").$Enums.Role;
             id: string;
             isActive: boolean;
         };
@@ -24,9 +24,9 @@ export declare class AuthController {
             id: string;
             email: string;
             name: string;
-            role: import("@prisma/client").$Enums.Role;
+            role: import(".prisma/client").$Enums.Role;
             isActive: true;
-            assignedHome: import("@prisma/client").$Enums.HomeAssignment;
+            assignedHome: import(".prisma/client").$Enums.HomeAssignment;
         };
         tokens: {
             accessToken: string;
@@ -41,7 +41,7 @@ export declare class AuthController {
             id: string;
             email: string;
             name: string;
-            role: import("@prisma/client").$Enums.Role;
+            role: import(".prisma/client").$Enums.Role;
             isActive: true;
         };
         tokens: {
@@ -52,10 +52,10 @@ export declare class AuthController {
     getProfile(user: any): Promise<{
         email: string;
         name: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
         createdAt: Date;
-        assignedHome: import("@prisma/client").$Enums.HomeAssignment;
+        assignedHome: import(".prisma/client").$Enums.HomeAssignment;
         isActive: boolean;
         updatedAt: Date;
     }>;

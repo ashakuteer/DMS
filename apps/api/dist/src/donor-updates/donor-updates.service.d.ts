@@ -39,7 +39,7 @@ export declare class DonorUpdatesService {
         title: string;
         photos: string[];
         relatedBeneficiaryIds: string[];
-        relatedHomeTypes: import("@prisma/client").$Enums.HomeType[];
+        relatedHomeTypes: import(".prisma/client").$Enums.HomeType[];
         isDraft: boolean;
     }>;
     update(id: string, dto: Partial<CreateDonorUpdateDto>): Promise<{
@@ -55,7 +55,7 @@ export declare class DonorUpdatesService {
         title: string;
         photos: string[];
         relatedBeneficiaryIds: string[];
-        relatedHomeTypes: import("@prisma/client").$Enums.HomeType[];
+        relatedHomeTypes: import(".prisma/client").$Enums.HomeType[];
         isDraft: boolean;
     }>;
     findAll(page?: number, limit?: number, draftsOnly?: boolean): Promise<{
@@ -76,7 +76,7 @@ export declare class DonorUpdatesService {
             title: string;
             photos: string[];
             relatedBeneficiaryIds: string[];
-            relatedHomeTypes: import("@prisma/client").$Enums.HomeType[];
+            relatedHomeTypes: import(".prisma/client").$Enums.HomeType[];
             isDraft: boolean;
         }[];
         total: number;
@@ -103,8 +103,8 @@ export declare class DonorUpdatesService {
             id: string;
             createdAt: Date;
             donorId: string;
-            channel: import("@prisma/client").$Enums.SponsorDispatchChannel;
-            status: import("@prisma/client").$Enums.SponsorDispatchStatus;
+            channel: import(".prisma/client").$Enums.SponsorDispatchChannel;
+            status: import(".prisma/client").$Enums.SponsorDispatchStatus;
             sentAt: Date | null;
             updateId: string;
         })[];
@@ -116,7 +116,7 @@ export declare class DonorUpdatesService {
         title: string;
         photos: string[];
         relatedBeneficiaryIds: string[];
-        relatedHomeTypes: import("@prisma/client").$Enums.HomeType[];
+        relatedHomeTypes: import(".prisma/client").$Enums.HomeType[];
         isDraft: boolean;
     }>;
     delete(id: string): Promise<{
@@ -143,8 +143,8 @@ export declare class DonorUpdatesService {
                 id: string;
                 createdAt: Date;
                 donorId: string;
-                channel: import("@prisma/client").$Enums.SponsorDispatchChannel;
-                status: import("@prisma/client").$Enums.SponsorDispatchStatus;
+                channel: import(".prisma/client").$Enums.SponsorDispatchChannel;
+                status: import(".prisma/client").$Enums.SponsorDispatchStatus;
                 sentAt: Date | null;
                 updateId: string;
             })[];
@@ -156,7 +156,7 @@ export declare class DonorUpdatesService {
             title: string;
             photos: string[];
             relatedBeneficiaryIds: string[];
-            relatedHomeTypes: import("@prisma/client").$Enums.HomeType[];
+            relatedHomeTypes: import(".prisma/client").$Enums.HomeType[];
             isDraft: boolean;
         };
         emailHtml: string;
@@ -187,8 +187,8 @@ export declare class DonorUpdatesService {
             donorName: string;
             donorCode: string;
             donorId: string;
-            channel: import("@prisma/client").$Enums.SponsorDispatchChannel;
-            status: import("@prisma/client").$Enums.SponsorDispatchStatus;
+            channel: import(".prisma/client").$Enums.SponsorDispatchChannel;
+            status: import(".prisma/client").$Enums.SponsorDispatchStatus;
             sentAt: Date;
             createdAt: Date;
         }[];

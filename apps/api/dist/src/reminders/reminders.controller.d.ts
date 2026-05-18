@@ -28,7 +28,7 @@ export declare class RemindersController {
         donorId: string;
         donationId: string | null;
         type: string;
-        status: import("@prisma/client").$Enums.ReminderStatus;
+        status: import(".prisma/client").$Enums.ReminderStatus;
         description: string | null;
         createdById: string;
         title: string;
@@ -42,7 +42,7 @@ export declare class RemindersController {
         donorId: string;
         donationId: string | null;
         type: string;
-        status: import("@prisma/client").$Enums.ReminderStatus;
+        status: import(".prisma/client").$Enums.ReminderStatus;
         description: string | null;
         createdById: string;
         title: string;
@@ -56,7 +56,7 @@ export declare class RemindersController {
         donorId: string;
         donationId: string | null;
         type: string;
-        status: import("@prisma/client").$Enums.ReminderStatus;
+        status: import(".prisma/client").$Enums.ReminderStatus;
         description: string | null;
         createdById: string;
         title: string;
@@ -76,9 +76,9 @@ export declare class RemindersController {
         donationId: string | null;
         templateId: string | null;
         taskId: string | null;
-        channel: import("@prisma/client").$Enums.CommunicationChannel;
-        type: import("@prisma/client").$Enums.CommunicationType;
-        status: import("@prisma/client").$Enums.CommunicationStatus;
+        channel: import(".prisma/client").$Enums.CommunicationChannel;
+        type: import(".prisma/client").$Enums.CommunicationType;
+        status: import(".prisma/client").$Enums.CommunicationStatus;
         contactMethod: string | null;
         outcome: string | null;
         recipient: string | null;

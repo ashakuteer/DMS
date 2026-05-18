@@ -26,7 +26,7 @@ export declare class NgoDocumentsService {
             updatedAt: Date;
             description: string | null;
             title: string;
-            category: import("@prisma/client").$Enums.NgoDocCategory;
+            category: import(".prisma/client").$Enums.NgoDocCategory;
             mimeType: string;
             sizeBytes: number;
             fileName: string;
@@ -44,7 +44,7 @@ export declare class NgoDocumentsService {
             expiringSoonCount: number;
             validCount: number;
             categoryBreakdown: {
-                category: import("@prisma/client").$Enums.NgoDocCategory;
+                category: import(".prisma/client").$Enums.NgoDocCategory;
                 count: number;
             }[];
         };
@@ -55,7 +55,7 @@ export declare class NgoDocumentsService {
         expiringSoonCount: number;
         validCount: number;
         categoryBreakdown: {
-            category: import("@prisma/client").$Enums.NgoDocCategory;
+            category: import(".prisma/client").$Enums.NgoDocCategory;
             count: number;
         }[];
     }>;
@@ -91,7 +91,7 @@ export declare class NgoDocumentsService {
         updatedAt: Date;
         description: string | null;
         title: string;
-        category: import("@prisma/client").$Enums.NgoDocCategory;
+        category: import(".prisma/client").$Enums.NgoDocCategory;
         mimeType: string;
         sizeBytes: number;
         fileName: string;
@@ -117,7 +117,7 @@ export declare class NgoDocumentsService {
         updatedAt: Date;
         description: string | null;
         title: string;
-        category: import("@prisma/client").$Enums.NgoDocCategory;
+        category: import(".prisma/client").$Enums.NgoDocCategory;
         mimeType: string;
         sizeBytes: number;
         fileName: string;
@@ -138,7 +138,7 @@ export declare class NgoDocumentsService {
         updatedAt: Date;
         description: string | null;
         title: string;
-        category: import("@prisma/client").$Enums.NgoDocCategory;
+        category: import(".prisma/client").$Enums.NgoDocCategory;
         mimeType: string;
         sizeBytes: number;
         fileName: string;
@@ -164,7 +164,7 @@ export declare class NgoDocumentsService {
         updatedAt: Date;
         description: string | null;
         title: string;
-        category: import("@prisma/client").$Enums.NgoDocCategory;
+        category: import(".prisma/client").$Enums.NgoDocCategory;
         mimeType: string;
         sizeBytes: number;
         fileName: string;
@@ -206,7 +206,7 @@ export declare class NgoDocumentsService {
         updatedAt: Date;
         description: string | null;
         title: string;
-        category: import("@prisma/client").$Enums.NgoDocCategory;
+        category: import(".prisma/client").$Enums.NgoDocCategory;
         mimeType: string;
         sizeBytes: number;
         fileName: string;
@@ -228,7 +228,7 @@ export declare class NgoDocumentsService {
         updatedAt: Date;
         description: string | null;
         title: string;
-        category: import("@prisma/client").$Enums.NgoDocCategory;
+        category: import(".prisma/client").$Enums.NgoDocCategory;
         mimeType: string;
         sizeBytes: number;
         fileName: string;

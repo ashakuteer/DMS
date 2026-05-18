@@ -57,13 +57,13 @@ export declare class BirthdayWishService {
     getSentLog(page?: number, limit?: number): Promise<{
         logs: {
             id: string;
-            type: import("@prisma/client").$Enums.OutboundMessageType;
-            channel: import("@prisma/client").$Enums.MessageChannel;
+            type: import(".prisma/client").$Enums.OutboundMessageType;
+            channel: import(".prisma/client").$Enums.MessageChannel;
             donorId: string;
             donorName: string;
             donorCode: string;
             beneficiaryIds: string[];
-            status: import("@prisma/client").$Enums.OutboundMessageStatus;
+            status: import(".prisma/client").$Enums.OutboundMessageStatus;
             createdAt: Date;
             createdBy: string;
         }[];
@@ -78,7 +78,7 @@ export declare class BirthdayWishService {
         updatedAt: Date;
         subject: string | null;
         body: string;
-        channel: import("@prisma/client").$Enums.MessageChannel;
+        channel: import(".prisma/client").$Enums.MessageChannel;
         updatedById: string | null;
         key: string;
     }[]>;
@@ -90,7 +90,7 @@ export declare class BirthdayWishService {
         updatedAt: Date;
         subject: string | null;
         body: string;
-        channel: import("@prisma/client").$Enums.MessageChannel;
+        channel: import(".prisma/client").$Enums.MessageChannel;
         updatedById: string | null;
         key: string;
     }>;

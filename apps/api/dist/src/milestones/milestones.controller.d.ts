@@ -17,7 +17,7 @@ export declare class MilestonesController {
         description: string | null;
         createdById: string;
         title: string;
-        homeType: import("@prisma/client").$Enums.HomeType | null;
+        homeType: import(".prisma/client").$Enums.HomeType | null;
         sortOrder: number;
         photos: string[];
     })[]>;
@@ -29,7 +29,7 @@ export declare class MilestonesController {
         date: Date;
         description: string;
         title: string;
-        homeType: import("@prisma/client").$Enums.HomeType;
+        homeType: import(".prisma/client").$Enums.HomeType;
         photos: string[];
     }[]>;
     findOne(id: string): Promise<{
@@ -46,7 +46,7 @@ export declare class MilestonesController {
         description: string | null;
         createdById: string;
         title: string;
-        homeType: import("@prisma/client").$Enums.HomeType | null;
+        homeType: import(".prisma/client").$Enums.HomeType | null;
         sortOrder: number;
         photos: string[];
     }>;
@@ -64,7 +64,7 @@ export declare class MilestonesController {
         description: string | null;
         createdById: string;
         title: string;
-        homeType: import("@prisma/client").$Enums.HomeType | null;
+        homeType: import(".prisma/client").$Enums.HomeType | null;
         sortOrder: number;
         photos: string[];
     }>;
@@ -86,7 +86,7 @@ export declare class MilestonesController {
         description: string | null;
         createdById: string;
         title: string;
-        homeType: import("@prisma/client").$Enums.HomeType | null;
+        homeType: import(".prisma/client").$Enums.HomeType | null;
         sortOrder: number;
         photos: string[];
     }>;

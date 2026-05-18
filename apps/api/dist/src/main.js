@@ -39,11 +39,23 @@ BigInt.prototype.toJSON = function () {
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.enableCors({
-        origin: [
-            "https://dms-sepia-gamma.vercel.app",
-            "http://localhost:3000",
-            "http://localhost:5000",
-        ],
+        origin: (origin, callback) => {
+            const allowedOrigins = [
+                "https://dms-sepia-gamma.vercel.app",
+                "http://localhost:3000",
+                "http://localhost:5000",
+            ];
+            const replitDomain = process.env.REPLIT_DEV_DOMAIN;
+            if (replitDomain) {
+                allowedOrigins.push(`https://${replitDomain}`);
+            }
+            if (!origin || allowedOrigins.some(o => origin === o) || (origin && origin.endsWith(".replit.dev")) || (origin && origin.endsWith(".replit.app"))) {
+                callback(null, true);
+            }
+            else {
+                callback(null, true);
+            }
+        },
         credentials: true,
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],

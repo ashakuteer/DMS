@@ -11,7 +11,7 @@ export declare class TaskTemplatesController {
         tasks: {
             id: string;
             createdAt: Date;
-            status: import("@prisma/client").$Enums.TaskStatus;
+            status: import(".prisma/client").$Enums.TaskStatus;
         }[];
     } & {
         id: string;
@@ -39,7 +39,7 @@ export declare class TaskTemplatesController {
         userId: string;
         name: string;
         email: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         total: number;
         completed: number;
         missed: number;
@@ -71,7 +71,7 @@ export declare class TaskTemplatesController {
         tasks: {
             id: string;
             createdAt: Date;
-            status: import("@prisma/client").$Enums.TaskStatus;
+            status: import(".prisma/client").$Enums.TaskStatus;
             assignedTo: {
                 name: string;
                 id: string;

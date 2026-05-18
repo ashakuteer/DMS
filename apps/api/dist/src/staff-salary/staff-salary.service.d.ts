@@ -34,10 +34,10 @@ export declare class StaffSalaryService {
     getPayments(staffId: string, year?: number): Promise<{
         id: string;
         createdAt: Date;
+        year: number;
         notes: string | null;
         month: number;
         paymentMode: string;
-        year: number;
         staffId: string;
         baseSalary: Decimal;
         allowances: Decimal;
@@ -59,10 +59,10 @@ export declare class StaffSalaryService {
     }): Promise<{
         id: string;
         createdAt: Date;
+        year: number;
         notes: string | null;
         month: number;
         paymentMode: string;
-        year: number;
         staffId: string;
         baseSalary: Decimal;
         allowances: Decimal;
@@ -74,10 +74,10 @@ export declare class StaffSalaryService {
     deletePayment(paymentId: string): Promise<{
         id: string;
         createdAt: Date;
+        year: number;
         notes: string | null;
         month: number;
         paymentMode: string;
-        year: number;
         staffId: string;
         baseSalary: Decimal;
         allowances: Decimal;
@@ -102,10 +102,10 @@ export declare class StaffSalaryService {
         lastPayment: {
             id: string;
             createdAt: Date;
+            year: number;
             notes: string | null;
             month: number;
             paymentMode: string;
-            year: number;
             staffId: string;
             baseSalary: Decimal;
             allowances: Decimal;

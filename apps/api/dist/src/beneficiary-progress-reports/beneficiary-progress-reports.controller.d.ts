@@ -12,7 +12,7 @@ export declare class BeneficiaryProgressReportsController {
             beneficiary: {
                 code: string;
                 fullName: string;
-                homeType: import("@prisma/client").$Enums.HomeType;
+                homeType: import(".prisma/client").$Enums.HomeType;
             };
             generatedBy: {
                 name: string;
@@ -21,7 +21,7 @@ export declare class BeneficiaryProgressReportsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            status: import("@prisma/client").$Enums.ProgressReportStatus;
+            status: import(".prisma/client").$Enums.ProgressReportStatus;
             title: string;
             beneficiaryId: string;
             periodStart: Date;
@@ -43,13 +43,13 @@ export declare class BeneficiaryProgressReportsController {
         code: string;
         id: string;
         fullName: string;
-        homeType: import("@prisma/client").$Enums.HomeType;
+        homeType: import(".prisma/client").$Enums.HomeType;
     }[]>;
     findOne(id: string): Promise<{
         beneficiary: {
             code: string;
             fullName: string;
-            homeType: import("@prisma/client").$Enums.HomeType;
+            homeType: import(".prisma/client").$Enums.HomeType;
             photoUrl: string;
         };
         generatedBy: {
@@ -59,7 +59,7 @@ export declare class BeneficiaryProgressReportsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        status: import("@prisma/client").$Enums.ProgressReportStatus;
+        status: import(".prisma/client").$Enums.ProgressReportStatus;
         title: string;
         beneficiaryId: string;
         periodStart: Date;

@@ -49,13 +49,13 @@ export declare class AuditService {
             user: {
                 email: string;
                 name: string;
-                role: import("@prisma/client").$Enums.Role;
+                role: import(".prisma/client").$Enums.Role;
                 id: string;
             };
         } & {
             id: string;
             userId: string;
-            action: import("@prisma/client").$Enums.AuditAction;
+            action: import(".prisma/client").$Enums.AuditAction;
             entityType: string | null;
             entityId: string | null;
             oldValue: import("@prisma/client/runtime/library").JsonValue | null;

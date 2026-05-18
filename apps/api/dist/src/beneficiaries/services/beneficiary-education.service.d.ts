@@ -16,7 +16,7 @@ export declare class BeneficiaryEducationService {
         school: string | null;
         academicYear: string;
         beneficiaryId: string;
-        term: import("@prisma/client").$Enums.ProgressTerm;
+        term: import(".prisma/client").$Enums.ProgressTerm;
         overallPercentage: import("@prisma/client/runtime/library").Decimal | null;
         fileDocumentId: string | null;
     })[]>;
@@ -29,7 +29,7 @@ export declare class BeneficiaryEducationService {
         school: string | null;
         academicYear: string;
         beneficiaryId: string;
-        term: import("@prisma/client").$Enums.ProgressTerm;
+        term: import(".prisma/client").$Enums.ProgressTerm;
         overallPercentage: import("@prisma/client/runtime/library").Decimal | null;
         fileDocumentId: string | null;
     }>;
@@ -42,7 +42,7 @@ export declare class BeneficiaryEducationService {
         school: string | null;
         academicYear: string;
         beneficiaryId: string;
-        term: import("@prisma/client").$Enums.ProgressTerm;
+        term: import(".prisma/client").$Enums.ProgressTerm;
         overallPercentage: import("@prisma/client/runtime/library").Decimal | null;
         fileDocumentId: string | null;
     }[]>;
@@ -60,7 +60,7 @@ export declare class BeneficiaryEducationService {
         school: string | null;
         academicYear: string;
         beneficiaryId: string;
-        term: import("@prisma/client").$Enums.ProgressTerm;
+        term: import(".prisma/client").$Enums.ProgressTerm;
         overallPercentage: import("@prisma/client/runtime/library").Decimal | null;
         fileDocumentId: string | null;
     })[]>;

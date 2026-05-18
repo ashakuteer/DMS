@@ -25,7 +25,7 @@ export declare class MilestonesService {
         description: string | null;
         createdById: string;
         title: string;
-        homeType: import("@prisma/client").$Enums.HomeType | null;
+        homeType: import(".prisma/client").$Enums.HomeType | null;
         sortOrder: number;
         photos: string[];
     })[]>;
@@ -43,7 +43,7 @@ export declare class MilestonesService {
         description: string | null;
         createdById: string;
         title: string;
-        homeType: import("@prisma/client").$Enums.HomeType | null;
+        homeType: import(".prisma/client").$Enums.HomeType | null;
         sortOrder: number;
         photos: string[];
     }>;
@@ -61,7 +61,7 @@ export declare class MilestonesService {
         description: string | null;
         createdById: string;
         title: string;
-        homeType: import("@prisma/client").$Enums.HomeType | null;
+        homeType: import(".prisma/client").$Enums.HomeType | null;
         sortOrder: number;
         photos: string[];
     }>;
@@ -79,7 +79,7 @@ export declare class MilestonesService {
         description: string | null;
         createdById: string;
         title: string;
-        homeType: import("@prisma/client").$Enums.HomeType | null;
+        homeType: import(".prisma/client").$Enums.HomeType | null;
         sortOrder: number;
         photos: string[];
     }>;
@@ -95,7 +95,7 @@ export declare class MilestonesService {
         date: Date;
         description: string;
         title: string;
-        homeType: import("@prisma/client").$Enums.HomeType;
+        homeType: import(".prisma/client").$Enums.HomeType;
         photos: string[];
     }[]>;
     seed(userId: string): Promise<{

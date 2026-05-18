@@ -18,7 +18,7 @@ export declare class DashboardStatsService {
         achieved: boolean;
     }>;
     getDonationModeSplit(): Promise<{
-        mode: import("@prisma/client").$Enums.DonationMode;
+        mode: import(".prisma/client").$Enums.DonationMode;
         amount: number;
         count: number;
     }[]>;
@@ -26,7 +26,7 @@ export declare class DashboardStatsService {
         donorId: string;
         donorCode: string;
         name: string;
-        category: import("@prisma/client").$Enums.DonorCategory;
+        category: import(".prisma/client").$Enums.DonorCategory;
         totalAmount: number;
         donationCount: number;
     }[]>;
@@ -37,8 +37,8 @@ export declare class DashboardStatsService {
         donorName: string;
         amount: number;
         date: Date;
-        mode: import("@prisma/client").$Enums.DonationMode;
-        type: import("@prisma/client").$Enums.DonationType;
+        mode: import(".prisma/client").$Enums.DonationMode;
+        type: import(".prisma/client").$Enums.DonationType;
         receiptNumber: string;
     }[]>;
 }

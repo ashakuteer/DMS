@@ -28,16 +28,16 @@ export declare class TasksService {
         };
         sourceOccasion: {
             id: string;
-            type: import("@prisma/client").$Enums.OccasionType;
+            day: number;
+            type: import(".prisma/client").$Enums.OccasionType;
             relatedPersonName: string;
             month: number;
-            day: number;
         };
         sourcePledge: {
             id: string;
             quantity: string;
             amount: import("@prisma/client/runtime/library").Decimal;
-            pledgeType: import("@prisma/client").$Enums.PledgeType;
+            pledgeType: import(".prisma/client").$Enums.PledgeType;
             expectedFulfillmentDate: Date;
         };
         assignedUser: {
@@ -51,16 +51,16 @@ export declare class TasksService {
                 fullName: string;
             };
             id: string;
-            sponsorshipType: import("@prisma/client").$Enums.SponsorshipType;
+            sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
         };
     } & {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        priority: import("@prisma/client").$Enums.TaskPriority;
+        priority: import(".prisma/client").$Enums.TaskPriority;
         donorId: string | null;
-        type: import("@prisma/client").$Enums.TaskType;
-        status: import("@prisma/client").$Enums.TaskStatus;
+        type: import(".prisma/client").$Enums.TaskType;
+        status: import(".prisma/client").$Enums.TaskStatus;
         description: string | null;
         title: string;
         dueDate: Date;
@@ -93,10 +93,10 @@ export declare class TasksService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        priority: import("@prisma/client").$Enums.TaskPriority;
+        priority: import(".prisma/client").$Enums.TaskPriority;
         donorId: string | null;
-        type: import("@prisma/client").$Enums.TaskType;
-        status: import("@prisma/client").$Enums.TaskStatus;
+        type: import(".prisma/client").$Enums.TaskType;
+        status: import(".prisma/client").$Enums.TaskStatus;
         description: string | null;
         title: string;
         dueDate: Date;
@@ -121,9 +121,9 @@ export declare class TasksService {
         donationId: string | null;
         templateId: string | null;
         taskId: string | null;
-        channel: import("@prisma/client").$Enums.CommunicationChannel;
-        type: import("@prisma/client").$Enums.CommunicationType;
-        status: import("@prisma/client").$Enums.CommunicationStatus;
+        channel: import(".prisma/client").$Enums.CommunicationChannel;
+        type: import(".prisma/client").$Enums.CommunicationType;
+        status: import(".prisma/client").$Enums.CommunicationStatus;
         contactMethod: string | null;
         outcome: string | null;
         recipient: string | null;
@@ -145,9 +145,9 @@ export declare class TasksService {
         donationId: string | null;
         templateId: string | null;
         taskId: string | null;
-        channel: import("@prisma/client").$Enums.CommunicationChannel;
-        type: import("@prisma/client").$Enums.CommunicationType;
-        status: import("@prisma/client").$Enums.CommunicationStatus;
+        channel: import(".prisma/client").$Enums.CommunicationChannel;
+        type: import(".prisma/client").$Enums.CommunicationType;
+        status: import(".prisma/client").$Enums.CommunicationStatus;
         contactMethod: string | null;
         outcome: string | null;
         recipient: string | null;
@@ -157,7 +157,7 @@ export declare class TasksService {
     })[]>;
     getStaffList(): Promise<{
         name: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
     }[]>;
     getDebugInfo(): Promise<{
@@ -174,12 +174,12 @@ export declare class TasksService {
             withoutDobData: number;
         };
         occasions: {
-            type: import("@prisma/client").$Enums.OccasionType;
+            type: import(".prisma/client").$Enums.OccasionType;
             count: number;
         }[];
         taskSummary: {
-            type: import("@prisma/client").$Enums.TaskType;
-            status: import("@prisma/client").$Enums.TaskStatus;
+            type: import(".prisma/client").$Enums.TaskType;
+            status: import(".prisma/client").$Enums.TaskStatus;
             count: number;
         }[];
         birthdayTasks: {
@@ -191,7 +191,7 @@ export declare class TasksService {
                 title: string;
                 dueDate: Date;
                 dueDateISO: string;
-                status: import("@prisma/client").$Enums.TaskStatus;
+                status: import(".prisma/client").$Enums.TaskStatus;
                 daysUntil: number;
             }[];
         };
@@ -202,7 +202,7 @@ export declare class TasksService {
                 title: string;
                 dueDate: Date;
                 dueDateISO: string;
-                status: import("@prisma/client").$Enums.TaskStatus;
+                status: import(".prisma/client").$Enums.TaskStatus;
                 daysUntil: number;
             }[];
         };
@@ -215,7 +215,7 @@ export declare class TasksService {
                 title: string;
                 dueDate: Date;
                 dueDateISO: string;
-                status: import("@prisma/client").$Enums.TaskStatus;
+                status: import(".prisma/client").$Enums.TaskStatus;
                 sourcePledgeId: string;
                 daysUntil: number;
             }[];

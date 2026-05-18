@@ -27,13 +27,13 @@ export declare class BeneficiarySponsorshipService {
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
-        status: import("@prisma/client").$Enums.SponsorshipStatus;
+        status: import(".prisma/client").$Enums.SponsorshipStatus;
         notes: string | null;
         beneficiaryId: string;
-        sponsorshipType: import("@prisma/client").$Enums.SponsorshipType;
+        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
         amount: import("@prisma/client/runtime/library").Decimal | null;
         inKindItem: string | null;
-        frequency: import("@prisma/client").$Enums.SponsorshipFrequency;
+        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
         dueDayOfMonth: number | null;
         nextDueDate: Date | null;
     })[]>;
@@ -55,13 +55,13 @@ export declare class BeneficiarySponsorshipService {
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
-        status: import("@prisma/client").$Enums.SponsorshipStatus;
+        status: import(".prisma/client").$Enums.SponsorshipStatus;
         notes: string | null;
         beneficiaryId: string;
-        sponsorshipType: import("@prisma/client").$Enums.SponsorshipType;
+        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
         amount: import("@prisma/client/runtime/library").Decimal | null;
         inKindItem: string | null;
-        frequency: import("@prisma/client").$Enums.SponsorshipFrequency;
+        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
         dueDayOfMonth: number | null;
         nextDueDate: Date | null;
     }>;
@@ -83,13 +83,13 @@ export declare class BeneficiarySponsorshipService {
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
-        status: import("@prisma/client").$Enums.SponsorshipStatus;
+        status: import(".prisma/client").$Enums.SponsorshipStatus;
         notes: string | null;
         beneficiaryId: string;
-        sponsorshipType: import("@prisma/client").$Enums.SponsorshipType;
+        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
         amount: import("@prisma/client/runtime/library").Decimal | null;
         inKindItem: string | null;
-        frequency: import("@prisma/client").$Enums.SponsorshipFrequency;
+        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
         dueDayOfMonth: number | null;
         nextDueDate: Date | null;
     })[]>;
@@ -102,13 +102,13 @@ export declare class BeneficiarySponsorshipService {
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
-        status: import("@prisma/client").$Enums.SponsorshipStatus;
+        status: import(".prisma/client").$Enums.SponsorshipStatus;
         notes: string | null;
         beneficiaryId: string;
-        sponsorshipType: import("@prisma/client").$Enums.SponsorshipType;
+        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
         amount: import("@prisma/client/runtime/library").Decimal | null;
         inKindItem: string | null;
-        frequency: import("@prisma/client").$Enums.SponsorshipFrequency;
+        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
         dueDayOfMonth: number | null;
         nextDueDate: Date | null;
     }>;
@@ -121,13 +121,13 @@ export declare class BeneficiarySponsorshipService {
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
-        status: import("@prisma/client").$Enums.SponsorshipStatus;
+        status: import(".prisma/client").$Enums.SponsorshipStatus;
         notes: string | null;
         beneficiaryId: string;
-        sponsorshipType: import("@prisma/client").$Enums.SponsorshipType;
+        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
         amount: import("@prisma/client/runtime/library").Decimal | null;
         inKindItem: string | null;
-        frequency: import("@prisma/client").$Enums.SponsorshipFrequency;
+        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
         dueDayOfMonth: number | null;
         nextDueDate: Date | null;
     }>;
@@ -139,8 +139,8 @@ export declare class BeneficiarySponsorshipService {
     } & {
         id: string;
         sponsorshipId: string;
-        oldStatus: import("@prisma/client").$Enums.SponsorshipStatus;
-        newStatus: import("@prisma/client").$Enums.SponsorshipStatus;
+        oldStatus: import(".prisma/client").$Enums.SponsorshipStatus;
+        newStatus: import(".prisma/client").$Enums.SponsorshipStatus;
         oldAmount: import("@prisma/client/runtime/library").Decimal | null;
         newAmount: import("@prisma/client/runtime/library").Decimal | null;
         note: string | null;
@@ -151,16 +151,16 @@ export declare class BeneficiarySponsorshipService {
         beneficiary: {
             code: string;
             id: string;
-            status: import("@prisma/client").$Enums.BeneficiaryStatus;
+            status: import(".prisma/client").$Enums.BeneficiaryStatus;
             fullName: string;
-            homeType: import("@prisma/client").$Enums.HomeType;
+            homeType: import(".prisma/client").$Enums.HomeType;
             photoUrl: string;
             updates: {
                 id: string;
                 createdAt: Date;
                 content: string;
                 title: string;
-                updateType: import("@prisma/client").$Enums.BeneficiaryUpdateType;
+                updateType: import(".prisma/client").$Enums.BeneficiaryUpdateType;
             }[];
         };
     } & {
@@ -172,13 +172,13 @@ export declare class BeneficiarySponsorshipService {
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
-        status: import("@prisma/client").$Enums.SponsorshipStatus;
+        status: import(".prisma/client").$Enums.SponsorshipStatus;
         notes: string | null;
         beneficiaryId: string;
-        sponsorshipType: import("@prisma/client").$Enums.SponsorshipType;
+        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
         amount: import("@prisma/client/runtime/library").Decimal | null;
         inKindItem: string | null;
-        frequency: import("@prisma/client").$Enums.SponsorshipFrequency;
+        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
         dueDayOfMonth: number | null;
         nextDueDate: Date | null;
     })[]>;
@@ -196,9 +196,9 @@ export declare class BeneficiarySponsorshipService {
         beneficiary: {
             code: string;
             id: string;
-            status: import("@prisma/client").$Enums.BeneficiaryStatus;
+            status: import(".prisma/client").$Enums.BeneficiaryStatus;
             fullName: string;
-            homeType: import("@prisma/client").$Enums.HomeType;
+            homeType: import(".prisma/client").$Enums.HomeType;
             photoUrl: string;
         };
     } & {
@@ -210,13 +210,13 @@ export declare class BeneficiarySponsorshipService {
         startDate: Date | null;
         endDate: Date | null;
         donorId: string;
-        status: import("@prisma/client").$Enums.SponsorshipStatus;
+        status: import(".prisma/client").$Enums.SponsorshipStatus;
         notes: string | null;
         beneficiaryId: string;
-        sponsorshipType: import("@prisma/client").$Enums.SponsorshipType;
+        sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
         amount: import("@prisma/client/runtime/library").Decimal | null;
         inKindItem: string | null;
-        frequency: import("@prisma/client").$Enums.SponsorshipFrequency;
+        frequency: import(".prisma/client").$Enums.SponsorshipFrequency;
         dueDayOfMonth: number | null;
         nextDueDate: Date | null;
     }>;

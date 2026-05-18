@@ -6,7 +6,9 @@ export interface JwtPayload {
     email: string;
     role: string;
 }
-declare const JwtStrategy_base: new (...args: any[]) => Strategy;
+declare const JwtStrategy_base: new (...args: [opt: import("passport-jwt").StrategyOptionsWithRequest] | [opt: import("passport-jwt").StrategyOptionsWithoutRequest]) => Strategy & {
+    validate(...args: any[]): unknown;
+};
 export declare class JwtStrategy extends JwtStrategy_base {
     private configService;
     private prisma;
@@ -14,9 +16,9 @@ export declare class JwtStrategy extends JwtStrategy_base {
     validate(payload: JwtPayload): Promise<{
         email: string;
         name: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
-        assignedHome: import("@prisma/client").$Enums.HomeAssignment;
+        assignedHome: import(".prisma/client").$Enums.HomeAssignment;
         isActive: boolean;
     }>;
 }

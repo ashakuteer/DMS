@@ -38,8 +38,8 @@ export declare class DonorReportsController {
         updatedAt: Date;
         donorId: string | null;
         templateId: string | null;
-        type: import("@prisma/client").$Enums.DonorReportType;
-        status: import("@prisma/client").$Enums.DonorReportStatus;
+        type: import(".prisma/client").$Enums.DonorReportType;
+        status: import(".prisma/client").$Enums.DonorReportStatus;
         campaignId: string | null;
         title: string;
         periodStart: Date;
@@ -80,7 +80,7 @@ export declare class DonorReportsController {
     getCampaigns(): Promise<{
         name: string;
         id: string;
-        status: import("@prisma/client").$Enums.CampaignStatus;
+        status: import(".prisma/client").$Enums.CampaignStatus;
     }[]>;
     searchDonors(search: string, limit?: string): Promise<{
         id: string;
@@ -115,8 +115,8 @@ export declare class DonorReportsController {
         updatedAt: Date;
         donorId: string | null;
         templateId: string | null;
-        type: import("@prisma/client").$Enums.DonorReportType;
-        status: import("@prisma/client").$Enums.DonorReportStatus;
+        type: import(".prisma/client").$Enums.DonorReportType;
+        status: import(".prisma/client").$Enums.DonorReportStatus;
         campaignId: string | null;
         title: string;
         periodStart: Date;

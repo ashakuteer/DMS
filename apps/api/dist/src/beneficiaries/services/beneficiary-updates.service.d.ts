@@ -33,7 +33,7 @@ export declare class BeneficiaryUpdatesService {
         createdById: string;
         title: string;
         beneficiaryId: string;
-        updateType: import("@prisma/client").$Enums.BeneficiaryUpdateType;
+        updateType: import(".prisma/client").$Enums.BeneficiaryUpdateType;
         mediaUrls: string[];
         isPrivate: boolean;
         shareWithDonor: boolean;
@@ -50,7 +50,7 @@ export declare class BeneficiaryUpdatesService {
         createdById: string;
         title: string;
         beneficiaryId: string;
-        updateType: import("@prisma/client").$Enums.BeneficiaryUpdateType;
+        updateType: import(".prisma/client").$Enums.BeneficiaryUpdateType;
         mediaUrls: string[];
         isPrivate: boolean;
         shareWithDonor: boolean;
@@ -72,7 +72,7 @@ export declare class BeneficiaryUpdatesService {
         createdById: string;
         title: string;
         beneficiaryId: string;
-        updateType: import("@prisma/client").$Enums.BeneficiaryUpdateType;
+        updateType: import(".prisma/client").$Enums.BeneficiaryUpdateType;
         mediaUrls: string[];
         isPrivate: boolean;
         shareWithDonor: boolean;
@@ -89,8 +89,8 @@ export declare class BeneficiaryUpdatesService {
         id: string;
         createdAt: Date;
         donorId: string;
-        channel: import("@prisma/client").$Enums.SponsorDispatchChannel;
-        status: import("@prisma/client").$Enums.SponsorDispatchStatus;
+        channel: import(".prisma/client").$Enums.SponsorDispatchChannel;
+        status: import(".prisma/client").$Enums.SponsorDispatchStatus;
         sentAt: Date | null;
         updateId: string;
     }>;

@@ -209,7 +209,7 @@ export declare class DashboardActionsService {
             donorName: string;
             donorCode: string;
             healthScore: number;
-            healthStatus: import("@prisma/client").$Enums.HealthStatus;
+            healthStatus: import(".prisma/client").$Enums.HealthStatus;
             donor: {
                 id: string;
                 donorCode: string;
@@ -220,7 +220,7 @@ export declare class DashboardActionsService {
                 personalEmail: string;
                 officialEmail: string;
                 healthScore: number;
-                healthStatus: import("@prisma/client").$Enums.HealthStatus;
+                healthStatus: import(".prisma/client").$Enums.HealthStatus;
             };
         }[];
         beneficiaryBirthdays: {

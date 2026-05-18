@@ -27,7 +27,7 @@ export declare class StaffProfilesController {
         phone: string | null;
         id: string;
         createdAt: Date;
-        status: import("@prisma/client").$Enums.StaffStatus;
+        status: import(".prisma/client").$Enums.StaffStatus;
         homeId: string | null;
         city: string | null;
         state: string | null;
@@ -54,7 +54,7 @@ export declare class StaffProfilesController {
         phone: string | null;
         id: string;
         createdAt: Date;
-        status: import("@prisma/client").$Enums.StaffStatus;
+        status: import(".prisma/client").$Enums.StaffStatus;
         homeId: string | null;
         city: string | null;
         state: string | null;
@@ -76,7 +76,7 @@ export declare class StaffProfilesController {
     uploadDocument(file: Express.Multer.File, staffId: string, type: string): Promise<{
         id: string;
         createdAt: Date;
-        type: import("@prisma/client").$Enums.StaffDocumentType;
+        type: import(".prisma/client").$Enums.StaffDocumentType;
         staffId: string;
         fileUrl: string;
     }>;
@@ -89,7 +89,7 @@ export declare class StaffProfilesController {
         documents: {
             id: string;
             createdAt: Date;
-            type: import("@prisma/client").$Enums.StaffDocumentType;
+            type: import(".prisma/client").$Enums.StaffDocumentType;
             staffId: string;
             fileUrl: string;
         }[];
@@ -110,7 +110,7 @@ export declare class StaffProfilesController {
         phone: string | null;
         id: string;
         createdAt: Date;
-        status: import("@prisma/client").$Enums.StaffStatus;
+        status: import(".prisma/client").$Enums.StaffStatus;
         homeId: string | null;
         city: string | null;
         state: string | null;
@@ -148,7 +148,7 @@ export declare class StaffProfilesController {
         phone: string | null;
         id: string;
         createdAt: Date;
-        status: import("@prisma/client").$Enums.StaffStatus;
+        status: import(".prisma/client").$Enums.StaffStatus;
         homeId: string | null;
         city: string | null;
         state: string | null;
@@ -169,7 +169,7 @@ export declare class StaffProfilesController {
         phone: string | null;
         id: string;
         createdAt: Date;
-        status: import("@prisma/client").$Enums.StaffStatus;
+        status: import(".prisma/client").$Enums.StaffStatus;
         homeId: string | null;
         city: string | null;
         state: string | null;
@@ -187,14 +187,14 @@ export declare class StaffProfilesController {
     getDocuments(id: string): Promise<{
         id: string;
         createdAt: Date;
-        type: import("@prisma/client").$Enums.StaffDocumentType;
+        type: import(".prisma/client").$Enums.StaffDocumentType;
         staffId: string;
         fileUrl: string;
     }[]>;
     deleteDocument(docId: string): Promise<{
         id: string;
         createdAt: Date;
-        type: import("@prisma/client").$Enums.StaffDocumentType;
+        type: import(".prisma/client").$Enums.StaffDocumentType;
         staffId: string;
         fileUrl: string;
     }>;

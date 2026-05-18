@@ -14,9 +14,9 @@ export declare class BeneficiaryDocumentsService {
         createdById: string;
         title: string;
         shareWithDonor: boolean;
-        ownerType: import("@prisma/client").$Enums.DocumentOwnerType;
+        ownerType: import(".prisma/client").$Enums.DocumentOwnerType;
         ownerId: string | null;
-        docType: import("@prisma/client").$Enums.DocumentType;
+        docType: import(".prisma/client").$Enums.DocumentType;
         storageBucket: string;
         storagePath: string;
         mimeType: string;
@@ -30,9 +30,9 @@ export declare class BeneficiaryDocumentsService {
         createdById: string;
         title: string;
         shareWithDonor: boolean;
-        ownerType: import("@prisma/client").$Enums.DocumentOwnerType;
+        ownerType: import(".prisma/client").$Enums.DocumentOwnerType;
         ownerId: string | null;
-        docType: import("@prisma/client").$Enums.DocumentType;
+        docType: import(".prisma/client").$Enums.DocumentType;
         storageBucket: string;
         storagePath: string;
         mimeType: string;
@@ -46,9 +46,9 @@ export declare class BeneficiaryDocumentsService {
         createdById: string;
         title: string;
         shareWithDonor: boolean;
-        ownerType: import("@prisma/client").$Enums.DocumentOwnerType;
+        ownerType: import(".prisma/client").$Enums.DocumentOwnerType;
         ownerId: string | null;
-        docType: import("@prisma/client").$Enums.DocumentType;
+        docType: import(".prisma/client").$Enums.DocumentType;
         storageBucket: string;
         storagePath: string;
         mimeType: string;

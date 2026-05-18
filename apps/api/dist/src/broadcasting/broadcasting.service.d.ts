@@ -65,14 +65,14 @@ export declare class BroadcastingService {
     getAvailableEmailTemplates(): Promise<{
         name: string;
         id: string;
-        type: import("@prisma/client").$Enums.TemplateType;
+        type: import(".prisma/client").$Enums.TemplateType;
         description: string;
         emailSubject: string;
         emailBody: string;
     }[]>;
     getStaffList(): Promise<{
         name: string;
-        role: import("@prisma/client").$Enums.Role;
+        role: import(".prisma/client").$Enums.Role;
         id: string;
     }[]>;
     getProfessionList(): Promise<string[]>;

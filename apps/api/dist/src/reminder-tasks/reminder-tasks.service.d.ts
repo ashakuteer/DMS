@@ -56,8 +56,8 @@ export declare class ReminderTasksService {
         createdAt: Date;
         updatedAt: Date;
         donorId: string;
-        type: import("@prisma/client").$Enums.ReminderTaskType;
-        status: import("@prisma/client").$Enums.ReminderTaskStatus;
+        type: import(".prisma/client").$Enums.ReminderTaskType;
+        status: import(".prisma/client").$Enums.ReminderTaskStatus;
         title: string;
         dueDate: Date;
         completedAt: Date | null;
@@ -75,8 +75,8 @@ export declare class ReminderTasksService {
         createdAt: Date;
         updatedAt: Date;
         donorId: string;
-        type: import("@prisma/client").$Enums.ReminderTaskType;
-        status: import("@prisma/client").$Enums.ReminderTaskStatus;
+        type: import(".prisma/client").$Enums.ReminderTaskType;
+        status: import(".prisma/client").$Enums.ReminderTaskStatus;
         title: string;
         dueDate: Date;
         completedAt: Date | null;
@@ -94,8 +94,8 @@ export declare class ReminderTasksService {
         createdAt: Date;
         updatedAt: Date;
         donorId: string;
-        type: import("@prisma/client").$Enums.ReminderTaskType;
-        status: import("@prisma/client").$Enums.ReminderTaskStatus;
+        type: import(".prisma/client").$Enums.ReminderTaskType;
+        status: import(".prisma/client").$Enums.ReminderTaskStatus;
         title: string;
         dueDate: Date;
         completedAt: Date | null;

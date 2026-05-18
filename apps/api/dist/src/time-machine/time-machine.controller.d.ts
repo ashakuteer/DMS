@@ -10,7 +10,7 @@ export declare class TimeMachineController {
                 id: string;
             };
         } & {
-            home: import("@prisma/client").$Enums.TimeMachineHome;
+            home: import(".prisma/client").$Enums.TimeMachineHome;
             id: string;
             createdAt: Date;
             updatedAt: Date;
@@ -18,7 +18,7 @@ export declare class TimeMachineController {
             description: string | null;
             createdById: string;
             title: string;
-            category: import("@prisma/client").$Enums.TimeMachineCategory;
+            category: import(".prisma/client").$Enums.TimeMachineCategory;
             eventDate: Date;
             photos: string[];
         })[];
@@ -34,7 +34,7 @@ export declare class TimeMachineController {
             id: string;
         };
     } & {
-        home: import("@prisma/client").$Enums.TimeMachineHome;
+        home: import(".prisma/client").$Enums.TimeMachineHome;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -42,7 +42,7 @@ export declare class TimeMachineController {
         description: string | null;
         createdById: string;
         title: string;
-        category: import("@prisma/client").$Enums.TimeMachineCategory;
+        category: import(".prisma/client").$Enums.TimeMachineCategory;
         eventDate: Date;
         photos: string[];
     }>;
@@ -52,7 +52,7 @@ export declare class TimeMachineController {
             id: string;
         };
     } & {
-        home: import("@prisma/client").$Enums.TimeMachineHome;
+        home: import(".prisma/client").$Enums.TimeMachineHome;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -60,7 +60,7 @@ export declare class TimeMachineController {
         description: string | null;
         createdById: string;
         title: string;
-        category: import("@prisma/client").$Enums.TimeMachineCategory;
+        category: import(".prisma/client").$Enums.TimeMachineCategory;
         eventDate: Date;
         photos: string[];
     }>;
@@ -70,7 +70,7 @@ export declare class TimeMachineController {
             id: string;
         };
     } & {
-        home: import("@prisma/client").$Enums.TimeMachineHome;
+        home: import(".prisma/client").$Enums.TimeMachineHome;
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -78,7 +78,7 @@ export declare class TimeMachineController {
         description: string | null;
         createdById: string;
         title: string;
-        category: import("@prisma/client").$Enums.TimeMachineCategory;
+        category: import(".prisma/client").$Enums.TimeMachineCategory;
         eventDate: Date;
         photos: string[];
     }>;

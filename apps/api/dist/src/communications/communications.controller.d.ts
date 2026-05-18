@@ -14,12 +14,12 @@ export declare class CommunicationsController {
         to: string;
         donorId: string | null;
         donationId: string | null;
-        channel: import("@prisma/client").$Enums.CommChannel;
-        status: import("@prisma/client").$Enums.CommStatus;
+        channel: import(".prisma/client").$Enums.CommChannel;
+        status: import(".prisma/client").$Enums.CommStatus;
         errorMessage: string | null;
         sentAt: Date | null;
         errorCode: string | null;
-        provider: import("@prisma/client").$Enums.CommProvider;
+        provider: import(".prisma/client").$Enums.CommProvider;
         providerMessageId: string | null;
         templateName: string | null;
         templateKey: string | null;
