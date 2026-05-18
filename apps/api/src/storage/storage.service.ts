@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
+if (typeof globalThis.WebSocket === 'undefined') {
+  (globalThis as any).WebSocket = ws;
+}
+
 @Injectable()
 export class StorageService {
   private supabase: SupabaseClient | null = null;

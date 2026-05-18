@@ -16,6 +16,9 @@ exports.StorageService = void 0;
 const common_1 = require("@nestjs/common");
 const supabase_js_1 = require("@supabase/supabase-js");
 const ws_1 = __importDefault(require("ws"));
+if (typeof globalThis.WebSocket === 'undefined') {
+    globalThis.WebSocket = ws_1.default;
+}
 let StorageService = class StorageService {
     constructor() {
         this.supabase = null;
