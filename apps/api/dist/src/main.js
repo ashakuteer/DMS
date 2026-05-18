@@ -49,31 +49,32 @@ BigInt.prototype.toJSON = function () {
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     const allowedOrigins = [
-        "https://dms-sepia-gamma.vercel.app",
-        "http://localhost:3000",
-        "http://localhost:5000",
+        'https://dms-sepia-gamma.vercel.app',
+        'http://localhost:3000',
+        'http://localhost:5000',
     ];
     if (process.env.FRONTEND_URL) {
-        allowedOrigins.push(process.env.FRONTEND_URL.trim());
+        process.env.FRONTEND_URL.split(',').forEach(u => {
+            const trimmed = u.trim();
+            if (trimmed)
+                allowedOrigins.push(trimmed);
+        });
     }
     if (process.env.REPLIT_DEV_DOMAIN) {
         allowedOrigins.push(`https://${process.env.REPLIT_DEV_DOMAIN}`);
     }
+    console.log('CORS allowed origins:', allowedOrigins);
     app.enableCors({
         origin: (origin, callback) => {
-            if (!origin ||
-                allowedOrigins.includes(origin) ||
-                origin.endsWith(".replit.dev") ||
-                origin.endsWith(".replit.app")) {
-                callback(null, true);
-            }
-            else {
-                callback(new Error(`CORS: origin ${origin} not allowed`));
-            }
+            if (!origin)
+                return callback(null, true);
+            if (allowedOrigins.includes(origin))
+                return callback(null, true);
+            return callback(new Error(`CORS blocked origin: ${origin}`), false);
         },
         credentials: true,
-        methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization"],
+        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
     });
     app.setGlobalPrefix("api");
     app.use("/uploads", express.static((0, path_1.join)(process.cwd(), "uploads")));
