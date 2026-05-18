@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import ws from 'ws';
 
 if (typeof globalThis.WebSocket === 'undefined') {
   (globalThis as any).WebSocket = ws;

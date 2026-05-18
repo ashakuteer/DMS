@@ -32,7 +32,9 @@ let StorageService = class StorageService {
         if (supabaseUrl && supabaseKey) {
             this.supabase = (0, supabase_js_1.createClient)(supabaseUrl, supabaseKey, {
                 realtime: {
-                    transport: ws_1.default,
+                    params: {
+                        eventsPerSecond: 0,
+                    },
                 },
                 auth: {
                     persistSession: false,
