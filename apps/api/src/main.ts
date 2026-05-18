@@ -17,25 +17,33 @@ import * as express from "express";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  const allowedOrigins = [
+    "https://dms-sepia-gamma.vercel.app",
+    "http://localhost:3000",
+    "http://localhost:5000",
+  ];
+  if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL.trim());
+  }
+  if (process.env.REPLIT_DEV_DOMAIN) {
+    allowedOrigins.push(`https://${process.env.REPLIT_DEV_DOMAIN}`);
+  }
+
   app.enableCors({
     origin: (origin, callback) => {
-      const allowedOrigins = [
-        "https://dms-sepia-gamma.vercel.app",
-        "http://localhost:3000",
-        "http://localhost:5000",
-      ];
-      const replitDomain = process.env.REPLIT_DEV_DOMAIN;
-      if (replitDomain) {
-        allowedOrigins.push(`https://${replitDomain}`);
-      }
-      if (!origin || allowedOrigins.some(o => origin === o) || (origin && origin.endsWith(".replit.dev")) || (origin && origin.endsWith(".replit.app"))) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".replit.dev") ||
+        origin.endsWith(".replit.app")
+      ) {
         callback(null, true);
       } else {
-        callback(null, true);
+        callback(new Error(`CORS: origin ${origin} not allowed`));
       }
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   });
 
