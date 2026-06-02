@@ -42,6 +42,7 @@ function mapDbOccasionTypeToFormType(dbType: string): string {
 
 function mapFormTypeToDbOccasionType(formType: string): string {
   const map: Record<string, string> = {
+    BIRTHDAY_SELF: "DOB_SELF",
     ANNIVERSARY_SELF: "ANNIVERSARY",
     ANNIVERSARY: "ANNIVERSARY",
     MEMORIAL_DAY: "DEATH_ANNIVERSARY",
@@ -51,7 +52,7 @@ function mapFormTypeToDbOccasionType(formType: string): string {
 }
 
 function isSpecialOccasionRoute(occasionType: string): boolean {
-  return ["ANNIVERSARY_SELF", "ANNIVERSARY", "MEMORIAL_DAY", "OTHER"].includes(occasionType);
+  return ["BIRTHDAY_SELF", "ANNIVERSARY_SELF", "ANNIVERSARY", "MEMORIAL_DAY", "OTHER"].includes(occasionType);
 }
 
 interface SpecialOccasionDefaults {
