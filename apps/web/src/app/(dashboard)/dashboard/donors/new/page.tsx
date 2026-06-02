@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
+import { SourceDetailsCombobox } from "@/components/source-details-combobox";
 import imageCompression from "browser-image-compression";
 
 interface DuplicateDonor {
@@ -1496,7 +1497,7 @@ export default function NewDonorPage() {
             </div>
             <div>
               <Label>Source Details</Label>
-              <Input value={formData.sourceDetails} onChange={(e) => handleChange("sourceDetails", e.target.value)} placeholder="Additional details" data-testid="input-source-details" />
+              <SourceDetailsCombobox value={formData.sourceDetails} onChange={(v) => handleChange("sourceDetails", v)} placeholder="Select or type a source detail" data-testid="input-source-details" />
             </div>
             <div>
               <Label>Assign To</Label>

@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
+import { SourceDetailsCombobox } from "@/components/source-details-combobox";
 import { resolveImageUrl } from "@/lib/image-url";
 import imageCompression from "browser-image-compression";
 
@@ -1706,7 +1707,7 @@ export default function EditDonorPage() {
             </div>
             <div>
               <Label htmlFor="sourceDetails">Source Details</Label>
-              <Input id="sourceDetails" value={formData.sourceDetails} onChange={(e) => handleChange("sourceDetails", e.target.value)} placeholder="Additional details about source" />
+              <SourceDetailsCombobox value={formData.sourceDetails} onChange={(v) => handleChange("sourceDetails", v)} placeholder="Select or type a source detail" data-testid="input-source-details" />
             </div>
             {(userRole === "ADMIN" || userRole === "FOUNDER") && (
               <div>
