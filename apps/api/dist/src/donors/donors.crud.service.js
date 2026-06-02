@@ -306,6 +306,15 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
                     twilioStatus: true,
                     googleReviewStatus: true,
                     referredByDonorId: true,
+                    referredByDonorName: true,
+                    referredBy: {
+                        select: {
+                            id: true,
+                            donorCode: true,
+                            firstName: true,
+                            lastName: true,
+                        },
+                    },
                     createdById: true,
                     isDeleted: true,
                     deletedAt: true,

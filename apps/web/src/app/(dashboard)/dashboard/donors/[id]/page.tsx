@@ -27,6 +27,7 @@ import DonorCommunicationLogTab from "./components/DonorCommunicationLogTab";
 import DonorSponsorshipsTab from "./components/DonorSponsorshipsTab";
 import DonorMealSponsorshipsTab from "./components/DonorMealSponsorshipsTab";
 import DonorQuickActions from "./components/DonorQuickActions";
+import DonorReferralsTab from "./components/DonorReferralsTab";
 import AddDonorSponsorshipDialog from "./dialogs/AddDonorSponsorshipDialog";
 import SponsorStatusDialog from "./dialogs/SponsorStatusDialog";
 import SponsorHistoryDialog from "./dialogs/SponsorHistoryDialog";
@@ -71,6 +72,7 @@ export default function DonorProfilePage() {
   const [hasOpenedCommLog, setHasOpenedCommLog] = useState(false);
   const [hasOpenedPeopleOccasions, setHasOpenedPeopleOccasions] = useState(false);
   const [hasOpenedSponsorships, setHasOpenedSponsorships] = useState(false);
+  const [hasOpenedReferrals, setHasOpenedReferrals] = useState(false);
 
   const handleRequestAccess = async () => {
     setRequestingAccess(true);
@@ -110,6 +112,7 @@ export default function DonorProfilePage() {
     if (value === "comm-log") setHasOpenedCommLog(true);
     if (value === "people-occasions") setHasOpenedPeopleOccasions(true);
     if (value === "sponsorships") setHasOpenedSponsorships(true);
+    if (value === "referrals") setHasOpenedReferrals(true);
   };
 
   return (
@@ -164,6 +167,7 @@ export default function DonorProfilePage() {
           <TabsTrigger value="sponsorships">{t("donor_profile.tab_sponsorships")}</TabsTrigger>
           <TabsTrigger value="meals-sponsorship">Meals Sponsorship</TabsTrigger>
           <TabsTrigger value="comm-log">{t("donor_profile.tab_comm_log")}</TabsTrigger>
+          <TabsTrigger value="referrals">Referrals</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -210,6 +214,10 @@ export default function DonorProfilePage() {
 
         <TabsContent value="comm-log">
           <DonorCommunicationLogTab {...communication} />
+        </TabsContent>
+
+        <TabsContent value="referrals">
+          <DonorReferralsTab donorId={donorId} enabled={hasOpenedReferrals} />
         </TabsContent>
 
       </Tabs>

@@ -152,6 +152,7 @@ model Donor {
 
   engagementLevel    DonorEngagement        @default(WARM)
   referredByDonorId  String?
+  referredByDonorName String?
   createdById        String
   isDeleted          Boolean                @default(false)
   deletedAt          DateTime?

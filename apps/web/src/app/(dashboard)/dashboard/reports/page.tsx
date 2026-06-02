@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { FileSpreadsheet, FileText, Search, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Lock, Calendar, ArrowUpDown, CreditCard, FileBarChart, SlidersHorizontal, Save, History, Download, BarChart3 } from "lucide-react";
+import { FileSpreadsheet, FileText, Search, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Lock, Calendar, ArrowUpDown, CreditCard, FileBarChart, SlidersHorizontal, Save, History, Download, BarChart3, Share2 } from "lucide-react";
 import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { canAccessModule } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
@@ -186,6 +186,17 @@ export default function ReportsPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [smartExporting, setSmartExporting] = useState<string | null>(null);
 
+  // Referral report state
+  const [referralData, setReferralData] = useState<Array<{
+    id: string;
+    donorCode: string;
+    firstName: string;
+    lastName: string | null;
+    referralCount: number;
+    totalDonationsGenerated: number;
+  }>>([]);
+  const [referralLoading, setReferralLoading] = useState(false);
+
   const isAdmin = userRole === 'ADMIN';
   const canAccessReports = userRole === 'FOUNDER' || userRole === 'ADMIN' || userRole === 'STAFF';
 
@@ -306,6 +317,20 @@ export default function ReportsPage() {
       setSortOrder('desc');
     }
     setPage(1);
+  };
+
+  const fetchReferralReport = async () => {
+    setReferralLoading(true);
+    try {
+      const res = await fetchWithAuth(`/api/donors/referral-report?limit=50`);
+      if (!res.ok) throw new Error("Failed to fetch referral report");
+      const data = await res.json();
+      setReferralData(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Referral report error:", err);
+    } finally {
+      setReferralLoading(false);
+    }
   };
 
   const fetchSmartReport = async () => {
@@ -548,6 +573,9 @@ export default function ReportsPage() {
               <TabsTrigger value="receipt" data-testid="tab-receipt">Receipt Register</TabsTrigger>
               <TabsTrigger value="smart" data-testid="tab-smart" onClick={() => { if (smartData.length === 0) fetchSmartReport(); fetchSavedReports(); }}>
                 <BarChart3 className="h-3.5 w-3.5 mr-1" />Smart Report
+              </TabsTrigger>
+              <TabsTrigger value="referrals" data-testid="tab-referrals" onClick={() => { if (referralData.length === 0) fetchReferralReport(); }}>
+                <Share2 className="h-3.5 w-3.5 mr-1" />Referrals
               </TabsTrigger>
             </TabsList>
 
@@ -1100,6 +1128,61 @@ export default function ReportsPage() {
                   </div>
                 )}
               </div>
+            </TabsContent>
+
+            <TabsContent value="referrals" data-testid="tab-content-referrals">
+              {referralLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <p className="text-muted-foreground text-sm">Loading referral report…</p>
+                </div>
+              ) : referralData.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Share2 className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm font-medium">No referrals recorded yet</p>
+                  <p className="text-xs mt-1">When a donor is added with Source = Referral and Existing Donor Reference, they will appear here.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                    <div className="p-4 border rounded-lg">
+                      <p className="text-2xl font-bold">{referralData.length}</p>
+                      <p className="text-xs text-muted-foreground">Active Referrers</p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <p className="text-2xl font-bold">{referralData.reduce((s, r) => s + r.referralCount, 0)}</p>
+                      <p className="text-xs text-muted-foreground">Total Donors Referred</p>
+                    </div>
+                    <div className="p-4 border rounded-lg">
+                      <p className="text-2xl font-bold">{formatAmount(referralData.reduce((s, r) => s + r.totalDonationsGenerated, 0))}</p>
+                      <p className="text-xs text-muted-foreground">Total Value Generated</p>
+                    </div>
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>#</TableHead>
+                        <TableHead>Donor</TableHead>
+                        <TableHead>Code</TableHead>
+                        <TableHead className="text-center">Referrals</TableHead>
+                        <TableHead className="text-right">Value Generated</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {referralData.map((r, idx) => (
+                        <TableRow key={r.id}>
+                          <TableCell className="text-muted-foreground font-medium">{idx + 1}</TableCell>
+                          <TableCell className="font-medium">{r.firstName} {r.lastName ?? ''}</TableCell>
+                          <TableCell><Badge variant="outline">{r.donorCode}</Badge></TableCell>
+                          <TableCell className="text-center">
+                            <Badge variant="secondary">{r.referralCount}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right font-medium">{formatAmount(r.totalDonationsGenerated)}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </>
+              )}
             </TabsContent>
           </Tabs>
 

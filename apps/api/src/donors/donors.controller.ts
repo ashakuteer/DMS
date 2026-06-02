@@ -27,6 +27,7 @@ import { DonorsService } from "./donors.service";
 import { UserContext } from "./donors.types";
 import { DuplicatesService } from "./donor-duplicates.service";
 import { DonorFundraisingService } from "./donor-fundraising.service";
+import { DonorsReferralService } from "./donors.referral.service";
 import { BeneficiariesService } from "../beneficiaries/beneficiaries.service";
 import { Role } from "@prisma/client";
 import { Request, Response } from "express";
@@ -38,6 +39,7 @@ export class DonorsController {
     private readonly donorsService: DonorsService,
     private readonly donorDuplicatesService: DuplicatesService,
     private readonly donorFundraisingService: DonorFundraisingService,
+    private readonly donorsReferralService: DonorsReferralService,
     @Inject(forwardRef(() => BeneficiariesService))
     private readonly beneficiariesService: BeneficiariesService,
   ) {}
@@ -256,6 +258,20 @@ export class DonorsController {
       page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 20,
     );
+  }
+
+  @Get("referral-report")
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  async getReferralLeaderboard(@Query("limit") limit?: string) {
+    return this.donorsReferralService.getReferralLeaderboard(
+      limit ? parseInt(limit, 10) : 20,
+    );
+  }
+
+  @Get(":id/referrals")
+  @Roles(Role.FOUNDER, Role.ADMIN, Role.STAFF)
+  async getDonorReferrals(@Param("id") id: string) {
+    return this.donorsReferralService.getReferralData(id);
   }
 
   @Get(":id")

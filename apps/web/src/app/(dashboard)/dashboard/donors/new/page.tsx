@@ -21,6 +21,7 @@ import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { SourceDetailsCombobox } from "@/components/source-details-combobox";
+import { DonorSearchField } from "@/components/donor-search-field";
 import imageCompression from "browser-image-compression";
 
 interface DuplicateDonor {
@@ -251,6 +252,8 @@ export default function NewDonorPage() {
     communicationNotes: "",
     sourceOfDonor: "",
     sourceDetails: "",
+    referredByDonorId: "",
+    referredByDonorName: "",
     pan: "",
     assignedToUserId: "",
     prefEmail: true,
@@ -466,6 +469,8 @@ export default function NewDonorPage() {
       if (formData.notes) payload.notes = formData.notes;
       if (formData.sourceOfDonor) payload.sourceOfDonor = formData.sourceOfDonor;
       if (formData.sourceDetails) payload.sourceDetails = formData.sourceDetails;
+      if (formData.referredByDonorId) payload.referredByDonorId = formData.referredByDonorId;
+      if (formData.referredByDonorName) payload.referredByDonorName = formData.referredByDonorName;
       if (formData.pan) payload.pan = formData.pan;
       if (formData.assignedToUserId && formData.assignedToUserId !== "unassigned") {
         payload.assignedToUserId = formData.assignedToUserId;
@@ -1499,6 +1504,20 @@ export default function NewDonorPage() {
               <Label>Source Details</Label>
               <SourceDetailsCombobox value={formData.sourceDetails} onChange={(v) => handleChange("sourceDetails", v)} placeholder="Select or type a source detail" data-testid="input-source-details" />
             </div>
+            {formData.sourceOfDonor === "REFERRAL" && formData.sourceDetails === "Existing Donor Reference" && (
+              <div className="md:col-span-2">
+                <Label>Referred By Donor</Label>
+                <p className="text-xs text-muted-foreground mb-1">Search for the existing donor who referred this person</p>
+                <DonorSearchField
+                  value={formData.referredByDonorId ? { id: formData.referredByDonorId, donorCode: "", name: formData.referredByDonorName } : null}
+                  onChange={(d) => {
+                    handleChange("referredByDonorId", d?.id ?? "");
+                    handleChange("referredByDonorName", d?.name ?? "");
+                  }}
+                  placeholder="Search donors by name, code, or phone…"
+                />
+              </div>
+            )}
             <div>
               <Label>Assign To</Label>
               <Select value={formData.assignedToUserId || "unassigned"} onValueChange={(v) => handleChange("assignedToUserId", v)}>

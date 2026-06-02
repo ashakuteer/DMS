@@ -20,6 +20,7 @@ const donors_timeline_service_1 = require("./donors.timeline.service");
 const donors_engagement_service_1 = require("./donors.engagement.service");
 const donor_duplicates_service_1 = require("./donor-duplicates.service");
 const donor_fundraising_service_1 = require("./donor-fundraising.service");
+const donors_referral_service_1 = require("./donors.referral.service");
 const donors_import_service_1 = require("./import/donors-import.service");
 const donors_import_parser_service_1 = require("./import/donors-import-parser.service");
 const import_normalizer_service_1 = require("./import/import-normalizer.service");
@@ -45,6 +46,7 @@ exports.DonorsModule = DonorsModule = __decorate([
             donors_engagement_service_1.DonorsEngagementService,
             donor_duplicates_service_1.DuplicatesService,
             donor_fundraising_service_1.DonorFundraisingService,
+            donors_referral_service_1.DonorsReferralService,
             donors_import_service_1.DonorsImportService,
             donors_import_parser_service_1.DonorsImportParserService,
             import_normalizer_service_1.ImportNormalizerService,

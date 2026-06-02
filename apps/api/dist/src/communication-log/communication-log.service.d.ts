@@ -40,8 +40,8 @@ export declare class CommunicationLogService {
     findByDonorId(donorId: string): Promise<({
         donation: {
             id: string;
-            donationAmount: import("@prisma/client/runtime/library").Decimal;
             receiptNumber: string;
+            donationAmount: import("@prisma/client/runtime/library").Decimal;
         };
         sentBy: {
             name: string;

@@ -40,8 +40,8 @@ export declare class BeneficiaryProgressReportsController {
         totalPages: number;
     }>;
     searchBeneficiaries(q: string): Promise<{
-        id: string;
         code: string;
+        id: string;
         fullName: string;
         homeType: import(".prisma/client").$Enums.HomeType;
     }[]>;

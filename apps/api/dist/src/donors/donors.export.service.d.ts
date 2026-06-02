@@ -84,6 +84,7 @@ export declare class DonorsExportService {
         communicationNotes: string | null;
         engagementLevel: import(".prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        referredByDonorName: string | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;

@@ -20,6 +20,7 @@ import { fetchWithAuth, authStorage } from "@/lib/auth";
 import { hasPermission } from "@/lib/permissions";
 import { AccessDenied } from "@/components/access-denied";
 import { SourceDetailsCombobox } from "@/components/source-details-combobox";
+import { DonorSearchField } from "@/components/donor-search-field";
 import { resolveImageUrl } from "@/lib/image-url";
 import imageCompression from "browser-image-compression";
 
@@ -251,6 +252,8 @@ export default function EditDonorPage() {
     communicationNotes: "",
     sourceOfDonor: "",
     sourceDetails: "",
+    referredByDonorId: "",
+    referredByDonorName: "",
     pan: "",
     assignedToUserId: "",
     prefEmail: true,
@@ -390,6 +393,8 @@ export default function EditDonorPage() {
           communicationNotes: donor.communicationNotes || "",
           sourceOfDonor: donor.sourceOfDonor || "",
           sourceDetails: donor.sourceDetails || "",
+          referredByDonorId: donor.referredByDonorId || "",
+          referredByDonorName: donor.referredByDonorName || (donor.referredBy ? `${donor.referredBy.firstName} ${donor.referredBy.lastName ?? ""}`.trim() : ""),
           pan: donor.pan || "",
           assignedToUserId: donor.assignedToUserId || "",
           prefEmail: donor.prefEmail ?? true,
@@ -653,6 +658,8 @@ export default function EditDonorPage() {
       payload.notes = formData.notes || undefined;
       payload.sourceOfDonor = formData.sourceOfDonor || undefined;
       payload.sourceDetails = formData.sourceDetails || undefined;
+      payload.referredByDonorId = formData.referredByDonorId || null;
+      payload.referredByDonorName = formData.referredByDonorName || null;
       payload.pan = formData.pan || undefined;
       payload.assignedToUserId = formData.assignedToUserId || null;
 
@@ -1709,6 +1716,21 @@ export default function EditDonorPage() {
               <Label htmlFor="sourceDetails">Source Details</Label>
               <SourceDetailsCombobox value={formData.sourceDetails} onChange={(v) => handleChange("sourceDetails", v)} placeholder="Select or type a source detail" data-testid="input-source-details" />
             </div>
+            {formData.sourceOfDonor === "REFERRAL" && formData.sourceDetails === "Existing Donor Reference" && (
+              <div className="md:col-span-2">
+                <Label>Referred By Donor</Label>
+                <p className="text-xs text-muted-foreground mb-1">Search for the existing donor who referred this person</p>
+                <DonorSearchField
+                  value={formData.referredByDonorId ? { id: formData.referredByDonorId, donorCode: "", name: formData.referredByDonorName } : null}
+                  onChange={(d) => {
+                    handleChange("referredByDonorId", d?.id ?? "");
+                    handleChange("referredByDonorName", d?.name ?? "");
+                  }}
+                  excludeId={typeof window !== "undefined" ? window.location.pathname.split("/")[3] : undefined}
+                  placeholder="Search donors by name, code, or phone…"
+                />
+              </div>
+            )}
             {(userRole === "ADMIN" || userRole === "FOUNDER") && (
               <div>
                 <Label>Assigned Telecaller</Label>

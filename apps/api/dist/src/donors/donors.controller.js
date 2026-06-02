@@ -24,13 +24,15 @@ const permissions_decorator_1 = require("../auth/decorators/permissions.decorato
 const donors_service_1 = require("./donors.service");
 const donor_duplicates_service_1 = require("./donor-duplicates.service");
 const donor_fundraising_service_1 = require("./donor-fundraising.service");
+const donors_referral_service_1 = require("./donors.referral.service");
 const beneficiaries_service_1 = require("../beneficiaries/beneficiaries.service");
 const client_1 = require("@prisma/client");
 let DonorsController = class DonorsController {
-    constructor(donorsService, donorDuplicatesService, donorFundraisingService, beneficiariesService) {
+    constructor(donorsService, donorDuplicatesService, donorFundraisingService, donorsReferralService, beneficiariesService) {
         this.donorsService = donorsService;
         this.donorDuplicatesService = donorDuplicatesService;
         this.donorFundraisingService = donorFundraisingService;
+        this.donorsReferralService = donorsReferralService;
         this.beneficiariesService = beneficiariesService;
     }
     getClientInfo(req) {
@@ -114,6 +116,12 @@ let DonorsController = class DonorsController {
     }
     async findArchived(user, search, page, limit) {
         return this.donorsService.findArchived(user, search, page ? parseInt(page) : 1, limit ? parseInt(limit) : 20);
+    }
+    async getReferralLeaderboard(limit) {
+        return this.donorsReferralService.getReferralLeaderboard(limit ? parseInt(limit, 10) : 20);
+    }
+    async getDonorReferrals(id) {
+        return this.donorsReferralService.getReferralData(id);
     }
     async findOne(user, id) {
         console.log("Fetching donor ID:", id);
@@ -324,6 +332,22 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], DonorsController.prototype, "findArchived", null);
 __decorate([
+    (0, common_1.Get)("referral-report"),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    __param(0, (0, common_1.Query)("limit")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], DonorsController.prototype, "getReferralLeaderboard", null);
+__decorate([
+    (0, common_1.Get)(":id/referrals"),
+    (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
+    __param(0, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], DonorsController.prototype, "getDonorReferrals", null);
+__decorate([
     (0, common_1.Get)(":id"),
     (0, roles_decorator_1.Roles)(client_1.Role.FOUNDER, client_1.Role.ADMIN, client_1.Role.STAFF),
     __param(0, (0, current_user_decorator_1.CurrentUser)()),
@@ -511,10 +535,11 @@ __decorate([
 exports.DonorsController = DonorsController = __decorate([
     (0, common_1.Controller)("donors"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    __param(3, (0, common_1.Inject)((0, common_1.forwardRef)(() => beneficiaries_service_1.BeneficiariesService))),
+    __param(4, (0, common_1.Inject)((0, common_1.forwardRef)(() => beneficiaries_service_1.BeneficiariesService))),
     __metadata("design:paramtypes", [donors_service_1.DonorsService,
         donor_duplicates_service_1.DuplicatesService,
         donor_fundraising_service_1.DonorFundraisingService,
+        donors_referral_service_1.DonorsReferralService,
         beneficiaries_service_1.BeneficiariesService])
 ], DonorsController);
 //# sourceMappingURL=donors.controller.js.map

@@ -39,9 +39,9 @@ export declare class BirthdayWishController {
         id: string;
         updatedAt: Date;
         subject: string | null;
+        body: string;
         channel: import(".prisma/client").$Enums.MessageChannel;
         updatedById: string | null;
-        body: string;
         key: string;
     }[]>;
     updateTemplate(id: string, body: {
@@ -51,9 +51,9 @@ export declare class BirthdayWishController {
         id: string;
         updatedAt: Date;
         subject: string | null;
+        body: string;
         channel: import(".prisma/client").$Enums.MessageChannel;
         updatedById: string | null;
-        body: string;
         key: string;
     }>;
 }

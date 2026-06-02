@@ -45,6 +45,14 @@ export interface Donor {
   isDisabled?: boolean;
   sourceOfDonor?: string;
   sourceDetails?: string;
+  referredByDonorId?: string;
+  referredByDonorName?: string;
+  referredBy?: {
+    id: string;
+    donorCode: string;
+    firstName: string;
+    lastName: string | null;
+  };
   pan?: string;
   profilePicUrl?: string;
   donorSince?: string;

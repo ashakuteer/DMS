@@ -33,8 +33,8 @@ export declare class CampaignsController {
         progressPercent: number;
         beneficiaries: ({
             beneficiary: {
-                id: string;
                 code: string;
+                id: string;
                 status: import(".prisma/client").$Enums.BeneficiaryStatus;
                 fullName: string;
                 homeType: import(".prisma/client").$Enums.HomeType;
@@ -59,13 +59,15 @@ export declare class CampaignsController {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            donorId: string;
-            createdById: string;
-            donationDate: Date;
+            receiptNumber: string | null;
             donationAmount: import("@prisma/client/runtime/library").Decimal;
             currency: string;
-            donationType: import(".prisma/client").$Enums.DonationType;
+            donationDate: Date;
             donationMode: import(".prisma/client").$Enums.DonationMode | null;
+            donationType: import(".prisma/client").$Enums.DonationType;
+            kindDescription: string | null;
+            donorId: string;
+            createdById: string;
             donationPurpose: import(".prisma/client").$Enums.DonationPurpose | null;
             donationCategory: string | null;
             donationOccasion: string | null;
@@ -76,12 +78,10 @@ export declare class CampaignsController {
             unit: string | null;
             itemDescription: string | null;
             kindCategory: import(".prisma/client").$Enums.KindCategory | null;
-            kindDescription: string | null;
             donationHomeType: import(".prisma/client").$Enums.DonationHomeType | null;
             homeId: string | null;
             visitedHome: boolean;
             servedFood: boolean;
-            receiptNumber: string | null;
             financialYear: string | null;
             receiptPdfUrl: string | null;
             attachmentUrl: string | null;
@@ -114,12 +114,12 @@ export declare class CampaignsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         status: import(".prisma/client").$Enums.CampaignStatus;
         description: string | null;
         createdById: string;
-        currency: string;
         isDeleted: boolean;
         deletedAt: Date | null;
         homeTypes: import(".prisma/client").$Enums.HomeType[];
@@ -130,8 +130,8 @@ export declare class CampaignsController {
     }>;
     getBeneficiaries(id: string): Promise<({
         beneficiary: {
-            id: string;
             code: string;
+            id: string;
             status: import(".prisma/client").$Enums.BeneficiaryStatus;
             fullName: string;
             homeType: import(".prisma/client").$Enums.HomeType;
@@ -219,12 +219,12 @@ export declare class CampaignsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         status: import(".prisma/client").$Enums.CampaignStatus;
         description: string | null;
         createdById: string;
-        currency: string;
         isDeleted: boolean;
         deletedAt: Date | null;
         goalAmount: import("@prisma/client/runtime/library").Decimal | null;
@@ -248,12 +248,12 @@ export declare class CampaignsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         status: import(".prisma/client").$Enums.CampaignStatus;
         description: string | null;
         createdById: string;
-        currency: string;
         isDeleted: boolean;
         deletedAt: Date | null;
         goalAmount: import("@prisma/client/runtime/library").Decimal | null;
@@ -264,12 +264,12 @@ export declare class CampaignsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         status: import(".prisma/client").$Enums.CampaignStatus;
         description: string | null;
         createdById: string;
-        currency: string;
         isDeleted: boolean;
         deletedAt: Date | null;
         goalAmount: import("@prisma/client/runtime/library").Decimal | null;

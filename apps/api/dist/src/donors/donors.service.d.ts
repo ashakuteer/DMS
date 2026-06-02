@@ -111,13 +111,15 @@ export declare class DonorsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            donorId: string;
-            createdById: string;
-            donationDate: Date;
+            receiptNumber: string | null;
             donationAmount: import("@prisma/client/runtime/library").Decimal;
             currency: string;
-            donationType: import(".prisma/client").$Enums.DonationType;
+            donationDate: Date;
             donationMode: import(".prisma/client").$Enums.DonationMode | null;
+            donationType: import(".prisma/client").$Enums.DonationType;
+            kindDescription: string | null;
+            donorId: string;
+            createdById: string;
             donationPurpose: import(".prisma/client").$Enums.DonationPurpose | null;
             donationCategory: string | null;
             donationOccasion: string | null;
@@ -128,12 +130,10 @@ export declare class DonorsService {
             unit: string | null;
             itemDescription: string | null;
             kindCategory: import(".prisma/client").$Enums.KindCategory | null;
-            kindDescription: string | null;
             donationHomeType: import(".prisma/client").$Enums.DonationHomeType | null;
             homeId: string | null;
             visitedHome: boolean;
             servedFood: boolean;
-            receiptNumber: string | null;
             financialYear: string | null;
             receiptPdfUrl: string | null;
             attachmentUrl: string | null;
@@ -145,10 +145,10 @@ export declare class DonorsService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            currency: string;
             status: import(".prisma/client").$Enums.PledgeStatus;
             donorId: string;
             createdById: string;
-            currency: string;
             quantity: string | null;
             isDeleted: boolean;
             deletedAt: Date | null;
@@ -231,6 +231,7 @@ export declare class DonorsService {
         communicationNotes: string;
         engagementLevel: import(".prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string;
+        referredByDonorName: string;
         donorSince: Date;
         dobDay: number;
         dobMonth: number;
@@ -268,16 +269,22 @@ export declare class DonorsService {
             month: number;
             day: number;
         }[];
+        referredBy: {
+            id: string;
+            donorCode: string;
+            firstName: string;
+            lastName: string;
+        };
         sponsorships: {
             id: string;
             createdAt: Date;
             isActive: boolean;
             updatedAt: Date;
+            currency: string;
             startDate: Date | null;
             endDate: Date | null;
             status: import(".prisma/client").$Enums.SponsorshipStatus;
             donorId: string;
-            currency: string;
             notes: string | null;
             beneficiaryId: string;
             sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;
@@ -399,6 +406,7 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import(".prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        referredByDonorName: string | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
@@ -481,6 +489,7 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import(".prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        referredByDonorName: string | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
@@ -563,6 +572,7 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import(".prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        referredByDonorName: string | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
@@ -645,6 +655,7 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import(".prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        referredByDonorName: string | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
@@ -746,6 +757,7 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import(".prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        referredByDonorName: string | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
@@ -885,6 +897,7 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import(".prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        referredByDonorName: string | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
@@ -989,6 +1002,7 @@ export declare class DonorsService {
         communicationNotes: string | null;
         engagementLevel: import(".prisma/client").$Enums.DonorEngagement;
         referredByDonorId: string | null;
+        referredByDonorName: string | null;
         deletedBy: string | null;
         deleteReason: string | null;
         donorSince: Date | null;
