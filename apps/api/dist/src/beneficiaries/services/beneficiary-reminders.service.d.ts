@@ -29,6 +29,17 @@ export declare class BeneficiaryRemindersService {
             state: string | null;
             country: string | null;
             pincode: string | null;
+            permanentStreetAddress: string | null;
+            permanentCity: string | null;
+            permanentState: string | null;
+            permanentCountry: string | null;
+            permanentPincode: string | null;
+            currentStreetAddress: string | null;
+            currentCity: string | null;
+            currentState: string | null;
+            currentCountry: string | null;
+            currentPincode: string | null;
+            currentSameAsPermanent: boolean;
             profession: string | null;
             visited: boolean;
             approximateAge: number | null;
@@ -75,10 +86,10 @@ export declare class BeneficiaryRemindersService {
             googleReviewStatus: import(".prisma/client").$Enums.GoogleReviewStatus;
         };
         beneficiary: {
-            code: string;
             id: string;
             createdAt: Date;
             updatedAt: Date;
+            code: string;
             status: import(".prisma/client").$Enums.BeneficiaryStatus;
             createdById: string;
             isDeleted: boolean;
@@ -119,11 +130,11 @@ export declare class BeneficiaryRemindersService {
         createdAt: Date;
         isActive: boolean;
         updatedAt: Date;
-        currency: string;
         startDate: Date | null;
         endDate: Date | null;
         status: import(".prisma/client").$Enums.SponsorshipStatus;
         donorId: string;
+        currency: string;
         notes: string | null;
         beneficiaryId: string;
         sponsorshipType: import(".prisma/client").$Enums.SponsorshipType;

@@ -34,10 +34,10 @@ export class DonorsCrudService {
     return {};
   }
 
-  private computeLocationCategory(donor: { city?: string | null; state?: string | null; country?: string | null }): string {
-    const city = (donor.city || "").trim().toLowerCase();
-    const state = (donor.state || "").trim().toLowerCase();
-    const country = (donor.country || "").trim().toLowerCase();
+  private computeLocationCategory(donor: { city?: string | null; state?: string | null; country?: string | null; currentCity?: string | null; currentState?: string | null; currentCountry?: string | null }): string {
+    const city = (donor.currentCity || donor.city || "").trim().toLowerCase();
+    const state = (donor.currentState || donor.state || "").trim().toLowerCase();
+    const country = (donor.currentCountry || donor.country || "").trim().toLowerCase();
     if (city === "hyderabad") return "HYDERABAD";
     if (state === "telangana") return "TELANGANA_OTHER";
     if (country === "india" || !country) return "INDIA_OTHER";
@@ -320,6 +320,17 @@ if (assignedToUserId) {
         state: true,
         country: true,
         pincode: true,
+        permanentStreetAddress: true,
+        permanentCity: true,
+        permanentState: true,
+        permanentCountry: true,
+        permanentPincode: true,
+        currentStreetAddress: true,
+        currentCity: true,
+        currentState: true,
+        currentCountry: true,
+        currentPincode: true,
+        currentSameAsPermanent: true,
         profession: true,
         approximateAge: true,
         gender: true,

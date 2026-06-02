@@ -1,0 +1,93 @@
+We need to improve donor address handling.
+
+CURRENT PROBLEM
+Donor has only one address.
+But in real life:
+- donor may live in USA / abroad / another city
+- donor may give Indian permanent address for receipt / official records
+
+This creates reporting problems.
+
+GOAL
+Add two address types for donors:
+
+1. Permanent / Receipt Address
+2. Present / Current Address
+
+IMPORTANT
+Do NOT break existing donor records.
+Do NOT remove existing address fields.
+Keep this production-safe and backward compatible.
+
+REQUIREMENTS
+
+PART 1 — DATABASE / MODEL
+Add separate fields if not already present:
+
+Permanent / Receipt Address:
+- permanentStreetAddress
+- permanentCity
+- permanentState
+- permanentCountry
+- permanentPincode
+
+Present / Current Address:
+- currentStreetAddress
+- currentCity
+- currentState
+- currentCountry
+- currentPincode
+
+Also add:
+- currentSameAsPermanent boolean default false
+
+If existing address fields already exist:
+- map/copy old address into permanent/receipt address
+- keep backward compatibility
+
+PART 2 — DONOR FORM UI
+In Add/Edit Donor form, show two sections:
+
+A. Receipt / Permanent Address
+Used for receipt and official records.
+
+B. Present / Current Address
+Where donor currently lives.
+
+Add checkbox:
+"Current address same as permanent address"
+
+If checked:
+- copy permanent address values into current address
+- disable/hide current address fields if appropriate
+
+PART 3 — DONOR PROFILE DISPLAY
+On donor profile Overview tab, show both:
+
+1. Receipt / Permanent Address
+2. Present / Current Address
+
+If current address same as permanent:
+show "Same as permanent address"
+
+PART 4 — REPORTS / FILTERS
+For donor location reports:
+- use Present / Current Address fields
+
+For receipts:
+- continue using Permanent / Receipt Address fields
+
+PART 5 — BACKWARD COMPATIBILITY
+Existing donors must still show their old address.
+If only old address exists:
+- show it as Permanent / Receipt Address
+- Current Address may be blank or same as permanent
+
+PART 6 — AFTER IMPLEMENTATION
+Tell me:
+A. files changed
+B. DB columns added
+C. production SQL needed
+D. how existing address is handled
+E. which address receipt uses
+F. which address reports use

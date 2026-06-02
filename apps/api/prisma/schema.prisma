@@ -102,6 +102,19 @@ model Donor {
   state              String?
   country            String?                @default("India")
   pincode            String?
+
+  permanentStreetAddress  String?
+  permanentCity           String?
+  permanentState          String?
+  permanentCountry        String?
+  permanentPincode        String?
+
+  currentStreetAddress    String?
+  currentCity             String?
+  currentState            String?
+  currentCountry          String?
+  currentPincode          String?
+  currentSameAsPermanent  Boolean                @default(false)
   profession         String?
   visited            Boolean                @default(false)
   approximateAge     Int?

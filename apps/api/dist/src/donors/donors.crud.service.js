@@ -28,9 +28,9 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
         return {};
     }
     computeLocationCategory(donor) {
-        const city = (donor.city || "").trim().toLowerCase();
-        const state = (donor.state || "").trim().toLowerCase();
-        const country = (donor.country || "").trim().toLowerCase();
+        const city = (donor.currentCity || donor.city || "").trim().toLowerCase();
+        const state = (donor.currentState || donor.state || "").trim().toLowerCase();
+        const country = (donor.currentCountry || donor.country || "").trim().toLowerCase();
         if (city === "hyderabad")
             return "HYDERABAD";
         if (state === "telangana")
@@ -268,6 +268,17 @@ let DonorsCrudService = DonorsCrudService_1 = class DonorsCrudService {
                     state: true,
                     country: true,
                     pincode: true,
+                    permanentStreetAddress: true,
+                    permanentCity: true,
+                    permanentState: true,
+                    permanentCountry: true,
+                    permanentPincode: true,
+                    currentStreetAddress: true,
+                    currentCity: true,
+                    currentState: true,
+                    currentCountry: true,
+                    currentPincode: true,
+                    currentSameAsPermanent: true,
                     profession: true,
                     approximateAge: true,
                     gender: true,

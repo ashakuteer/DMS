@@ -221,6 +221,17 @@ export default function EditDonorPage() {
     state: "",
     country: "India",
     pincode: "",
+    permanentStreetAddress: "",
+    permanentCity: "",
+    permanentState: "",
+    permanentCountry: "India",
+    permanentPincode: "",
+    currentStreetAddress: "",
+    currentCity: "",
+    currentState: "",
+    currentCountry: "India",
+    currentPincode: "",
+    currentSameAsPermanent: false,
     profession: "",
     donorSince: "",
     approximateAge: "",
@@ -349,6 +360,17 @@ export default function EditDonorPage() {
           state: donor.state || "",
           country: donor.country || "India",
           pincode: donor.pincode || "",
+          permanentStreetAddress: donor.permanentStreetAddress || "",
+          permanentCity: donor.permanentCity || "",
+          permanentState: donor.permanentState || "",
+          permanentCountry: donor.permanentCountry || "India",
+          permanentPincode: donor.permanentPincode || "",
+          currentStreetAddress: donor.currentStreetAddress || "",
+          currentCity: donor.currentCity || "",
+          currentState: donor.currentState || "",
+          currentCountry: donor.currentCountry || "India",
+          currentPincode: donor.currentPincode || "",
+          currentSameAsPermanent: donor.currentSameAsPermanent || false,
           profession: donor.profession || "",
           donorSince: donor.donorSince ? donor.donorSince.slice(0, 10) : "",
           approximateAge: donor.approximateAge?.toString() || "",
@@ -610,6 +632,17 @@ export default function EditDonorPage() {
       payload.state = formData.state || undefined;
       payload.country = formData.country || undefined;
       payload.pincode = formData.pincode || undefined;
+      payload.permanentStreetAddress = formData.permanentStreetAddress || undefined;
+      payload.permanentCity = formData.permanentCity || undefined;
+      payload.permanentState = formData.permanentState || undefined;
+      payload.permanentCountry = formData.permanentCountry || undefined;
+      payload.permanentPincode = formData.permanentPincode || undefined;
+      payload.currentSameAsPermanent = formData.currentSameAsPermanent;
+      payload.currentStreetAddress = formData.currentSameAsPermanent ? undefined : (formData.currentStreetAddress || undefined);
+      payload.currentCity = formData.currentSameAsPermanent ? undefined : (formData.currentCity || undefined);
+      payload.currentState = formData.currentSameAsPermanent ? undefined : (formData.currentState || undefined);
+      payload.currentCountry = formData.currentSameAsPermanent ? undefined : (formData.currentCountry || undefined);
+      payload.currentPincode = formData.currentSameAsPermanent ? undefined : (formData.currentPincode || undefined);
       payload.profession = formData.profession || undefined;
       if (formData.donorSince) payload.donorSince = new Date(formData.donorSince).toISOString();
       if (formData.approximateAge) payload.approximateAge = parseInt(formData.approximateAge);
@@ -926,28 +959,78 @@ export default function EditDonorPage() {
               Address
             </CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4">
-            <div>
-              <Label htmlFor="address">Street Address</Label>
-              <Textarea id="address" value={formData.address} onChange={(e) => handleChange("address", e.target.value)} placeholder="Street address" rows={2} data-testid="input-address" />
+          <CardContent className="grid gap-6">
+            {/* Permanent / Receipt Address */}
+            <div className="grid gap-3">
+              <p className="text-sm font-semibold">Permanent / Receipt Address</p>
+              <p className="text-xs text-muted-foreground -mt-2">Used for receipts and official records</p>
+              <div>
+                <Label htmlFor="permanentStreetAddress">Street Address</Label>
+                <Textarea id="permanentStreetAddress" value={formData.permanentStreetAddress} onChange={(e) => handleChange("permanentStreetAddress", e.target.value)} placeholder="Street address" rows={2} data-testid="input-permanent-address" />
+              </div>
+              <div className="grid gap-4 md:grid-cols-4">
+                <div>
+                  <Label htmlFor="permanentCity">City</Label>
+                  <Input id="permanentCity" value={formData.permanentCity} onChange={(e) => handleChange("permanentCity", e.target.value)} placeholder="City" data-testid="input-permanent-city" />
+                </div>
+                <div>
+                  <Label htmlFor="permanentState">State</Label>
+                  <Input id="permanentState" value={formData.permanentState} onChange={(e) => handleChange("permanentState", e.target.value)} placeholder="State" />
+                </div>
+                <div>
+                  <Label htmlFor="permanentCountry">Country</Label>
+                  <Input id="permanentCountry" value={formData.permanentCountry} onChange={(e) => handleChange("permanentCountry", e.target.value)} placeholder="Country" />
+                </div>
+                <div>
+                  <Label htmlFor="permanentPincode">Pincode</Label>
+                  <Input id="permanentPincode" value={formData.permanentPincode} onChange={(e) => handleChange("permanentPincode", e.target.value)} placeholder="Pincode" />
+                </div>
+              </div>
             </div>
-            <div className="grid gap-4 md:grid-cols-4">
-              <div>
-                <Label htmlFor="city">City</Label>
-                <Input id="city" value={formData.city} onChange={(e) => handleChange("city", e.target.value)} placeholder="City" data-testid="input-city" />
+
+            <div className="border-t" />
+
+            {/* Present / Current Address */}
+            <div className="grid gap-3">
+              <p className="text-sm font-semibold">Present / Current Address</p>
+              <p className="text-xs text-muted-foreground -mt-2">Where the donor currently lives</p>
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="currentSameAsPermanent"
+                  checked={formData.currentSameAsPermanent}
+                  onCheckedChange={(v) => handleChange("currentSameAsPermanent", !!v)}
+                  data-testid="checkbox-same-as-permanent"
+                />
+                <Label htmlFor="currentSameAsPermanent" className="font-normal cursor-pointer">
+                  Current address same as permanent address
+                </Label>
               </div>
-              <div>
-                <Label htmlFor="state">State</Label>
-                <Input id="state" value={formData.state} onChange={(e) => handleChange("state", e.target.value)} placeholder="State" />
-              </div>
-              <div>
-                <Label htmlFor="country">Country</Label>
-                <Input id="country" value={formData.country} onChange={(e) => handleChange("country", e.target.value)} placeholder="Country" />
-              </div>
-              <div>
-                <Label htmlFor="pincode">Pincode</Label>
-                <Input id="pincode" value={formData.pincode} onChange={(e) => handleChange("pincode", e.target.value)} placeholder="Pincode" />
-              </div>
+              {!formData.currentSameAsPermanent && (
+                <>
+                  <div>
+                    <Label htmlFor="currentStreetAddress">Street Address</Label>
+                    <Textarea id="currentStreetAddress" value={formData.currentStreetAddress} onChange={(e) => handleChange("currentStreetAddress", e.target.value)} placeholder="Street address" rows={2} data-testid="input-current-address" />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-4">
+                    <div>
+                      <Label htmlFor="currentCity">City</Label>
+                      <Input id="currentCity" value={formData.currentCity} onChange={(e) => handleChange("currentCity", e.target.value)} placeholder="City" data-testid="input-current-city" />
+                    </div>
+                    <div>
+                      <Label htmlFor="currentState">State</Label>
+                      <Input id="currentState" value={formData.currentState} onChange={(e) => handleChange("currentState", e.target.value)} placeholder="State" />
+                    </div>
+                    <div>
+                      <Label htmlFor="currentCountry">Country</Label>
+                      <Input id="currentCountry" value={formData.currentCountry} onChange={(e) => handleChange("currentCountry", e.target.value)} placeholder="Country" />
+                    </div>
+                    <div>
+                      <Label htmlFor="currentPincode">Pincode</Label>
+                      <Input id="currentPincode" value={formData.currentPincode} onChange={(e) => handleChange("currentPincode", e.target.value)} placeholder="Pincode" />
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>

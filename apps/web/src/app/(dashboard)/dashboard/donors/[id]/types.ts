@@ -15,6 +15,17 @@ export interface Donor {
   state?: string;
   country?: string;
   pincode?: string;
+  permanentStreetAddress?: string;
+  permanentCity?: string;
+  permanentState?: string;
+  permanentCountry?: string;
+  permanentPincode?: string;
+  currentStreetAddress?: string;
+  currentCity?: string;
+  currentState?: string;
+  currentCountry?: string;
+  currentPincode?: string;
+  currentSameAsPermanent?: boolean;
   profession?: string;
   approximateAge?: number;
   gender?: string;

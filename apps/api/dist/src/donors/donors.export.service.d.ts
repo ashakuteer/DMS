@@ -39,6 +39,17 @@ export declare class DonorsExportService {
         state: string | null;
         country: string | null;
         pincode: string | null;
+        permanentStreetAddress: string | null;
+        permanentCity: string | null;
+        permanentState: string | null;
+        permanentCountry: string | null;
+        permanentPincode: string | null;
+        currentStreetAddress: string | null;
+        currentCity: string | null;
+        currentState: string | null;
+        currentCountry: string | null;
+        currentPincode: string | null;
+        currentSameAsPermanent: boolean;
         profession: string | null;
         visited: boolean;
         approximateAge: number | null;

@@ -189,30 +189,65 @@ export default function DonorOverviewTab({
               {t("donor_profile.address")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {donor.address && (
-              <div>
-                <span className="text-muted-foreground block mb-1">
-                  {t("donor_profile.street_address")}
-                </span>
-                <span>{donor.address}</span>
+          <CardContent className="space-y-5">
+            {/* Permanent / Receipt Address */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                Permanent / Receipt Address
+              </p>
+              {(donor.permanentStreetAddress || donor.address) && (
+                <div className="mb-2">
+                  <span className="text-muted-foreground block mb-1 text-sm">
+                    {t("donor_profile.street_address")}
+                  </span>
+                  <span>{donor.permanentStreetAddress || donor.address}</span>
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                <span className="text-muted-foreground">{t("donor_profile.city")}</span>
+                <span>{donor.permanentCity || donor.city || "-"}</span>
+                <span className="text-muted-foreground">{t("donor_profile.state")}</span>
+                <span>{donor.permanentState || donor.state || "-"}</span>
+                <span className="text-muted-foreground">{t("donor_profile.country")}</span>
+                <span>{donor.permanentCountry || donor.country || "-"}</span>
+                <span className="text-muted-foreground">{t("donor_profile.pincode")}</span>
+                <span>{donor.permanentPincode || donor.pincode || "-"}</span>
               </div>
-            )}
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t("donor_profile.city")}</span>
-              <span>{donor.city || "-"}</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t("donor_profile.state")}</span>
-              <span>{donor.state || "-"}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t("donor_profile.country")}</span>
-              <span>{donor.country || "-"}</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">{t("donor_profile.pincode")}</span>
-              <span>{donor.pincode || "-"}</span>
+
+            <div className="border-t" />
+
+            {/* Present / Current Address */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                Present / Current Address
+              </p>
+              {donor.currentSameAsPermanent ? (
+                <span className="text-sm text-muted-foreground italic">
+                  Same as permanent address
+                </span>
+              ) : (
+                <>
+                  {donor.currentStreetAddress && (
+                    <div className="mb-2">
+                      <span className="text-muted-foreground block mb-1 text-sm">
+                        {t("donor_profile.street_address")}
+                      </span>
+                      <span>{donor.currentStreetAddress}</span>
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                    <span className="text-muted-foreground">{t("donor_profile.city")}</span>
+                    <span>{donor.currentCity || "-"}</span>
+                    <span className="text-muted-foreground">{t("donor_profile.state")}</span>
+                    <span>{donor.currentState || "-"}</span>
+                    <span className="text-muted-foreground">{t("donor_profile.country")}</span>
+                    <span>{donor.currentCountry || "-"}</span>
+                    <span className="text-muted-foreground">{t("donor_profile.pincode")}</span>
+                    <span>{donor.currentPincode || "-"}</span>
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
